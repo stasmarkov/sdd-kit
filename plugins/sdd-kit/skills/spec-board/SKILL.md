@@ -5,7 +5,7 @@ argument-hint: "[dirs...] [--serve [--port 4477] | --out spec-board.html | --jso
 allowed-tools: Bash, Read
 license: Apache-2.0
 metadata:
-  version: 1.1
+  version: "1.1"
   last_verified: "2026-10-19"
   next_review: "2027-01-19"
 ---

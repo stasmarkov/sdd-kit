@@ -1,0 +1,204 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "hosts.schema.json",
+  "title": "SDD Kit host table",
+  "description": "The single list of keys every host must define. Nullable keys are null when the host has no such concept. browserGuide is null for the canonical host, which keeps the registry text.",
+  "type": "object",
+  "required": [
+    "hosts"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "hosts": {
+      "type": "object",
+      "required": [
+        "claude",
+        "codex",
+        "cursor"
+      ],
+      "additionalProperties": {
+        "$ref": "#/$defs/host"
+      },
+      "properties": {
+        "claude": {
+          "$ref": "#/$defs/host"
+        },
+        "codex": {
+          "$ref": "#/$defs/host"
+        },
+        "cursor": {
+          "$ref": "#/$defs/host"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "host": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instructionFile",
+        "configDir",
+        "configDirEnv",
+        "stacksDir",
+        "stackAddonsDir",
+        "rulesDir",
+        "rulesFormat",
+        "skillsDir",
+        "agentsDir",
+        "agentsFormat",
+        "trustStoreDir",
+        "pluginRootVar",
+        "projectDirVar",
+        "skillDirToken",
+        "invocationPrefix",
+        "agentNamespace",
+        "browserToolPrefix",
+        "browserGuide",
+        "tokens",
+        "hookEvents",
+        "hookTools",
+        "guardHooks"
+      ],
+      "properties": {
+        "instructionFile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "configDir": {
+          "type": "string",
+          "pattern": "^\\.[a-z]+$"
+        },
+        "configDirEnv": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "stacksDir": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stackAddonsDir": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rulesDir": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "rulesFormat": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "md",
+            "mdc",
+            null
+          ]
+        },
+        "skillsDir": {
+          "type": "string",
+          "minLength": 1
+        },
+        "agentsDir": {
+          "type": "string",
+          "minLength": 1
+        },
+        "agentsFormat": {
+          "type": "string",
+          "enum": [
+            "md",
+            "toml"
+          ]
+        },
+        "trustStoreDir": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pluginRootVar": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectDirVar": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "skillDirToken": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "invocationPrefix": {
+          "type": "string",
+          "minLength": 1
+        },
+        "agentNamespace": {
+          "type": "string"
+        },
+        "browserToolPrefix": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "browserGuide": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "tokens": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "hookEvents": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "hookTools": {
+          "type": "object",
+          "required": [
+            "Bash",
+            "Write",
+            "Edit"
+          ],
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "guardHooks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "event",
+              "matcher",
+              "script"
+            ],
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}

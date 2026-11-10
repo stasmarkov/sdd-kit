@@ -1,0 +1,15 @@
+{
+  "name": "sdd-kit-laravel",
+  "version": "4.0.0",
+  "description": "Laravel add-on: laravel-backend-dev agent, Laravel, Pest, Passport, DTO, service-repository, event-driven and migration skills, path-scoped rules, the contract-sync template and the Laravel stack manifest.",
+  "skills": "./skills/",
+  "requires_local_executor": true,
+  "interface": {
+    "displayName": "SDD Kit laravel",
+    "shortDescription": "Laravel add-on: laravel-backend-dev agent, Laravel, Pest, Passport, DTO, service-repository, event-driven and migrati...",
+    "developerName": "Stas Markov",
+    "category": "Developer Tools",
+    "websiteURL": "https://github.com/stasmarkov/sdd-kit",
+    "supportURL": "https://github.com/stasmarkov/sdd-kit/issues"
+  }
+}

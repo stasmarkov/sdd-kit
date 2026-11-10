@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../index.html">SDD Kit</a>
-    <span class="badge">v3.1.0</span>
+    <span class="badge">v4.0.0</span>
   </div>
   <div class="header-actions">
     <a class="btn" href="../index.html"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
@@ -35,6 +35,7 @@
 <p>SDD Kit installs in two ways. Both ship the same agents, skills, workflows, and hook
 scripts, but Claude Code treats plugin components differently from project files. This page
 covers what changes and which guardrails need extra care.</p>
+<p>This page is about Claude Code. For Codex and Cursor, see <a href="hosts.html">hosts.md</a>; their plugin and file-copy installs are in <a href="installation.html#codex">INSTALLATION.md</a>.</p>
 <h3 id="choosing-a-mode">Choosing a mode</h3>
 <div class="table-wrap"><table><thead><tr><th></th><th>Plugin mode</th><th>File-copy mode</th></tr></thead><tbody><tr><td>Install</td><td><code>/plugin marketplace add &lt;repo&gt;</code> then <code>/plugin install &lt;name&gt;@sdd-kit</code>, or <code>claude --plugin-dir &lt;path&gt;</code></td><td><code>./install.sh --project</code> (or <code>--user</code>)</td></tr><tr><td>Updates</td><td><code>/plugin update</code>, same version for the whole team</td><td>Re-run the installer; <code>--dry-run</code> shows the diff</td></tr><tr><td>Hooks</td><td><code>hooks/hooks.json</code> with <code>${CLAUDE_PLUGIN_ROOT}</code></td><td><code>.claude/settings.json</code> with <code>$CLAUDE_PROJECT_DIR</code></td></tr><tr><td>Permissions and env</td><td>Not applied from the plugin (see below)</td><td><code>.claude/settings.json</code></td></tr><tr><td>MCP servers</td><td>The plugin&#39;s root <code>.mcp.json</code> starts <code>context7</code> and Playwright MCP; the workflows&#39; browser steps use it with no project entry, see <a href="installation.html#playwright-in-plugin-mode">Playwright in plugin mode</a></td><td>Project <code>.mcp.json</code> with the same two, merged, never overwritten</td></tr><tr><td>Names</td><td>Namespaced: <code>/sdd-kit:sdd</code></td><td>Bare: <code>/sdd</code></td></tr><tr><td>Project context</td><td><code>CLAUDE.md</code>, <code>AGENTS.md</code>, and <code>.claude/rules/</code> are <strong>not</strong> installed</td><td>Installer creates them from templates when absent</td></tr><tr><td>Best for</td><td>Teams that want one pinned version</td><td>Projects that customize agents, or need agent-level guardrails</td></tr></tbody></table></div>
 <p>You can combine them: install the plugin for components, then copy the project-context
@@ -80,11 +81,11 @@ in both modes. To get the deny list and env as well, copy them into the project&
 <h3 id="hooks-that-run-in-both-modes">Hooks that run in both modes</h3>
 <p>All of the kit&#39;s hooks are global (<code>hooks/hooks.json</code>), so plugin mode keeps them:</p>
 <div class="table-wrap"><table><thead><tr><th>Event</th><th>Script</th><th>Purpose</th></tr></thead><tbody><tr><td>PreToolUse (Bash)</td><td><code>block-dangerous.sh</code>, <code>check-commit-msg.sh</code></td><td>Block destructive commands; enforce commit format</td></tr><tr><td>PreToolUse (Write/Edit)</td><td><code>laravel-test-first.sh</code>, <code>nextjs-test-first.sh</code> (stack add-ons)</td><td>Block edits to Laravel controllers, models and services, and Next.js components, until a matching test exists</td></tr><tr><td>PreToolUse (Read/Grep/Glob/Bash)</td><td><code>token-budget.sh</code></td><td>Block <code>find /</code>, and unbounded reads once context usage passes the threshold</td></tr><tr><td>PostToolUse (Write/Edit)</td><td><code>laravel-lint.sh</code>, <code>nextjs-lint.sh</code> (stack add-ons), <code>scan-secrets.sh</code></td><td>Lint changed files; catch secrets</td></tr><tr><td>PostToolUse (Bash/WebFetch/MCP)</td><td><code>scan-injection.sh</code></td><td>Flag prompt-injection patterns</td></tr><tr><td>SessionStart, UserPromptSubmit, PreCompact, SessionEnd, Stop, SubagentStop, Notification</td><td>various</td><td>Context load/save, prompt preflight, completion checks</td></tr></tbody></table></div>
-<p><code>hooks/hooks.json</code> is the source of truth. If this table and that file disagree, trust the file. Every hook, with how to tune or disable it, is in <a href="https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/share/hooks/README.md" target="_blank" rel="noopener noreferrer">src/hooks/README.md</a>.</p>
+<p><code>hooks/hooks.json</code> is the source of truth. If this table and that file disagree, trust the file. Every hook, with how to tune or disable it, is in <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/share/hooks/README.md" target="_blank" rel="noopener noreferrer">src/hooks/README.md</a>.</p>
 <h3 id="verifying-an-install">Verifying an install</h3>
 <ul><li><code>/plugin</code> → <strong>Errors</strong> tab shows components that failed to load.</li><li><code>claude plugin validate &lt;path&gt;</code> checks the manifest and agent frontmatter.</li><li><code>/hooks</code> lists active hooks; <code>/memory</code> lists loaded <code>CLAUDE.md</code>, <code>AGENTS.md</code>, and rules files.</li><li><code>/framework-doctor</code> (<code>/sdd-kit:framework-doctor</code> in plugin mode) checks that hooks fire and paths resolve.</li></ul>
   </article>
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/docs/reference/plugin-mode.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/plugin-mode.md">View the Markdown source</a></p>
 </main>
 <script>
   (function () {

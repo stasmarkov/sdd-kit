@@ -1,0 +1,23 @@
+<?php
+
+/**
+ * @file
+ * Provides {{MODULE_DESCRIPTION}}.
+ */
+
+declare(strict_types=1);
+
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_theme().
+ */
+function {{MODULE_MACHINE_NAME}}_theme(): array {
+  return [
+    '{{MODULE_MACHINE_NAME}}_default' => [
+      'variables' => [
+        'items' => [],
+      ],
+    ],
+  ];
+}

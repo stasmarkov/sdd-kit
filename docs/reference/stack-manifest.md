@@ -2,7 +2,7 @@
 
 A stack manifest, `stack.json`, is the one file that teaches the SDD Kit workflows a stack: how to recognise it, which agent implements it, which gates verify it and how to scaffold, deploy and test it. The workflows read manifests and never name a stack themselves, so a new stack is a new manifest, not a code change.
 
-The format is defined by [`src/workflows/lib/stack.schema.json`](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/plugins/sdd-kit/workflows/lib/stack.schema.json). The examples on this page use a fictional stack, `acme`. To generate a manifest and a full add-on from a few answers, run `/new-stack`; this page is the field reference behind it.
+The format is defined by [`src/workflows/lib/stack.schema.json`](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/plugins/sdd-kit/workflows/lib/stack.schema.json). The examples on this page use a fictional stack, `acme`. To generate a manifest and a full add-on from a few answers, run `/new-stack`; this page is the field reference behind it.
 
 ## Shape
 
@@ -188,6 +188,8 @@ Report prompts get these validated fields, never the raw Detect object. A reject
 
 The trust check that skills run is the kit's own `trust-store.mjs`. The script is self-contained: `tools/gen-stacks.mjs` bundles the workflows' manifest checks and the first-party entries into it, and it loads no other script or registry file, so the hash covers everything it runs. A project copy is used only when its SHA-256 equals the hash generated into the `verification-gates` skill, and never by a hash stored in the project. When no copy can be verified, the check reports `trust check unavailable` and every overlay counts as untrusted. The trust store is always `~/.claude/sdd-kit/trusted-stacks.json` in your home directory as the operating system's user database records it; neither `$HOME` nor `CLAUDE_CONFIG_DIR` moves it, because a project setting can change both. User stack manifests still live in the config directory (`CLAUDE_CONFIG_DIR`, else `~/.claude`), since each one needs an approval anyway. As a further check, a config directory that resolves inside the current directory, its git toplevel, `CLAUDE_PROJECT_DIR`, or any ancestor of the current directory that holds `.git` is refused: the user stacks and plugin list there are reported unreadable.
 
+The shell guard that refuses writes to a trust store and agent-run approvals (`block-dangerous.sh`) is best-effort hardening, not a boundary: it matches text in the command, so a symlink to the store, a directory glob or a script assembled at run time can get past it. Those are known limits, listed in [hooks/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/share/hooks/README.md) (Trust store guard), and the approval itself stays a human action in your own terminal.
+
 Out of scope: running a workflow on a repository you do not trust. Agents read repository files and have Bash, so hostile repository content can steer them whatever `/stack-trust` says. `/stack-trust` controls manifests, not repository content. That includes values a repository's settings supply, such as the settings `env` values in `.claude/settings.json` (`NODE_OPTIONS`, `PATH`): they reach every process the agents start and sit outside the threat model.
 
 A project-local manifest should set `agent.plugin` to the add-on that ships its agent, for example `sdd-kit-acme` from `.claude/stack-addons/sdd-kit-acme/`. Workflows, `/stack-trust` and `/framework-doctor` see a `--plugin-dir` add-on in two ways: a directory or symlink under the project's `.claude/stack-addons/`, or the `--plugin-dir` flags on the Claude Code command line. Either is reported as `plugin:<name>@inline`.
@@ -219,6 +221,6 @@ Loading an add-on plugin is consent to its hooks, so an add-on's `hooks/hooks.js
 
 ## Related
 
-- `/new-stack` scaffolds a manifest and add-on from a few answers; its template is [`src/templates/stack-addon/`](https://github.com/stasmarkov/sdd-kit/tree/v3.1.0/share/templates/stack-addon).
+- `/new-stack` scaffolds a manifest and add-on from a few answers; its template is [`src/templates/stack-addon/`](https://github.com/stasmarkov/sdd-kit/tree/v4.0.0/share/templates/stack-addon).
 - `node tools/gen-stacks.mjs` regenerates the workflow registry from the kit's manifests; `./verify.sh` checks the add-on layout (Check 16).
 - [Plugin mode](plugin-mode.md) explains add-on installation.

@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Drupal\{{MODULE_MACHINE_NAME}}\Service;
+
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Session\AccountProxyInterface;
+use Psr\Log\LoggerInterface;
+
+final class {{SERVICE_CLASS}} {
+
+  public function __construct(
+    private readonly EntityTypeManagerInterface $entityTypeManager,
+    private readonly AccountProxyInterface $currentUser,
+    private readonly LoggerInterface $logger,
+  ) {}
+
+}

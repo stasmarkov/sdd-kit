@@ -4,10 +4,10 @@ description: Execute a small-to-medium task (bug fix, small feature, refactor, s
 argument-hint: "[task-description] | --continue=TASK-ID | --research-only | --rename | --no-tests | --force"
 allowed-tools: Agent, Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion, WebFetch, WebSearch
 metadata:
-  mcp-tools: context7
-  version: 2.0
+  mcp-tools: "context7"
+  version: "2.0"
   subagents: "code-explorer, laravel-backend-dev, nextjs-frontend-dev, test-writer, code-quality"
-  checkpoint_enabled: true
+  checkpoint_enabled: "true"
 ---
 
 # /simple-task

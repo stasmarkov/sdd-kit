@@ -6,7 +6,7 @@ allowed-tools: Read, Edit, Write, Grep, Glob, AskUserQuestion
 disable-model-invocation: true
 license: Apache-2.0
 metadata:
-  version: 1.0
+  version: "1.0"
   last_verified: "2026-10-19"
   next_review: "2027-01-19"
 ---

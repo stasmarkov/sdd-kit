@@ -4,7 +4,7 @@ description: Run security checks — dependency vulnerability audits (the manife
 argument-hint: "--full | --quick | --dependencies | --code | --owasp"
 allowed-tools: Bash, Read, Grep, Glob
 metadata:
-  version: 2.2
+  version: "2.2"
   subagents: "security-auditor"
 ---
 
@@ -139,6 +139,8 @@ Priority Actions:
 ```
 
 With `--dependencies`, add the outdated and unused tables after the severity summary. To act on them, the user runs `/upgrade-deps`.
+
+For a deeper, coverage-led audit with verified findings, see the security-audit workflow and the comparison in USAGE-EXAMPLES section 10 (`/sdd` routes there).
 
 **Source Verification**: Follow the `source-verification` skill.
 

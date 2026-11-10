@@ -3,7 +3,7 @@
 
 Dev-environment add-on: docker and ddev skills, plus an optional DDEV MCP entry. Not tied to a stack.
 
-- Version: 3.1.0
+- Version: 4.0.0
 - Keywords: docker, ddev, devenv
 
 ## Install
@@ -16,4 +16,4 @@ Dev-environment add-on: docker and ddev skills, plus an optional DDEV MCP entry.
 ## Learn more
 
 - [Interactive guide](https://stasmarkov.github.io/sdd-kit/)
-- [Worked example: Hireboard](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/docs/examples/job-board/README.md)
+- [Worked example: Hireboard](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/examples/job-board/README.md)

@@ -4,8 +4,8 @@ description: Profile and optimize Next.js 15 App Router apps for Core Web Vitals
 license: Apache-2.0
 allowed-tools: Read, Grep, Glob, Bash
 metadata:
-  category: frameworks
-  framework: nextjs
+  category: "frameworks"
+  framework: "nextjs"
   framework-version: "15.x"
 ---
 

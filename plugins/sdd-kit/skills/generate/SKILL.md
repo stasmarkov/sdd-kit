@@ -4,7 +4,7 @@ description: Generate code scaffolding that follows project conventions - contro
 argument-hint: "[type] [name] | --crud=[entity] | --api=[resource] | --frontend [page|component|hook|route] [name]"
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 metadata:
-  version: 2.0
+  version: "2.0"
   last_verified: "2026-10-22"
   next_review: "2027-01-22"
 ---

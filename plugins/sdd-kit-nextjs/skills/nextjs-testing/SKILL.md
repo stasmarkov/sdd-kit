@@ -14,8 +14,8 @@ paths:
   - "**/playwright.config.*"
   - "**/vitest.config.*"
 metadata:
-  category: frameworks
-  framework: nextjs
+  category: "frameworks"
+  framework: "nextjs"
   framework-version: "15.x"
   last_verified: "2026-10-19"
   next_review: "2027-01-19"

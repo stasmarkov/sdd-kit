@@ -9,7 +9,7 @@ For the hook API itself (events, matchers, exit codes, stdin/stdout JSON, async 
 
 ## Lifecycle hooks
 
-[`hooks/hooks.json`](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/plugins/sdd-kit/hooks/hooks.json) is the source of truth. If this table disagrees with that file, trust the file. All command hooks need `jq`.
+[`hooks/hooks.json`](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/plugins/sdd-kit/hooks/hooks.json) is the source of truth. If this table disagrees with that file, trust the file. All command hooks need `jq`.
 
 | Script | Event (matcher) | Blocks? | Purpose | Tune/disable |
 |--------|-----------------|---------|---------|--------------|
@@ -50,9 +50,11 @@ To turn off every hook temporarily, set `"disableAllHooks": true` in `settings.j
 
 In file-copy mode, `src/scripts/install-hooks.sh` merges the hooks into your existing `settings.json`. It needs `jq`, backs up the file first, and keeps your permissions and your own hooks. Re-running the installer replaces the kit's hooks instead of duplicating them. That also restores any kit hook you deleted, so use the env-var opt-outs above for hooks you want to keep off. Installer behavior is covered in [INSTALLATION.md](../docs/INSTALLATION.md).
 
-**Plugin mode.** The plugin's `hooks/hooks.json` is global. It applies to the whole session, subagents included, and you can't edit it per project. Use the env-var opt-outs or `disableAllHooks` instead. For what does and doesn't apply in plugin mode, see [plugin-mode.md](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/docs/reference/plugin-mode.md).
+**Plugin mode.** The plugin's `hooks/hooks.json` is global. It applies to the whole session, subagents included, and you can't edit it per project. Use the env-var opt-outs or `disableAllHooks` instead. For what does and doesn't apply in plugin mode, see [plugin-mode.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/plugin-mode.md).
 
 **Drift rule.** `src/settings/settings.template.json` must contain exactly the hooks in `hooks/hooks.json`, differing only in the script path prefix. `./verify.sh` fails the build if they drift. When you add or change a hook, edit both files.
+
+**Codex and Cursor.** Codex reads `.codex/hooks.json` and Cursor reads `.cursor/hooks.json` (or the plugin's hooks). The installer writes them with the script path for that host: `$CURSOR_PROJECT_DIR` for a Cursor project install, the plugin root variable in a Codex package. Codex requires you to trust every hook once through `/hooks`, and again whenever a hook changes. Cursor sets `failClosed` on `block-dangerous.sh` where it runs before the action (`beforeShellExecution` and `preToolUse` on writes), so an error in the guard blocks the shell command or the write instead of letting it through. `scan-secrets.sh` and `gate-guard.sh` run on `afterFileEdit`, after Cursor has written the file: there they report a finding to the agent but cannot block or undo the edit, so they carry no `failClosed`. These hosts register the same command hooks under their own event and tool names, read from the host table; prompt-type hooks are not carried. A hook whose event a host lacks is listed in the registration plan (`hostHookPlan().dropped` in `src/adapters/hooks/registrations.mjs`) rather than lost without a trace. Known gap: Cursor has no after-tool event for shell, web or MCP output, so `scan-injection.sh` does not run there. Any other missing security hook fails the tests.
 
 ## Add-on hooks
 
@@ -85,9 +87,12 @@ Reading the store stays allowed. Detect reads it with the Read tool on its liter
 - inline code that imports the script and calls its export: `node -e "import('<path>/trust-store.mjs').then((m) => m.approve('<source>'))"`;
 - a script file written first and run afterwards, or a file name assembled from variables or an environment value;
 - the main session (no `agent_id`) running `trust-store.mjs --approve` itself;
-- Write or Edit on the store when the session's permission mode already allows writes outside the project.
+- Write or Edit on the store when the session's permission mode already allows writes outside the project;
+- a symlink that points at the store, written through afterwards, and a glob that hides the file name but not its directory (`sdd-kit/*`).
 
-**Threat model (OD-17).** A stack manifest that is neither first-party nor approved by `/stack-trust` (hash-matched) never supplies a command, path, URL or other value that reaches a shell, a gate plan or an agent prompt as an instruction. The workflows also check every value Detect and the scaffold report against a strict pattern (paths, `devUrl`, `packageManager`, gate and script names, prose) before quoting it, and drop and log the rest. Skills verify the trust script against a hash shipped in the kit, never one stored in the project. The trust store lives in the home directory the OS user database records, so neither `$HOME` nor `CLAUDE_CONFIG_DIR` (both of which a project setting can change) can point it into a repository. A config directory that resolves inside the project (the current directory, its git toplevel, `CLAUDE_PROJECT_DIR`, or any ancestor of the current directory that holds `.git`) is refused as well: the user stacks and plugin list there count as unreadable, and `trust-store.mjs` writes no settings there. Out of scope: running workflows on a repository you do not trust. Agents read repository files and have Bash, so hostile repository content can steer them regardless of `/stack-trust`, which controls manifests, not repository content. Full rules: [stack-manifest.md](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/docs/reference/stack-manifest.md#agent-and-trust).
+The shell check is best-effort hardening. It does match the store name and paths without regard to case, reads the command with quotes and backslashes removed (so `--appro""ve` is still `--approve`), treats a glob that matches the store file name as naming it, and treats a shell command starting with `apply_patch` as a patch. It never blocks a read-only tool. Anything beyond that is a known limit, not a defect to chase: a stronger control needs the trust script itself to refuse, which this kit does not do.
+
+**Threat model (OD-17).** A stack manifest that is neither first-party nor approved by `/stack-trust` (hash-matched) never supplies a command, path, URL or other value that reaches a shell, a gate plan or an agent prompt as an instruction. The workflows also check every value Detect and the scaffold report against a strict pattern (paths, `devUrl`, `packageManager`, gate and script names, prose) before quoting it, and drop and log the rest. Skills verify the trust script against a hash shipped in the kit, never one stored in the project. The trust store lives in the home directory the OS user database records, so neither `$HOME` nor `CLAUDE_CONFIG_DIR` (both of which a project setting can change) can point it into a repository. A config directory that resolves inside the project (the current directory, its git toplevel, `CLAUDE_PROJECT_DIR`, or any ancestor of the current directory that holds `.git`) is refused as well: the user stacks and plugin list there count as unreadable, and `trust-store.mjs` writes no settings there. Out of scope: running workflows on a repository you do not trust. Agents read repository files and have Bash, so hostile repository content can steer them regardless of `/stack-trust`, which controls manifests, not repository content. Full rules: [stack-manifest.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/stack-manifest.md#agent-and-trust).
 
 What keeps an untrusted manifest's commands from running is the review step: an approval records the manifest's hash, and any edit to the manifest makes it untrusted again. Review the diff of `trusted-stacks.json` (or run `trust-store.mjs --list`) if an approval you did not give shows up.
 
@@ -101,7 +106,7 @@ Both are `prompt` hooks: a model reviews the context and either allows the stop 
 
 ## Agent-scoped hooks
 
-Don't put guardrails in agent frontmatter (`hooks:`, `permissionMode:`). Plugin mode ignores those fields without warning, so a guard defined there is off for plugin users. Put guards in the global hooks above, or restrict the agent's `tools`. Details are in [plugin-mode.md](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/docs/reference/plugin-mode.md).
+Don't put guardrails in agent frontmatter (`hooks:`, `permissionMode:`). Plugin mode ignores those fields without warning, so a guard defined there is off for plugin users. Put guards in the global hooks above, or restrict the agent's `tools`. Details are in [plugin-mode.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/plugin-mode.md).
 
 ## Operational scripts
 

@@ -5,8 +5,8 @@ argument-hint: "[--project=name] [--vault=path] [--mode=full|specs|reviews|docs]
 allowed-tools: Agent, Read, Write, Edit, Bash, Grep, Glob
 disable-model-invocation: true
 metadata:
-  version: 1.1
-  encoding: UTF-8
+  version: "1.1"
+  encoding: "UTF-8"
   last_verified: "2026-10-19"
   next_review: "2027-01-19"
 ---

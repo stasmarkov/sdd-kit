@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "node ./runtime/hooks/dispatch.mjs sessionStart --host cursor --hook session-start.sh"
+      },
+      {
+        "command": "node ./runtime/hooks/dispatch.mjs sessionStart --host cursor --hook stack-hint.sh"
+      },
+      {
+        "command": "node ./runtime/hooks/dispatch.mjs sessionStart --host cursor --hook post-compact-context.sh"
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "node ./runtime/hooks/dispatch.mjs beforeShellExecution --host cursor --hook block-dangerous.sh",
+        "failClosed": true
+      },
+      {
+        "command": "node ./runtime/hooks/dispatch.mjs beforeShellExecution --host cursor --hook check-commit-msg.sh"
+      },
+      {
+        "command": "node ./runtime/hooks/dispatch.mjs beforeShellExecution --host cursor --hook token-budget.sh"
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "node ./runtime/hooks/dispatch.mjs preToolUse --host cursor --hook token-budget.sh",
+        "matcher": "Read|Grep|Glob"
+      },
+      {
+        "command": "node ./runtime/hooks/dispatch.mjs preToolUse --host cursor --hook laravel-test-first.sh",
+        "matcher": "Write"
+      },
+      {
+        "command": "node ./runtime/hooks/dispatch.mjs preToolUse --host cursor --hook nextjs-test-first.sh",
+        "matcher": "Write"
+      },
+      {
+        "command": "node ./runtime/hooks/dispatch.mjs preToolUse --host cursor --hook block-dangerous.sh",
+        "matcher": "Write",
+        "failClosed": true
+      }
+    ],
+    "beforeSubmitPrompt": [
+      {
+        "command": "node ./runtime/hooks/dispatch.mjs beforeSubmitPrompt --host cursor --hook prompt-preflight.sh"
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "command": "node ./runtime/hooks/dispatch.mjs afterFileEdit --host cursor --hook scan-secrets.sh"
+      },
+      {
+        "command": "node ./runtime/hooks/dispatch.mjs afterFileEdit --host cursor --hook gate-guard.sh",
+        "timeout": 10
+      },
+      {
+        "command": "node ./runtime/hooks/dispatch.mjs afterFileEdit --host cursor --hook laravel-lint.sh",
+        "timeout": 30
+      },
+      {
+        "command": "node ./runtime/hooks/dispatch.mjs afterFileEdit --host cursor --hook nextjs-lint.sh",
+        "timeout": 30
+      }
+    ],
+    "sessionEnd": [
+      {
+        "command": "node ./runtime/hooks/dispatch.mjs sessionEnd --host cursor --hook session-end.sh",
+        "timeout": 15
+      }
+    ],
+    "stop": [
+      {
+        "command": "node ./runtime/hooks/dispatch.mjs stop --host cursor --hook lesson-nudge.sh",
+        "timeout": 15
+      }
+    ]
+  }
+}

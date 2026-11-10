@@ -3,7 +3,7 @@
 
 Drupal 11 add-on: drupal-11 skill with module scaffolding.
 
-- Version: 3.1.0
+- Version: 4.0.0
 - Keywords: drupal, php
 
 ## Install
@@ -16,4 +16,4 @@ Drupal 11 add-on: drupal-11 skill with module scaffolding.
 ## Learn more
 
 - [Interactive guide](https://stasmarkov.github.io/sdd-kit/)
-- [Worked example: Hireboard](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/docs/examples/job-board/README.md)
+- [Worked example: Hireboard](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/examples/job-board/README.md)

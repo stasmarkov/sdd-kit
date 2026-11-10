@@ -1,0 +1,62 @@
+[
+  {
+    "host": "cursor",
+    "file": "*",
+    "token": "CLAUDE_PROJECT_DIR",
+    "reason": "Cursor sets CLAUDE_PROJECT_DIR as an alias of CURSOR_PROJECT_DIR, so the Claude name resolves."
+  },
+  {
+    "host": "codex",
+    "file": "agents/code-explorer.md",
+    "token": "CLAUDE_PROJECT_DIR",
+    "reason": "The Detect recipe reads the variable only to decide whether the config directory sits inside the project; Codex leaves it unset and the recipe treats unset as empty."
+  },
+  {
+    "host": "codex",
+    "file": "skills/execute-task/SKILL.md",
+    "token": "CLAUDE_SKILL_DIR",
+    "reason": "Prose about a literal unexpanded placeholder; the commands themselves are rewritten to skill-relative paths."
+  },
+  {
+    "host": "codex",
+    "file": "skills/verification-gates/SKILL.md",
+    "token": "CLAUDE_SKILL_DIR",
+    "reason": "Prose about a literal unexpanded placeholder; the commands themselves are rewritten to skill-relative paths."
+  },
+  {
+    "host": "codex",
+    "file": "templates/stack-addon/hooks/hooks.json",
+    "token": "CLAUDE_PLUGIN_ROOT",
+    "reason": "Scaffold input for new-stack, copied unmapped: it becomes the hooks.json of a Claude add-on. Codex never reads it as hook config; the dispatcher reads hooks from stacks.json only."
+  },
+  {
+    "host": "codex",
+    "file": "templates/stack-addon/scripts/lint.sh",
+    "token": "CLAUDE_PROJECT_DIR",
+    "reason": "Scaffold input for new-stack, copied unmapped: it becomes an add-on hook script, and the dispatcher sets CLAUDE_PROJECT_DIR for every script it runs."
+  },
+  {
+    "host": "cursor",
+    "file": "skills/execute-task/SKILL.md",
+    "token": "CLAUDE_SKILL_DIR",
+    "reason": "Prose about a literal unexpanded placeholder; the commands themselves are rewritten to skill-relative paths."
+  },
+  {
+    "host": "cursor",
+    "file": "skills/verification-gates/SKILL.md",
+    "token": "CLAUDE_SKILL_DIR",
+    "reason": "Prose about a literal unexpanded placeholder; the commands themselves are rewritten to skill-relative paths."
+  },
+  {
+    "host": "cursor",
+    "file": "templates/stack-addon/hooks/hooks.json",
+    "token": "CLAUDE_PLUGIN_ROOT",
+    "reason": "Scaffold input for new-stack, copied unmapped: it becomes the hooks.json of a Claude add-on. Cursor never reads it as hook config; the dispatcher reads hooks from stacks.json only."
+  },
+  {
+    "host": "cursor",
+    "file": "templates/stack-addon/scripts/lint.sh",
+    "token": "CLAUDE_PROJECT_DIR",
+    "reason": "Scaffold input for new-stack, copied unmapped: it becomes an add-on hook script, and the dispatcher sets CLAUDE_PROJECT_DIR for every script it runs."
+  }
+]

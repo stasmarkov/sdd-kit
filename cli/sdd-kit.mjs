@@ -18,8 +18,8 @@ const SPEC_BOARD_CANDIDATES = [
   path.join(ROOT, 'plugins', 'sdd-kit', 'skills', 'spec-board', 'scripts', 'spec-board.mjs'),
 ];
 const INSTALLER = path.join(ROOT, 'install.sh');
-const GUIDE = path.join(ROOT, 'docs', 'guide', 'index.html');
-const EXAMPLE_BOARD = path.join(ROOT, 'docs', 'guide', 'example-board.html');
+// A source checkout keeps the guide in docs/guide/; the dist tree serves it from docs/.
+const GUIDE_DIRS = [path.join(ROOT, 'docs', 'guide'), path.join(ROOT, 'docs')];
 
 const USAGE = `SDD Kit launcher (${readVersion()})
 
@@ -135,15 +135,16 @@ function openInBrowser(file) {
 function runGuide(args) {
   const [target, ...rest] = args;
   if (target === '-h' || target === '--help') {
-    process.stdout.write(`Usage: ${NPX} guide [board]\nOpens docs/guide/index.html, or with "board" the worked example's spec board.\n`);
+    process.stdout.write(`Usage: ${NPX} guide [board]\nOpens the guide (docs/guide/index.html, then docs/index.html, then the Pages site), or with "board" the worked example's spec board.\n`);
     return 0;
   }
   if (rest.length || (target !== undefined && target !== 'board')) {
     process.stderr.write(`Unknown guide target "${args.join(' ')}". Use: ${NPX} guide [board]\n`);
     return 2;
   }
-  const local = target === 'board' ? EXAMPLE_BOARD : GUIDE;
-  const file = fs.existsSync(local) ? local : target === 'board' ? `${PAGES_URL}example-board.html` : PAGES_URL;
+  const page = target === 'board' ? 'example-board.html' : 'index.html';
+  const local = GUIDE_DIRS.map((dir) => path.join(dir, page)).find((candidate) => fs.existsSync(candidate));
+  const file = local || (target === 'board' ? `${PAGES_URL}example-board.html` : PAGES_URL);
   process.stdout.write(`${file}\n`);
   openInBrowser(file);
   return 0;

@@ -1,0 +1,794 @@
+{
+  "version": 1,
+  "entries": {
+    "laravel": {
+      "name": "laravel",
+      "order": 10,
+      "role": "backend",
+      "detect": "an \"artisan\" file + composer.json requiring laravel/framework",
+      "agent": {
+        "name": "laravel-backend-dev",
+        "plugin": "sdd-kit-laravel"
+      },
+      "conventions": [
+        "service-repository",
+        "DTO-first",
+        "invokable controllers",
+        "schema-first migrations"
+      ],
+      "gates": [
+        {
+          "name": "Pint",
+          "command": "./vendor/bin/pint --test",
+          "kind": "format",
+          "requires": "vendor/bin/pint"
+        },
+        {
+          "name": "PHPStan",
+          "command": "./vendor/bin/phpstan analyse --no-progress",
+          "kind": "types"
+        },
+        {
+          "name": "Pest/PHPUnit",
+          "command": "php artisan test",
+          "kind": "test"
+        }
+      ],
+      "debugPatterns": [
+        "dd(",
+        "dump(",
+        "ray("
+      ],
+      "sourceDirs": [
+        "app/",
+        "routes/",
+        "database/"
+      ],
+      "acceptance": "exercise the API routes over HTTP (curl / php artisan test)",
+      "execWrapper": {
+        "when": ".ddev/config.yaml",
+        "command": "ddev exec",
+        "requiresRunning": "ddev describe"
+      },
+      "contractSync": {
+        "routeListCommand": "php artisan route:list --json",
+        "template": "templates/contract-sync"
+      },
+      "e2eBackend": {
+        "convention": "a frontend's E2E run starts this API with APP_ENV=e2e on its own database and resets it with migrate:fresh in its setup project: do not run migrate:fresh yourself, and never point the run at the dev database or the Pest testing database",
+        "seed": "the E2ESeeder baseline (the users, OAuth clients and reference data the journey needs)"
+      },
+      "skills": {
+        "conventions": [
+          "service-repository",
+          "dto-first",
+          "api-design",
+          "schema-first"
+        ],
+        "testing": [
+          "pest-3"
+        ],
+        "scaffold": [
+          "laravel-12"
+        ]
+      },
+      "scaffold": {
+        "command": "laravel new",
+        "tooling": [
+          "Pest (pestphp/pest + the Laravel plugin, tests/Pest.php)",
+          "Larastan (larastan/larastan) with a phpstan.neon that includes the Larastan extension, sets a level (start at 5 or higher) and paths: [app]",
+          "Pint (laravel/pint) with a pint.json using the laravel preset"
+        ]
+      },
+      "ci": {
+        "services": [
+          "a database service for the tests when they need one"
+        ],
+        "setup": [
+          "php artisan migrate --force"
+        ]
+      },
+      "migrations": {
+        "status": "php artisan migrate:status",
+        "run": "php artisan migrate",
+        "fresh": "php artisan migrate:fresh --seed"
+      },
+      "audit": [
+        {
+          "name": "composer audit",
+          "command": "composer audit --format=json"
+        }
+      ],
+      "markers": [
+        "artisan"
+      ]
+    },
+    "drupal": {
+      "name": "drupal",
+      "order": 20,
+      "role": "backend",
+      "detect": "composer.json requiring drupal/core (often web/index.php)",
+      "agent": {
+        "name": "general-purpose"
+      },
+      "conventions": [
+        "module structure",
+        "services + dependency injection",
+        "plugins",
+        "hooks",
+        "config schema"
+      ],
+      "gates": [
+        {
+          "name": "PHPCS",
+          "command": "./vendor/bin/phpcs --standard=Drupal,DrupalPractice",
+          "kind": "lint"
+        },
+        {
+          "name": "PHPStan",
+          "command": "./vendor/bin/phpstan analyse",
+          "kind": "types"
+        },
+        {
+          "name": "PHPUnit",
+          "command": "./vendor/bin/phpunit",
+          "kind": "test"
+        }
+      ],
+      "debugPatterns": [
+        "dd(",
+        "dump(",
+        "kint(",
+        "var_dump("
+      ],
+      "sourceDirs": [
+        "web/modules/custom/",
+        "web/themes/custom/",
+        "modules/"
+      ],
+      "acceptance": "exercise the routes/controllers over HTTP",
+      "skills": {
+        "conventions": [
+          "drupal-11"
+        ]
+      },
+      "markers": [
+        "core/lib/Drupal.php",
+        "web/core/lib/Drupal.php"
+      ]
+    },
+    "nextjs": {
+      "name": "nextjs",
+      "order": 30,
+      "role": "frontend",
+      "detect": "package.json with \"next\" (next.config.*)",
+      "agent": {
+        "name": "nextjs-frontend-dev",
+        "plugin": "sdd-kit-nextjs"
+      },
+      "conventions": [
+        "App Router",
+        "Server Components",
+        "TypeScript",
+        "Tailwind"
+      ],
+      "gates": [
+        {
+          "name": "ESLint",
+          "command": "<pm> run lint",
+          "kind": "lint",
+          "lintFix": {
+            "flag": "--fix",
+            "fallback": "<pmx> eslint ."
+          },
+          "scriptFallback": {
+            "dependency": "next",
+            "manifest": "package.json",
+            "minMajor": 16,
+            "contains": "next lint",
+            "fallback": "<pmx> eslint ."
+          }
+        },
+        {
+          "name": "tsc",
+          "command": "<pmx> tsc --noEmit",
+          "kind": "types"
+        },
+        {
+          "name": "Build",
+          "command": "<pmx> next build",
+          "kind": "build"
+        },
+        {
+          "name": "Vitest",
+          "command": "<pmx> vitest run",
+          "kind": "test"
+        },
+        {
+          "name": "Playwright",
+          "command": "<pmx> playwright test",
+          "kind": "e2e"
+        },
+        {
+          "name": "tests",
+          "command": "<pm> test",
+          "kind": "test",
+          "unless": [
+            "vitest.config.*",
+            "playwright.config.*"
+          ],
+          "skipWhenScaffolded": true
+        }
+      ],
+      "debugPatterns": [
+        "console.log(",
+        "debugger"
+      ],
+      "sourceDirs": [
+        "app/",
+        "src/",
+        "components/",
+        "lib/"
+      ],
+      "devUrl": "http://localhost:3000",
+      "visual": "playwright-mcp",
+      "acceptance": "start the dev server and drive the user journey with the Playwright MCP browser tools",
+      "packageManagers": [
+        {
+          "name": "pnpm",
+          "lockfiles": [
+            "pnpm-lock.yaml"
+          ],
+          "run": "pnpm",
+          "exec": "pnpm exec"
+        },
+        {
+          "name": "yarn",
+          "lockfiles": [
+            "yarn.lock"
+          ],
+          "run": "yarn",
+          "exec": "yarn"
+        },
+        {
+          "name": "bun",
+          "lockfiles": [
+            "bun.lockb",
+            "bun.lock"
+          ],
+          "run": "bun",
+          "exec": "bunx"
+        },
+        {
+          "name": "npm",
+          "lockfiles": [
+            "package-lock.json"
+          ],
+          "run": "npm",
+          "exec": "npx"
+        }
+      ],
+      "skills": {
+        "conventions": [
+          "nextjs-15",
+          "typescript",
+          "tailwind-4",
+          "accessibility"
+        ],
+        "testing": [
+          "nextjs-testing"
+        ],
+        "scaffold": [
+          "nextjs-15"
+        ]
+      },
+      "scaffold": {
+        "command": "create-next-app",
+        "tooling": [
+          "ESLint (the create-next-app config)",
+          "TypeScript strict with `tsc --noEmit` clean",
+          "Vitest + React Testing Library (vitest.config.ts with jsdom, a setup file)",
+          "a `next build` that succeeds",
+          "Playwright (playwright.config.ts with the dev server as webServer, one smoke test) when the first slice has a UI journey"
+        ]
+      },
+      "ci": {
+        "services": [],
+        "setup": [
+          "<pm> install from the lockfile"
+        ]
+      },
+      "audit": [
+        {
+          "name": "package audit",
+          "command": "<pm> audit --json"
+        }
+      ],
+      "e2e": {
+        "configGlob": "playwright.config.*",
+        "file": "e2e/{slug}.spec.ts",
+        "run": "<pmx> playwright test <file>",
+        "convention": "one test per user-visible acceptance criterion, named with its id; role- and label-based locators, no sleeps; the nextjs-testing skill's references/playwright-e2e.md is the convention. playwright.config.* (webServer) and its setup project start and seed the isolated e2e environment on its own database: do not reset that database yourself, and never point the run at the dev database or the backend's test database.",
+        "seed": "the project's E2E baseline seed, or data created through the UI or API in the test; never production data"
+      },
+      "markers": [
+        "next.config.*"
+      ],
+      "notes": "`next build` and `next dev` share .next/ in Next.js 15, so a build gate can break the dev server that later phases browse; buildGateGuard tells the gate agent to check it.\nNext.js 16 (the lowest major satisfying the package.json `next` range): proxy.ts replaces middleware.ts, `next lint` is removed so the lint script must call the ESLint CLI and no gate calls `next lint`, Turbopack is the `next build` default, Node 20.9+. See the nextjs-15 skill, references/nextjs-16.md.",
+      "buildGateGuard": "Build gate and the dev server: `next build` writes the same .next/ directory a running `next dev` serves from, and later phases browse {devUrl}. Before the build, note whether {devUrl} responds (curl -s -o /dev/null -w '%{http_code}'). If next.config reads distDir from an environment variable, point the build at a separate directory (e.g. .next-gate) and delete it afterwards. Otherwise, after the build, curl {devUrl} again; if it responded before and does not now, restart the dev server in the background with the repo's dev script, wait until it responds, and say so in the Build gate's details.",
+      "contractSync": {
+        "consumer": true
+      }
+    },
+    "nuxt": {
+      "name": "nuxt",
+      "order": 40,
+      "role": "frontend",
+      "detect": "package.json with \"nuxt\" (nuxt.config.*)",
+      "agent": {
+        "name": "nextjs-frontend-dev",
+        "plugin": "sdd-kit-nextjs"
+      },
+      "conventions": [
+        "Vue 3",
+        "composition API",
+        "TypeScript",
+        "file-based routing"
+      ],
+      "gates": [
+        {
+          "name": "ESLint",
+          "command": "<pm> run lint",
+          "kind": "lint"
+        },
+        {
+          "name": "tests",
+          "command": "<pm> test",
+          "kind": "test"
+        }
+      ],
+      "debugPatterns": [
+        "console.log(",
+        "debugger"
+      ],
+      "sourceDirs": [
+        "app/",
+        "src/",
+        "components/",
+        "pages/",
+        "composables/",
+        "server/"
+      ],
+      "devUrl": "http://localhost:3000",
+      "visual": "playwright-mcp",
+      "acceptance": "start the dev server and drive the user journey with the Playwright MCP browser tools",
+      "packageManagers": [
+        {
+          "name": "pnpm",
+          "lockfiles": [
+            "pnpm-lock.yaml"
+          ],
+          "run": "pnpm",
+          "exec": "pnpm exec"
+        },
+        {
+          "name": "yarn",
+          "lockfiles": [
+            "yarn.lock"
+          ],
+          "run": "yarn",
+          "exec": "yarn"
+        },
+        {
+          "name": "bun",
+          "lockfiles": [
+            "bun.lockb",
+            "bun.lock"
+          ],
+          "run": "bun",
+          "exec": "bunx"
+        },
+        {
+          "name": "npm",
+          "lockfiles": [
+            "package-lock.json"
+          ],
+          "run": "npm",
+          "exec": "npx"
+        }
+      ],
+      "markers": [
+        "nuxt.config.*"
+      ]
+    },
+    "ios": {
+      "name": "ios",
+      "order": 50,
+      "role": "mobile",
+      "detect": "a Package.swift, an *.xcodeproj / *.xcworkspace, or Sources/**/*.swift",
+      "agent": {
+        "name": "ios-mobile-dev",
+        "plugin": "sdd-kit-ios"
+      },
+      "conventions": [
+        "SwiftUI + @Observable MVVM",
+        "async/await + Swift 6 strict concurrency",
+        "SwiftData persistence",
+        "URLSession networking"
+      ],
+      "gates": [
+        {
+          "name": "SwiftFormat",
+          "command": "swiftformat --lint .",
+          "kind": "format"
+        },
+        {
+          "name": "SwiftLint",
+          "command": "swiftlint --strict",
+          "kind": "lint"
+        },
+        {
+          "name": "Build",
+          "command": "set -o pipefail && xcodebuild build -scheme \"$SCHEME\" -destination \"generic/platform=iOS Simulator\" | xcbeautify",
+          "kind": "build"
+        },
+        {
+          "name": "Test",
+          "command": "set -o pipefail && xcodebuild test -scheme \"$SCHEME\" -destination \"platform=iOS Simulator,name=iPhone 16\" | xcbeautify",
+          "kind": "test"
+        }
+      ],
+      "debugPatterns": [
+        "print(",
+        "debugPrint(",
+        "NSLog("
+      ],
+      "sourceDirs": [
+        "Sources/"
+      ],
+      "visual": "simulator",
+      "acceptance": "boot a simulator (xcrun simctl boot), install & launch the app, assert via a UI test or an xcrun simctl screenshot",
+      "markers": [
+        "*.xcodeproj",
+        "Package.swift"
+      ],
+      "notes": "The ios-native and swift-testing skills come from the optional ios plugin and auto-load on *.swift."
+    }
+  },
+  "firstPartyFiles": {
+    "drupal": [
+      "drupal"
+    ],
+    "ios": [
+      "ios"
+    ],
+    "laravel": [
+      "laravel"
+    ],
+    "nextjs": [
+      "nextjs",
+      "nuxt"
+    ]
+  },
+  "firstPartyPlugins": [
+    "sdd-kit-drupal",
+    "sdd-kit-ios",
+    "sdd-kit-laravel",
+    "sdd-kit-nextjs"
+  ],
+  "presets": {
+    "sdd-kit-laravel-nextjs": [
+      "sdd-kit",
+      "sdd-kit-laravel",
+      "sdd-kit-nextjs",
+      "sdd-kit-devenv"
+    ]
+  },
+  "trustStores": {
+    "claude": ".claude/sdd-kit/trusted-stacks.json",
+    "codex": ".codex/sdd-kit/trusted-stacks.json",
+    "cursor": ".cursor/sdd-kit/trusted-stacks.json"
+  },
+  "hosts": {
+    "claude": {
+      "instructionFile": "CLAUDE.md",
+      "configDir": ".claude",
+      "configDirEnv": "CLAUDE_CONFIG_DIR",
+      "stacksDir": ".claude/stacks",
+      "stackAddonsDir": ".claude/stack-addons",
+      "rulesDir": ".claude/rules",
+      "rulesFormat": "md",
+      "skillsDir": ".claude/skills",
+      "agentsDir": ".claude/agents",
+      "agentsFormat": "md",
+      "trustStoreDir": "<OS home>/.claude/sdd-kit",
+      "pluginRootVar": "CLAUDE_PLUGIN_ROOT",
+      "projectDirVar": "CLAUDE_PROJECT_DIR",
+      "skillDirToken": "CLAUDE_SKILL_DIR",
+      "invocationPrefix": "/",
+      "agentNamespace": "sdd-kit:",
+      "browserToolPrefix": [
+        "mcp__playwright__",
+        "mcp__plugin_sdd-kit_playwright__"
+      ],
+      "browserGuide": null,
+      "tokens": {},
+      "hookEvents": {
+        "SessionStart": "SessionStart",
+        "SessionEnd": "SessionEnd",
+        "UserPromptSubmit": "UserPromptSubmit",
+        "PreToolUse": "PreToolUse",
+        "PostToolUse": "PostToolUse",
+        "PreCompact": "PreCompact",
+        "Stop": "Stop",
+        "SubagentStop": "SubagentStop",
+        "Notification": "Notification"
+      },
+      "hookTools": {
+        "Bash": "Bash",
+        "Write": "Write",
+        "Edit": "Edit"
+      },
+      "guardHooks": []
+    },
+    "codex": {
+      "instructionFile": "AGENTS.md",
+      "configDir": ".codex",
+      "configDirEnv": "CODEX_HOME",
+      "stacksDir": ".codex/stacks",
+      "stackAddonsDir": ".codex/stack-addons",
+      "rulesDir": null,
+      "rulesFormat": null,
+      "skillsDir": ".agents/skills",
+      "agentsDir": ".codex/agents",
+      "agentsFormat": "toml",
+      "trustStoreDir": "<OS home>/.codex/sdd-kit",
+      "pluginRootVar": "PLUGIN_ROOT",
+      "projectDirVar": null,
+      "skillDirToken": null,
+      "invocationPrefix": "$",
+      "agentNamespace": "",
+      "browserToolPrefix": [
+        "mcp__playwright__"
+      ],
+      "browserGuide": "BROWSER: when this step needs a browser (web UI, navigation, visual or end-to-end checks), drive it with the tools of the playwright MCP server (tool names start with mcp__playwright__): navigate, snapshot, click, type, fill form, wait, screenshot, console messages and network requests. Assert against the accessibility snapshot, use screenshots only as evidence, and check console errors and failed network requests on every page you visit. If the playwright server is unavailable, report the browser check as not run, never claim it passed. API-only checks use HTTP (curl) instead of a browser.",
+      "tokens": {
+        "${CLAUDE_CONFIG_DIR:-~/.claude}": "${CODEX_HOME:-~/.codex}",
+        "${CLAUDE_SKILL_DIR}/": "",
+        "${CLAUDE_PROJECT_DIR}": "$(git rev-parse --show-toplevel)",
+        "$CLAUDE_PROJECT_DIR": "$(git rev-parse --show-toplevel)",
+        "CLAUDE_CONFIG_DIR": "CODEX_HOME",
+        "trust-store.mjs check": "trust-store.mjs --host codex check",
+        "trust-store.mjs --list-untrusted": "trust-store.mjs --host codex --list-untrusted",
+        ".claude/sdd-kit/": ".codex/sdd-kit/",
+        ".claude/stack-addons/": ".codex/stack-addons/",
+        ".claude/stacks/": ".codex/stacks/",
+        ".claude/skills/": ".agents/skills/",
+        ".claude/agents/": ".codex/agents/",
+        ".claude/scripts/": ".codex/sdd-kit/scripts/",
+        ".claude/workflows/": ".codex/sdd-kit/workflows/",
+        ".claude/templates/": ".codex/sdd-kit/templates/",
+        ".claude/rules/": ".codex/sdd-kit/rules/",
+        ".claude/": ".codex/",
+        ".claude": ".codex",
+        "CLAUDE.md": "AGENTS.md",
+        "/sdd-kit:": "$",
+        "sdd-kit:": "",
+        "mcp__plugin_sdd-kit_playwright__": "mcp__playwright__"
+      },
+      "hookEvents": {
+        "SessionStart": "SessionStart",
+        "SessionEnd": "SessionEnd",
+        "UserPromptSubmit": "UserPromptSubmit",
+        "PreToolUse": "PreToolUse",
+        "PostToolUse": "PostToolUse",
+        "PreCompact": "PreCompact",
+        "Stop": "Stop",
+        "SubagentStop": null,
+        "Notification": null
+      },
+      "hookTools": {
+        "Bash": "Bash",
+        "Write": "apply_patch",
+        "Edit": "apply_patch"
+      },
+      "guardHooks": [
+        {
+          "event": "PreToolUse",
+          "matcher": "apply_patch",
+          "script": "block-dangerous.sh"
+        }
+      ]
+    },
+    "cursor": {
+      "instructionFile": "AGENTS.md",
+      "configDir": ".cursor",
+      "configDirEnv": null,
+      "stacksDir": ".cursor/stacks",
+      "stackAddonsDir": ".cursor/stack-addons",
+      "rulesDir": ".cursor/rules",
+      "rulesFormat": "mdc",
+      "skillsDir": ".cursor/skills",
+      "agentsDir": ".cursor/agents",
+      "agentsFormat": "md",
+      "trustStoreDir": "<OS home>/.cursor/sdd-kit",
+      "pluginRootVar": "CURSOR_PLUGIN_ROOT",
+      "projectDirVar": "CURSOR_PROJECT_DIR",
+      "skillDirToken": null,
+      "invocationPrefix": "/",
+      "agentNamespace": "",
+      "browserToolPrefix": [
+        "mcp__playwright__"
+      ],
+      "browserGuide": "BROWSER: when this step needs a browser (web UI, navigation, visual or end-to-end checks), drive it with the tools of the playwright MCP server (tool names start with mcp__playwright__): navigate, snapshot, click, type, fill form, wait, screenshot, console messages and network requests. Assert against the accessibility snapshot, use screenshots only as evidence, and check console errors and failed network requests on every page you visit. If the playwright server is unavailable, report the browser check as not run, never claim it passed. API-only checks use HTTP (curl) instead of a browser.",
+      "tokens": {
+        "${CLAUDE_CONFIG_DIR:-~/.claude}": "~/.cursor",
+        "${CLAUDE_SKILL_DIR}/": "",
+        "`echo \"$CLAUDE_CONFIG_DIR\"`, ": "",
+        "never `$HOME` or `CLAUDE_CONFIG_DIR`, which": "never `$HOME`, which",
+        "run `echo \"$CLAUDE_CONFIG_DIR\"`; a path in the output is `<config>`. Otherwise run `echo \"$HOME\"` and use that path plus `/.claude`.": "run `echo \"$HOME\"` and use that path plus `/.cursor`.",
+        "the path `echo \"$CLAUDE_CONFIG_DIR\"` prints, else the path `echo \"$HOME\"` prints plus `/.claude`": "the path `echo \"$HOME\"` prints plus `/.cursor`",
+        "trust-store.mjs check": "trust-store.mjs --host cursor check",
+        "trust-store.mjs --list-untrusted": "trust-store.mjs --host cursor --list-untrusted",
+        ".claude/sdd-kit/": ".cursor/sdd-kit/",
+        ".claude/stack-addons/": ".cursor/stack-addons/",
+        ".claude/stacks/": ".cursor/stacks/",
+        ".claude/skills/": ".cursor/skills/",
+        ".claude/agents/": ".cursor/agents/",
+        ".claude/scripts/": ".cursor/sdd-kit/scripts/",
+        ".claude/workflows/": ".cursor/sdd-kit/workflows/",
+        ".claude/templates/": ".cursor/sdd-kit/templates/",
+        "applies only to its `paths:` globs": "applies only to its `globs:`",
+        "`paths:` frontmatter": "`globs:` frontmatter",
+        "`paths:` cover": "`globs:` cover",
+        "`paths:` globs cover": "`globs:` cover",
+        ".claude/rules/": ".cursor/rules/",
+        ".claude/": ".cursor/",
+        ".claude": ".cursor",
+        "CLAUDE.md": "AGENTS.md",
+        "/sdd-kit:": "/",
+        "sdd-kit:": "",
+        "mcp__plugin_sdd-kit_playwright__": "mcp__playwright__"
+      },
+      "hookEvents": {
+        "SessionStart": "sessionStart",
+        "SessionEnd": "sessionEnd",
+        "UserPromptSubmit": "beforeSubmitPrompt",
+        "PreToolUse": "preToolUse",
+        "PostToolUse": null,
+        "PreCompact": null,
+        "Stop": "stop",
+        "SubagentStop": null,
+        "Notification": null,
+        "PreToolUse:Bash": "beforeShellExecution",
+        "PostToolUse:Write": "afterFileEdit"
+      },
+      "hookTools": {
+        "Bash": "Shell",
+        "Write": "Write",
+        "Edit": "Write"
+      },
+      "guardHooks": [
+        {
+          "event": "preToolUse",
+          "matcher": "Write",
+          "script": "block-dangerous.sh"
+        }
+      ]
+    }
+  },
+  "hooks": {
+    "core": [
+      {
+        "event": "SessionStart",
+        "script": "session-start.sh"
+      },
+      {
+        "event": "SessionStart",
+        "script": "stack-hint.sh"
+      },
+      {
+        "event": "SessionStart",
+        "matcher": "compact",
+        "script": "post-compact-context.sh"
+      },
+      {
+        "event": "PreToolUse",
+        "matcher": "Bash",
+        "script": "block-dangerous.sh"
+      },
+      {
+        "event": "PreToolUse",
+        "matcher": "Bash",
+        "script": "check-commit-msg.sh"
+      },
+      {
+        "event": "PreToolUse",
+        "matcher": "Read|Grep|Glob|Bash",
+        "script": "token-budget.sh"
+      },
+      {
+        "event": "UserPromptSubmit",
+        "script": "prompt-preflight.sh"
+      },
+      {
+        "event": "PostToolUse",
+        "matcher": "Write|Edit",
+        "script": "scan-secrets.sh"
+      },
+      {
+        "event": "PostToolUse",
+        "matcher": "Write|Edit",
+        "script": "gate-guard.sh",
+        "timeout": 10
+      },
+      {
+        "event": "PostToolUse",
+        "matcher": "Bash|WebFetch|mcp__.*",
+        "script": "scan-injection.sh",
+        "timeout": 5,
+        "async": true
+      },
+      {
+        "event": "SessionEnd",
+        "script": "session-end.sh",
+        "timeout": 15,
+        "async": true
+      },
+      {
+        "event": "Notification",
+        "script": "notify.sh"
+      },
+      {
+        "event": "Stop",
+        "script": "lesson-nudge.sh",
+        "timeout": 15
+      },
+      {
+        "event": "PreCompact",
+        "script": "pre-compact-save.sh"
+      }
+    ],
+    "addons": {
+      "laravel": {
+        "markers": [
+          "artisan"
+        ],
+        "hooks": [
+          {
+            "event": "PreToolUse",
+            "matcher": "Write|Edit",
+            "script": "laravel-test-first.sh"
+          },
+          {
+            "event": "PostToolUse",
+            "matcher": "Write|Edit",
+            "script": "laravel-lint.sh",
+            "timeout": 30,
+            "async": true
+          }
+        ]
+      },
+      "nextjs": {
+        "markers": [
+          "next.config.*",
+          "nuxt.config.*"
+        ],
+        "hooks": [
+          {
+            "event": "PreToolUse",
+            "matcher": "Write|Edit",
+            "script": "nextjs-test-first.sh"
+          },
+          {
+            "event": "PostToolUse",
+            "matcher": "Write|Edit",
+            "script": "nextjs-lint.sh",
+            "timeout": 30,
+            "async": true
+          }
+        ]
+      }
+    }
+  }
+}

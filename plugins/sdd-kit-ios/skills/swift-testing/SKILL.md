@@ -1,6 +1,6 @@
 ---
 name: swift-testing
-description: Testing iOS/Swift code with the Swift Testing framework (@Test / #expect) and XCTest. Use when writing unit tests for view models, clients, and Swift packages, or running xcodebuild test on the simulator.
+description: "Testing iOS/Swift code with the Swift Testing framework (@Test / #expect) and XCTest. Use when writing unit tests for view models, clients, and Swift packages, or running xcodebuild test on the simulator."
 allowed-tools: Read, Grep, Glob, Edit, Write, Bash
 paths:
   - "**/*Tests.swift"

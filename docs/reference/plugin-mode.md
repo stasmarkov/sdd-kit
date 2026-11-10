@@ -4,6 +4,8 @@ SDD Kit installs in two ways. Both ship the same agents, skills, workflows, and 
 scripts, but Claude Code treats plugin components differently from project files. This page
 covers what changes and which guardrails need extra care.
 
+This page is about Claude Code. For Codex and Cursor, see [hosts.md](hosts.md); their plugin and file-copy installs are in [INSTALLATION.md](installation.md#codex).
+
 ## Choosing a mode
 
 | | Plugin mode | File-copy mode |
@@ -107,7 +109,7 @@ All of the kit's hooks are global (`hooks/hooks.json`), so plugin mode keeps the
 | PostToolUse (Bash/WebFetch/MCP) | `scan-injection.sh` | Flag prompt-injection patterns |
 | SessionStart, UserPromptSubmit, PreCompact, SessionEnd, Stop, SubagentStop, Notification | various | Context load/save, prompt preflight, completion checks |
 
-`hooks/hooks.json` is the source of truth. If this table and that file disagree, trust the file. Every hook, with how to tune or disable it, is in [src/hooks/README.md](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/share/hooks/README.md).
+`hooks/hooks.json` is the source of truth. If this table and that file disagree, trust the file. Every hook, with how to tune or disable it, is in [src/hooks/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/share/hooks/README.md).
 
 ## Verifying an install
 

@@ -4,8 +4,8 @@ description: Research a technical problem or evaluate a technology inline — se
 argument-hint: "[problem-or-topic] | --tech | --compare --options=A,B,C | --approach=options"
 allowed-tools: Read, Grep, Glob, WebSearch, WebFetch
 metadata:
-  mcp-tools: context7
-  version: 2.0
+  mcp-tools: "context7"
+  version: "2.0"
 ---
 
 # /investigate

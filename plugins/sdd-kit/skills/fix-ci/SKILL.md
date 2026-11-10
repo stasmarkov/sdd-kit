@@ -5,7 +5,7 @@ argument-hint: "<PR number> | --run=<run-id | run URL> | local [\"<failing comma
 allowed-tools: Agent, Read, Edit, Bash, Grep, Glob, AskUserQuestion
 license: Apache-2.0
 metadata:
-  version: 1.0
+  version: "1.0"
   subagents: "devops-engineer"
   last_verified: "2026-10-19"
   next_review: "2027-01-19"

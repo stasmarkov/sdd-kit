@@ -18,6 +18,7 @@ Subagents are delegated to with the Agent tool (`subagent_type: "<name>"`). Add-
 | `performance-tester` | core | sonnet | Performance optimization for APIs and web frontends in any stack - measures a baseline and requires a target before changing anything,… |
 | `requirements-analyst` | core | sonnet | Elicit, validate, and formalize requirements - scores input clarity, asks targeted questions in bounded rounds, and writes testable… |
 | `security-auditor` | core | opus | MUST BE USED for security reviews, vulnerability detection, OWASP compliance checks, and application security validation. Use PROACTIVELY… |
+| `security-hunter` | core | sonnet | Read-only, memory-less security analyst for the security-audit workflow - hunts one coverage unit, critiques coverage, or casts one… |
 | `test-writer` | core | sonnet | Test writing for any stack (unit, integration, component and end-to-end) with schema-first and data-object-first patterns, using the… |
 | `ui-ux-advisor` | design plugin | sonnet | Frontend design patterns, Next.js architecture, React component design, and UI/UX recommendations. Use PROACTIVELY for frontend… |
 | `ios-mobile-dev` | ios plugin | sonnet | iOS mobile development agent with expertise in Swift 6, SwiftUI, @Observable MVVM, structured concurrency, and SwiftData persistence. Use… |

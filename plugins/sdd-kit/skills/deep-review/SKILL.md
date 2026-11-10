@@ -5,10 +5,10 @@ argument-hint: "[--depth=quick|standard|adversarial] [--task=ID | --spec=ID | --
 allowed-tools: Agent, Read, Write, Edit, Bash, Grep, Glob
 model: opus
 metadata:
-  mcp-tools: context7
-  version: 2.0
+  mcp-tools: "context7"
+  version: "2.0"
   subagents: "adversarial-reviewer, security-auditor"
-  blocking: true
+  blocking: "true"
 ---
 
 # /deep-review
@@ -201,6 +201,14 @@ Write the report to `.ai/reviews/REVIEW-{source}-{timestamp}.md` (get the timest
 - standard: text or JSON format in `references/standard-review.md`
 
 Print a short summary: depth, verdict, counts by severity, the top three findings, and the report path.
+
+Offer a deeper audit after the report, outside its format: when `--focus=security` is set, or the security-auditor returned a finding with its own severity critical or high, print exactly one line, never with `--format=json` (its output must stay parseable):
+
+```
+Offer (not started): Workflow({ name: 'security-audit', args: { scope: <the reviewed scope>, profile: 'quick', repo: '<the reviewed repo>' } })
+```
+
+`<the reviewed scope>` is `{ gitRange: '<base>...HEAD' }` when Phase 1 reviewed a branch or PR diff, and otherwise `{ paths: [...] }` with the Phase 1 files that still exist (at most 200; past that, the common parent directories). `<the reviewed repo>` is the repository path the review ran in, relative to the current directory (`.` for the current one), so a polyrepo audit targets the same repo. This skill only prints the line; it does not launch it.
 
 ---
 

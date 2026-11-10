@@ -4,8 +4,8 @@ description: Plan, write, and verify safe Laravel migrations. Use when adding/al
 license: Apache-2.0
 allowed-tools: Read, Write, Edit, Grep, Glob, Bash
 metadata:
-  category: frameworks
-  framework: laravel
+  category: "frameworks"
+  framework: "laravel"
   framework-version: "12.x"
 ---
 

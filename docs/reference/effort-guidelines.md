@@ -98,7 +98,7 @@ Based on Anthropic's multi-agent research system recommendations.
 | **New Feature** | 3-4 (`code-explorer` + `api-architect` + stack dev + `test-writer`) |
 | **Refactoring** | 2-3 (`code-explorer` + stack dev + `code-quality`) |
 | **Full Module** | 5+ (full lifecycle, e.g. the `ship-feature` workflow) |
-| **Security Audit** | 2-3 (`security-auditor` + `code-explorer` + `adversarial-reviewer`) |
+| **Security Audit** | single pass: 2-3 (`security-auditor` + `code-explorer` + `adversarial-reviewer`). Deep: the `security-audit` workflow runs recon on the standard tier, planning, critics and verifiers on deep, and hunters on standard. `budget` counts audit-agent invocations (4 recon, critics, one hunter per unit, verifiers), `maxUnits` caps hunters (default 12), and spend grows with hunters, so hand-offs use the quick profile |
 | **Performance** | 2-3 (`performance-tester` + `code-explorer` + stack dev) |
 
 "Stack dev" is the specialist the workflow's Detect phase picks from the stack registry, for example `laravel-backend-dev` or `nextjs-frontend-dev`. Schema work goes to `database-designer`; production log and monitoring analysis goes to `ops-analyst` in the `sdd-kit-ops` add-on. The full list is in the [agent index](agents.md).
@@ -139,7 +139,7 @@ Lead Orchestrator (1)
 4. **Use checkpointing** for tasks exceeding 100K tokens
 5. **Filter tool outputs** before returning to context
 
-The `token-budget` hook enforces part of this: it always blocks `find` from the filesystem root, and once context usage (hinted via `CLAUDE_CONTEXT_USAGE`) reaches `CLAUDE_BUDGET_THRESHOLD` (default 75%) it also blocks unbounded reads of huge files, unscoped repo-wide greps, open-ended globs, and dumping full logs. See the [hooks reference](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/share/hooks/README.md).
+The `token-budget` hook enforces part of this: it always blocks `find` from the filesystem root, and once context usage (hinted via `CLAUDE_CONTEXT_USAGE`) reaches `CLAUDE_BUDGET_THRESHOLD` (default 75%) it also blocks unbounded reads of huge files, unscoped repo-wide greps, open-ended globs, and dumping full logs. See the [hooks reference](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/share/hooks/README.md).
 
 ---
 
@@ -156,6 +156,18 @@ Workflow phases name a **tier**, never a model. The tiers live in one place — 
 Each workflow maps its phases to tiers (`const MODELS = phaseModels({ detect: 'standard', review: 'deep', … })`) and every `agent()` call receives **both** `model` and `effort`. Without that, an `agentType` agent inherits its own frontmatter model, and effort falls back to the session default — both change silently between releases.
 
 Agent frontmatter follows the same split: `haiku` + `effort: low` for mechanical agents (`changelog-writer`, `ops-analyst`), `opus` + `effort: high` for architects and reviewers.
+
+### Per-host model mapping
+
+The tier and effort are host-neutral; each host turns them into its own model choice, and this is the only page that does.
+
+| Host | How a tier is applied |
+|------|-----------------------|
+| Claude Code | `MODEL_TIERS` above: the tier names a model alias and an effort on every `agent()` call |
+| Codex | The bridge job packet carries the tier and effort as guidance; the subagent runs on the session's model, and the agent TOML files set no `model` |
+| Cursor | The bridge job packet carries the tier and effort as guidance; installed agents use `model: inherit`, so the subagent runs on the model selected in the session |
+
+To use a stronger model for `deep` jobs on Codex or Cursor, select it for the session before starting the run.
 
 ### Pinning: aliases vs. full IDs
 
@@ -269,6 +281,6 @@ Durable lessons belong in Claude Code auto memory or agent memory (`memory: proj
 - Framework Design Rules - Core principles
 - [Agent index](agents.md) - Available agents
 - [Skill index](skills.md) - Available skills
-- [Hooks reference](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/share/hooks/README.md) - `token-budget`, `pre-compact-save`, and the rest
+- [Hooks reference](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/share/hooks/README.md) - `token-budget`, `pre-compact-save`, and the rest
 
 Source: Anthropic Engineering, "How we built our multi-agent research system".

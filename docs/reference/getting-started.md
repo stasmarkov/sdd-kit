@@ -67,7 +67,7 @@ or copied into your project's `.claude/` without cloning (from your project root
 npx github:stasmarkov/sdd-kit install --project
 ```
 
-Both modes, add-ons, and a clone-based install are in [INSTALLATION.md](installation.md). The core is stack-agnostic: stack add-ons supply detection, gates and specialists, and a new stack is one manifest (`/new-stack`). Plugin mode: the preset above, or the core plus your stack's add-ons (see INSTALLATION). File-copy mode installs the default stack add-ons, and `--stack` changes the choice. Coming from 2.x: [Upgrading from 2.x](installation.md#upgrading-from-2x); see [Stacks and roadmap](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/README.md).
+Both modes, add-ons, and a clone-based install are in [INSTALLATION.md](installation.md). The core is stack-agnostic: stack add-ons supply detection, gates and specialists, and a new stack is one manifest (`/new-stack`). Plugin mode: the preset above, or the core plus your stack's add-ons (see INSTALLATION). File-copy mode installs the default stack add-ons, and `--stack` changes the choice. Coming from 2.x: [Upgrading from 2.x](installation.md#upgrading-from-2x); see [Stacks and roadmap](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/README.md).
 
 Start Claude Code in your project root and run the health check:
 
@@ -89,7 +89,7 @@ It reports PASS / WARN / FAIL for the directory layout, skill discovery, agents,
 Claude only knows what the code shows and what you tell it. Three files carry that context. The file-copy installer creates them and never overwrites files that already exist. Plugin mode creates none of them, so plugin users fetch the templates once from the project root (skip any file you already have):
 
 ```bash
-base=https://raw.githubusercontent.com/stasmarkov/sdd-kit/v2.1.0/share
+base=https://raw.githubusercontent.com/stasmarkov/sdd-kit/v4.0.0/share
 curl -fsSL "$base/CLAUDE.template.md" -o CLAUDE.md
 curl -fsSL "$base/templates/AGENTS.template.md" -o AGENTS.md
 mkdir -p .claude/rules
@@ -152,7 +152,7 @@ With no code yet, start with `/product-brief`: it turns the idea into a brief (u
 Route: feature. Adds a new behavior (refund guard on top-up orders); no existing behavior is broken.
 ```
 
-You confirm it or pick another route. The routes are trivial, bug, decision, feature, shipped code, and new app. The full route tree is in the [README](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/README.md). Nothing launches until you confirm.
+You confirm it or pick another route. The routes are trivial, bug, decision, feature, shipped code, new app, and security audit (a deep, coverage-led audit of existing code). The full route tree is in the [README](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/README.md). Nothing launches until you confirm.
 
 **2. Inputs up front.** Background workflows can't stop to ask questions, so `/sdd` asks two to four now: single repo or backend and frontend paths, the dev URL for browser checks, and anything specific to the route.
 
@@ -204,6 +204,26 @@ It also writes a manual test plan to `manual-test.md` in the spec folder. Run it
 `/sdd` proposes the bug route. It asks for repro steps, expected versus actual behavior, and what nearby must not change, then launches the `fix-bug` workflow. No spec is written, because the pipeline itself is the spec. It reproduces the bug, verifies the root cause, writes a failing regression test, applies a minimal fix, and runs the gates. The verdict is `FIXED` only when the regression test goes from red to green and the original report no longer reproduces. Otherwise it is `NOT-RESOLVED` or `NEEDS-INFO`.
 
 Per-workflow phases and `Workflow()` arguments are in [USAGE-EXAMPLES.md](usage-examples.md).
+
+## 3a. First session on Codex or Cursor
+
+After installing for another host (see [INSTALLATION](installation.md)), the first session is the same as below with that host's invocation prefix.
+
+On Codex (an unverified preview), where hooks need approval in `/hooks` once after install:
+
+```
+$framework-doctor
+$sdd PROJ-123
+```
+
+Background workflows run through the bridge: `/sdd` starts the run with the `workflow_start` tool and your host's subagents do the work. Each step is described in [workflow-bridge.md](workflow-bridge.md).
+
+On Cursor (also a preview), in Agent chat:
+
+```
+/framework-doctor
+/sdd PROJ-123
+```
 
 ## 4. Working interactively instead
 

@@ -4,10 +4,11 @@
  *
  * Reads a JSON answers file and writes either
  *   --target src/plugins  src/plugins/<name>/ in the SDD Kit source checkout (then regenerates the registry), or
- *   --target project      .claude/stacks/<name>.json plus .claude/stack-addons/sdd-kit-<name>/ in a project.
+ *   --target project      .claude/stacks/<name>.json plus .claude/stack-addons/sdd-kit-<name>/ in a project
+ *                         (the directories of the host named by --host; claude by default).
  *
  * Usage:
- *   new-stack.mjs --answers <file> --target src/plugins|project [--root <dir>] [--interactive] [--templates <dir>]
+ *   new-stack.mjs --answers <file> --target src/plugins|project [--root <dir>] [--interactive] [--templates <dir>] [--host <name>]
  *
  * Answers file (JSON):
  *   name       stack key, lowercase with hyphens (for example "acme")
@@ -48,6 +49,9 @@ export const TEMPLATE_FILES = [
 
 /** Raised for answers or environments the scaffold refuses; the message already carries its fix. */
 export class ScaffoldError extends Error {}
+
+/** Raised for a --host value outside the host table; main() exits 2 for it. */
+export class UnknownHostError extends ScaffoldError {}
 
 const fail = (message) => {
   throw new ScaffoldError(message);
@@ -304,11 +308,11 @@ function firstPartyKeys(registry) {
  * @param {string} root project root
  * @returns {string} message with its Fix
  */
-function firstPartyKeyMessage(key, registry, root) {
+function firstPartyKeyMessage(key, registry, root, stacksDir = '.claude/stacks') {
   const taken = new Set(firstPartyKeys(registry));
   const suggestion = ['-app', '-stack', '-project', '-custom', '-2', '-3']
     .map((s) => `${key}${s}`)
-    .find((n) => NAME_PATTERN.test(n) && !taken.has(n) && !fs.existsSync(path.join(root, '.claude/stacks', `${n}.json`)));
+    .find((n) => NAME_PATTERN.test(n) && !taken.has(n) && !fs.existsSync(path.join(root, stacksDir, `${n}.json`)));
   const example = suggestion ? `, for example "${suggestion}"` : '';
   const head = `answers: "${key}" is a first-party stack key; workflows ignore a project manifest that reuses it.`;
   const dir = registry && typeof registry.addonFor === 'function' ? registry.addonFor(key).dir : null;
@@ -361,13 +365,14 @@ function runStep(cmd, args, cwd) {
 
 /**
  * Runs the scaffold.
- * @param {{ answers: object, target: 'src/plugins'|'project', root: string, templates?: string, ask?: Function }} opts
+ * @param {{ answers: object, target: 'src/plugins'|'project', root: string, templates?: string, ask?: Function, host?: string }} opts
  * @returns {Promise<{ lines: string[], written: string[] }>} next-step lines and the written files (repo-relative)
  */
-export async function scaffold({ answers, target, root, templates, ask = null }) {
+export async function scaffold({ answers, target, root, templates, ask = null, host = 'claude' }) {
   if (!['src/plugins', 'project'].includes(target)) fail('target: use "src/plugins" or "project". Fix: pass --target src/plugins or --target project.');
   const a = await normalizeAnswers(answers, { ask });
   const registry = await loadRegistry();
+  const dirs = hostDirs(registry, host);
   const templateDir = findTemplates(templates);
   const overlay = target === 'project';
   const lines = [];
@@ -379,9 +384,9 @@ export async function scaffold({ answers, target, root, templates, ask = null })
     if (message) fail(message);
     if (fs.existsSync(path.join(root, 'src/plugins', a.name))) fail(`src/plugins/${a.name} already exists. Fix: choose another name or remove the directory.`);
   } else if (firstPartyKeys(registry).includes(a.name)) {
-    fail(firstPartyKeyMessage(a.name, registry, root));
-  } else if (fs.existsSync(path.join(root, '.claude/stacks', `${a.name}.json`))) {
-    fail(`.claude/stacks/${a.name}.json already exists. Fix: choose another name or delete the file.`);
+    fail(firstPartyKeyMessage(a.name, registry, root, dirs.stacksDir));
+  } else if (fs.existsSync(path.join(root, dirs.stacksDir, `${a.name}.json`))) {
+    fail(`${dirs.stacksDir}/${a.name}.json already exists. Fix: choose another name or delete the file.`);
   }
 
   const version = overlay ? PROJECT_VERSION : fs.readFileSync(path.join(root, 'VERSION'), 'utf8').trim();
@@ -415,20 +420,51 @@ export async function scaffold({ answers, target, root, templates, ask = null })
     );
   } else {
     const manifestFile = files.find((f) => f.rel === 'stack.json');
-    writeAll(path.join(root, '.claude/stacks'), [{ ...manifestFile, rel: `${a.name}.json` }]);
-    written.push(`.claude/stacks/${a.name}.json`);
+    const addonDir = `${dirs.stackAddonsDir}/sdd-kit-${a.name}`;
+    writeAll(path.join(root, dirs.stacksDir), [{ ...manifestFile, rel: `${a.name}.json` }]);
+    written.push(`${dirs.stacksDir}/${a.name}.json`);
     const addonFiles = files.filter((f) => f.rel !== 'stack.json');
-    writeAll(path.join(root, '.claude/stack-addons', `sdd-kit-${a.name}`), addonFiles);
-    written.push(...addonFiles.map((f) => `.claude/stack-addons/sdd-kit-${a.name}/${f.rel}`));
+    writeAll(path.join(root, addonDir), addonFiles);
+    written.push(...addonFiles.map((f) => `${addonDir}/${f.rel}`));
     lines.push(
-      `Created .claude/stacks/${a.name}.json and .claude/stack-addons/sdd-kit-${a.name}/ (version ${version}).`,
+      `Created ${dirs.stacksDir}/${a.name}.json and ${addonDir}/ (version ${version}).`,
       'Next:',
-      `  1. Plugin mode: start Claude Code with --plugin-dir .claude/stack-addons/sdd-kit-${a.name}. The agent, the conventions skill and the lint hook load only that way.`,
-      '  2. File-copy mode: the add-on is not installed by copying; workflows fall back to the default agent and log the fallback.',
-      '  3. Run /stack-trust to approve the manifest. Its gate commands do not run until you do.',
+      ...dirs.installHint(addonDir),
+      `  3. Run ${dirs.trustCommand} to approve the manifest. Its gate commands do not run until you do.`,
     );
   }
   return { lines, written };
+}
+
+/**
+ * The project directories and next-step text of a host, from the registry's host table.
+ * @param {object|null} registry the loaded stacks.js module, or null when it could not be imported
+ * @param {string} host host name
+ * @returns {{ stacksDir: string, stackAddonsDir: string, trustCommand: string, installHint: (addonDir: string) => string[] }}
+ * @throws {UnknownHostError} when the host is not in the table
+ */
+function hostDirs(registry, host) {
+  const table = (registry && registry.HOSTS) || { claude: { stacksDir: '.claude/stacks', stackAddonsDir: '.claude/stack-addons' } };
+  const entry = Object.prototype.hasOwnProperty.call(table, host) ? table[host] : null;
+  if (!entry) throw new UnknownHostError(`host: unknown host "${host}". Fix: use one of: ${Object.keys(table).join(', ')}.`);
+  if (host === 'claude') {
+    return {
+      ...entry,
+      trustCommand: '/stack-trust',
+      installHint: (addonDir) => [
+        `  1. Plugin mode: start Claude Code with --plugin-dir ${addonDir}. The agent, the conventions skill and the lint hook load only that way.`,
+        '  2. File-copy mode: the add-on is not installed by copying; workflows fall back to the default agent and log the fallback.',
+      ],
+    };
+  }
+  return {
+    ...entry,
+    trustCommand: `the stack-trust skill (trust-store.mjs --host ${host})`,
+    installHint: (addonDir) => [
+      `  1. The agent and the conventions skill in ${addonDir} load only when that directory is installed as a ${host} plugin.`,
+      '  2. Without it, workflows fall back to the default agent and log the fallback.',
+    ],
+  };
 }
 
 function updateCategories(root, a) {
@@ -452,6 +488,7 @@ function parseArgs(argv) {
     else if (arg === '--target') opts.target = value();
     else if (arg === '--root') opts.root = path.resolve(value() || '.');
     else if (arg === '--templates') opts.templates = path.resolve(value() || '.');
+    else if (arg === '--host') opts.host = value();
     else if (arg === '--interactive') opts.interactive = true;
     else return { error: `unknown argument ${arg}` };
   }
@@ -462,7 +499,7 @@ function parseArgs(argv) {
 async function main(argv) {
   const { opts, error } = parseArgs(argv);
   if (error) {
-    console.error(`new-stack: ${error}. Usage: new-stack.mjs --answers <file> --target src/plugins|project [--root <dir>] [--interactive]`);
+    console.error(`new-stack: ${error}. Usage: new-stack.mjs --answers <file> --target src/plugins|project [--root <dir>] [--interactive] [--host <name>]`);
     return 2;
   }
   let rl = null;
@@ -473,13 +510,13 @@ async function main(argv) {
   }
   try {
     const answers = JSON.parse(fs.readFileSync(opts.answersFile, 'utf8'));
-    const { lines } = await scaffold({ answers, target: opts.target, root: opts.root, templates: opts.templates, ask });
+    const { lines } = await scaffold({ answers, target: opts.target, root: opts.root, templates: opts.templates, ask, host: opts.host });
     for (const l of lines) console.log(l);
     return 0;
   } catch (e) {
     if (e instanceof ScaffoldError) console.error(e.message);
     else console.error(`new-stack: ${e.message}. Fix: check the answers file path and that it holds valid JSON.`);
-    return 1;
+    return e instanceof UnknownHostError ? 2 : 1;
   } finally {
     if (rl) rl.close();
   }

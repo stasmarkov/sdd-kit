@@ -7,7 +7,7 @@ Skills, plugins, and MCP servers run with your privileges, and their payload is 
 
 ## Policy
 
-1. **No vendoring.** `src/skills/` contains only skills owned by this kit. `verify.sh` fails if a manifest entry appears there.
+1. **No vendoring.** `src/skills/` contains only skills owned by this kit, with one recorded exception: the Vendored section below. `verify.sh` fails if a manifest entry appears there.
 2. **Pinned or nothing.** An entry is installable only with `status: "pinned"`, a full 40-character commit SHA, a source URL, and a license. `verify.sh` enforces this. Tags and branches move; commits don't.
    A `manual` entry is reviewed, licensed, and pinned for reference, but the installer leaves it to the user (it pre-approves risky tools or sits outside the kit's scope).
 3. **Unlicensed means unverified.** Without a license we have no right to redistribute, and without a source we can't review updates. Such entries stay listed (so people know they exist and what they cost) but are never installed by the kit.
@@ -36,5 +36,13 @@ Skills, plugins, and MCP servers run with your privileges, and their payload is 
 | `stripe-projects` (skill) | manual | Same repo and license. Reviewed but not installed by `--third-party`: it pre-approves `Bash(stripe *)` and `brew install` of the Stripe CLI, and provisioning a stack overlaps `greenfield-build`. To use it, copy `providers/claude/plugin/skills/stripe-projects` from the pinned commit into `.claude/skills/stripe-projects` together with the repo's `LICENSE`. |
 | Playwright MCP (`@playwright/mcp`, MCP server) | shipped by default, pinned by version | Microsoft, Apache-2.0. Unlike the other entries it ships with the kit: it is pinned by version in the plugin's `.mcp.json`, `src/mcp-configs/development.json`, and the installer, and runs `--headless --isolated` (no window, no profile kept between runs). **Risk:** it drives a real browser against the URLs a workflow is given, so it can submit forms and reach anything that browser can reach. Give workflows a local or staging dev URL, never production. |
 | Plugin: skill-creator | recommended | Anthropic's official skill authoring and eval plugin (Apache-2.0), from `claude-plugins-official`. Useful when you write or tune your own skills; not needed to build products. Earlier versions of this kit vendored a copy without its LICENSE. |
+
+## Vendored
+
+| Skill | Source | Pinned commit | License |
+|---|---|---|---|
+| `security-audit` | [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill) | `c1c8a8c1471069fb0e188eeaff69b8e8db6564a8` | MIT, Copyright (c) 2025-2026 Cloudflare, Inc. (`src/skills/security-audit/LICENSE`) |
+
+It is copied, not recommended, because the `security-audit` workflow checks its validators and references against pinned hashes, which only works for files the kit ships. Changes from upstream are path-only and listed in `src/skills/security-audit/references/upstream-changes.md`. It is not in `src/settings/third-party.json`. Rationale: ADR 0005.
 
 The installer prints the plugin commands. It never runs them: installing a plugin is a decision for each user or team.

@@ -8,7 +8,7 @@ By the end of [chapter 10](10-qa-and-docs-browse-journey.md), Alex Rivera had sh
 4. Everyone runs the same pinned kit version, and Cursor or Codex users get the same gates.
 5. A short team rhythm, then the next ticket (HIRE-11) as an exercise.
 
-This chapter links to the existing docs instead of repeating them: [multi-repo.md](../../reference/multi-repo.md), evals.md, [team-marketplace.md](../../reference/team-marketplace.md), [USAGE-EXAMPLES.md section 14](../../reference/usage-examples.md#14-recurring-checks-with-routines) and the [contract-sync README](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/plugins/sdd-kit-laravel/templates/contract-sync/README.md).
+This chapter links to the existing docs instead of repeating them: [multi-repo.md](../../reference/multi-repo.md), evals.md, [team-marketplace.md](../../reference/team-marketplace.md), [USAGE-EXAMPLES.md section 14](../../reference/usage-examples.md#14-recurring-checks-with-routines) and the [contract-sync README](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/plugins/sdd-kit-laravel/templates/contract-sync/README.md).
 
 > Artifacts for this chapter: `artifacts/api/.github/workflows/export-routes.yml`, `artifacts/web/.github/workflows/contract-sync.yml` and `artifacts/kit-fork/evals/hireboard-routing/` (`case.yaml`, `prompt.md`, `graders/routes-correct.md`).
 
@@ -126,7 +126,7 @@ Two choices are deliberate:
 - **No `--strict` yet.** The README advises starting with warnings allowed. Today there are no unused routes. HIRE-11 will add employer posting endpoints, and while its api PR is merged but its web PR is still open, those routes show up as `unused-by-frontend` warnings. That is the expected state between the two merges, and it should not block anyone. Turn on `--strict` (or `CONTRACT_SYNC_STRICT=1`) once the team trusts the check.
 - **The check reads api `main`, not the api PR.** This is what makes "api merged first" enforceable. A web PR that calls an endpoint the api has not merged yet fails with `missing-in-backend` until the api PR lands.
 
-Optional, but the agent benefits: the README's [PostToolUse hook](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/plugins/sdd-kit-laravel/templates/contract-sync/README.md#as-a-claude-code-hook) runs the checker whenever Claude edits `routes/*.php` or `endpoints.ts`, so drift surfaces in the same turn. The same section describes a lighter pre-push variant (`node scripts/contract-sync.mjs || exit 1`). Hireboard adds the pre-push hook in `web/` only. In the workspace, the hook would need a fresh `route-list.json` on every edit, and the README recommends `routesFile` in that case.
+Optional, but the agent benefits: the README's [PostToolUse hook](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/plugins/sdd-kit-laravel/templates/contract-sync/README.md#as-a-claude-code-hook) runs the checker whenever Claude edits `routes/*.php` or `endpoints.ts`, so drift surfaces in the same turn. The same section describes a lighter pre-push variant (`node scripts/contract-sync.mjs || exit 1`). Hireboard adds the pre-push hook in `web/` only. In the workspace, the hook would need a fresh `route-list.json` on every edit, and the README recommends `routesFile` in that case.
 
 ---
 
@@ -239,15 +239,15 @@ Alex installed the kit in plugin mode in [chapter 01](01-workspace-and-install.m
         "source": "git-subdir",
         "url": "stasmarkov/sdd-kit",
         "path": "plugins/sdd-kit",
-        "ref": "v3.1.0",
-        "sha": "<40-char commit sha of v3.1.0>"
+        "ref": "v4.0.0",
+        "sha": "<40-char commit sha of v4.0.0>"
       }
     }
   ]
 }
 ```
 
-Get the sha with `git ls-remote https://github.com/stasmarkov/sdd-kit refs/tags/v3.1.0` (use the `^{}` line for an annotated tag), and validate with `claude plugin validate ./claude-marketplace`. The catalog points at upstream rather than the fork, because the fork's only difference is the eval case. Add the stack add-ons the same way (next paragraph). Hireboard has no on-call rotation, so it does not need `sdd-kit-ops`.
+Get the sha with `git ls-remote https://github.com/stasmarkov/sdd-kit refs/tags/v4.0.0` (use the `^{}` line for an annotated tag), and validate with `claude plugin validate ./claude-marketplace`. The catalog points at upstream rather than the fork, because the fork's only difference is the eval case. Add the stack add-ons the same way (next paragraph). Hireboard has no on-call rotation, so it does not need `sdd-kit-ops`.
 
 Commit the same `.claude/settings.json` to **both** `api/` and `web/` (section 2 of the doc):
 

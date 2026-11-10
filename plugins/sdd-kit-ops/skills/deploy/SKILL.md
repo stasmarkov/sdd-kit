@@ -5,8 +5,8 @@ argument-hint: "[environment] | --staging | --production | --dry-run"
 allowed-tools: Bash, Read, Grep
 disable-model-invocation: true
 metadata:
-  mcp-tools: datadog, sentry
-  version: 1.2
+  mcp-tools: "datadog, sentry"
+  version: "1.2"
   subagents: "deployment-specialist"
 ---
 

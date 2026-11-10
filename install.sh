@@ -10,6 +10,8 @@
 #   ./install.sh --project --with=ops,ios      # add optional add-ons (derived from src/plugins/*/.claude-plugin/plugin.json)
 #   ./install.sh --project --prune             # on an upgrade, remove installed add-ons that are not selected
 #   ./install.sh --project --dry-run           # show what would change, write nothing
+#   ./install.sh --host codex --project        # install for another host (claude is the default)
+#   ./install.sh --host codex --project --uninstall
 #   ./install.sh --help
 #
 # Installs merge into the target: files the framework does not own are never
@@ -195,8 +197,8 @@ ${BOLD}OPTIONS${NC}
   --project          Install into ./.claude (this project only)
   --user             Install into ~/.claude (all projects)
   --minimal          Spec-driven core only: /sdd, product-brief, write-spec, execute-task,
-                     simple-task, run-tests, deep-review, open-pr, stack-trust, the six workflows, the
-                     core agents they hand off to, hooks, plus the selected stack add-ons
+                     simple-task, run-tests, deep-review, open-pr, stack-trust, security-audit, the
+                     workflows, the core agents they hand off to, hooks, plus the selected stack add-ons
   --full             Everything in core (default)
   --stack=LIST       Stack add-ons to install: ${STACK_ADDONS// /, }, or none (core only).
                      Default: laravel,nextjs on a fresh install, the installed stacks on an upgrade
@@ -204,6 +206,8 @@ ${BOLD}OPTIONS${NC}
   --prune            On an upgrade, remove installed add-ons that are not selected
                      (user-modified files are kept; everything removed is backed up)
   --third-party      Also install pinned third-party skills (docs/third-party.md)
+  --host=NAME        Target host: claude (default), codex or cursor. Other hosts take --project|--user,
+                     --stack, --with, --prune, --dry-run, --yes and --uninstall only
   --dry-run          Show added / updated / removed files; change nothing
   --yes, -y          Don't ask for confirmation
   --help, -h         Show this help
@@ -336,6 +340,47 @@ parse_stack_list() {
         return 1
     fi
     return 0
+}
+
+# Hosts other than claude install through their adapter: node <adapters>/<host>/install.mjs.
+# The adapters live at src/adapters in a checkout and at adapters in the dist tree.
+delegate_host() {
+    local host="$1"; shift
+    local arg adapters
+    case "$host" in
+        claude) return 0 ;;
+        codex|cursor) ;;
+        *) log_error "Unknown host '$host'. Fix: use --host=claude, --host=codex or --host=cursor."; exit 2 ;;
+    esac
+    for arg in "$@"; do
+        case "$arg" in
+            --minimal|--full|--third-party)
+                log_error "$arg only applies to --host=claude. Fix: drop $arg, or drop --host to install for Claude Code."
+                exit 2 ;;
+        esac
+    done
+    if [[ -d "$SCRIPT_DIR/src/adapters" ]]; then adapters="$SCRIPT_DIR/src/adapters"; else adapters="$SCRIPT_DIR/adapters"; fi
+    if [[ ! -f "$adapters/$host/install.mjs" ]]; then
+        log_error "The $host installer is not available in this tree ($adapters/$host/install.mjs). Fix: run install.sh from a checkout that ships it."
+        exit 2
+    fi
+    command -v node >/dev/null 2>&1 || { log_error "node is required for --host=$host. Install Node.js 20 or newer."; exit 1; }
+    exec node "$adapters/$host/install.mjs" "$@"
+}
+
+# Splits --host out of the arguments: sets HOST and leaves the rest in HOST_ARGS.
+split_host_arg() {
+    HOST=claude; HOST_ARGS=()
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --host=*) HOST="${1#*=}" ;;
+            --host)
+                if [[ $# -lt 2 ]]; then log_error "--host needs a value. Fix: use --host=claude, --host=codex or --host=cursor."; exit 2; fi
+                HOST="$2"; shift ;;
+            *) HOST_ARGS+=("$1") ;;
+        esac
+        shift
+    done
 }
 
 parse_args() {
@@ -564,16 +609,17 @@ stage_core() {
         # Everything the /sdd main path hands off to: product-brief and write-spec spawn
         # requirements-analyst, execute-task delegates to test-writer and code-quality
         # (and to the stack developers the selected add-ons bring), and ends with
-        # deep-review (adversarial-reviewer, security-auditor) and open-pr.
+        # deep-review (adversarial-reviewer, security-auditor) and open-pr; the security-audit
+        # workflow, always copied, runs its hunters and verifiers as security-hunter.
         mkdir -p "$STAGE/agents" "$STAGE/templates"
         local agent
         for agent in code-explorer test-writer code-quality \
-            requirements-analyst adversarial-reviewer security-auditor; do
+            requirements-analyst adversarial-reviewer security-auditor security-hunter; do
             cp "$CORE_DIR/agents/$agent.md" "$STAGE/agents/"
         done
         stage_skill_dirs "$CORE_DIR/skills" sdd product-brief write-spec execute-task simple-task \
             run-tests deep-review open-pr verification-gates source-verification framework-doctor \
-            api-design api-security stack-trust
+            api-design api-security stack-trust security-audit
         cp -R "$SHARE_DIR/templates/context" "$SHARE_DIR/templates/specs" "$STAGE/templates/"
     else
         cp -R "$CORE_DIR/agents" "$STAGE/agents"
@@ -947,7 +993,11 @@ EOF
 }
 
 main() {
-    parse_args "$@"
+    split_host_arg "$@"
+    if [[ "$HOST" != claude ]]; then
+        delegate_host "$HOST" ${HOST_ARGS[@]+"${HOST_ARGS[@]}"}
+    fi
+    parse_args ${HOST_ARGS[@]+"${HOST_ARGS[@]}"}
     printf "${BOLD}SDD Kit v%s${NC}\n\n" "$VERSION"
     detect_interactive
 

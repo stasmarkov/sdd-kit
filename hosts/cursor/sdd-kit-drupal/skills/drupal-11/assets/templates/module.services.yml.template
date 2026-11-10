@@ -1,0 +1,11 @@
+services:
+  {{MODULE_MACHINE_NAME}}.{{SERVICE_NAME}}:
+    class: Drupal\{{MODULE_MACHINE_NAME}}\Service\{{SERVICE_CLASS}}
+    arguments:
+      - '@entity_type.manager'
+      - '@current_user'
+      - '@logger.channel.{{MODULE_MACHINE_NAME}}'
+
+  logger.channel.{{MODULE_MACHINE_NAME}}:
+    parent: logger.channel_base
+    arguments: ['{{MODULE_MACHINE_NAME}}']

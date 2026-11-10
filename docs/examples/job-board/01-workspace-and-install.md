@@ -117,7 +117,7 @@ cp ~/tools/sdd-kit/share/templates/multi-repo/CLAUDE.md CLAUDE.md   # Step 4 fir
 Simulated output (abridged):
 
 ```
-SDD Kit v3.1.0
+SDD Kit v4.0.0
 Target: /Users/alex/work/hireboard/.claude (project, full)
   added:   ...  (skills, agents, workflows, scripts, templates, settings.json)
   updated: 0
@@ -148,6 +148,15 @@ After chapter 02, run the same installer once inside each repo, each with its ow
 then `cd ../web && .../install.sh --project --stack=nextjs`). That is the point where per-repo `AGENTS.md` and `.claude/rules/` are created. Never run it
 inside `api/` or `web/` before chapter 02 (F1). The flags (`--stack=`, `--with=`, `--user`, `--yes`) are
 documented in [INSTALLATION.md, file-copy mode](../../reference/installation.md#file-copy-mode).
+
+**Other hosts.** Hireboard's team could also use Codex or Cursor (both an unverified preview in 4.0; see [hosts.md](../../reference/hosts.md)). The file-copy install is the same dry run, then the real run, with `--host`:
+
+```bash
+~/tools/sdd-kit/install.sh --host codex --project --stack=laravel,nextjs --dry-run
+~/tools/sdd-kit/install.sh --host cursor --project --stack=laravel,nextjs --dry-run
+```
+
+Drop `--dry-run` to install. Skills then start with `$` on Codex (`$sdd`) and `/` on Cursor (`/sdd`). Run each repo's installer after chapter 02, as above.
 
 ---
 
@@ -318,7 +327,7 @@ for you. Type it:
 Simulated output, plugin mode (abridged):
 
 ```
-Framework Health Check (plugin, v3.1.0)
+Framework Health Check (plugin, v4.0.0)
 =======================================
 [WARN] Golden Triangle: docs/context/ not found
 [SKIP] Manifest integrity: plugin mode

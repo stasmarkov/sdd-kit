@@ -1,0 +1,104 @@
+{
+  "name": "sdd-kit",
+  "interface": {
+    "displayName": "SDD Kit"
+  },
+  "plugins": [
+    {
+      "name": "sdd-kit",
+      "source": {
+        "source": "local",
+        "path": "./hosts/codex/sdd-kit"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "sdd-kit-design",
+      "source": {
+        "source": "local",
+        "path": "./hosts/codex/sdd-kit-design"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "sdd-kit-devenv",
+      "source": {
+        "source": "local",
+        "path": "./hosts/codex/sdd-kit-devenv"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "sdd-kit-drupal",
+      "source": {
+        "source": "local",
+        "path": "./hosts/codex/sdd-kit-drupal"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "sdd-kit-ios",
+      "source": {
+        "source": "local",
+        "path": "./hosts/codex/sdd-kit-ios"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "sdd-kit-laravel",
+      "source": {
+        "source": "local",
+        "path": "./hosts/codex/sdd-kit-laravel"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "sdd-kit-nextjs",
+      "source": {
+        "source": "local",
+        "path": "./hosts/codex/sdd-kit-nextjs"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "sdd-kit-ops",
+      "source": {
+        "source": "local",
+        "path": "./hosts/codex/sdd-kit-ops"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

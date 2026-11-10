@@ -4,6 +4,8 @@ Use this setup when the backend (Laravel API) and frontend (Next.js) are separat
 each with its own CI and its own `CLAUDE.md`. You get one Claude session that sees both
 repos and the contract between them.
 
+The same layout works on Codex and Cursor, which read `AGENTS.md` in each repo and in the workspace root; see [hosts.md](hosts.md). Install per repo with `install.sh --host codex|cursor --project`.
+
 ## Layout
 
 The examples use one backend and one frontend. For several frontends, add one folder per frontend

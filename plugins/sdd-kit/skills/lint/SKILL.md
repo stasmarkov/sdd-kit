@@ -4,7 +4,7 @@ description: Run the code quality suite - the format, lint and type-check gates 
 argument-hint: "--fix | --check | --backend | --frontend"
 allowed-tools: Bash, Read, Grep, Glob
 metadata:
-  version: 2.0
+  version: "2.0"
 ---
 
 # /lint

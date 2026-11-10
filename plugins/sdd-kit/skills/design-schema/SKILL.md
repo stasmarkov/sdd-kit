@@ -4,8 +4,8 @@ description: Design a database schema - entities, columns and types, relationshi
 argument-hint: "[entity-name] | --entity=[name] | --migration"
 allowed-tools: Read, Write, Edit, Grep, Glob
 metadata:
-  mcp-tools: context7
-  version: 1.2
+  mcp-tools: "context7"
+  version: "1.2"
   subagents: "database-designer"
   last_verified: "2026-10-19"
   next_review: "2027-01-19"

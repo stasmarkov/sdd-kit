@@ -5,7 +5,7 @@ argument-hint: "[--verbose] [--fix]"
 allowed-tools: Bash, Read, Glob, Grep
 disable-model-invocation: true
 metadata:
-  version: 2.0
+  version: "2.0"
 ---
 
 # /framework-doctor
@@ -141,7 +141,7 @@ done < "$MANIFEST"
 A workflow is invoked by its `meta.name`, so a forked copy that kept the framework's name shadows or is shadowed by the original unpredictably.
 
 ```bash
-FRAMEWORK_WF="ship-feature create-spec fix-bug qa-and-docs tech-research greenfield-build"
+FRAMEWORK_WF="ship-feature create-spec fix-bug qa-and-docs tech-research greenfield-build security-audit"
 for f in .claude/workflows/*.js "$HOME/.claude/workflows/"*.js; do
   [ -f "$f" ] || continue
   name=$(grep -m1 -oE "name:[[:space:]]*['\"][^'\"]+['\"]" "$f" | sed -E "s/.*['\"]([^'\"]+)['\"]/\1/")

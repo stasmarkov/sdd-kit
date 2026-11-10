@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../index.html">SDD Kit</a>
-    <span class="badge">v3.1.0</span>
+    <span class="badge">v4.0.0</span>
   </div>
   <div class="header-actions">
     <a class="btn" href="../index.html"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
@@ -35,6 +35,7 @@
 <p>Use this setup when the backend (Laravel API) and frontend (Next.js) are separate git repositories,
 each with its own CI and its own <code>CLAUDE.md</code>. You get one Claude session that sees both
 repos and the contract between them.</p>
+<p>The same layout works on Codex and Cursor, which read <code>AGENTS.md</code> in each repo and in the workspace root; see <a href="hosts.html">hosts.md</a>. Install per repo with <code>install.sh --host codex|cursor --project</code>.</p>
 <h3 id="layout">Layout</h3>
 <p>The examples use one backend and one frontend. For several frontends, add one folder per frontend
 (see <a href="#several-frontends" data-anchor="several-frontends">Several frontends</a>).</p>
@@ -105,7 +106,7 @@ that fails:</p>
 <p>Hand-maintained type mirrors cause the most cross-repo bugs. A typical example: frontend enum
 literals that type-check but don&#39;t match the backend values.</p>
   </article>
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/docs/reference/multi-repo.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/multi-repo.md">View the Markdown source</a></p>
 </main>
 <script>
   (function () {

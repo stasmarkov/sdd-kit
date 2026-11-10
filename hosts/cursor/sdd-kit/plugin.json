@@ -1,0 +1,5 @@
+{
+  "name": "sdd-kit",
+  "version": "4.0.0",
+  "description": "SDD Kit: spec-driven development for Claude Code. A single /sdd front door, background multi-agent workflows with stack detection and cross-repo support, specialized agents and skills, and guardrail hooks. Stack-agnostic core; stacks come from add-on plugins."
+}

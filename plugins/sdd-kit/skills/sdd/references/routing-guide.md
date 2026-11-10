@@ -48,7 +48,7 @@ Code is reviewed and ready to merge?               → /open-pr --spec=<ref>
 
 Spec references accept a folder name, legacy number (`0042`), ticket key (`PROJ-123`), or timestamp id (`20261018-1430`).
 
-## Beyond the six routes
+## Beyond the routes
 
 The rest of the lifecycle, in order. Each row points at a component that already exists.
 
@@ -61,7 +61,7 @@ The rest of the lifecycle, in order. Each row points at a component that already
 | Verify | Tests, lint, red CI, split repos drifting apart | `/run-tests` (`--frontend` for the frontend suite, `--e2e` for browser journeys), `/lint`, `/fix-ci`, contract-sync for a backend + frontend in separate repos (the backend add-on's `contractSync.template`: `.claude/templates/<addon>/contract-sync/` in a file-copy install, `templates/contract-sync/` in the add-on root in plugin mode) |
 | Performance | A slow endpoint or page | Measure a baseline and set a target first; then the `performance-tester` agent (backend) or the stack add-on's profiler skill (frontend, Core Web Vitals and bundles) |
 | Cleanup | Dead code, unused classes or exports | the `code-quality` agent in cleanup mode (reports with evidence), then `/sdd` (trivial) or `/write-spec --type=refactor` for the removal |
-| Security and dependencies | Before a release, after adding packages or auth code | `/security-scan`, `/upgrade-deps` (`--audit-only` to report) |
+| Security and dependencies | Before a release, after adding packages or auth code | `/security-scan`, `/upgrade-deps` (`--audit-only` to report); a full, coverage-led audit with verified findings is `/sdd` → security-audit (comparison: USAGE-EXAMPLES section 10) |
 | Review and PR | Code is done | `/deep-review`, then `/open-pr --spec=<ref>` |
 | Release | Cutting a version | `/changelog --release <version>` (readiness, semver, CHANGELOG, tag), then `/deploy` from the ops add-on |
 | Operate | Production is degraded | ops add-on `/health-check`, `/incident`; the root-cause fix goes to `/sdd` (bug route), a recurring class to `/learn` |

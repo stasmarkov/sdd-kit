@@ -1,0 +1,12 @@
+{
+  "name": "sdd-kit-{{NAME}}",
+  "version": "{{VERSION}}",
+  "description": "{{TITLE}} add-on: {{AGENT_NAME}} agent, a conventions skill, a lint hook and the {{NAME}} stack manifest.",
+  "author": {
+    "name": "{{AUTHOR}}"
+  },
+  "license": "MIT",
+  "keywords": [
+    "{{NAME}}"
+  ]
+}

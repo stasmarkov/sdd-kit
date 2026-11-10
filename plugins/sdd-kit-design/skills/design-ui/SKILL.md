@@ -1,11 +1,11 @@
 ---
 name: design-ui
-description: Design UI/UX for a feature: user flows, component hierarchy, state management, data fetching, and accessibility, producing a UI design document for Next.js. Use when planning a new page, component, or user flow before implementation, or when reviewing existing frontend component patterns.
+description: "Design UI/UX for a feature: user flows, component hierarchy, state management, data fetching, and accessibility, producing a UI design document for Next.js. Use when planning a new page, component, or user flow before implementation, or when reviewing existing frontend component patterns."
 argument-hint: "[feature-name] | --component=[name] | --page=[name]"
 allowed-tools: Read, Write, Edit, Grep, Glob
 metadata:
-  mcp-tools: context7
-  version: 1.1
+  mcp-tools: "context7"
+  version: "1.1"
   subagents: "ui-ux-advisor"
 ---
 

@@ -5,7 +5,7 @@ argument-hint: "--create=[table] | --modify=[table] | --rollback [--step=N] | --
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 disable-model-invocation: true
 metadata:
-  version: 1.2
+  version: "1.2"
   subagents: "database-designer"
   last_verified: "2026-10-19"
   next_review: "2027-01-19"

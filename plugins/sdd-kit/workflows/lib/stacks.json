@@ -483,5 +483,312 @@
       "sdd-kit-nextjs",
       "sdd-kit-devenv"
     ]
+  },
+  "trustStores": {
+    "claude": ".claude/sdd-kit/trusted-stacks.json",
+    "codex": ".codex/sdd-kit/trusted-stacks.json",
+    "cursor": ".cursor/sdd-kit/trusted-stacks.json"
+  },
+  "hosts": {
+    "claude": {
+      "instructionFile": "CLAUDE.md",
+      "configDir": ".claude",
+      "configDirEnv": "CLAUDE_CONFIG_DIR",
+      "stacksDir": ".claude/stacks",
+      "stackAddonsDir": ".claude/stack-addons",
+      "rulesDir": ".claude/rules",
+      "rulesFormat": "md",
+      "skillsDir": ".claude/skills",
+      "agentsDir": ".claude/agents",
+      "agentsFormat": "md",
+      "trustStoreDir": "<OS home>/.claude/sdd-kit",
+      "pluginRootVar": "CLAUDE_PLUGIN_ROOT",
+      "projectDirVar": "CLAUDE_PROJECT_DIR",
+      "skillDirToken": "CLAUDE_SKILL_DIR",
+      "invocationPrefix": "/",
+      "agentNamespace": "sdd-kit:",
+      "browserToolPrefix": [
+        "mcp__playwright__",
+        "mcp__plugin_sdd-kit_playwright__"
+      ],
+      "browserGuide": null,
+      "tokens": {},
+      "hookEvents": {
+        "SessionStart": "SessionStart",
+        "SessionEnd": "SessionEnd",
+        "UserPromptSubmit": "UserPromptSubmit",
+        "PreToolUse": "PreToolUse",
+        "PostToolUse": "PostToolUse",
+        "PreCompact": "PreCompact",
+        "Stop": "Stop",
+        "SubagentStop": "SubagentStop",
+        "Notification": "Notification"
+      },
+      "hookTools": {
+        "Bash": "Bash",
+        "Write": "Write",
+        "Edit": "Edit"
+      },
+      "guardHooks": []
+    },
+    "codex": {
+      "instructionFile": "AGENTS.md",
+      "configDir": ".codex",
+      "configDirEnv": "CODEX_HOME",
+      "stacksDir": ".codex/stacks",
+      "stackAddonsDir": ".codex/stack-addons",
+      "rulesDir": null,
+      "rulesFormat": null,
+      "skillsDir": ".agents/skills",
+      "agentsDir": ".codex/agents",
+      "agentsFormat": "toml",
+      "trustStoreDir": "<OS home>/.codex/sdd-kit",
+      "pluginRootVar": "PLUGIN_ROOT",
+      "projectDirVar": null,
+      "skillDirToken": null,
+      "invocationPrefix": "$",
+      "agentNamespace": "",
+      "browserToolPrefix": [
+        "mcp__playwright__"
+      ],
+      "browserGuide": "BROWSER: when this step needs a browser (web UI, navigation, visual or end-to-end checks), drive it with the tools of the playwright MCP server (tool names start with mcp__playwright__): navigate, snapshot, click, type, fill form, wait, screenshot, console messages and network requests. Assert against the accessibility snapshot, use screenshots only as evidence, and check console errors and failed network requests on every page you visit. If the playwright server is unavailable, report the browser check as not run, never claim it passed. API-only checks use HTTP (curl) instead of a browser.",
+      "tokens": {
+        "${CLAUDE_CONFIG_DIR:-~/.claude}": "${CODEX_HOME:-~/.codex}",
+        "${CLAUDE_SKILL_DIR}/": "",
+        "${CLAUDE_PROJECT_DIR}": "$(git rev-parse --show-toplevel)",
+        "$CLAUDE_PROJECT_DIR": "$(git rev-parse --show-toplevel)",
+        "CLAUDE_CONFIG_DIR": "CODEX_HOME",
+        "trust-store.mjs check": "trust-store.mjs --host codex check",
+        "trust-store.mjs --list-untrusted": "trust-store.mjs --host codex --list-untrusted",
+        ".claude/sdd-kit/": ".codex/sdd-kit/",
+        ".claude/stack-addons/": ".codex/stack-addons/",
+        ".claude/stacks/": ".codex/stacks/",
+        ".claude/skills/": ".agents/skills/",
+        ".claude/agents/": ".codex/agents/",
+        ".claude/scripts/": ".codex/sdd-kit/scripts/",
+        ".claude/workflows/": ".codex/sdd-kit/workflows/",
+        ".claude/templates/": ".codex/sdd-kit/templates/",
+        ".claude/rules/": ".codex/sdd-kit/rules/",
+        ".claude/": ".codex/",
+        ".claude": ".codex",
+        "CLAUDE.md": "AGENTS.md",
+        "/sdd-kit:": "$",
+        "sdd-kit:": "",
+        "mcp__plugin_sdd-kit_playwright__": "mcp__playwright__"
+      },
+      "hookEvents": {
+        "SessionStart": "SessionStart",
+        "SessionEnd": "SessionEnd",
+        "UserPromptSubmit": "UserPromptSubmit",
+        "PreToolUse": "PreToolUse",
+        "PostToolUse": "PostToolUse",
+        "PreCompact": "PreCompact",
+        "Stop": "Stop",
+        "SubagentStop": null,
+        "Notification": null
+      },
+      "hookTools": {
+        "Bash": "Bash",
+        "Write": "apply_patch",
+        "Edit": "apply_patch"
+      },
+      "guardHooks": [
+        {
+          "event": "PreToolUse",
+          "matcher": "apply_patch",
+          "script": "block-dangerous.sh"
+        }
+      ]
+    },
+    "cursor": {
+      "instructionFile": "AGENTS.md",
+      "configDir": ".cursor",
+      "configDirEnv": null,
+      "stacksDir": ".cursor/stacks",
+      "stackAddonsDir": ".cursor/stack-addons",
+      "rulesDir": ".cursor/rules",
+      "rulesFormat": "mdc",
+      "skillsDir": ".cursor/skills",
+      "agentsDir": ".cursor/agents",
+      "agentsFormat": "md",
+      "trustStoreDir": "<OS home>/.cursor/sdd-kit",
+      "pluginRootVar": "CURSOR_PLUGIN_ROOT",
+      "projectDirVar": "CURSOR_PROJECT_DIR",
+      "skillDirToken": null,
+      "invocationPrefix": "/",
+      "agentNamespace": "",
+      "browserToolPrefix": [
+        "mcp__playwright__"
+      ],
+      "browserGuide": "BROWSER: when this step needs a browser (web UI, navigation, visual or end-to-end checks), drive it with the tools of the playwright MCP server (tool names start with mcp__playwright__): navigate, snapshot, click, type, fill form, wait, screenshot, console messages and network requests. Assert against the accessibility snapshot, use screenshots only as evidence, and check console errors and failed network requests on every page you visit. If the playwright server is unavailable, report the browser check as not run, never claim it passed. API-only checks use HTTP (curl) instead of a browser.",
+      "tokens": {
+        "${CLAUDE_CONFIG_DIR:-~/.claude}": "~/.cursor",
+        "${CLAUDE_SKILL_DIR}/": "",
+        "`echo \"$CLAUDE_CONFIG_DIR\"`, ": "",
+        "never `$HOME` or `CLAUDE_CONFIG_DIR`, which": "never `$HOME`, which",
+        "run `echo \"$CLAUDE_CONFIG_DIR\"`; a path in the output is `<config>`. Otherwise run `echo \"$HOME\"` and use that path plus `/.claude`.": "run `echo \"$HOME\"` and use that path plus `/.cursor`.",
+        "the path `echo \"$CLAUDE_CONFIG_DIR\"` prints, else the path `echo \"$HOME\"` prints plus `/.claude`": "the path `echo \"$HOME\"` prints plus `/.cursor`",
+        "trust-store.mjs check": "trust-store.mjs --host cursor check",
+        "trust-store.mjs --list-untrusted": "trust-store.mjs --host cursor --list-untrusted",
+        ".claude/sdd-kit/": ".cursor/sdd-kit/",
+        ".claude/stack-addons/": ".cursor/stack-addons/",
+        ".claude/stacks/": ".cursor/stacks/",
+        ".claude/skills/": ".cursor/skills/",
+        ".claude/agents/": ".cursor/agents/",
+        ".claude/scripts/": ".cursor/sdd-kit/scripts/",
+        ".claude/workflows/": ".cursor/sdd-kit/workflows/",
+        ".claude/templates/": ".cursor/sdd-kit/templates/",
+        "applies only to its `paths:` globs": "applies only to its `globs:`",
+        "`paths:` frontmatter": "`globs:` frontmatter",
+        "`paths:` cover": "`globs:` cover",
+        "`paths:` globs cover": "`globs:` cover",
+        ".claude/rules/": ".cursor/rules/",
+        ".claude/": ".cursor/",
+        ".claude": ".cursor",
+        "CLAUDE.md": "AGENTS.md",
+        "/sdd-kit:": "/",
+        "sdd-kit:": "",
+        "mcp__plugin_sdd-kit_playwright__": "mcp__playwright__"
+      },
+      "hookEvents": {
+        "SessionStart": "sessionStart",
+        "SessionEnd": "sessionEnd",
+        "UserPromptSubmit": "beforeSubmitPrompt",
+        "PreToolUse": "preToolUse",
+        "PostToolUse": null,
+        "PreCompact": null,
+        "Stop": "stop",
+        "SubagentStop": null,
+        "Notification": null,
+        "PreToolUse:Bash": "beforeShellExecution",
+        "PostToolUse:Write": "afterFileEdit"
+      },
+      "hookTools": {
+        "Bash": "Shell",
+        "Write": "Write",
+        "Edit": "Write"
+      },
+      "guardHooks": [
+        {
+          "event": "preToolUse",
+          "matcher": "Write",
+          "script": "block-dangerous.sh"
+        }
+      ]
+    }
+  },
+  "hooks": {
+    "core": [
+      {
+        "event": "SessionStart",
+        "script": "session-start.sh"
+      },
+      {
+        "event": "SessionStart",
+        "script": "stack-hint.sh"
+      },
+      {
+        "event": "SessionStart",
+        "matcher": "compact",
+        "script": "post-compact-context.sh"
+      },
+      {
+        "event": "PreToolUse",
+        "matcher": "Bash",
+        "script": "block-dangerous.sh"
+      },
+      {
+        "event": "PreToolUse",
+        "matcher": "Bash",
+        "script": "check-commit-msg.sh"
+      },
+      {
+        "event": "PreToolUse",
+        "matcher": "Read|Grep|Glob|Bash",
+        "script": "token-budget.sh"
+      },
+      {
+        "event": "UserPromptSubmit",
+        "script": "prompt-preflight.sh"
+      },
+      {
+        "event": "PostToolUse",
+        "matcher": "Write|Edit",
+        "script": "scan-secrets.sh"
+      },
+      {
+        "event": "PostToolUse",
+        "matcher": "Write|Edit",
+        "script": "gate-guard.sh",
+        "timeout": 10
+      },
+      {
+        "event": "PostToolUse",
+        "matcher": "Bash|WebFetch|mcp__.*",
+        "script": "scan-injection.sh",
+        "timeout": 5,
+        "async": true
+      },
+      {
+        "event": "SessionEnd",
+        "script": "session-end.sh",
+        "timeout": 15,
+        "async": true
+      },
+      {
+        "event": "Notification",
+        "script": "notify.sh"
+      },
+      {
+        "event": "Stop",
+        "script": "lesson-nudge.sh",
+        "timeout": 15
+      },
+      {
+        "event": "PreCompact",
+        "script": "pre-compact-save.sh"
+      }
+    ],
+    "addons": {
+      "laravel": {
+        "markers": [
+          "artisan"
+        ],
+        "hooks": [
+          {
+            "event": "PreToolUse",
+            "matcher": "Write|Edit",
+            "script": "laravel-test-first.sh"
+          },
+          {
+            "event": "PostToolUse",
+            "matcher": "Write|Edit",
+            "script": "laravel-lint.sh",
+            "timeout": 30,
+            "async": true
+          }
+        ]
+      },
+      "nextjs": {
+        "markers": [
+          "next.config.*",
+          "nuxt.config.*"
+        ],
+        "hooks": [
+          {
+            "event": "PreToolUse",
+            "matcher": "Write|Edit",
+            "script": "nextjs-test-first.sh"
+          },
+          {
+            "event": "PostToolUse",
+            "matcher": "Write|Edit",
+            "script": "nextjs-lint.sh",
+            "timeout": 30,
+            "async": true
+          }
+        ]
+      }
+    }
   }
 }

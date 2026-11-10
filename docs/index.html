@@ -25,6 +25,7 @@
     <span class="badge" id="version"></span>
   </div>
   <div class="header-actions">
+    <label class="host-select"><span class="btn-label">Host</span> <select id="host-select" class="btn" aria-label="Host"></select></label>
     <button type="button" class="btn search-button" id="search-button" aria-label="Search">
       <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10.5 10.5 14 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span class="btn-label">Search</span> <kbd id="search-hint">Ctrl K</kbd>
     </button>
@@ -65,7 +66,7 @@
       <div class="section-body"></div>
     </section>
     <section id="map" aria-labelledby="map-h">
-      <h2 id="map-h">One request, six routes</h2>
+      <h2 id="map-h">One request, one route</h2>
       <p class="lede">Every request goes through /sdd, which classifies it and launches one fixed pipeline.</p>
       <div class="section-body"></div>
     </section>
@@ -124,7 +125,7 @@
   </main>
 </div>
 <footer class="site-footer">
-  <div>Content comes from <code>guide-data.js</code>, <code>catalog.js</code> and <code>example-data.js</code>; the last two are generated from the kit.</div>
+  <div>Content comes from <code>guide-data.js</code>, <code>host-data.js</code>, <code>catalog.js</code> and <code>example-data.js</code>; the last two are generated from the kit.</div>
   <ul id="links"></ul>
 </footer>
 <div class="drawer-scrim" id="drawer-scrim"></div>
@@ -148,6 +149,7 @@
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="guide-data.js"></script>
+<script src="host-data.js"></script>
 <script src="catalog.js"></script>
 <script src="example-data.js"></script>
 <script src="guide.js"></script>

@@ -5,11 +5,11 @@ argument-hint: "[--type=business|api|architecture|all] [--source=path] [--output
 allowed-tools: Agent, Read, Write, Edit, Bash, Grep, Glob, WebFetch, AskUserQuestion
 effort: medium
 metadata:
-  version: 1.2
-  encoding: UTF-8
+  version: "1.2"
+  encoding: "UTF-8"
   subagents: "code-explorer, doc-creator"
-  response_format: concise
-  checkpoint_enabled: false
+  response_format: "concise"
+  checkpoint_enabled: "false"
   last_verified: "2026-10-19"
   next_review: "2027-01-19"
 ---

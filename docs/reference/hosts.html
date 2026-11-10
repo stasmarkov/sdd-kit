@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hosts: Claude Code, Codex and Cursor · SDD Kit</title>
+<link rel="icon" href="data:,">
+<script>
+  (function () {
+    var root = document.documentElement, stored = null;
+    try { stored = localStorage.getItem('sdd-guide-theme'); } catch (e) { stored = null; }
+    var theme = stored === 'light' || stored === 'dark' ? stored : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    root.dataset.theme = theme;
+    root.style.colorScheme = theme;
+  })();
+</script>
+<link rel="stylesheet" href="../guide.css">
+</head>
+<body class="doc-page">
+<a class="skip-link" href="#content">Skip to content</a>
+<header class="site-header">
+  <div class="brand">
+    <a class="brand-name" href="../index.html">SDD Kit</a>
+    <span class="badge">v4.0.0</span>
+  </div>
+  <div class="header-actions">
+    <a class="btn" href="../index.html"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
+    <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
+  </div>
+</header>
+<main id="content" class="doc-main">
+  <p class="doc-path mono">reference/hosts.md</p>
+  <article class="doc-body">
+<h2 id="hosts-claude-code-codex-and-cursor">Hosts: Claude Code, Codex and Cursor</h2>
+<p>SDD Kit 4.0 runs on three coding-agent hosts. Claude Code is the reference host and is unchanged. Codex and Cursor are an <strong>unverified preview</strong>: the adapters are built and covered by automated tests, but no real Codex or Cursor session has been recorded yet. They move to &quot;supported&quot; in a 4.0.x release once that evidence exists.</p>
+<p>Install commands are in <a href="installation.html#codex">INSTALLATION.md</a>; first-session commands are in <a href="getting-started.html#3a-first-session-on-codex-or-cursor">GETTING-STARTED.md</a>. The bridge that runs workflows on Codex and Cursor is in <a href="workflow-bridge.html">workflow-bridge.md</a>. Model mapping per host is only in <a href="effort-guidelines.html#model-tier-selection">effort-guidelines.md</a>.</p>
+<h3 id="capabilities">Capabilities</h3>
+<div class="table-wrap"><table><thead><tr><th></th><th>Claude Code</th><th>Codex</th><th>Cursor</th></tr></thead><tbody><tr><td>Status</td><td>Supported</td><td>Unverified preview</td><td>Unverified preview</td></tr><tr><td>Install</td><td>Plugin mode or file-copy</td><td>Plugin marketplace or <code>install.sh --host codex</code></td><td><code>install.sh --host cursor</code>; team marketplace through the dashboard</td></tr><tr><td>Skill invocation</td><td><code>/sdd</code> (<code>/sdd-kit:sdd</code> in plugin mode)</td><td><code>$sdd</code></td><td><code>/sdd</code></td></tr><tr><td>Instruction file</td><td><code>CLAUDE.md</code> (imports <code>AGENTS.md</code>)</td><td><code>AGENTS.md</code></td><td><code>AGENTS.md</code> and <code>.cursor/rules/*.mdc</code></td></tr><tr><td>Skills directory</td><td><code>.claude/skills</code></td><td><code>.agents/skills</code></td><td><code>.cursor/skills</code></td></tr><tr><td>Agents</td><td><code>.claude/agents/*.md</code></td><td><code>.codex/agents/*.toml</code> (file copy only)</td><td><code>.cursor/agents/*.md</code></td></tr><tr><td>Background workflows</td><td>Native <code>Workflow</code> tool</td><td>Bridge MCP server, jobs run by Codex subagents</td><td>Bridge MCP server, jobs run by Cursor subagents</td></tr><tr><td>Hooks</td><td><code>hooks.json</code> or <code>settings.json</code></td><td><code>.codex/hooks.json</code>, trusted through <code>/hooks</code></td><td><code>.cursor/hooks.json</code>, <code>failClosed</code> on the guard before shell commands and file writes</td></tr></tbody></table></div>
+<h3 id="parity-limits">Parity limits</h3>
+<ul><li><strong>No token budget.</strong> The bridge reports a budget of 0, so workflow branches that depend on remaining budget never trigger.</li><li><strong>Subagent nesting.</strong> Cursor does not let a subagent start further subagents, so every bridge job is started by the parent session. Codex subagents inherit the parent&#39;s sandbox and approvals.</li><li><strong>Read-only roles.</strong> Cursor maps a read-only job to a read-only subagent; Codex cannot enforce it and treats it as an instruction.</li><li><strong>Prompt-type hooks.</strong> The Stop and SubagentStop prompt hooks are Claude-only. Command hooks are registered under each host&#39;s own event names; a hook whose event a host lacks is listed in the registration plan instead of dropped silently.</li><li><strong>Cursor after-tool output.</strong> Cursor has no PostToolUse event for shell, web or MCP output, so the injection scan does not run there.</li><li><strong>PreCompact.</strong> Cursor has no pre-compaction event, so the checkpoint hook (<code>pre-compact-save.sh</code>) does not run there.</li><li><strong>SubagentStop and Notification.</strong> Cursor has neither event, so hooks registered on them are listed in the registration plan and not installed.</li><li><strong>Rules.</strong> Codex has no rules directory; the rules a stack needs are folded into the job packets and the instruction file.</li><li><strong>Cloud and IDE surfaces.</strong> Codex plugins are not available in the IDE extension, and Cursor cloud agents skip session and user-level hooks.</li><li><strong>Windows.</strong> Not supported for Codex or Cursor.</li><li><strong>Double loading.</strong> Cursor can also load a Claude install through its Third-Party Imports setting; the installer warns when it finds one.</li></ul>
+<h3 id="migrating-from-claude-code">Migrating from Claude Code</h3>
+<p>The workflows, skills, specs and <code>.ai/</code> artifacts are shared, so a spec written under Claude Code is executed unchanged on another host.</p>
+<ol><li>Keep <code>CLAUDE.md</code> as is. Its content already lives in <code>AGENTS.md</code> through the <code>@AGENTS.md</code> import, which Codex and Cursor read directly.</li><li>Install the kit for the new host next to the Claude install; the host layouts do not overlap.</li><li>Re-approve project stack manifests on the new host with <code>/stack-trust</code> (trust stores are per host).</li><li>Codex and Cursor can import a Claude setup themselves; do not combine that import with the kit install, or skills load twice.</li></ol>
+<p>Claude plugin-mode names (<code>/sdd-kit:&lt;skill&gt;</code>, <code>sdd-kit:&lt;agent&gt;</code>) do not change.</p>
+<h3 id="sources">Sources</h3>
+<p>Official documentation the claims above rest on:</p>
+<ul><li>Codex plugins: https://developers.openai.com/plugins/build/plugins and https://learn.chatgpt.com/docs/plugins</li><li>Codex hooks and trust: https://learn.chatgpt.com/docs/hooks</li><li>Codex skills and subagents: https://learn.chatgpt.com/docs/build-skills and https://learn.chatgpt.com/docs/agent-configuration/subagents.md</li><li>Codex AGENTS.md: https://learn.chatgpt.com/docs/agent-configuration/agents-md</li><li>Cursor hooks: https://cursor.com/docs/agent/hooks and https://cursor.com/docs/reference/third-party-hooks</li><li>Cursor skills, subagents and rules: https://cursor.com/docs/skills, https://cursor.com/docs/subagents and https://cursor.com/docs/context/rules</li><li>Cursor plugins and team marketplaces: https://cursor.com/docs/reference/plugins and https://cursor.com/docs/plugins</li><li>Cursor MCP: https://cursor.com/docs/context/mcp</li></ul>
+  </article>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/hosts.md">View the Markdown source</a></p>
+</main>
+<script>
+  (function () {
+    var KEY = 'sdd-guide-theme', NEXT = { system: 'light', light: 'dark', dark: 'system' };
+    var root = document.documentElement, os = window.matchMedia('(prefers-color-scheme: dark)');
+    var button = document.getElementById('theme-toggle'), choice = 'system';
+    try { var v = localStorage.getItem(KEY); if (v === 'light' || v === 'dark') choice = v; } catch (e) { /* storage unavailable */ }
+    function apply() {
+      var theme = choice === 'system' ? (os.matches ? 'dark' : 'light') : choice;
+      root.dataset.theme = theme;
+      root.style.colorScheme = theme;
+      button.querySelector('.btn-label').textContent = 'Theme: ' + choice;
+      button.setAttribute('aria-label', 'Theme: ' + choice + '. Switch to ' + NEXT[choice] + '.');
+    }
+    button.addEventListener('click', function () {
+      choice = NEXT[choice];
+      try { if (choice === 'system') localStorage.removeItem(KEY); else localStorage.setItem(KEY, choice); } catch (e) { /* page view only */ }
+      apply();
+    });
+    if (os.addEventListener) os.addEventListener('change', function () { if (choice === 'system') apply(); });
+    apply();
+  })();
+</script>
+</body>
+</html>

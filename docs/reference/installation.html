@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../index.html">SDD Kit</a>
-    <span class="badge">v3.1.0</span>
+    <span class="badge">v4.0.0</span>
   </div>
   <div class="header-actions">
     <a class="btn" href="../index.html"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
@@ -35,13 +35,35 @@
 <p>How to install, update, upgrade, and remove the kit in either mode, plus what the installer
 changes and how to set up MCP servers. For your first session after installing, see
 <a href="getting-started.html">GETTING-STARTED</a>.</p>
-<ul><li><a href="#prerequisites" data-anchor="prerequisites">Prerequisites</a></li><li><a href="#choose-a-mode" data-anchor="choose-a-mode">Choose a mode</a></li><li><a href="#plugin-mode" data-anchor="plugin-mode">Plugin mode</a></li><li><a href="#file-copy-mode" data-anchor="file-copy-mode">File-copy mode</a></li><li><a href="#mcp-servers" data-anchor="mcp-servers">MCP servers</a></li><li><a href="#recommended-settings" data-anchor="recommended-settings">Recommended settings</a></li><li><a href="#upgrading-from-1x" data-anchor="upgrading-from-1x">Upgrading from 1.x</a></li><li><a href="#verifying-an-install" data-anchor="verifying-an-install">Verifying an install</a></li><li><a href="#uninstalling" data-anchor="uninstalling">Uninstalling</a></li><li><a href="#troubleshooting" data-anchor="troubleshooting">Troubleshooting</a></li></ul>
+<ul><li><a href="#prerequisites" data-anchor="prerequisites">Prerequisites</a></li><li><a href="#choose-a-mode" data-anchor="choose-a-mode">Choose a mode</a></li><li><a href="#codex" data-anchor="codex">Codex</a></li><li><a href="#cursor" data-anchor="cursor">Cursor</a></li><li><a href="#plugin-mode" data-anchor="plugin-mode">Plugin mode</a></li><li><a href="#file-copy-mode" data-anchor="file-copy-mode">File-copy mode</a></li><li><a href="#mcp-servers" data-anchor="mcp-servers">MCP servers</a></li><li><a href="#recommended-settings" data-anchor="recommended-settings">Recommended settings</a></li><li><a href="#upgrading-from-1x" data-anchor="upgrading-from-1x">Upgrading from 1.x</a></li><li><a href="#verifying-an-install" data-anchor="verifying-an-install">Verifying an install</a></li><li><a href="#uninstalling" data-anchor="uninstalling">Uninstalling</a></li><li><a href="#troubleshooting" data-anchor="troubleshooting">Troubleshooting</a></li></ul>
 <h3 id="prerequisites">Prerequisites</h3>
 <div class="table-wrap"><table><thead><tr><th>Tool</th><th>Needed for</th></tr></thead><tbody><tr><td>Claude Code</td><td>Everything</td></tr><tr><td>git</td><td>Cloning the repo; <code>--third-party</code> fetches pinned skills with it</td></tr><tr><td>jq</td><td>File-copy installer (it refuses to run without it) and the hook scripts in both modes</td></tr><tr><td>Node.js 18+ (<code>npx</code>)</td><td>Both default MCP servers (<code>context7</code> and Playwright MCP), the spec board, and the npx install</td></tr><tr><td>Google Chrome, or Chromium via <code>npx playwright install chromium</code> with <code>--browser chromium</code></td><td>Playwright MCP browser checks (Reproduce, Visual, Acceptance); without one they report &quot;not run&quot;</td></tr></tbody></table></div>
 <p>Install jq with <code>brew install jq</code> or <code>apt-get install jq</code>.</p>
 <p>New to Claude Code? Install it first: <a href="getting-started.html#0-new-to-claude-code">GETTING-STARTED, section 0</a>.</p>
 <h3 id="choose-a-mode">Choose a mode</h3>
 <ul><li><strong>Plugin mode</strong>: install from the marketplace; one pinned version per team, updated with <code>/plugin</code>.</li><li><strong>File-copy mode</strong>: <code>./install.sh</code> merges the kit into <code>.claude/</code>; you can edit agents and skills in place.</li><li>Both ship the same agents, skills, workflows, and hooks. The full comparison (hooks, permissions, namespacing, limitations) is in <a href="plugin-mode.html">plugin-mode.md</a>.</li></ul>
+<h3 id="codex-plugins">Codex plugins</h3>
+<p>The distribution root carries <code>.agents/plugins/marketplace.json</code> beside <code>.claude-plugin/marketplace.json</code>, with the Codex packages under <code>hosts/codex/</code>:</p>
+<pre><code class="language-bash">codex plugin marketplace add stasmarkov/sdd-kit
+codex plugin add sdd-kit@sdd-kit</code></pre>
+<p>For a file-copy install use <code>install.sh --host codex</code> (or <code>--host cursor</code>).</p>
+<h3 id="codex">Codex</h3>
+<p>Codex support is an unverified preview in 4.0: it is built and tested, but no real Codex session has been recorded yet (<a href="hosts.html">hosts.md</a>). Codex plugins cannot ship agents, so the plugin install carries skills, hooks and the bridge; custom agents come with the file-copy install. You need Codex, git, jq and Node.js 20+. Windows is not supported.</p>
+<p>Plugin install, from your shell:</p>
+<pre><code class="language-bash">codex plugin marketplace add stasmarkov/sdd-kit
+codex plugin add sdd-kit@sdd-kit</code></pre>
+<p>File-copy install, from your project root (skills go to <code>.agents/skills</code>, agents to <code>.codex/agents</code>):</p>
+<pre><code class="language-bash">bash install.sh --host codex --project --dry-run
+bash install.sh --host codex --project
+npx github:stasmarkov/sdd-kit install --host codex --project</code></pre>
+<p>Flags: <code>--project</code> or <code>--user</code>, <code>--stack=LIST</code>, <code>--with=LIST</code>, <code>--prune</code>, <code>--dry-run</code>, <code>--yes</code> and <code>--uninstall</code>. Codex skills start with <code>$</code>, for example <code>$sdd</code>.</p>
+<h3 id="cursor">Cursor</h3>
+<p>Cursor support is an unverified preview in 4.0, like Codex. You need Cursor, git, jq and Node.js 20+. Windows is not supported. For a team, import the distribution repo as a team marketplace in the Cursor dashboard (Plugins &amp; MCPs, Add Marketplace, Import from Repo; this needs a Teams or Enterprise plan).</p>
+<p>File-copy install, from your project root (skills go to <code>.cursor/skills</code>, agents to <code>.cursor/agents</code>, rules to <code>.cursor/rules</code>):</p>
+<pre><code class="language-bash">bash install.sh --host cursor --project --dry-run
+bash install.sh --host cursor --project
+npx github:stasmarkov/sdd-kit install --host cursor --project</code></pre>
+<p>Flags: <code>--project</code> or <code>--user</code>, <code>--stack=LIST</code>, <code>--with=LIST</code>, <code>--prune</code>, <code>--dry-run</code>, <code>--yes</code> and <code>--uninstall</code>. Cursor skills start with <code>/</code>, for example <code>/sdd</code>. If Cursor&#39;s Third-Party Imports also loads a Claude install of the kit, turn that setting off (Settings &gt; Agents &gt; Third-Party Imports) so the kit does not load twice.</p>
 <h3 id="plugin-mode">Plugin mode</h3>
 <h4 id="install">Install</h4>
 <pre><code>/plugin marketplace add stasmarkov/sdd-kit
@@ -138,7 +160,7 @@ previews and <code>npx github:stasmarkov/sdd-kit install --project</code> instal
 <code>install.sh</code> flag below works (<code>--stack</code>, <code>--minimal</code>, <code>--full</code>, <code>--with=ops</code>, <code>--yes</code>, <code>--user</code>). It runs
 the same <code>install.sh</code> as a clone, so the result is identical, and it needs bash, git, jq and
 Node 18+. On Windows use Git Bash or WSL, or the plugin.</p>
-<p>Add <code>#v3.1.0</code> to pin a release (<code>npx github:stasmarkov/sdd-kit#v3.1.0 install --project</code>);
+<p>Add <code>#v4.0.0</code> to pin a release (<code>npx github:stasmarkov/sdd-kit#v4.0.0 install --project</code>);
 without a tag npx fetches the default branch. npx caches the download. The package is not
 published to npm.</p>
 <h4 id="flags">Flags</h4>
@@ -158,7 +180,7 @@ and ships no third-party fragments, so copy them from the add-on if you need the
 available, nothing is asked and the defaults above apply (pass <code>--project</code> or <code>--user</code> too). There is no piped
 install; clone the repository (or use npx) and run <code>install.sh</code> as a command.</p>
 <h4 id="minimal-vs-full">Minimal vs full</h4>
-<div class="table-wrap"><table><thead><tr><th></th><th><code>--minimal</code></th><th><code>--full</code></th></tr></thead><tbody><tr><td>Skills</td><td>The main path: <code>sdd</code>, <code>product-brief</code>, <code>write-spec</code>, <code>execute-task</code>, <code>simple-task</code>, <code>run-tests</code>, <code>deep-review</code>, <code>open-pr</code>, <code>framework-doctor</code>, <code>stack-trust</code> (overlay approvals), the shared <code>verification-gates</code> and <code>source-verification</code> references, and the stack-neutral <code>api-design</code> and <code>api-security</code></td><td>Every core skill (<a href="skills.html">skill index</a>)</td></tr><tr><td>Agents</td><td>Every agent the main path hands off to: <code>code-explorer</code>, <code>requirements-analyst</code> (product-brief, write-spec), <code>test-writer</code>, <code>code-quality</code> (execute-task), <code>adversarial-reviewer</code>, <code>security-auditor</code> (deep-review)</td><td>Every core agent (<a href="agents.html">agents index</a>)</td></tr><tr><td>Not included</td><td>Four of the after-<code>/sdd</code> commands (<code>/progress</code>, <code>/spec-board</code>, <code>/investigate</code>, <code>/learn</code>) and <code>/fix-ci</code>, the <code>/sdd</code> route for red CI. Use <code>--full</code> if you want them</td><td>Included</td></tr><tr><td>Workflows</td><td>All six: <code>ship-feature</code>, <code>create-spec</code>, <code>fix-bug</code>, <code>qa-and-docs</code>, <code>tech-research</code>, <code>greenfield-build</code></td><td>Same</td></tr><tr><td>Templates</td><td>Context and spec templates</td><td>All templates</td></tr><tr><td>Hooks</td><td>Lifecycle hooks merged into <code>settings.json</code></td><td>Same, plus the git/CI scripts in <code>.claude/hooks/</code></td></tr><tr><td>Also</td><td>Settings templates, MCP configs, output styles, hook scripts</td><td>Same, plus these docs and the 1.x redirect stubs in <code>.claude/commands/</code></td></tr></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th></th><th><code>--minimal</code></th><th><code>--full</code></th></tr></thead><tbody><tr><td>Skills</td><td>The main path: <code>sdd</code>, <code>product-brief</code>, <code>write-spec</code>, <code>execute-task</code>, <code>simple-task</code>, <code>run-tests</code>, <code>deep-review</code>, <code>open-pr</code>, <code>framework-doctor</code>, <code>stack-trust</code> (overlay approvals), <code>security-audit</code>, the shared <code>verification-gates</code> and <code>source-verification</code> references, and the stack-neutral <code>api-design</code> and <code>api-security</code></td><td>Every core skill (<a href="skills.html">skill index</a>)</td></tr><tr><td>Agents</td><td>Every agent the main path hands off to: <code>code-explorer</code>, <code>requirements-analyst</code> (product-brief, write-spec), <code>test-writer</code>, <code>code-quality</code> (execute-task), <code>adversarial-reviewer</code>, <code>security-auditor</code> (deep-review), <code>security-hunter</code> (security-audit workflow)</td><td>Every core agent (<a href="agents.html">agents index</a>)</td></tr><tr><td>Not included</td><td>Four of the after-<code>/sdd</code> commands (<code>/progress</code>, <code>/spec-board</code>, <code>/investigate</code>, <code>/learn</code>) and <code>/fix-ci</code>, the <code>/sdd</code> route for red CI. Use <code>--full</code> if you want them</td><td>Included</td></tr><tr><td>Workflows</td><td>All of them: <code>ship-feature</code>, <code>create-spec</code>, <code>fix-bug</code>, <code>qa-and-docs</code>, <code>tech-research</code>, <code>greenfield-build</code>, <code>security-audit</code></td><td>Same</td></tr><tr><td>Templates</td><td>Context and spec templates</td><td>All templates</td></tr><tr><td>Hooks</td><td>Lifecycle hooks merged into <code>settings.json</code></td><td>Same, plus the git/CI scripts in <code>.claude/hooks/</code></td></tr><tr><td>Also</td><td>Settings templates, MCP configs, output styles, hook scripts</td><td>Same, plus these docs and the 1.x redirect stubs in <code>.claude/commands/</code></td></tr></tbody></table></div>
 <p>Stack skills and agents (Laravel, Next.js, Drupal, iOS) ship only through add-ons, never through core. The stack add-ons are staged in full with either choice; <code>--minimal</code> only trims core. Add-ons (<code>--with=</code>) work with either. Re-run with <code>--full</code> at any time to grow a minimal
 install. A few agents also preload depth skills that only <code>--full</code> ships (<code>event-driven</code>,
 <code>error-handling-patterns</code>, <code>typescript</code>, <code>tailwind-4</code>, <code>accessibility</code>, <code>oauth2-passport</code>);
@@ -254,6 +276,10 @@ Read(~/.claude/plugins/cache/**)</code></pre>
 database records it: neither <code>$HOME</code> nor <code>CLAUDE_CONFIG_DIR</code> moves it.</p>
 <p>Model tiers and effort per workflow phase are covered in
 <a href="effort-guidelines.html">effort-guidelines.md</a>.</p>
+<h3 id="upgrading-from-3x-to-40">Upgrading from 3.x to 4.0</h3>
+<p>4.0 adds Codex and Cursor. A Claude Code install behaves as it did in 3.x: names, hooks, trust store and flags are unchanged, and an install with no <code>--host</code> produces the same <code>.claude/</code> tree. Re-run <code>install.sh</code> (use <code>--dry-run</code> first) or update the plugin as usual.</p>
+<p>If you adopt Codex:</p>
+<ul><li><strong>Re-trust hooks.</strong> Codex ties trust to each hook&#39;s hash, and installing a plugin does not trust its hooks. Open <code>/hooks</code> in Codex and approve the kit&#39;s hooks after every install or update.</li><li><strong>Fork runs.</strong> If you ran a fork of the Codex workflow bridge, its <code>.ai/codex-workflows</code> runs cannot be resumed by the kit&#39;s bridge. Finish them first or start new runs, which are kept under <code>.ai/workflow-runs/</code>.</li><li><strong>Windows.</strong> Codex and Cursor installs are not supported on Windows. Use WSL, or stay on Claude Code there.</li></ul>
 <h3 id="upgrading-from-2x">Upgrading from 2.x</h3>
 <p>3.0 moves the Laravel, Next.js and docker/ddev components out of the core into add-ons.</p>
 <p><strong>Plugin mode.</strong> Install the preset, <code>/plugin install sdd-kit-laravel-nextjs@sdd-kit</code>, to keep what 2.x gave you. Namespaces
@@ -271,7 +297,7 @@ installed that 2.0 no longer ships (retired agents, skills, templates, and scrip
 them up first. It only removes a file whose content matches a copy the kit shipped; a file you
 edited or replaced (for example an upstream Stripe or skill-creator skill installed at the same
 path) is listed as &quot;kept (modified or not from the kit)&quot; and left for you to review.</p>
-<p>The tables below match the CHANGELOG&#39;s <a href="https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/CHANGELOG.md#migrating-from-1x" target="_blank" rel="noopener noreferrer">Migrating from 1.x</a> section. They list what a 1.x release shipped; components that were added and removed again during the 2.0 cycle appear only in the CHANGELOG&#39;s <em>Removed</em> table.
+<p>The tables below match the CHANGELOG&#39;s <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/CHANGELOG.md#migrating-from-1x" target="_blank" rel="noopener noreferrer">Migrating from 1.x</a> section. They list what a 1.x release shipped; components that were added and removed again during the 2.0 cycle appear only in the CHANGELOG&#39;s <em>Removed</em> table.
 Current lists: <a href="skills.html">skills</a>,
 <a href="agents.html">agents</a>.</p>
 <h4 id="commands">Commands</h4>
@@ -330,7 +356,7 @@ commands stay behind. <code>/framework-doctor</code> flags them; delete the name
 <code>.claude/commands/</code>.</li></ul>
 <h3 id="verifying-an-install">Verifying an install</h3>
 <div class="table-wrap"><table><thead><tr><th>Check</th><th>What it tells you</th></tr></thead><tbody><tr><td><code>/framework-doctor</code></td><td>Directory layout, flat skill discovery, manifest drift, workflow name collisions, MCP config, and that hooks are wired and actually fire (it sends a harmless payload that must be blocked)</td></tr><tr><td><code>/hooks</code></td><td>Active hooks and where they come from</td></tr><tr><td><code>/memory</code></td><td>Loaded <code>CLAUDE.md</code>, <code>AGENTS.md</code>, and rules files</td></tr><tr><td><code>/plugin</code> → <strong>Errors</strong> tab</td><td>Plugin components that failed to load (plugin mode)</td></tr><tr><td><code>claude plugin validate &lt;path&gt;</code></td><td>Manifest and frontmatter problems in a plugin directory</td></tr></tbody></table></div>
-<p>The hooks themselves are documented in <a href="https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/share/hooks/README.md" target="_blank" rel="noopener noreferrer">src/hooks/README.md</a>.</p>
+<p>The hooks themselves are documented in <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/share/hooks/README.md" target="_blank" rel="noopener noreferrer">src/hooks/README.md</a>.</p>
 <h3 id="uninstalling">Uninstalling</h3>
 <p><strong>Plugin mode:</strong> <code>/plugin uninstall sdd-kit@sdd-kit</code> and the same for each add-on.</p>
 <p><strong>File-copy mode:</strong> there is no <code>--uninstall</code> flag. The manifest lists every file the kit
@@ -377,7 +403,7 @@ argument to <code>ship-feature</code> is treated as a new feature description.</
 <p><strong>Something else.</strong> Run <code>/framework-doctor</code>, then re-run the installer with <code>--dry-run</code> to see
 whether files have drifted from the manifest.</p>
   </article>
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/docs/reference/installation.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/installation.md">View the Markdown source</a></p>
 </main>
 <script>
   (function () {

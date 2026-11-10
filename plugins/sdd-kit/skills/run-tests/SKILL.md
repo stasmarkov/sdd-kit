@@ -4,7 +4,7 @@ description: Run the test suites of the detected stack - the test gates from the
 argument-hint: "[filter] | --module=[name] | --unit | --feature | --coverage | --all | --frontend | --e2e [\"AC-n:\"] [--url=<e2e frontend url>]"
 allowed-tools: Bash, Read, Grep, Glob
 metadata:
-  version: 2.0
+  version: "2.0"
   last_verified: "2026-10-22"
   next_review: "2027-01-22"
 ---

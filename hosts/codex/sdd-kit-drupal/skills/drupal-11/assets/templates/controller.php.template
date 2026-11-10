@@ -1,0 +1,33 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Drupal\{{MODULE_MACHINE_NAME}}\Controller;
+
+use Drupal\Core\Controller\ControllerBase;
+use Drupal\{{MODULE_MACHINE_NAME}}\Service\{{SERVICE_CLASS}};
+use Symfony\Component\DependencyInjection\ContainerInterface;
+
+final class {{CONTROLLER_CLASS}} extends ControllerBase {
+
+  public function __construct(
+    private readonly {{SERVICE_CLASS}} $service,
+  ) {}
+
+  public static function create(ContainerInterface $container): static {
+    return new static(
+      $container->get('{{MODULE_MACHINE_NAME}}.{{SERVICE_ID}}'),
+    );
+  }
+
+  public function {{METHOD}}(): array {
+    return [
+      '#theme' => '{{THEME_HOOK}}',
+      '#cache' => [
+        'contexts' => ['user'],
+        'tags' => [],
+      ],
+    ];
+  }
+
+}

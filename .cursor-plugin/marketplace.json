@@ -1,0 +1,51 @@
+{
+  "name": "sdd-kit",
+  "owner": {
+    "name": "Stas Markov"
+  },
+  "metadata": {
+    "description": "SDD Kit: spec-driven development skills, agents and workflows"
+  },
+  "plugins": [
+    {
+      "name": "sdd-kit",
+      "source": "hosts/cursor/sdd-kit",
+      "description": "SDD Kit: spec-driven development for Claude Code. A single /sdd front door, background multi-agent workflows with stack detection and cross-repo support, specialized agents and skills, and guardrail hooks. Stack-agnostic core; stacks come from add-on plugins."
+    },
+    {
+      "name": "sdd-kit-design",
+      "source": "hosts/cursor/sdd-kit-design",
+      "description": "UI design add-on: ui-ux-advisor agent and design-ui skill. Third-party design skills are listed in docs/third-party.md."
+    },
+    {
+      "name": "sdd-kit-devenv",
+      "source": "hosts/cursor/sdd-kit-devenv",
+      "description": "Dev-environment add-on: docker and ddev skills, plus an optional DDEV MCP entry. Not tied to a stack."
+    },
+    {
+      "name": "sdd-kit-drupal",
+      "source": "hosts/cursor/sdd-kit-drupal",
+      "description": "Drupal 11 add-on: drupal-11 skill with module scaffolding."
+    },
+    {
+      "name": "sdd-kit-ios",
+      "source": "hosts/cursor/sdd-kit-ios",
+      "description": "iOS/Swift add-on: ios-mobile-dev agent, ios-native (with SwiftUI code templates in its assets) and swift-testing skills."
+    },
+    {
+      "name": "sdd-kit-laravel",
+      "source": "hosts/cursor/sdd-kit-laravel",
+      "description": "Laravel add-on: laravel-backend-dev agent, Laravel, Pest, Passport, DTO, service-repository, event-driven and migration skills, path-scoped rules, the contract-sync template and the Laravel stack manifest."
+    },
+    {
+      "name": "sdd-kit-nextjs",
+      "source": "hosts/cursor/sdd-kit-nextjs",
+      "description": "Next.js add-on: nextjs-frontend-dev agent, Next.js, TypeScript and Tailwind skills, path-scoped rules and the Next.js and Nuxt stack manifests."
+    },
+    {
+      "name": "sdd-kit-ops",
+      "source": "hosts/cursor/sdd-kit-ops",
+      "description": "Operations add-on: deploy, rollback, feature flags, health checks, incident response, and ops analysis agents."
+    }
+  ]
+}

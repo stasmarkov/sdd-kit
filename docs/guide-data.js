@@ -5,7 +5,7 @@
 // text: renderers set it with textContent.
 window.GUIDE = {
   product: 'SDD Kit',
-  version: '3.1.0',
+  version: '4.0.0',
   repo: 'https://github.com/stasmarkov/sdd-kit',
   tagline: 'One front door, fixed pipelines, verified outcomes.',
   promise: 'Write down what "done" means, let the agent build it through gates, and approve the result as a human.',
@@ -77,7 +77,7 @@ window.GUIDE = {
         { text: 'Preview from your project root', code: 'npx github:stasmarkov/sdd-kit install --project --dry-run' },
         { text: 'Install', code: 'npx github:stasmarkov/sdd-kit install --project' },
       ],
-      note: 'You need Claude Code, git, jq, Node 18+ and Google Chrome (or Chromium selected with --browser chromium, see the README\'s MCP servers section). Without jq the guardrail hooks cannot read their input; without a browser, browser checks report "not run". Run it from your project root; it uses the same install.sh as a clone, so every flag works, and also needs bash. Add #v3.1.0 after the repo name to pin a release. The package is not published to npm.',
+      note: 'You need Claude Code, git, jq, Node 18+ and Google Chrome (or Chromium selected with --browser chromium, see the README\'s MCP servers section). Without jq the guardrail hooks cannot read their input; without a browser, browser checks report "not run". Run it from your project root; it uses the same install.sh as a clone, so every flag works, and also needs bash. Add #v4.0.0 after the repo name to pin a release. The package is not published to npm.',
     },
     flags: [
       { flag: '--project | --user', meaning: 'Install into ./.claude or ~/.claude' },
@@ -92,13 +92,13 @@ window.GUIDE = {
   },
 
   quickstart: [
-    { title: 'Add the marketplace', text: 'Inside Claude Code, register the kit\'s plugin marketplace. Prefer files in your repo? Use the file-copy installer instead (see install).', code: '/plugin marketplace add stasmarkov/sdd-kit' },
-    { title: 'Install the plugin', text: 'Install the preset: the core plus the Laravel, Next.js and devenv add-ons. For another stack, pick add-ons from the install section. Takes a minute.', code: '/plugin install sdd-kit-laravel-nextjs@sdd-kit' },
-    { title: 'Check the install', text: 'The doctor checks the install, the hook wiring and the MCP servers, and prints a fix for each problem. In plugin mode, confirm the hooks are listed under /hooks.', code: '/framework-doctor' },
-    { title: 'Give Claude project context', text: 'In your Laravel + Next.js project, generate the business rules and architecture docs Claude reads before every task. Starting a new product? Run /product-brief instead.', code: '/write-docs --type=all' },
-    { title: 'Describe the work', text: 'A ticket key or a sentence. /sdd proposes a route; you confirm.', code: '/sdd PROJ-123' },
-    { title: 'Approve the spec', text: 'For features, read spec-lite.md (one page) and choose Approve and build, Approve only (build it yourself later with /execute-task), Request changes, or Stop here.', code: '.ai/specs/spec-PROJ-123-<slug>/spec-lite.md' },
-    { title: 'Let the pipeline ship', text: 'Build, gates, converge, adversarial review, a browser acceptance walk, docs. Watch it in /workflows.', code: '/workflows' },
+    { title: 'Add the marketplace', claudeOnly: true, text: 'Inside Claude Code, register the kit\'s plugin marketplace. Prefer files in your repo? Use the file-copy installer instead (see install).', code: '/plugin marketplace add stasmarkov/sdd-kit' },
+    { title: 'Install the plugin', claudeOnly: true, text: 'Install the preset: the core plus the Laravel, Next.js and devenv add-ons. For another stack, pick add-ons from the install section. Takes a minute.', code: '/plugin install sdd-kit-laravel-nextjs@sdd-kit' },
+    { title: 'Check the install', hostAware: true, text: 'The doctor checks the install, the hook wiring and the MCP servers, and prints a fix for each problem. In plugin mode, confirm the hooks are listed under /hooks.', hostText: 'The doctor checks the install, the hook wiring and the MCP servers, and prints a fix for each problem. If your host asks you to trust hooks, approve the kit\'s hooks first.', code: '/framework-doctor' },
+    { title: 'Give Claude project context', hostAware: true, text: 'In your Laravel + Next.js project, generate the business rules and architecture docs Claude reads before every task. Starting a new product? Run /product-brief instead.', hostTitle: 'Give the agent project context', hostText: 'In your project, generate the business rules and architecture docs the agent reads before every task. Starting a new product? Use the product-brief skill instead.', code: '/write-docs --type=all' },
+    { title: 'Describe the work', hostAware: true, text: 'A ticket key or a sentence. /sdd proposes a route; you confirm.', hostText: 'A ticket key or a sentence. The sdd skill proposes a route; you confirm.', code: '/sdd PROJ-123' },
+    { title: 'Approve the spec', text: 'For features, read spec-lite.md (one page) and choose Approve and build, Approve only (build it yourself later with /execute-task), Request changes, or Stop here.', hostText: 'For features, read spec-lite.md (one page) and choose Approve and build, Approve only (build it yourself later with the execute-task skill), Request changes, or Stop here.', code: '.ai/specs/spec-PROJ-123-<slug>/spec-lite.md' },
+    { title: 'Let the pipeline ship', claudeOnly: true, text: 'Build, gates, converge, adversarial review, a browser acceptance walk, docs. Watch it in /workflows.', code: '/workflows' },
   ],
 
   afterSdd: {
@@ -140,7 +140,7 @@ window.GUIDE = {
       { label: 'Snapshot', code: 'npx github:stasmarkov/sdd-kit spec-board --out /tmp/spec-board.html' },
       { label: 'Split repos', code: 'npx github:stasmarkov/sdd-kit spec-board api/.ai/specs web/.ai/specs --serve' },
     ],
-    note: 'The npx form needs Node 18+ and git, and works in any repo that has .ai/specs. Add #v3.1.0 after the repo name to pin a release. The package is not published to npm.',
+    note: 'The npx form needs Node 18+ and git, and works in any repo that has .ai/specs. Add #v4.0.0 after the repo name to pin a release. The package is not published to npm.',
     exampleHref: 'example-board.html',
   },
 
@@ -153,7 +153,7 @@ window.GUIDE = {
   stacks: {
     now: 'Laravel API + Next.js',
     roadmap: 'Symfony and Java as first-class stacks, and Drupal and Swift beyond their early previews; add your own with /new-stack',
-    href: 'https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/README.md',
+    href: 'https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/README.md',
   },
 
   routes: [
@@ -189,6 +189,14 @@ window.GUIDE = {
       outputs: ['Spec folder (spec-lite.md, tasks.md, …)', 'Implemented tasks', 'Adversarial review findings', 'Updated docs', 'Manual test plan'],
       done: 'Gates green, no confirmed blocking review findings, and acceptance re-walks the ticket\'s scenario.',
       gate: 'ship-feature never starts on a spec you have not approved in the current conversation. Choose Approve only to build it yourself with /execute-task instead.',
+    },
+    {
+      id: 'audit', label: 'Security audit', icon: '§',
+      when: 'Existing code needs a deep security audit with coverage tracking and verified leads, not a quick checklist.',
+      example: '/sdd Audit the security of the payments module',
+      launches: 'security-audit workflow', spec: 'none — the audit pipeline is the spec',
+      outputs: ['Validated coverage ledger', 'findings.json with verified leads', 'Report files and a summary in .ai/reports/'],
+      done: 'Both validators pass and every retained finding was verified; otherwise the run is incomplete and says why.',
     },
     {
       id: 'shipped', label: 'Already shipped', icon: '✓',
@@ -331,7 +339,7 @@ window.GUIDE = {
     { label: 'Usage examples', href: 'reference/usage-examples.html' },
     { label: 'Worked example: Hireboard', href: 'examples/job-board/README.html' },
     { label: 'Example spec board', href: 'example-board.html' },
-    { label: 'Spec board skill', href: 'https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/plugins/sdd-kit/skills/spec-board/SKILL.md' },
+    { label: 'Spec board skill', href: 'https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/plugins/sdd-kit/skills/spec-board/SKILL.md' },
     { label: 'Plugin mode', href: 'reference/plugin-mode.html' },
     { label: 'Multi-repo', href: 'reference/multi-repo.html' },
     { label: 'Model tiers', href: 'reference/effort-guidelines.html' },

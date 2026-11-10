@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "sdd-kit": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "${PLUGIN_ROOT}/runtime/bridge/server.mjs"
+      ]
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@0.0.83",
+        "--headless",
+        "--isolated"
+      ]
+    }
+  }
+}

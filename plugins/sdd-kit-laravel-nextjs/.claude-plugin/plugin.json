@@ -1,6 +1,6 @@
 {
   "name": "sdd-kit-laravel-nextjs",
-  "version": "3.1.0",
+  "version": "4.0.0",
   "description": "The Laravel + Next.js starting set for 3.x: installs the core plugin with the Laravel, Next.js and dev-environment add-ons. Ships no components of its own.",
   "author": {
     "name": "Stas Markov"
@@ -14,19 +14,19 @@
   "dependencies": [
     {
       "name": "sdd-kit",
-      "version": "^3.1.0"
+      "version": "^4.0.0"
     },
     {
       "name": "sdd-kit-laravel",
-      "version": "^3.1.0"
+      "version": "^4.0.0"
     },
     {
       "name": "sdd-kit-nextjs",
-      "version": "^3.1.0"
+      "version": "^4.0.0"
     },
     {
       "name": "sdd-kit-devenv",
-      "version": "^3.1.0"
+      "version": "^4.0.0"
     }
   ],
   "homepage": "https://stasmarkov.github.io/sdd-kit/",

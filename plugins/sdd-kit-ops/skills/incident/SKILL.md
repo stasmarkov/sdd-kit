@@ -1,11 +1,11 @@
 ---
 name: incident
-description: Run an incident response workflow: open an incident record, triage by severity, investigate logs and recent deploys, mitigate, resolve, and draft a postmortem with action items. Use when production is broken or degraded, when updating or resolving an active incident, or when writing a postmortem.
+description: "Run an incident response workflow: open an incident record, triage by severity, investigate logs and recent deploys, mitigate, resolve, and draft a postmortem with action items. Use when production is broken or degraded, when updating or resolving an active incident, or when writing a postmortem."
 argument-hint: "[severity] | --start | --update | --resolve"
 allowed-tools: Bash, Read, Grep, Write
 metadata:
-  mcp-tools: sentry, datadog
-  version: 1.1
+  mcp-tools: "sentry, datadog"
+  version: "1.1"
   subagents: "incident-responder"
 ---
 

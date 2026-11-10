@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/stasmarkov/sdd-kit/main/plugins/sdd-kit/workflows/lib/stack.schema.json",
+  "name": "{{NAME}}",
+  "order": 90,
+  "role": "{{ROLE}}",
+  "detect": "{{DETECT}}",
+  "agent": {
+    "name": "{{AGENT_NAME}}",
+    "plugin": "sdd-kit-{{NAME}}"
+  },
+  "conventions": [
+    "{{CONVENTION}}"
+  ],
+  "gates": [
+    {
+      "name": "{{GATE_NAME}}",
+      "command": "{{GATE_COMMAND}}",
+      "kind": "{{GATE_KIND}}"
+    }
+  ],
+  "debugPatterns": [],
+  "acceptance": "{{ACCEPTANCE}}"
+}

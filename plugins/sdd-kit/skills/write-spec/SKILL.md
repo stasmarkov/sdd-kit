@@ -4,10 +4,10 @@ description: Turn a ticket or request into a right-sized, execution-ready spec u
 argument-hint: "[description] | --ticket=PROJ-123 | --type=feature|bug|improvement|refactor | --priority=P0-P3 | --spec=<ref> (revise) | --background"
 allowed-tools: Agent, Workflow, Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion
 metadata:
-  mcp-tools: context7
-  version: 4.0
+  mcp-tools: "context7"
+  version: "4.0"
   subagents: "code-explorer, requirements-analyst"
-  checkpoint_enabled: true
+  checkpoint_enabled: "true"
   last_verified: "2026-10-19"
   next_review: "2027-01-19"
 ---

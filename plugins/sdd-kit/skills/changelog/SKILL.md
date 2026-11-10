@@ -5,7 +5,7 @@ argument-hint: "[version] | --from=[tag] | --to=[tag] | --unreleased | --release
 allowed-tools: Bash, Read, Write, Grep, Glob, AskUserQuestion
 disable-model-invocation: true
 metadata:
-  version: 1.2
+  version: "1.2"
   subagents: "changelog-writer, code-quality"
 ---
 

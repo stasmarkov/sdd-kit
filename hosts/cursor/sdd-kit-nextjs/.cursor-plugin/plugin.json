@@ -1,0 +1,17 @@
+{
+  "name": "sdd-kit-nextjs",
+  "version": "4.0.0",
+  "description": "Next.js add-on: nextjs-frontend-dev agent, Next.js, TypeScript and Tailwind skills, path-scoped rules and the Next.js and Nuxt stack manifests.",
+  "displayName": "SDD Kit nextjs",
+  "author": {
+    "name": "Stas Markov"
+  },
+  "homepage": "https://github.com/stasmarkov/sdd-kit",
+  "keywords": [
+    "sdd",
+    "spec-driven-development"
+  ],
+  "skills": "./skills/",
+  "agents": "./agents/",
+  "rules": "./rules/"
+}

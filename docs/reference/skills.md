@@ -32,6 +32,7 @@ Start spec-driven work with `/sdd`. "Manual only" skills have side effects and n
 | `run-tests` | core | `/run-tests` | Run the test suites of the detected stack - the test gates from the stack manifest, with filtering by name or module, coverage and… |
 | `schema-first` | core | auto only | Document schemas before migrations. Use when designing databases or planning data models. |
 | `sdd` | core | `/sdd` | The single front door for spec-driven work. Classifies a ticket or request (bug / feature / decision / shipped code / new project /… |
+| `security-audit` | core | auto only | Security guidance and vulnerability review for codebases, APIs, services, CLIs and libraries. Use for security questions, focused reviews… |
 | `security-scan` | core | `/security-scan` | Run security checks — dependency vulnerability audits (the manifest's audit commands), code scans for SQL injection, XSS, CSRF gaps,… |
 | `simple-task` | core | `/simple-task` | Execute a small-to-medium task (bug fix, small feature, refactor, safe symbol rename, or research-only question) in a single context… |
 | `source-verification` | core | auto only | Rules for verifying claims against the actual code before stating or changing anything — read referenced files, cite file:line, never… |

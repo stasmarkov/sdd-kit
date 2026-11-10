@@ -13,8 +13,8 @@ and merges both repos in order.
 Reference pages, so this chapter doesn't repeat them:
 
 - [USAGE-EXAMPLES.md, section 1 "Feature from a ticket"](../../reference/usage-examples.md#1-feature-from-a-ticket) and [section 9 "Review before merge"](../../reference/usage-examples.md#9-review-before-merge)
-- [`/sdd` route reference: ship-feature](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/plugins/sdd-kit/skills/sdd/references/ship-feature.md): args, phases, outputs, done-when
-- [`deep-review` skill](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/plugins/sdd-kit/skills/deep-review/SKILL.md) and its [report template](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/plugins/sdd-kit/skills/deep-review/references/adversarial-review.md#report-template)
+- [`/sdd` route reference: ship-feature](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/plugins/sdd-kit/skills/sdd/references/ship-feature.md): args, phases, outputs, done-when
+- [`deep-review` skill](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/plugins/sdd-kit/skills/deep-review/SKILL.md) and its [report template](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/plugins/sdd-kit/skills/deep-review/references/adversarial-review.md#report-template)
 
 | | |
 |---|---|
@@ -521,7 +521,7 @@ In the `api/` session:
 ```
 
 For `web/`, the diff has to come from the web repo's git, so run it there. Headless works the
-same way as in CI ([standard-review reference](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/plugins/sdd-kit/skills/deep-review/references/standard-review.md#ci-integration)):
+same way as in CI ([standard-review reference](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/plugins/sdd-kit/skills/deep-review/references/standard-review.md#ci-integration)):
 
 ```bash
 cd ~/work/hireboard/web

@@ -1,0 +1,16 @@
+{
+  "name": "sdd-kit-ios",
+  "version": "4.0.0",
+  "description": "iOS/Swift add-on: ios-mobile-dev agent, ios-native (with SwiftUI code templates in its assets) and swift-testing skills.",
+  "displayName": "SDD Kit ios",
+  "author": {
+    "name": "Stas Markov"
+  },
+  "homepage": "https://github.com/stasmarkov/sdd-kit",
+  "keywords": [
+    "sdd",
+    "spec-driven-development"
+  ],
+  "skills": "./skills/",
+  "agents": "./agents/"
+}

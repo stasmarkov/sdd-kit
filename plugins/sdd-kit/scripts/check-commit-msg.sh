@@ -35,16 +35,28 @@ if echo "$CMD" | grep -qE '(^|[[:space:]])(merge|revert)[[:space:]]'; then
     exit 0
 fi
 
-# Extract -m "msg" or --message="msg" (handle single and double quotes and HEREDOC patterns)
+# Extract the first -m / --message value after `git commit`. Later -m values are body paragraphs,
+# and a quoted message may span lines; the subject is its first line.
 MSG=""
-# Try -m "..."
-MSG=$(echo "$CMD" | sed -nE 's/.*-m[[:space:]]+"([^"]+)".*/\1/p' | head -1)
-if [[ -z "$MSG" ]]; then
-    MSG=$(echo "$CMD" | sed -nE "s/.*-m[[:space:]]+'([^']+)'.*/\1/p" | head -1)
+BEST=0
+AFTER=$CMD
+COMMIT_RE='git[[:space:]]+commit(.*)'
+if [[ $CMD =~ $COMMIT_RE ]]; then
+    AFTER=${BASH_REMATCH[1]}
 fi
-if [[ -z "$MSG" ]]; then
-    MSG=$(echo "$CMD" | sed -nE 's/.*--message=["'"'"']?([^"'"'"']+)["'"'"']?.*/\1/p' | head -1)
-fi
+DQ_RE='(^|[[:space:]])(-[a-zA-Z]*m|--message)(=|[[:space:]]+)"([^"]*)'
+SQ_RE="(^|[[:space:]])(-[a-zA-Z]*m|--message)(=|[[:space:]]+)'([^']*)"
+BARE_RE='(^|[[:space:]])(-[a-zA-Z]*m|--message)(=|[[:space:]]+)([^"'"'"'[:space:]][^[:space:]]*)'
+for re in "$DQ_RE" "$SQ_RE" "$BARE_RE"; do
+    if [[ $AFTER =~ $re ]]; then
+        # The leftmost flag wins: keep the match that starts earliest in the command.
+        PREFIX=${AFTER%%"${BASH_REMATCH[0]}"*}
+        if [[ -z "$MSG" || ${#PREFIX} -lt $BEST ]]; then
+            MSG=${BASH_REMATCH[4]}
+            BEST=${#PREFIX}
+        fi
+    fi
+done
 
 # HEREDOC pattern: "$(cat <<'EOF' ... EOF )" — read first non-empty line after cat <<
 if [[ -z "$MSG" ]] && echo "$CMD" | grep -qE 'cat[[:space:]]+<<'; then
@@ -56,7 +68,7 @@ if [[ -z "$MSG" ]]; then
     exit 0
 fi
 
-SUBJECT=$(echo "$MSG" | head -1)
+SUBJECT=$(printf '%s\n' "$MSG" | head -1)
 
 # Conventional Commits regex
 CC_RE='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9_./-]+\))?!?:[[:space:]]+.+'

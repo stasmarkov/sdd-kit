@@ -5,7 +5,7 @@ argument-hint: "<idea> | --revise [path] | --intake <text | file>"
 allowed-tools: Agent, Read, Write, Edit, Grep, Glob, AskUserQuestion
 license: Apache-2.0
 metadata:
-  version: 1.0
+  version: "1.0"
   subagents: "requirements-analyst, code-explorer"
   last_verified: "2026-10-19"
   next_review: "2027-01-19"

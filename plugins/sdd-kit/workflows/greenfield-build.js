@@ -260,7 +260,7 @@ const CORE_AGENTS = [
   'adversarial-reviewer', 'api-architect', 'changelog-writer', 'code-explorer',
   'code-quality', 'database-designer', 'devops-engineer', 'doc-creator',
   'outcomes-grader', 'performance-tester', 'requirements-analyst', 'security-auditor',
-  'test-writer',
+  'security-hunter', 'test-writer',
 ]
 const FIRST_PARTY_FILES = { drupal: ['drupal'], ios: ['ios'], laravel: ['laravel'], nextjs: ['nextjs', 'nuxt'] }
 const FIRST_PARTY_PLUGINS = [
@@ -278,6 +278,44 @@ const FIRST_PARTY_FILE_HASHES = {
   ios: '9da615defa84b98b3c85cbb8041df8e4885249d750a5dfcdf3e2148a5d48ebb4',
   laravel: 'e54880dc92b09aba010e67c9e7c48e236d1a5952b7da32ad97bcc13ee1bd079d',
   nextjs: 'b790c60abe6c9be788705cab1bf179d5dea009009934b2881f6f079ec4b811da',
+}
+const HOSTS = {
+  claude: {
+    agentNamespace: 'sdd-kit:',
+    browserToolPrefix: ['mcp__playwright__', 'mcp__plugin_sdd-kit_playwright__'],
+    browserGuide: null,
+    trustStoreDir: '<OS home>/.claude/sdd-kit',
+    configDir: '.claude',
+    stacksDir: '.claude/stacks',
+    stackAddonsDir: '.claude/stack-addons',
+    agentsDir: '.claude/agents',
+    agentsFormat: 'md',
+    skillsDir: '.claude/skills',
+  },
+  codex: {
+    agentNamespace: '',
+    browserToolPrefix: ['mcp__playwright__'],
+    browserGuide: 'BROWSER: when this step needs a browser (web UI, navigation, visual or end-to-end checks), drive it with the tools of the playwright MCP server (tool names start with mcp__playwright__): navigate, snapshot, click, type, fill form, wait, screenshot, console messages and network requests. Assert against the accessibility snapshot, use screenshots only as evidence, and check console errors and failed network requests on every page you visit. If the playwright server is unavailable, report the browser check as not run, never claim it passed. API-only checks use HTTP (curl) instead of a browser.',
+    trustStoreDir: '<OS home>/.codex/sdd-kit',
+    configDir: '.codex',
+    stacksDir: '.codex/stacks',
+    stackAddonsDir: '.codex/stack-addons',
+    agentsDir: '.codex/agents',
+    agentsFormat: 'toml',
+    skillsDir: '.agents/skills',
+  },
+  cursor: {
+    agentNamespace: '',
+    browserToolPrefix: ['mcp__playwright__'],
+    browserGuide: 'BROWSER: when this step needs a browser (web UI, navigation, visual or end-to-end checks), drive it with the tools of the playwright MCP server (tool names start with mcp__playwright__): navigate, snapshot, click, type, fill form, wait, screenshot, console messages and network requests. Assert against the accessibility snapshot, use screenshots only as evidence, and check console errors and failed network requests on every page you visit. If the playwright server is unavailable, report the browser check as not run, never claim it passed. API-only checks use HTTP (curl) instead of a browser.',
+    trustStoreDir: '<OS home>/.cursor/sdd-kit',
+    configDir: '.cursor',
+    stacksDir: '.cursor/stacks',
+    stackAddonsDir: '.cursor/stack-addons',
+    agentsDir: '.cursor/agents',
+    agentsFormat: 'md',
+    skillsDir: '.cursor/skills',
+  },
 }
 const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key)
 
@@ -710,6 +748,11 @@ function phaseModels(phaseTiers) {
     const base = MODEL_TIERS[tier]
     if (!base) throw new Error(`Unknown model tier "${tier}" for phase "${phase}" (use ${Object.keys(MODEL_TIERS).join(' | ')})`)
     const o = overrides[tier]
+    // A bridge host picks its own models, so its jobs carry the tier and the effort only.
+    if (HOST !== 'claude') {
+      resolved[phase] = { tier, effort: (o && typeof o === 'object' && o.effort) || base.effort }
+      continue
+    }
     resolved[phase] = typeof o === 'string' ? { ...base, model: o } : { ...base, ...(o || {}) }
   }
   return resolved
@@ -719,6 +762,19 @@ function phaseModels(phaseTiers) {
 // first (built in), Claude in Chrome as a fallback, and an honest "not run".
 const BROWSER_PHASES = new Set(['Reproduce', 'Acceptance', 'Visual'])
 const BROWSER_GUIDE = `BROWSER: when this step needs a browser (web UI, navigation, visual or end-to-end checks), drive it with the Playwright MCP tools, named mcp__playwright__browser_* when the server comes from the project and mcp__plugin_sdd-kit_playwright__browser_* when it comes from the sdd-kit plugin (use whichever is available): browser_navigate, browser_snapshot, browser_click, browser_type, browser_fill_form, browser_wait_for, browser_take_screenshot, browser_console_messages, browser_network_requests, browser_resize (load each with ToolSearch "select:<name>" before its first call). Assert against browser_snapshot (the accessibility tree), use screenshots only as evidence, and check console errors and failed network requests on every page you visit. If the Playwright tools are unavailable, use Claude in Chrome (mcp__claude-in-chrome__*). If neither is available, report the browser check as not run — never claim it passed. API-only checks use HTTP (curl) instead of a browser.`
+// The host reaches the runtime only through the sddHost global that the workflow bridge injects;
+// Claude Code has no bridge, so the global is absent and the registry text below applies unchanged.
+const HOST = typeof sddHost === 'string' && hasOwn(HOSTS, sddHost) ? sddHost : 'claude'
+const browserGuideFor = () => HOSTS[HOST].browserGuide || BROWSER_GUIDE
+// Where the host keeps project stacks, user stacks, agents and its trust store; Claude's values reproduce the text below unchanged.
+const HOST_STACKS_DIR = HOSTS[HOST].stacksDir
+const HOST_USER_STACKS_DIR = `~/${HOSTS[HOST].configDir}/stacks`
+// A bridge host resolves specialists from the kit and from approved stack add-ons only, never from its own agents folder.
+const addAgentHint = (name) => (HOST === 'claude'
+  ? `add ${name}.md to ${HOSTS[HOST].agentsDir}/`
+  : `add ${name}.md to agents/ of an approved stack add-on under ${HOSTS[HOST].stackAddonsDir}/`)
+const HOST_TRUST_STORE_DIR = HOSTS[HOST].trustStoreDir.replace('<OS home>', '<home>')
+const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')
 // Plugin installs namespace agents ("sdd-kit:code-explorer", "<plugin>:<agent>");
 // file-copy installs use bare names. Workflows cannot tell which mode they run
 // in, so candidates are tried in order and the default agent is the last resort:
@@ -739,14 +795,14 @@ function agentCandidates(name) {
     const stacks = info.stacks.join(', ')
     const hint = info.plugin
       ? `install ${info.plugin} for ${stacks}`
-      : `add ${name}.md to .claude/agents/${info.source ? ` or set agent.plugin in ${info.source}` : ''}`
+      : `${addAgentHint(name)}${info.source ? ` or set agent.plugin in ${info.source}` : ''}`
     return { candidates, hint }
   }
-  return { candidates: [name], hint: `add ${name}.md to .claude/agents/` }
+  return { candidates: [name], hint: addAgentHint(name) }
 }
 
 async function runAgent(prompt, opts) {
-  if (opts && BROWSER_PHASES.has(opts.phase)) prompt = `${prompt}\n\n${BROWSER_GUIDE}`
+  if (opts && BROWSER_PHASES.has(opts.phase)) prompt = `${prompt}\n\n${browserGuideFor()}`
   if (!opts || !opts.agentType || opts.agentType === 'general-purpose') return agent(prompt, opts)
   const name = opts.agentType
   const { agentType, ...rest } = opts
@@ -1066,11 +1122,11 @@ const SOURCE_LABEL_PATTERN = /^[A-Za-z0-9:._~/@-]{1,120}$/
 
 // The source labels Detect may report. Anything else is rejected before its text is read.
 const MANIFEST_SOURCE_FORMS = [
-  /^project:\.claude\/stacks\/[^/\\\s]+$/,
-  /^user:~\/\.claude\/stacks\/[^/\\\s]+$/,
+  new RegExp(`^project:${escapeRegex(HOST_STACKS_DIR)}/[^/\\\\\\s]+$`),
+  new RegExp(`^user:${escapeRegex(HOST_USER_STACKS_DIR)}/[^/\\\\\\s]+$`),
   /^plugin:[A-Za-z0-9][A-Za-z0-9._-]*@[A-Za-z0-9._-]+$/,
 ]
-const MISSING_SOURCE = 'missing or invalid source. Fix: report source as project:.claude/stacks/<file>, user:~/.claude/stacks/<file> or plugin:<name>@<marketplace>'
+const MISSING_SOURCE = `missing or invalid source. Fix: report source as project:${HOST_STACKS_DIR}/<file>, user:${HOST_USER_STACKS_DIR}/<file> or plugin:<name>@<marketplace>`
 // A label must pass SOURCE_LABEL_PATTERN as well as one of the forms: it is pasted into prompts and logs.
 const isManifestSource = (source) => SOURCE_LABEL_PATTERN.test(source) && MANIFEST_SOURCE_FORMS.some((re) => re.test(source))
 const STACK_KEY_PATTERN = /^[a-z][a-z0-9-]{1,31}$/
@@ -1083,10 +1139,10 @@ function firstPartyLocation(source) {
   let dir = null
   let plugin = null
   if (scope === 'project') {
-    const m = /^\.claude\/stacks\/([^/]+)\.json$/.exec(rest)
+    const m = new RegExp(`^${escapeRegex(HOST_STACKS_DIR)}/([^/]+)\\.json$`).exec(rest)
     dir = m && m[1]
   } else if (scope === 'user') {
-    const m = /^~\/\.claude\/stacks\/([^/]+)\.json$/.exec(rest)
+    const m = new RegExp(`^${escapeRegex(HOST_USER_STACKS_DIR)}/([^/]+)\\.json$`).exec(rest)
     dir = m && m[1]
   } else if (scope === 'plugin') {
     plugin = rest.split('@')[0]
@@ -1368,7 +1424,7 @@ const MANIFEST_HASH_COMMAND = `node -e 'const c=require("crypto"),f=require("fs"
 function firstPartyHashLine() {
   return Object.keys(FIRST_PARTY_FILES)
     .filter((dir) => hasOwn(FIRST_PARTY_FILE_HASHES, dir))
-    .map((dir) => `${dir} (.claude/stacks/${dir}.json, ~/.claude/stacks/${dir}.json, plugin sdd-kit-${dir}): ${FIRST_PARTY_FILE_HASHES[dir]}`)
+    .map((dir) => `${dir} (${HOST_STACKS_DIR}/${dir}.json, ${HOST_USER_STACKS_DIR}/${dir}.json, plugin sdd-kit-${dir}): ${FIRST_PARTY_FILE_HASHES[dir]}`)
     .join('; ')
 }
 
@@ -1380,7 +1436,7 @@ function stackDiscoveryPrompt() {
   const hashRule = firstParty
     ? ` For a first-party location inside the project, hash the file first with \`${MANIFEST_HASH_COMMAND} <file>\`; when the hash equals the one listed for that add-on, return {source, sha256} and no raw. Expected hashes: ${firstParty}. A first-party location outside the project, or one whose hash differs or cannot be computed, returns raw like any other manifest.`
     : ''
-  return `STACK MANIFESTS — follow your stack discovery recipe and also return: stackManifests (one item per manifest you found: source as project:.claude/stacks/<file>, user:~/.claude/stacks/<file> or plugin:<name>@<marketplace> (plugin:<name>@inline for a --plugin-dir plugin), raw = the file text, unmodified.${hashRule}), trustStore (the verbatim text of <home>/.claude/sdd-kit/trusted-stacks.json, where <home> is the home directory your recipe reads from the OS user database, never $HOME or CLAUDE_CONFIG_DIR; null or omitted when the file is absent; null or omitted plus "trustStore unreadable" in discovery.errors when <home> cannot be resolved or the Read is refused or fails), and discovery {mode, method, errors}. Outside the project use only the Read and Glob tools, on literal absolute paths under the <config> directory and the <home>/.claude/sdd-kit directory your recipe resolves: never cat, ls or find there, and no Bash command with a variable in braces. A refused read goes into discovery.errors ("trustStore unreadable", "user stacks unreadable", "plugin list unreadable") and is never treated as trusted. A repo that matches no catalog stack but matches a manifest's detect text takes that manifest's name as stack. For each repo and each gate of its stack that lists unless globs, add {gate, glob} to unlessMatched for every glob that matches a file or directory in that repo.${execWrapperDetectLine()}${gateGuardDetectLine()}
+  return `STACK MANIFESTS — follow your stack discovery recipe and also return: stackManifests (one item per manifest you found: source as project:${HOST_STACKS_DIR}/<file>, user:${HOST_USER_STACKS_DIR}/<file> or plugin:<name>@<marketplace> (plugin:<name>@inline for a --plugin-dir plugin), raw = the file text, unmodified.${hashRule}), trustStore (the verbatim text of ${HOST_TRUST_STORE_DIR}/trusted-stacks.json, where <home> is the home directory your recipe reads from the OS user database, never $HOME or CLAUDE_CONFIG_DIR; null or omitted when the file is absent; null or omitted plus "trustStore unreadable" in discovery.errors when <home> cannot be resolved or the Read is refused or fails), and discovery {mode, method, errors}. Outside the project use only the Read and Glob tools, on literal absolute paths under the <config> directory and the ${HOST_TRUST_STORE_DIR} directory your recipe resolves: never cat, ls or find there, and no Bash command with a variable in braces. A refused read goes into discovery.errors ("trustStore unreadable", "user stacks unreadable", "plugin list unreadable") and is never treated as trusted. A repo that matches no catalog stack but matches a manifest's detect text takes that manifest's name as stack. For each repo and each gate of its stack that lists unless globs, add {gate, glob} to unlessMatched for every glob that matches a file or directory in that repo.${execWrapperDetectLine()}${gateGuardDetectLine()}
 
 ${REPO_PATH_RULE}`
 }
@@ -2042,7 +2098,7 @@ const GATES_SCHEMA = {
 
 const ACCEPTANCE_SCHEMA = {
   type: 'object',
-  required: ['resolved', 'steps'],
+  required: ['resolved', 'steps', 'architectureChecks'],
   properties: {
     resolved: { type: 'boolean' },
     scenario: { type: 'string' },
@@ -2060,6 +2116,18 @@ const ACCEPTANCE_SCHEMA = {
       },
     },
     brokenLinks: { type: 'array', items: { type: 'string' } },
+    architectureChecks: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['decisionIndex', 'ok', 'evidence'],
+        properties: {
+          decisionIndex: { type: 'integer', minimum: 0 },
+          ok: { type: 'boolean' },
+          evidence: { type: 'string', minLength: 1 },
+        },
+      },
+    },
     reason: { type: 'string' },
   },
 }
@@ -2264,6 +2332,7 @@ const scaffoldPrompt = (t) =>
   `Scaffold the ${t.role} repo (${t.stack}) at "${t.path}" for this new project. Create the framework skeleton, the project structure per the architecture, and working quality-gate tooling. Mechanical work — follow conventions exactly, write no business logic yet. CI is added in a separate step; do not write CI files.
 Idea: ${idea}
 Architecture: ${JSON.stringify({ layout: architecture.repoLayout, layers: architecture.layers, dataModel: architecture.dataModelSketch })}
+Decisions to preserve: ${JSON.stringify(architecture.decisions || [])}
 Conventions: ${JSON.stringify((constitution && constitution.conventions) || [])}
 
 1. Initialize the stack skeleton (${scaffoldFor(t.stack).command ? `the \`${scaffoldFor(t.stack).command}\` layout` : 'the stack\'s standard skeleton'}) under "${t.path}". If the dir is non-empty but untracked, integrate without deleting existing files.
@@ -2277,11 +2346,13 @@ ${splitStacks && isContractConsumer(t.stack) ? '6' : '5'}. \`git init\` if neede
 Return the created paths, packageManager${packageManagersFor(t.stack).length ? ' (the one the lockfile names)' : ' (omit it: the stack declares no package managers)'}, the real gateCommands (tagged with repo="${t.path}"; ${gateReportRule(t.stack)}), gateCheck, and committed=true.`
 
 const ciPrompt = (t, s) =>
-  `Add the CI pipeline for the ${t.role} repo (${t.stack}) at "${t.path}" — cd there. The skeleton and gate tooling already exist and were committed.
+  `Add the CI verification chosen by the architecture for the ${t.role} repo (${t.stack}) at "${t.path}" — cd there. The skeleton and gate tooling already exist and were committed.
+Architecture decisions (binding): ${JSON.stringify(architecture.decisions || [])}
+First-slice expected end state: ${architecture.firstSlice.expectedEndState}
 Gate commands to run in CI, in this order: ${JSON.stringify(gatePlanFor(scaffoldedTarget(t, s && s.gateCommands, s && s.packageManager)).run.map((g) => g.command))}
 Package manager: ${(s && declaredPackageManager(t.stack, s.packageManager, t.path)) || 'from the lockfile'}.
-Write .github/workflows/ci.yml following the ci-cd skill: one job per stack, dependency caching keyed on the lockfile, ${ciFor(t.stack).services.length ? `the services the stack declares (${ciFor(t.stack).services.join('; ')}), ` : ''}${ciFor(t.stack).setup.length ? `its setup steps (${ciFor(t.stack).setup.join('; ')}), ` : ''}and every gate above as its own step. ${s && s.contractSync ? 'Add a contract-sync step that reads the backend route list exported as an artifact (see the contract-sync README).' : ''}
-Never weaken a gate to get green (no continue-on-error, no skipped tests). Commit the CI file as a second checkpoint. Return configured, files, the job names, and committed.`
+For local-only CI, implement the agreed checked-in runner (for example ci.sh), fail on the first failing command, and do not add a hosted workflow. Otherwise use the architecture's chosen provider; use .github/workflows/ci.yml following the ci-cd skill only when GitHub Actions is selected or no provider/local-only choice was made. For a hosted workflow use one job per stack, dependency caching keyed on the lockfile when dependencies exist, and every gate above as its own step. Configure ${ciFor(t.stack).services.length ? `the declared services (${ciFor(t.stack).services.join('; ')}) and ` : ''}${ciFor(t.stack).setup.length ? `setup steps (${ciFor(t.stack).setup.join('; ')}) and ` : ''}the gate tooling for the chosen environment. ${s && s.contractSync ? 'Add a contract-sync step that reads the backend route list through the chosen local or hosted arrangement (see the contract-sync README).' : ''}
+Never weaken a gate to get green (no continue-on-error, no skipped tests). Run the local runner when one is required; writing a file alone is not execution evidence. Commit the CI files as a second checkpoint. Return configured, files, the job names (empty for a local runner), and committed.`
 
 async function scaffoldTarget(t) {
   const result = await runAgent(scaffoldPrompt(t), { phase: 'Scaffold', label: `scaffold:${t.role}`, schema: SCAFFOLD_SCHEMA, agentType: agentForStack(t.stack), ...MODELS.scaffold })
@@ -2360,9 +2431,10 @@ Expected end state: ${architecture.firstSlice.expectedEndState}
 Layers: ${JSON.stringify(architecture.layers)}
 Data model: ${JSON.stringify(architecture.dataModelSketch)}
 Conventions/principles: ${JSON.stringify(principles)}
+Architecture decisions (binding, including validation and error behavior): ${JSON.stringify(architecture.decisions || [])}
 ${prior}
 
-Implement just enough to make the slice work end-to-end for this repo's part (e.g. backend: migration + model + service + controller + route + test; frontend: page + component + API call + test). No AI-marker/changelog comments; match the scaffold's style. Return changed files (repo-relative) and completed=true only with a passing test.`,
+Implement just enough to make the slice work end-to-end for this repo's part (e.g. backend: migration + model + service + controller + route + test; frontend: page + component + API call + test). Cover the applicable architecture decisions with regression tests, including rejected inputs and error paths. Do not silently substitute a broader contract or defer a first-slice requirement to the backlog. No AI-marker/changelog comments; match the scaffold's style. Return changed files (repo-relative) and completed=true only with passing tests and the applicable decisions implemented.`,
     { label: `slice:${t.role}`, phase: 'Slice', schema: BUILD_SCHEMA, agentType: agentForStack(t.stack), ...MODELS.slice }
   )
   if (part && part.completed !== false) sliceBuilt.push({ repo: t.path, ...part })
@@ -2422,15 +2494,23 @@ if (!sliceBuilt.length) {
 Slice: ${architecture.firstSlice.title}
 Entry point: ${architecture.firstSlice.entryPoint}
 Expected end state: ${architecture.firstSlice.expectedEndState}
+Architecture decisions: ${JSON.stringify((architecture.decisions || []).map((decision, decisionIndex) => ({ decisionIndex, ...decision })))}
+Constitution principles: ${JSON.stringify(principles)}
 Targets: ${JSON.stringify(targets.map((t) => ({ role: t.role, stack: t.stack, path: t.path })))}
 Changed files: ${sliceChanged.join(', ')}
 
-From the entry point, follow every hop to the expected end state (boot the app / run the route / load the page as needed). Record step/expected/actual/ok. A redirect or link whose target does not resolve is ok=false (brokenLinks). resolved=true ONLY if the journey reaches the expected end state with no broken hop.`,
+From the entry point, follow every hop to the expected end state (boot the app / run the route / load the page as needed). Record step/expected/actual/ok, including forbidden inputs and error behavior. A redirect or link whose target does not resolve is ok=false (brokenLinks). Return exactly one architectureChecks entry for EVERY listed decisionIndex, with ok and concrete evidence from commands or file inspection. Check the built code, not merely whether the plan sounds reasonable. An unmet, deferred, or unverified decision is ok=false; do not rewrite the architecture to match an accidental implementation. resolved=true ONLY if all journey steps and architecture checks pass with no broken hop.`,
     { phase: 'Acceptance', schema: ACCEPTANCE_SCHEMA, ...MODELS.acceptance }
   )
-  if (acceptance) log(`Acceptance: ${acceptance.resolved ? 'RESOLVED' : 'NOT resolved'}${(acceptance.brokenLinks || []).length ? ` — broken: ${acceptance.brokenLinks.join(', ')}` : ''}`)
 }
-const acceptanceResolved = !!(acceptance && acceptance.resolved)
+// A worker's overall boolean cannot overrule failed or missing evidence.
+const architectureChecks = (acceptance && acceptance.architectureChecks) || []
+const architectureImplemented = !!acceptance && architectureChecks.length === (architecture.decisions || []).length && (architecture.decisions || []).every((_, index) => {
+  const matching = architectureChecks.filter((check) => check.decisionIndex === index)
+  return matching.length === 1 && matching[0].ok === true && typeof matching[0].evidence === 'string' && matching[0].evidence.trim().length > 0
+})
+const acceptanceResolved = !!(acceptance && acceptance.resolved === true && acceptance.steps && acceptance.steps.length && acceptance.steps.every((step) => step.ok === true) && !(acceptance.brokenLinks || []).length && architectureImplemented)
+if (acceptance) log(`Acceptance: ${acceptanceResolved ? 'RESOLVED' : 'NOT resolved'}${(acceptance.brokenLinks || []).length ? ` — broken: ${acceptance.brokenLinks.join(', ')}` : ''}`)
 
 // --- Handoff: getting-started + architecture ADR + manual test ----------
 phase('Handoff')
@@ -2444,7 +2524,7 @@ Idea: ${idea}
 Architecture: ${JSON.stringify(architecture)}
 Constitution principles: ${JSON.stringify(principles)}
 Slice built: ${JSON.stringify(sliceBuilt.map((b) => ({ repo: b.repo, summary: b.summary })))}
-Acceptance: ${JSON.stringify(acceptance && { resolved: acceptance.resolved, steps: acceptance.steps })}
+Acceptance: ${JSON.stringify(acceptance && { resolved: acceptanceResolved, steps: acceptance.steps, architectureChecks })}
 App URL: ${devUrl}
 
 Write (in the primary repo "${primaryTarget.path}", or a docs/ dir):
@@ -2461,6 +2541,7 @@ Return the files written and the run commands.`,
 phase('Report')
 const blockingManifests = blockingUntrusted(untrustedManifests, targets)
 const shippable = scaffolded && sliceComplete && gates.allPassed && acceptanceResolved && archSound && !blockingManifests.length
+const recommendation = shippable ? 'SHIP-SLICE' : blockingManifests.length ? 'BLOCKED' : 'FIX-FIRST'
 const trustNext = untrustedNext('greenfield-build', blockingManifests)
 // The next slices go into backlog.md (product-brief's format), not only into prose,
 // so /spec-board shows them and /sdd can start each one.
@@ -2484,14 +2565,15 @@ const report = await runAgent(
   `Write a concise markdown report for this greenfield build. Sections: Summary, Idea, Stacks & repo layout, Constitution (key principles), Architecture decisions (with rationale + any verify concerns: ${JSON.stringify(archConcerns)}), Scaffold (what was created + CI), First slice (title + status), Quality gates per repo, Acceptance (does the first slice work end-to-end?), Handoff docs written, Recommendation (SHIP-SLICE / FIX-FIRST / BLOCKED — only SHIP-SLICE if scaffold + slice complete, gates pass, acceptance resolved, and the architecture is sound${trustNext ? `; an untrusted stack manifest means its gates did not run, so the recommendation is BLOCKED and the Next line is exactly "${trustNext}"` : ''}), and Next slices: the ids appended to backlog.md (with its path) and the Run line of the first one, which starts the next slice through /sdd.
 Idea: ${idea}
 Targets: ${JSON.stringify(targets.map(targetSummary))}
+Computed recommendation: ${recommendation}. Do not claim a stronger outcome. Explicitly disclose any contrary evidence.
 Stack overlay: ${JSON.stringify({ ...stackOverlay, untrusted: untrustedManifests })}
-Architecture: ${JSON.stringify(architecture)} (sound=${archSound})
+Architecture: ${JSON.stringify(architecture)} (plan sound=${archSound}; implemented=${architectureImplemented})
 Scaffold: ${JSON.stringify(scaffolds.map((s) => ({ created: (s.created || []).length, committed: s.committed === true, packageManager: packageManagerByRepo[s.target.path] || null, contractSync: s.contractSync === true, gateCheck: scaffoldGateCheck(s) })))}
 CI: ${JSON.stringify(ciResults)}
 Backlog: ${JSON.stringify(backlog)}
 Slice: ${JSON.stringify(sliceBuilt.map((b) => ({ repo: b.repo, summary: b.summary })))} (complete=${sliceComplete})
 Gates: ${JSON.stringify(gates.allGates)}
-Acceptance: ${JSON.stringify(acceptance)}
+Acceptance (validated resolved=${acceptanceResolved}): ${JSON.stringify(acceptance)}
 Handoff: ${JSON.stringify(handoff)}`,
   { phase: 'Report', ...MODELS.report }
 )
@@ -2506,11 +2588,13 @@ return {
   sliceComplete,
   gatesPassed: gates ? gates.allPassed : false,
   acceptanceResolved,
-  architectureSound: archSound,
+  architecturePlanSound: archSound,
+  architectureImplemented,
+  architectureSound: archSound && architectureImplemented,
   handoffDocs: handoff ? handoff.files || [] : [],
   ciConfigured,
   backlog: backlog ? { path: backlog.path, appended: backlog.appended || [] } : null,
-  recommendation: shippable ? 'SHIP-SLICE' : blockingManifests.length ? 'BLOCKED' : 'FIX-FIRST',
+  recommendation,
   stackOverlay: { ...stackOverlay, untrusted: untrustedManifests },
   next: trustNext || null,
   report,

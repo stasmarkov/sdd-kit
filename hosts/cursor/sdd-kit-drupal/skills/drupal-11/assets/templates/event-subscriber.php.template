@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Drupal\{{MODULE_MACHINE_NAME}}\EventSubscriber;
+
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+
+final class {{SUBSCRIBER_CLASS}} implements EventSubscriberInterface {
+
+  public function __construct() {}
+
+  public static function getSubscribedEvents(): array {
+    return [
+      // EventClass::EVENT_NAME => ['methodName', priority],
+    ];
+  }
+
+}

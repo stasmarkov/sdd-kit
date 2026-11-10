@@ -6,12 +6,12 @@
   },
   "metadata": {
     "description": "SDD Kit: spec-driven development for Claude Code. A stack-agnostic core plugin (/sdd front door, workflows, agents, skills, hooks) plus optional stack, preset and tool add-ons.",
-    "version": "3.1.0"
+    "version": "4.0.0"
   },
   "plugins": [
     {
       "name": "sdd-kit",
-      "description": "SDD Kit: spec-driven development for Claude Code. A single /sdd front door, six background multi-agent workflows with stack detection and cross-repo support, specialized agents and skills, and guardrail hooks. Stack-agnostic core; stacks come from add-on plugins.",
+      "description": "SDD Kit: spec-driven development for Claude Code. A single /sdd front door, background multi-agent workflows with stack detection and cross-repo support, specialized agents and skills, and guardrail hooks. Stack-agnostic core; stacks come from add-on plugins.",
       "category": "development",
       "source": "./plugins/sdd-kit",
       "keywords": [

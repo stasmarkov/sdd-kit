@@ -1,0 +1,7 @@
+{{MODULE_MACHINE_NAME}}.{{ROUTE_NAME}}:
+  path: '/{{PATH}}'
+  defaults:
+    _controller: '\Drupal\{{MODULE_MACHINE_NAME}}\Controller\{{CONTROLLER_CLASS}}::{{METHOD}}'
+    _title: '{{TITLE}}'
+  requirements:
+    _permission: '{{PERMISSION}}'

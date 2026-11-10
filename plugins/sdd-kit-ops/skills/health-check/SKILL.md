@@ -4,8 +4,8 @@ description: Verify system health across the app, database, cache, queues, disk,
 argument-hint: "--full | --quick | --services | --endpoints"
 allowed-tools: Bash, Read, Grep
 metadata:
-  mcp-tools: datadog, sentry
-  version: 1.1
+  mcp-tools: "datadog, sentry"
+  version: "1.1"
   subagents: "ops-analyst"
 ---
 

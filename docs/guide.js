@@ -310,7 +310,8 @@
   /* ---------- Which route? (decision tree over GUIDE.routes) ---------- */
   var PICK_START = 'broken';
   var PICK = {
-    broken: { q: 'Is something broken?', hint: function () { return routeById('bug').when; }, yes: 'route:bug', no: 'shipped' },
+    broken: { q: 'Is something broken?', hint: function () { return routeById('bug').when; }, yes: 'route:bug', no: 'audit' },
+    audit: { q: 'Do you need a deep security audit of existing code, with coverage tracking and verified leads?', hint: function () { return routeById('audit').when; }, yes: 'route:audit', no: 'shipped' },
     shipped: { q: 'Is the code already shipped, and you only need a QA plan or docs?', hint: function () { return routeById('shipped').when; }, yes: 'route:shipped', no: 'decision' },
     decision: { q: 'Do you need to choose a technology or approach first?', hint: function () { return routeById('decision').when; }, yes: 'route:decision', no: 'exists' },
     exists: { q: 'Does code exist yet for the target?', hint: function () { var w = routeById('newapp').when; return 'If not: ' + w.charAt(0).toLowerCase() + w.slice(1); }, yes: 'tiny', no: 'route:newapp' },
@@ -460,10 +461,15 @@
       h('dt', 'Category'), h('dd', catLabel(it.category)),
       h('dt', 'Ships'), h('dd', it.ships === 'core' ? chip('core', 'tools') : chip(addon ? addon.name : it.ships, 'addon'))
     ];
-    if (type === 'skill') meta.push(h('dt', 'Invoke'), h('dd', chip(it.invoke)));
-    else meta.push(h('dt', 'Model'), h('dd', chip(it.model || '—', 'agent')), h('dt', 'Effort'), h('dd', it.effort || 'not set'));
+    var onHost = catalogHost(it);
+    if (type === 'skill' && onHost) meta.push(h('dt', 'Invoke'), h('dd', chip(onHost.invoke), chip(onHost.availability)));
+    else if (type === 'skill') meta.push(h('dt', 'Invoke'), h('dd', chip(it.invoke)));
+    else {
+      if (onHost) meta.push(h('dt', 'Invoke'), h('dd', chip(onHost.invoke), chip(onHost.availability)));
+      meta.push(h('dt', 'Model'), h('dd', chip(it.model || '—', 'agent')), h('dt', 'Effort'), h('dd', it.effort || 'not set'));
+    }
     var out = [para(it.description), h('h3', 'Details'), h('dl', { class: 'meta-grid' }, meta)];
-    if (addon) out.push(h('h3', 'Add-on'), para(addon.what, 'muted'), codeBlock('/plugin install ' + addon.name + '@sdd-kit', 'install command for ' + addon.name));
+    if (addon && host === HOSTS.default) out.push(h('h3', 'Add-on'), para(addon.what, 'muted'), codeBlock('/plugin install ' + addon.name + '@sdd-kit', 'install command for ' + addon.name));
     if (type === 'skill') {
       var routes = G.routes.filter(function (r) { return routeLinks(r).skills.indexOf(it) !== -1; });
       if (routes.length) out.push(h('h3', 'Reached from /sdd'), routeButtons(routes));
@@ -509,13 +515,96 @@
     done('primer');
   }
 
+  /* ---------- Host selector ---------- */
+  var HOSTS = window.GUIDE_HOSTS || { default: 'claude', order: ['claude'], hosts: { claude: { label: 'Claude Code', prefix: '/' } } };
+  var HOST_KEY = 'sdd-guide-host';
+  var hostListeners = [];
+
+  /**
+   * Picks the active host. A valid `?host=` in the query wins over the stored choice; an unknown query
+   * or stored value falls back to the default host.
+   */
+  function resolveHost(search, stored) {
+    var m = /[?&]host=([^&#]*)/.exec(search || '');
+    var fromQuery = null;
+    if (m) {
+      try { fromQuery = decodeURIComponent(m[1]); } catch (e) { fromQuery = ''; }
+    }
+    if (fromQuery !== null) return knownHost(fromQuery) ? fromQuery : HOSTS.default;
+    return knownHost(stored) ? stored : HOSTS.default;
+  }
+  /** True only for a host the data defines; inherited keys such as `constructor` are not hosts. */
+  function knownHost(id) {
+    return typeof id === 'string' && Object.prototype.hasOwnProperty.call(HOSTS.hosts, id);
+  }
+  function readStoredHost() {
+    try { return localStorage.getItem(HOST_KEY); } catch (e) { return null; }
+  }
+  var host = resolveHost(location.search, readStoredHost());
+  function hostInfo() { return HOSTS.hosts[host]; }
+
+  /** Swaps the leading slash of a command for the host's invocation prefix. */
+  function hostCommand(code) {
+    var prefix = hostInfo().prefix;
+    return prefix !== '/' && code.charAt(0) === '/' ? prefix + code.slice(1) : code;
+  }
+  /** Install modes for the active host as [id, {label, steps, note}] pairs. */
+  function installModesFor() {
+    var src = host === HOSTS.default ? G.install : (hostInfo().install || {});
+    var modes = [];
+    if (src.plugin) modes.push(['plugin', src.plugin]);
+    if (src.fileCopy) modes.push(['file-copy', src.fileCopy]);
+    if (src.npx) modes.push(['npx', src.npx]);
+    return modes;
+  }
+  function installFlags() { return host === HOSTS.default ? G.install.flags : (hostInfo().flags || []); }
+  /**
+   * Quickstart steps for the active host, with each step's original index kept for progress. Another host
+   * replaces the Claude-only steps with the steps of its first install mode (indexes after the shared steps)
+   * and uses a step's hostTitle and hostText where the Claude wording does not apply.
+   */
+  function quickstartFor() {
+    var out = [];
+    var other = host !== HOSTS.default;
+    if (other) {
+      var first = installModesFor()[0];
+      if (first) first[1].steps.forEach(function (s, n, all) {
+        out.push({ index: G.quickstart.length + n, title: s.text, text: n === all.length - 1 ? first[1].note : first[1].label, code: s.code });
+      });
+    }
+    G.quickstart.forEach(function (q, i) {
+      if (other && q.claudeOnly) return;
+      var code = other && q.hostAware ? hostCommand(q.code) : q.code;
+      out.push({ index: i, title: other && q.hostTitle ? q.hostTitle : q.title, text: other && q.hostText ? q.hostText : q.text, code: code });
+    });
+    return out;
+  }
+  /** Invocation and availability of a catalog entry on the active host (null for Claude Code). */
+  function catalogHost(it) { return host === HOSTS.default ? null : (it.hosts && it.hosts[host]) || null; }
+
+  function setHost(next, store) {
+    host = knownHost(next) ? next : HOSTS.default;
+    if (store) { try { localStorage.setItem(HOST_KEY, host); } catch (e) { /* storage unavailable: the choice lasts for this page view */ } }
+    hostListeners.forEach(function (fn) { fn(); });
+  }
+  (function renderHostSelect() {
+    var sel = $('host-select');
+    if (!sel) return;
+    HOSTS.order.forEach(function (id) { sel.appendChild(h('option', { value: id }, HOSTS.hosts[id].label)); });
+    sel.value = host;
+    sel.addEventListener('change', function () { setHost(sel.value, true); });
+    hostListeners.push(function () { sel.value = host; });
+  })();
+
   /* ---------- Install ---------- */
-  var instModes = [['plugin', G.install.plugin], ['file-copy', G.install.fileCopy]];
-  if (G.install.npx) instModes.push(['npx', G.install.npx]);
-  var instMode = 'plugin';
+  var instModes = installModesFor();
+  var instMode = instModes[0][0];
   function hasInstMode(m) { return instModes.some(function (x) { return x[0] === m; }); }
   function renderInstall() {
     var root = body('install');
+    instModes = installModesFor();
+    if (!hasInstMode(instMode)) instMode = instModes[0][0];
+    fill(root, []);
     var tabs = h('div', { class: 'seg', role: 'tablist', 'aria-label': 'Install mode' });
     var panel = h('div', { role: 'tabpanel', tabindex: '0' });
     var btns = instModes.map(function (m, i) {
@@ -547,18 +636,19 @@
         return h('div', { class: 'istep' }, h('span', h('b', pad2(i + 1)), s.text), codeBlock(s.code, s.text));
       });
       out.push(para(m.note, 'note'));
-      if (mode === 'file-copy') {
+      if (mode === 'file-copy' && installFlags().length) {
         out.push(h('table', { class: 'flags' }, h('caption', { class: 'sr-only' }, 'Installer flags'),
           h('thead', h('tr', h('th', { scope: 'col' }, 'Flag'), h('th', { scope: 'col' }, 'Meaning'))),
-          h('tbody', G.install.flags.map(function (f) { return h('tr', h('td', f.flag), h('td', f.meaning)); }))));
+          h('tbody', installFlags().map(function (f) { return h('tr', h('td', f.flag), h('td', f.meaning)); }))));
       }
       fill(panel, out);
       if (updateHash) setHash('install/' + mode);
     }
     renderInstall.select = selectMode;
     selectMode(instMode, false);
-    done('install');
+    if (rendered.indexOf('install') === -1) done('install');
   }
+  hostListeners.push(function () { renderInstall(); });
 
   /* ---------- Quickstart ---------- */
   var qsDone = [];
@@ -567,28 +657,29 @@
     try { localStorage.setItem(QS_KEY, JSON.stringify(qsDone)); } catch (e) { /* storage unavailable: progress lasts for this page view */ }
   }
   function renderQuickstart() {
-    var steps = G.quickstart;
+    var steps = quickstartFor();
     var count = h('span', { class: 'qs-count' });
     var meter = h('i');
     var list = h('ol', { class: 'steps' });
     var reset = h('button', { type: 'button', class: 'btn', onclick: function () { qsDone = []; saveQs(); draw(); } }, 'Reset');
-    append(body('quickstart'), [
+    fill(body('quickstart'), [
       para('Tick each step as you finish it. Your progress is remembered in this browser.', 'note'),
       h('div', { class: 'progress' }, count, h('div', { class: 'meter', 'aria-hidden': 'true' }, meter), reset),
       list
     ]);
     function draw(focusIdx) {
-      fill(list, steps.map(function (q, i) {
+      fill(list, steps.map(function (q, pos) {
+        var i = q.index;
         var isDone = !!qsDone[i];
         return h('li', { class: isDone ? 'done' : null },
           h('button', {
             type: 'button', class: 'chk', 'data-step': i, role: 'checkbox', 'aria-checked': String(isDone),
-            'aria-label': 'Mark step ' + (i + 1) + ', ' + q.title + ', as done',
-            onclick: function () { qsDone[i] = !qsDone[i]; saveQs(); draw(i); }
-          }, isDone ? '✓' : String(i + 1)),
+            'aria-label': 'Mark step ' + (pos + 1) + ', ' + q.title + ', as done',
+            onclick: function () { qsDone[i] = !qsDone[i]; saveQs(); draw(pos); }
+          }, isDone ? '✓' : String(pos + 1)),
           h('div', h('h3', q.title), para(q.text), codeBlock(q.code, q.title + ' command')));
       }));
-      var n = qsDone.filter(Boolean).length;
+      var n = steps.filter(function (q) { return qsDone[q.index]; }).length;
       count.textContent = n + ' / ' + steps.length + ' done';
       meter.style.width = (n / steps.length * 100) + '%';
       if (focusIdx !== undefined) {
@@ -597,8 +688,9 @@
       }
     }
     draw();
-    done('quickstart');
+    if (rendered.indexOf('quickstart') === -1) done('quickstart');
   }
+  hostListeners.push(function () { renderQuickstart(); });
 
   /* ---------- Which route? ---------- */
   function renderPicker() {
@@ -673,7 +765,7 @@
     done('which-route');
   }
 
-  /* ---------- One request, six routes ---------- */
+  /* ---------- One request, many routes ---------- */
   var routeCards = {};
   function markSelectedRoute(id, exId) {
     Object.keys(routeCards).forEach(function (k) { routeCards[k].classList.toggle('is-selected', k === id); });
@@ -1325,7 +1417,9 @@
       return h('div', { class: 'group' }, h('h3', k, ' ', h('span', { class: 'ct' }, groups[k].length)),
         h('div', { class: 'cards' }, groups[k].map(function (x) {
           var chips = [x.ships === 'core' ? chip('core', 'tools') : chip(shipsLabel(x.ships), 'addon')];
-          if (type === 'skill') chips.push(chip(x.invoke));
+          var xh = catalogHost(x);
+          if (xh) chips.push(chip(xh.invoke), chip(xh.availability));
+          if (type === 'skill') { if (!xh) chips.push(chip(x.invoke)); }
           else chips.push(chip(x.model, 'agent'), x.effort ? chip('effort ' + x.effort) : null);
           return h('button', { type: 'button', class: 'card k-' + type, onclick: function () { showItem(type, x.name); } },
             h('span', { class: 'nm' }, x.name), h('span', { class: 'ds' }, x.description), h('span', { class: 'chips' }, chips));
@@ -1349,6 +1443,7 @@
     renderGroups();
     done('catalog');
   }
+  hostListeners.push(function () { if (catGroups) renderGroups(); });
 
   /* ---------- Troubleshooting, roles, links ---------- */
   function highlight(text, q) {
@@ -1692,6 +1787,13 @@
   renderLinks();
 
   window.SDDGuide = {
+    resolveHost: resolveHost,
+    host: function () { return host; },
+    setHost: setHost,
+    installModes: function () { return installModesFor().map(function (m) { return { id: m[0], steps: m[1].steps }; }); },
+    installFlags: installFlags,
+    quickstart: quickstartFor,
+    catalogHost: catalogHost,
     plan: plan,
     parseHash: parseHash,
     pickerStart: PICK_START,

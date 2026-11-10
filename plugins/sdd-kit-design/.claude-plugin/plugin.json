@@ -1,6 +1,6 @@
 {
   "name": "sdd-kit-design",
-  "version": "3.1.0",
+  "version": "4.0.0",
   "description": "UI design add-on: ui-ux-advisor agent and design-ui skill. Third-party design skills are listed in docs/third-party.md.",
   "author": {
     "name": "Stas Markov"

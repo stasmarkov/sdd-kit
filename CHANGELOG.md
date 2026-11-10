@@ -7,6 +7,37 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-11-10
+
+SDD Kit now runs on Codex and Cursor as well as Claude Code. Claude Code behaviour is unchanged apart from the files listed below. Upgrading: [Upgrading from 3.x to 4.0](https://github.com/stasmarkov/sdd-kit/blob/main/share/docs/INSTALLATION.md#upgrading-from-3x-to-40). Codex and Cursor ship as an **unverified preview**: they are tested in this repo's suites, not yet in recorded real-host sessions ([docs/hosts.md](https://github.com/stasmarkov/sdd-kit/blob/main/docs/reference/hosts.md)).
+
+### Added
+
+- **Codex and Cursor hosts (preview).** `install.sh --host codex|cursor` installs the kit into `.codex/` / `.agents/skills/` or `.cursor/`, and per-host plugin packages are built under `hosts/<host>/`. Skills, agents, rules and hooks are converted per host from one source, and the build fails on any Claude-only path left behind. Codex and Cursor support was contributed by Bogdan Konkevich, ported from his fork.
+- **Workflow bridge.** An MCP server (`adapters/bridge/`) runs the background workflows on hosts without Claude Code's Workflow tool: every agent call becomes a job the host claims, runs with its own subagent and submits, with durable state, resume after a restart and a completion review. See `docs/workflow-bridge.md`.
+- **Host-neutral hooks.** One dispatcher runs the kit's hook scripts on Codex and Cursor, translating their payloads, and fails closed for the guard scripts. Known gaps per host are listed in `docs/hosts.md`.
+- **Guide host selector.** The interactive guide shows install steps, commands and the catalog for Claude Code, Codex or Cursor.
+
+- **Vendored security-audit skill.** Cloudflare's security-audit skill (MIT, pinned upstream commit `c1c8a8c1471069fb0e188eeaff69b8e8db6564a8`) is vendored in `src/skills/security-audit/` with path-only changes, shipped in minimal and full installs, and credited to Cloudflare in `docs/third-party.md`.
+- **security-audit workflow.** `security-audit` is a new background workflow that audits a scope for vulnerabilities with the vendored skill's report schema and validators, and writes a validated ledger and findings report. It is the only workflow added since 3.1.0.
+- **security-hunter agent.** A new read-only core agent without memory runs the security-audit workflow's hunters, coverage critics and verifiers, so independent votes share no state; it ships in every install, `--minimal` included.
+- **LF line endings for the vendored skill.** The repository and the distribution tree ship a `.gitattributes` rule that keeps `skills/security-audit/` LF, so the workflow's hash pin also holds on Windows checkouts.
+- **/sdd security audit route.** `/sdd` gains an `audit` route that launches the `security-audit` workflow, and offers that audit after ship-feature when a confirmed finding has dimension security or the spec has an authorization, personal-data or privacy NFR. The existing routes and their launch calls are unchanged.
+- **Security tool differentiation.** `/deep-review` prints a one-line security-audit offer after its report (not with `--format=json`), and `security-scan`, the routing guide and USAGE-EXAMPLES section 10 explain how the quick scan, the security-auditor agent and the security-audit workflow differ.
+- **Host-aware trust store and new-stack.** `--host claude|codex|cursor` on the stack-trust and new-stack scripts and the host-aware registry: each host keeps its own trust store, and the generated registry region of every workflow, `lib/stacks.js` and `lib/stacks.json` carries the host table. Without `--host` nothing changes.
+- **Trust store guard.** `block-dangerous.sh` blocks shell writes to the Claude, Codex and Cursor trust stores; the paths are generated into a marked region. Under Claude it also refuses a subagent's quoted or escaped `--approve`, matches the store name and paths without regard to case, and treats a glob that matches the store file name as naming it. `verification-gates` pins the regenerated `trust-store.mjs` hash.
+- **Hooks doc.** `hooks/README.md` documents the limits of the trust store guard.
+
+### Changed
+
+- **Strict YAML skill frontmatter.** Five descriptions with an unquoted `: `, one with an unquoted ` #`, and every unquoted `metadata:` value are quoted so strict YAML parsers accept the skills. The parsed strings are unchanged, so the catalog and the reference indexes do not change.
+
+### Fixed
+
+- **Commit-message hook reads the first `-m`.** `check-commit-msg.sh` checks the first line of the first `-m` or `--message` value, so a body passed as a second `-m` is no longer taken for the subject, and a multi-line message is checked by its first line.
+- **Greenfield acceptance.** greenfield-build passes the architecture decisions to the scaffold, CI, slice and acceptance agents, and acceptance returns one evidence-backed `architectureChecks` entry per decision. The recommendation is computed from the evidence: a failed, missing or duplicate check, a failed journey step, no steps, or a broken link means `FIX-FIRST` even when the agent reports `resolved=true`. The CI step honours a local-only runner when the architecture picks one. The result adds `architecturePlanSound` and `architectureImplemented`; `architectureSound` now requires both. Contributed by Bogdan Konkevich.
+- **Pinned URLs.** Plugin-mode template URLs in the docs name the current release.
+
 ## [3.1.0] - 2026-10-26
 
 ### Changed

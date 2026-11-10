@@ -1,0 +1,5 @@
+{
+  "name": "sdd-kit-laravel",
+  "version": "4.0.0",
+  "description": "Laravel add-on: laravel-backend-dev agent, Laravel, Pest, Passport, DTO, service-repository, event-driven and migration skills, path-scoped rules, the contract-sync template and the Laravel stack manifest."
+}

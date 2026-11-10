@@ -3,7 +3,7 @@
 
 The Laravel + Next.js starting set for 3.x: installs the core plugin with the Laravel, Next.js and dev-environment add-ons. Ships no components of its own.
 
-- Version: 3.1.0
+- Version: 4.0.0
 - Keywords: preset, laravel, nextjs
 
 ## Install
@@ -16,4 +16,4 @@ The Laravel + Next.js starting set for 3.x: installs the core plugin with the La
 ## Learn more
 
 - [Interactive guide](https://stasmarkov.github.io/sdd-kit/)
-- [Worked example: Hireboard](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/docs/examples/job-board/README.md)
+- [Worked example: Hireboard](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/examples/job-board/README.md)

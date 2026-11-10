@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../../../../../../index.html">SDD Kit</a>
-    <span class="badge">v3.1.0</span>
+    <span class="badge">v4.0.0</span>
   </div>
   <div class="header-actions">
     <a class="btn" href="../../../../../../index.html"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
@@ -35,7 +35,7 @@
 <p>Context: Hireboard is a small job board with a Laravel 12 API repo and a Next.js 15 frontend repo. Visitors search open jobs, candidates keep a profile and apply, employers see applications to their jobs, and admins moderate company reviews.</p>
 <ol><li>HIRE-9: Closed job postings still open by direct link. As a guest, opening /jobs/&lt;id&gt; of the closed posting &quot;Legacy PHP Maintainer&quot; renders the job detail with an Apply button. Expected: the not-found page (API 404 job_not_found).</li><li>HIRE-6: Candidates who have a profile can apply to an open job with an optional cover letter, once per job. Candidates see their applications; employers see the applications to their own company&#39;s jobs.</li><li>HIRE-2: Before we build login, decide how the Next.js frontend authenticates against the Laravel API: Sanctum SPA cookies, Sanctum tokens held by the Next.js server in an HttpOnly cookie, Passport with PKCE, or Auth.js wrapping Sanctum.</li><li>HIRE-10: The public browse journey (job search, job detail, company careers page) is live. We need a traceable QA plan plus user and developer docs for it. No code changes.</li><li>Start a new admin analytics service for Hireboard in an empty repository: a small API that reports postings and applications per week for the admin team.</li><li>HIRE-8: On job cards, format the existing salary as &quot;€60,000 – €80,000 a year&quot; with Intl.NumberFormat and hide it when the posting has no salary. One component, display only.</li></ol>
   </article>
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/docs/examples/job-board/artifacts/kit-fork/evals/hireboard-routing/prompt.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/examples/job-board/artifacts/kit-fork/evals/hireboard-routing/prompt.md">View the Markdown source</a></p>
 </main>
 <script>
   (function () {

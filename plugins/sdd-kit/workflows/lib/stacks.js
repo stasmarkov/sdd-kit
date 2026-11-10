@@ -245,7 +245,7 @@ export const CORE_AGENTS = [
   'adversarial-reviewer', 'api-architect', 'changelog-writer', 'code-explorer',
   'code-quality', 'database-designer', 'devops-engineer', 'doc-creator',
   'outcomes-grader', 'performance-tester', 'requirements-analyst', 'security-auditor',
-  'test-writer',
+  'security-hunter', 'test-writer',
 ]
 export const FIRST_PARTY_FILES = { drupal: ['drupal'], ios: ['ios'], laravel: ['laravel'], nextjs: ['nextjs', 'nuxt'] }
 export const FIRST_PARTY_PLUGINS = [
@@ -263,6 +263,44 @@ export const FIRST_PARTY_FILE_HASHES = {
   ios: '9da615defa84b98b3c85cbb8041df8e4885249d750a5dfcdf3e2148a5d48ebb4',
   laravel: 'e54880dc92b09aba010e67c9e7c48e236d1a5952b7da32ad97bcc13ee1bd079d',
   nextjs: 'b790c60abe6c9be788705cab1bf179d5dea009009934b2881f6f079ec4b811da',
+}
+export const HOSTS = {
+  claude: {
+    agentNamespace: 'sdd-kit:',
+    browserToolPrefix: ['mcp__playwright__', 'mcp__plugin_sdd-kit_playwright__'],
+    browserGuide: null,
+    trustStoreDir: '<OS home>/.claude/sdd-kit',
+    configDir: '.claude',
+    stacksDir: '.claude/stacks',
+    stackAddonsDir: '.claude/stack-addons',
+    agentsDir: '.claude/agents',
+    agentsFormat: 'md',
+    skillsDir: '.claude/skills',
+  },
+  codex: {
+    agentNamespace: '',
+    browserToolPrefix: ['mcp__playwright__'],
+    browserGuide: 'BROWSER: when this step needs a browser (web UI, navigation, visual or end-to-end checks), drive it with the tools of the playwright MCP server (tool names start with mcp__playwright__): navigate, snapshot, click, type, fill form, wait, screenshot, console messages and network requests. Assert against the accessibility snapshot, use screenshots only as evidence, and check console errors and failed network requests on every page you visit. If the playwright server is unavailable, report the browser check as not run, never claim it passed. API-only checks use HTTP (curl) instead of a browser.',
+    trustStoreDir: '<OS home>/.codex/sdd-kit',
+    configDir: '.codex',
+    stacksDir: '.codex/stacks',
+    stackAddonsDir: '.codex/stack-addons',
+    agentsDir: '.codex/agents',
+    agentsFormat: 'toml',
+    skillsDir: '.agents/skills',
+  },
+  cursor: {
+    agentNamespace: '',
+    browserToolPrefix: ['mcp__playwright__'],
+    browserGuide: 'BROWSER: when this step needs a browser (web UI, navigation, visual or end-to-end checks), drive it with the tools of the playwright MCP server (tool names start with mcp__playwright__): navigate, snapshot, click, type, fill form, wait, screenshot, console messages and network requests. Assert against the accessibility snapshot, use screenshots only as evidence, and check console errors and failed network requests on every page you visit. If the playwright server is unavailable, report the browser check as not run, never claim it passed. API-only checks use HTTP (curl) instead of a browser.',
+    trustStoreDir: '<OS home>/.cursor/sdd-kit',
+    configDir: '.cursor',
+    stacksDir: '.cursor/stacks',
+    stackAddonsDir: '.cursor/stack-addons',
+    agentsDir: '.cursor/agents',
+    agentsFormat: 'md',
+    skillsDir: '.cursor/skills',
+  },
 }
 export const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key)
 
@@ -695,6 +733,11 @@ export function phaseModels(phaseTiers) {
     const base = MODEL_TIERS[tier]
     if (!base) throw new Error(`Unknown model tier "${tier}" for phase "${phase}" (use ${Object.keys(MODEL_TIERS).join(' | ')})`)
     const o = overrides[tier]
+    // A bridge host picks its own models, so its jobs carry the tier and the effort only.
+    if (HOST !== 'claude') {
+      resolved[phase] = { tier, effort: (o && typeof o === 'object' && o.effort) || base.effort }
+      continue
+    }
     resolved[phase] = typeof o === 'string' ? { ...base, model: o } : { ...base, ...(o || {}) }
   }
   return resolved
@@ -704,6 +747,19 @@ export function phaseModels(phaseTiers) {
 // first (built in), Claude in Chrome as a fallback, and an honest "not run".
 export const BROWSER_PHASES = new Set(['Reproduce', 'Acceptance', 'Visual'])
 export const BROWSER_GUIDE = `BROWSER: when this step needs a browser (web UI, navigation, visual or end-to-end checks), drive it with the Playwright MCP tools, named mcp__playwright__browser_* when the server comes from the project and mcp__plugin_sdd-kit_playwright__browser_* when it comes from the sdd-kit plugin (use whichever is available): browser_navigate, browser_snapshot, browser_click, browser_type, browser_fill_form, browser_wait_for, browser_take_screenshot, browser_console_messages, browser_network_requests, browser_resize (load each with ToolSearch "select:<name>" before its first call). Assert against browser_snapshot (the accessibility tree), use screenshots only as evidence, and check console errors and failed network requests on every page you visit. If the Playwright tools are unavailable, use Claude in Chrome (mcp__claude-in-chrome__*). If neither is available, report the browser check as not run — never claim it passed. API-only checks use HTTP (curl) instead of a browser.`
+// The host reaches the runtime only through the sddHost global that the workflow bridge injects;
+// Claude Code has no bridge, so the global is absent and the registry text below applies unchanged.
+export const HOST = typeof sddHost === 'string' && hasOwn(HOSTS, sddHost) ? sddHost : 'claude'
+export const browserGuideFor = () => HOSTS[HOST].browserGuide || BROWSER_GUIDE
+// Where the host keeps project stacks, user stacks, agents and its trust store; Claude's values reproduce the text below unchanged.
+export const HOST_STACKS_DIR = HOSTS[HOST].stacksDir
+export const HOST_USER_STACKS_DIR = `~/${HOSTS[HOST].configDir}/stacks`
+// A bridge host resolves specialists from the kit and from approved stack add-ons only, never from its own agents folder.
+export const addAgentHint = (name) => (HOST === 'claude'
+  ? `add ${name}.md to ${HOSTS[HOST].agentsDir}/`
+  : `add ${name}.md to agents/ of an approved stack add-on under ${HOSTS[HOST].stackAddonsDir}/`)
+export const HOST_TRUST_STORE_DIR = HOSTS[HOST].trustStoreDir.replace('<OS home>', '<home>')
+export const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')
 // Plugin installs namespace agents ("sdd-kit:code-explorer", "<plugin>:<agent>");
 // file-copy installs use bare names. Workflows cannot tell which mode they run
 // in, so candidates are tried in order and the default agent is the last resort:
@@ -724,14 +780,14 @@ export function agentCandidates(name) {
     const stacks = info.stacks.join(', ')
     const hint = info.plugin
       ? `install ${info.plugin} for ${stacks}`
-      : `add ${name}.md to .claude/agents/${info.source ? ` or set agent.plugin in ${info.source}` : ''}`
+      : `${addAgentHint(name)}${info.source ? ` or set agent.plugin in ${info.source}` : ''}`
     return { candidates, hint }
   }
-  return { candidates: [name], hint: `add ${name}.md to .claude/agents/` }
+  return { candidates: [name], hint: addAgentHint(name) }
 }
 
 export async function runAgent(prompt, opts) {
-  if (opts && BROWSER_PHASES.has(opts.phase)) prompt = `${prompt}\n\n${BROWSER_GUIDE}`
+  if (opts && BROWSER_PHASES.has(opts.phase)) prompt = `${prompt}\n\n${browserGuideFor()}`
   if (!opts || !opts.agentType || opts.agentType === 'general-purpose') return agent(prompt, opts)
   const name = opts.agentType
   const { agentType, ...rest } = opts
@@ -1051,11 +1107,11 @@ export const SOURCE_LABEL_PATTERN = /^[A-Za-z0-9:._~/@-]{1,120}$/
 
 // The source labels Detect may report. Anything else is rejected before its text is read.
 export const MANIFEST_SOURCE_FORMS = [
-  /^project:\.claude\/stacks\/[^/\\\s]+$/,
-  /^user:~\/\.claude\/stacks\/[^/\\\s]+$/,
+  new RegExp(`^project:${escapeRegex(HOST_STACKS_DIR)}/[^/\\\\\\s]+$`),
+  new RegExp(`^user:${escapeRegex(HOST_USER_STACKS_DIR)}/[^/\\\\\\s]+$`),
   /^plugin:[A-Za-z0-9][A-Za-z0-9._-]*@[A-Za-z0-9._-]+$/,
 ]
-export const MISSING_SOURCE = 'missing or invalid source. Fix: report source as project:.claude/stacks/<file>, user:~/.claude/stacks/<file> or plugin:<name>@<marketplace>'
+export const MISSING_SOURCE = `missing or invalid source. Fix: report source as project:${HOST_STACKS_DIR}/<file>, user:${HOST_USER_STACKS_DIR}/<file> or plugin:<name>@<marketplace>`
 // A label must pass SOURCE_LABEL_PATTERN as well as one of the forms: it is pasted into prompts and logs.
 export const isManifestSource = (source) => SOURCE_LABEL_PATTERN.test(source) && MANIFEST_SOURCE_FORMS.some((re) => re.test(source))
 export const STACK_KEY_PATTERN = /^[a-z][a-z0-9-]{1,31}$/
@@ -1068,10 +1124,10 @@ export function firstPartyLocation(source) {
   let dir = null
   let plugin = null
   if (scope === 'project') {
-    const m = /^\.claude\/stacks\/([^/]+)\.json$/.exec(rest)
+    const m = new RegExp(`^${escapeRegex(HOST_STACKS_DIR)}/([^/]+)\\.json$`).exec(rest)
     dir = m && m[1]
   } else if (scope === 'user') {
-    const m = /^~\/\.claude\/stacks\/([^/]+)\.json$/.exec(rest)
+    const m = new RegExp(`^${escapeRegex(HOST_USER_STACKS_DIR)}/([^/]+)\\.json$`).exec(rest)
     dir = m && m[1]
   } else if (scope === 'plugin') {
     plugin = rest.split('@')[0]
@@ -1353,7 +1409,7 @@ export const MANIFEST_HASH_COMMAND = `node -e 'const c=require("crypto"),f=requi
 export function firstPartyHashLine() {
   return Object.keys(FIRST_PARTY_FILES)
     .filter((dir) => hasOwn(FIRST_PARTY_FILE_HASHES, dir))
-    .map((dir) => `${dir} (.claude/stacks/${dir}.json, ~/.claude/stacks/${dir}.json, plugin sdd-kit-${dir}): ${FIRST_PARTY_FILE_HASHES[dir]}`)
+    .map((dir) => `${dir} (${HOST_STACKS_DIR}/${dir}.json, ${HOST_USER_STACKS_DIR}/${dir}.json, plugin sdd-kit-${dir}): ${FIRST_PARTY_FILE_HASHES[dir]}`)
     .join('; ')
 }
 
@@ -1365,7 +1421,7 @@ export function stackDiscoveryPrompt() {
   const hashRule = firstParty
     ? ` For a first-party location inside the project, hash the file first with \`${MANIFEST_HASH_COMMAND} <file>\`; when the hash equals the one listed for that add-on, return {source, sha256} and no raw. Expected hashes: ${firstParty}. A first-party location outside the project, or one whose hash differs or cannot be computed, returns raw like any other manifest.`
     : ''
-  return `STACK MANIFESTS — follow your stack discovery recipe and also return: stackManifests (one item per manifest you found: source as project:.claude/stacks/<file>, user:~/.claude/stacks/<file> or plugin:<name>@<marketplace> (plugin:<name>@inline for a --plugin-dir plugin), raw = the file text, unmodified.${hashRule}), trustStore (the verbatim text of <home>/.claude/sdd-kit/trusted-stacks.json, where <home> is the home directory your recipe reads from the OS user database, never $HOME or CLAUDE_CONFIG_DIR; null or omitted when the file is absent; null or omitted plus "trustStore unreadable" in discovery.errors when <home> cannot be resolved or the Read is refused or fails), and discovery {mode, method, errors}. Outside the project use only the Read and Glob tools, on literal absolute paths under the <config> directory and the <home>/.claude/sdd-kit directory your recipe resolves: never cat, ls or find there, and no Bash command with a variable in braces. A refused read goes into discovery.errors ("trustStore unreadable", "user stacks unreadable", "plugin list unreadable") and is never treated as trusted. A repo that matches no catalog stack but matches a manifest's detect text takes that manifest's name as stack. For each repo and each gate of its stack that lists unless globs, add {gate, glob} to unlessMatched for every glob that matches a file or directory in that repo.${execWrapperDetectLine()}${gateGuardDetectLine()}
+  return `STACK MANIFESTS — follow your stack discovery recipe and also return: stackManifests (one item per manifest you found: source as project:${HOST_STACKS_DIR}/<file>, user:${HOST_USER_STACKS_DIR}/<file> or plugin:<name>@<marketplace> (plugin:<name>@inline for a --plugin-dir plugin), raw = the file text, unmodified.${hashRule}), trustStore (the verbatim text of ${HOST_TRUST_STORE_DIR}/trusted-stacks.json, where <home> is the home directory your recipe reads from the OS user database, never $HOME or CLAUDE_CONFIG_DIR; null or omitted when the file is absent; null or omitted plus "trustStore unreadable" in discovery.errors when <home> cannot be resolved or the Read is refused or fails), and discovery {mode, method, errors}. Outside the project use only the Read and Glob tools, on literal absolute paths under the <config> directory and the ${HOST_TRUST_STORE_DIR} directory your recipe resolves: never cat, ls or find there, and no Bash command with a variable in braces. A refused read goes into discovery.errors ("trustStore unreadable", "user stacks unreadable", "plugin list unreadable") and is never treated as trusted. A repo that matches no catalog stack but matches a manifest's detect text takes that manifest's name as stack. For each repo and each gate of its stack that lists unless globs, add {gate, glob} to unlessMatched for every glob that matches a file or directory in that repo.${execWrapperDetectLine()}${gateGuardDetectLine()}
 
 ${REPO_PATH_RULE}`
 }

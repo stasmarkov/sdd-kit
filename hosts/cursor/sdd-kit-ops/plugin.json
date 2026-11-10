@@ -1,0 +1,5 @@
+{
+  "name": "sdd-kit-ops",
+  "version": "4.0.0",
+  "description": "Operations add-on: deploy, rollback, feature flags, health checks, incident response, and ops analysis agents."
+}

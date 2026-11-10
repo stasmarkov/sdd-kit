@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Workflow bridge · SDD Kit</title>
+<link rel="icon" href="data:,">
+<script>
+  (function () {
+    var root = document.documentElement, stored = null;
+    try { stored = localStorage.getItem('sdd-guide-theme'); } catch (e) { stored = null; }
+    var theme = stored === 'light' || stored === 'dark' ? stored : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    root.dataset.theme = theme;
+    root.style.colorScheme = theme;
+  })();
+</script>
+<link rel="stylesheet" href="../guide.css">
+</head>
+<body class="doc-page">
+<a class="skip-link" href="#content">Skip to content</a>
+<header class="site-header">
+  <div class="brand">
+    <a class="brand-name" href="../index.html">SDD Kit</a>
+    <span class="badge">v4.0.0</span>
+  </div>
+  <div class="header-actions">
+    <a class="btn" href="../index.html"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
+    <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
+  </div>
+</header>
+<main id="content" class="doc-main">
+  <p class="doc-path mono">reference/workflow-bridge.md</p>
+  <article class="doc-body">
+<h2 id="workflow-bridge">Workflow bridge</h2>
+<p>Claude Code runs the kit&#39;s background workflows with its own <code>Workflow</code> tool. Hosts without that tool run the same unmodified workflow files through the bridge: a stdio MCP server (<code>src/adapters/bridge/server.mjs</code>) that turns every <code>agent()</code> call into a job the host hands to one of its own subagents.</p>
+<p>The bridge never awaits a job. A host starts a run, claims jobs, runs each one in a subagent and submits the output; the script advances when the output is accepted.</p>
+<h3 id="how-a-run-works">How a run works</h3>
+<ol><li><code>workflow_start</code> takes a workflow name from the installed workflows directory. Names come from <code>meta.name</code> in each file, so there is no list to maintain; any other name is refused with the valid ones.</li><li>The engine runs the shipped file in <code>node:vm</code> and hashes its exact bytes. <code>Date.now</code>, <code>Date</code> and <code>Math.random</code> throw <code>DeterminismError</code> naming the call, and the run fails with that message.</li><li>Each <code>agent()</code> call becomes a job. Its key is the sha256 of the JSON array <code>[prompt, options]</code> (option keys sorted) plus its occurrence, the nth call with that digest.</li><li><code>workflow_claim</code> hands a queued job to a worker with a claim token and a 30-minute lease. <code>workflow_submit</code> validates the output against the job schema and resolves the <code>agent()</code> call.</li><li>When the script returns, a mandatory CompletionReview job asks the read-only <code>outcomes-grader</code> role for <code>{ verdict, reason }</code>. Only <code>PASS</code> completes the run.</li></ol>
+<p>Run state lives in <code>.ai/workflow-runs/&lt;runId&gt;/</code> (directories 0700, files 0600, atomic writes, a pid lock per run, and a <code>.gitignore</code> of <code>*</code>).</p>
+<h3 id="tools">Tools</h3>
+<div class="table-wrap"><table><thead><tr><th>Tool</th><th>Input</th><th>Returns</th></tr></thead><tbody><tr><td><code>workflow_start</code></td><td><code>{ name, workspace (absolute), args?, maxActive? }</code></td><td>run status</td></tr><tr><td><code>workflow_claim</code></td><td><code>{ id, workerId, jobId? }</code></td><td>job packet, or <code>{ job: null, reason: &quot;none-queued&quot; | &quot;max-active&quot; }</code></td></tr><tr><td><code>workflow_submit</code></td><td><code>{ id, jobId, claim, output }</code></td><td>run status</td></tr><tr><td><code>workflow_status</code></td><td><code>{ id }</code></td><td>run status</td></tr><tr><td><code>workflow_resume</code></td><td><code>{ id, workspace }</code></td><td>run status</td></tr><tr><td><code>workflow_reconnect</code></td><td><code>{ id, jobId, workerId, release? }</code></td><td>run status</td></tr><tr><td><code>workflow_stop</code></td><td><code>{ id, reason }</code></td><td>run status</td></tr><tr><td><code>workflow_retry_review</code></td><td><code>{ id, correction }</code></td><td>run status</td></tr><tr><td><code>agent_instructions</code></td><td><code>{ name, workspace }</code></td><td><code>{ name, instructions, preloadSkillPaths, rulePaths }</code></td></tr><tr><td><code>stack_list</code></td><td><code>{ workspace }</code></td><td><code>{ manifests: [{ source, keys, commands, sha256, trusted, rejected? }] }</code></td></tr></tbody></table></div>
+<p><code>workflow_submit</code> takes <code>output: null</code> for a work job, not a review job: the job completes and its <code>agent()</code> call resolves with null, so a script must handle a null answer. A review job needs an object that matches its schema.</p>
+<p><code>workflow_stop</code> on a run that is already <code>completed</code>, <code>failed</code> or <code>stopped</code> leaves it unchanged and returns its status.</p>
+<p>The input schemas are in <code>src/adapters/bridge/tools.mjs</code> and are checked by <code>tools/test/fixtures/schema-validate/bridge-tools.json</code>. <code>maxActive</code> defaults to 3 and is at most 16; it bounds how many jobs are claimed at once.</p>
+<p>The run status is <code>{ id, name, status, phase, jobs[{ id, status, phase, label, workerId }], result, error, logs, logsOmitted?, completionReview }</code>. Every call except <code>workflow_status</code> returns only the latest 20 log lines, and <code>logsOmitted</code> is the number of older lines left out; <code>workflow_status</code> returns the full log. Run states are <code>running</code>, <code>reviewing</code>, <code>completed</code>, <code>blocked</code>, <code>failed</code> and <code>stopped</code>; job states are <code>queued</code>, <code>claimed</code>, <code>expired</code>, <code>completed</code> and <code>failed</code>.</p>
+<p>There is no tool that approves a stack manifest. <code>stack_list</code> is read-only; approval stays a human action in the stack-trust command with <code>--host &lt;host&gt;</code>.</p>
+<h3 id="job-packets">Job packets</h3>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;&lt;runId&gt;&quot;, &quot;jobId&quot;: &quot;job-...&quot;, &quot;claim&quot;: &quot;&lt;token&gt;&quot;, &quot;prompt&quot;: &quot;...&quot;, &quot;schema&quot;: {},
+  &quot;role&quot;: { &quot;name&quot;: &quot;code-explorer&quot;, &quot;instructions&quot;: &quot;...&quot;, &quot;preloadSkillPaths&quot;: [], &quot;rulePaths&quot;: [] },
+  &quot;tier&quot;: &quot;standard&quot;, &quot;effort&quot;: &quot;medium&quot;, &quot;readOnly&quot;: true, &quot;browserGuide&quot;: &quot;...&quot;, &quot;workspace&quot;: &quot;/abs/path&quot;
+}</code></pre>
+<ul><li><code>role.instructions</code> is the full agent body. Agents resolve from the core agents, the first-party add-on agents and the overlay add-ons whose manifest is trusted; an unresolved specialist falls back to the default agent, with the single log line the runtime writes. Agents of an untrusted overlay add-on are never resolved and their text never reaches a packet.</li><li><code>rulePaths</code> lists the rules whose <code>paths</code> globs match a file named in the prompt or tracked in the repo, plus every rule without <code>paths</code>.</li><li><code>tier</code> and <code>effort</code> replace model names: the host picks its own model for the tier.</li><li><code>readOnly</code> is advisory text for the worker. Cursor maps it to a read-only subagent; Codex cannot enforce it.</li><li><code>browserGuide</code> is present for browser phases when the prompt does not already carry the host&#39;s guide. It names the host&#39;s Playwright tools, and the step is &quot;not run&quot; when they are missing, never a pass.</li></ul>
+<h3 id="claims-and-leases">Claims and leases</h3>
+<p>A claim token is random. The parent renews it with <code>workflow_reconnect</code> and the same <code>workerId</code> at least every 10 minutes while the subagent runs. A submission with the right token after the lease expired is still accepted, until the job is released. An expired lease moves the job to <code>expired</code>; it returns to the queue only when the parent calls <code>workflow_reconnect</code> with <code>release: true</code>. <code>workflow_stop</code> fails every open job, queued, claimed or expired, and nothing requeues them. The bridge never redispatches a claimed job by itself.</p>
+<p>Output that fails the job schema is rejected with an error naming the JSON Pointer and keyword, and the job stays claimed under the same token. A wrong or stale token is rejected without changing the job. Submitting the exact output already accepted for a claim returns the current status.</p>
+<h3 id="resume">Resume</h3>
+<p>After the server restarts, <code>workflow_resume</code> replays the script, answers each completed job from disk and queues the rest. It refuses, naming what changed and suggesting <code>workflow_start</code>, when any of these differ from the values recorded at start:</p>
+<ul><li>the sha256 of the shipped workflow file;</li><li>the adapter revision: the kit version plus the sha256 over every <code>*.mjs</code> file under the installed <code>bridge/</code> folder and the shared <code>lib/</code> folder beside it;</li><li>the stack context: repo paths and stack keys found from the markers in <code>stacks.json</code>, including the repos listed in <code>args.repos</code> (strings or <code>{ path }</code> values), so a stack marker added to one of them makes resume refuse, the sha256 of every overlay manifest in scope and each one&#39;s trust state. The bridge computes it itself, before and independent of the Detect job.</li></ul>
+<p>A lock held by another live pid makes <code>workflow_resume</code> fail with a message naming the pid; a lock whose pid is gone is reclaimed.</p>
+<h3 id="completion-review">Completion review</h3>
+<p>A blocked run (<code>CHANGES_REQUIRED</code> or <code>BLOCKED</code>) moves on only through <code>workflow_retry_review</code>. It needs a changed artifact: the artifact field of the result, inside the workspace or inside a repo given in <code>args.repos</code>. A repo outside the workspace counts only when it sits in a git checkout (its own or a monorepo&#39;s) that is not the home folder or <code>/</code>. A path that is the workspace, an <code>args.repos</code> root or any folder holding a <code>.git</code> entry names a whole repository and is refused, and so is a <code>node_modules</code>, <code>vendor</code> or <code>.git</code> folder. A folder artifact is hashed with those three folders skipped; build output and <code>.ai/</code> notes inside it count. A missing artifact, one over 32 MiB or 20000 entries, and one that is not a regular file or folder are each refused with their own message. The bridge compares the artifact&#39;s sha256 with the one recorded at review time, queues a new review with the correction note appended, keeps every earlier verdict and runs no implementation job again. The field depends on the workflow: <code>reportPath</code> for ship-feature and fix-bug (when it is present in the result, even null, no other field is tried), <code>specFolder</code> for create-spec, <code>adrPath</code> for tech-research, <code>qaPlanPath</code> for qa-and-docs and <code>backlog.path</code> for greenfield-build. An unchanged, missing or outside artifact is refused; start a new run instead.</p>
+<h3 id="limits">Limits</h3>
+<ul><li><code>budget.total</code> and <code>budget.remaining()</code> report 0 on a bridge host, so budget branches in the workflows do not trigger.</li><li>The script has no clock or randomness; pass dates and ids in through <code>args</code> or ask an agent.</li><li>Claude Code does not use the bridge. Its generated prompts, schemas and verdicts are unchanged, and the host reaches the runtime only through the <code>sddHost</code> global that the bridge injects.</li></ul>
+  </article>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/workflow-bridge.md">View the Markdown source</a></p>
+</main>
+<script>
+  (function () {
+    var KEY = 'sdd-guide-theme', NEXT = { system: 'light', light: 'dark', dark: 'system' };
+    var root = document.documentElement, os = window.matchMedia('(prefers-color-scheme: dark)');
+    var button = document.getElementById('theme-toggle'), choice = 'system';
+    try { var v = localStorage.getItem(KEY); if (v === 'light' || v === 'dark') choice = v; } catch (e) { /* storage unavailable */ }
+    function apply() {
+      var theme = choice === 'system' ? (os.matches ? 'dark' : 'light') : choice;
+      root.dataset.theme = theme;
+      root.style.colorScheme = theme;
+      button.querySelector('.btn-label').textContent = 'Theme: ' + choice;
+      button.setAttribute('aria-label', 'Theme: ' + choice + '. Switch to ' + NEXT[choice] + '.');
+    }
+    button.addEventListener('click', function () {
+      choice = NEXT[choice];
+      try { if (choice === 'system') localStorage.removeItem(KEY); else localStorage.setItem(KEY, choice); } catch (e) { /* page view only */ }
+      apply();
+    });
+    if (os.addEventListener) os.addEventListener('change', function () { if (choice === 'system') apply(); });
+    apply();
+  })();
+</script>
+</body>
+</html>

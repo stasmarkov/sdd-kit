@@ -129,6 +129,7 @@ code { padding: 1px 6px; border-radius: 4px; background: var(--code-bg); font-si
   font: var(--text-sm) / 1.6 var(--font-mono); color: var(--muted);
 }
 .header-actions { display: flex; align-items: center; gap: var(--space-2); }
+.host-select { display: inline-flex; align-items: center; gap: var(--space-1); font-size: 0.875rem; }
 
 .btn {
   display: inline-flex; align-items: center; gap: var(--space-2);
@@ -318,6 +319,7 @@ button.chip { cursor: pointer; }
 .route-card-btn:hover, .route-card-btn.is-selected { border-color: var(--accent); }
 .route-card-btn.rt-trivial { background-image: linear-gradient(var(--tint-tools), var(--tint-tools)); }
 .route-card-btn.rt-bug { background-image: linear-gradient(var(--tint-warn), var(--tint-warn)); }
+.route-card-btn.rt-audit { background-image: linear-gradient(var(--tint-warn), var(--tint-warn)); }
 .route-card-btn.rt-decision { background-image: linear-gradient(var(--tint-addon), var(--tint-addon)); }
 .route-card-btn.rt-feature { background-image: linear-gradient(var(--tint-agent), var(--tint-agent)); }
 .route-card-btn.rt-shipped { background-image: linear-gradient(var(--tint-you), var(--tint-you)); }

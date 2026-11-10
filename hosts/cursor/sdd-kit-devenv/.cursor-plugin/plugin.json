@@ -1,0 +1,15 @@
+{
+  "name": "sdd-kit-devenv",
+  "version": "4.0.0",
+  "description": "Dev-environment add-on: docker and ddev skills, plus an optional DDEV MCP entry. Not tied to a stack.",
+  "displayName": "SDD Kit devenv",
+  "author": {
+    "name": "Stas Markov"
+  },
+  "homepage": "https://github.com/stasmarkov/sdd-kit",
+  "keywords": [
+    "sdd",
+    "spec-driven-development"
+  ],
+  "skills": "./skills/"
+}

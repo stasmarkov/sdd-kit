@@ -5,9 +5,9 @@ argument-hint: "--audit-only | --patch | --minor | --major=[package] | --backend
 allowed-tools: Read, Edit, Bash, Grep, Glob
 disable-model-invocation: true
 metadata:
-  mcp-tools: context7
-  version: 1.0
-  disallowed-tools: WebFetch
+  mcp-tools: "context7"
+  version: "1.0"
+  disallowed-tools: "WebFetch"
 ---
 
 # /upgrade-deps

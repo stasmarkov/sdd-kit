@@ -1,6 +1,6 @@
 {
   "name": "sdd-kit",
-  "version": "3.1.0",
+  "version": "4.0.0",
   "private": true,
   "description": "SDD Kit: spec board, installer and guide launcher for spec-driven development with Claude Code",
   "license": "MIT",
@@ -19,6 +19,7 @@
     "VERSION",
     "share/",
     "plugins/",
+    "adapters/",
     "README.md",
     "CHANGELOG.md",
     "LICENSE"

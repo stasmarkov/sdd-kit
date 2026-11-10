@@ -5,7 +5,7 @@ argument-hint: "[source]"
 allowed-tools: Bash, Read, AskUserQuestion
 disable-model-invocation: true
 metadata:
-  version: 1.0
+  version: "1.0"
 ---
 
 # /stack-trust

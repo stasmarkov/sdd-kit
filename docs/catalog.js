@@ -6,427 +6,1054 @@ window.CATALOG = {
       "ships": "core",
       "category": "frameworks",
       "invoke": "both",
-      "description": "Web accessibility (a11y) for component-based frontends. Use when building UI components, forms, navigation, or auditing pages against WCAG 2.2 AA. Covers semantic HTML, ARIA, keyboard, focus, contrast, and automated testing."
+      "description": "Web accessibility (a11y) for component-based frontends. Use when building UI components, forms, navigation, or auditing pages against WCAG 2.2 AA. Covers semantic HTML, ARIA, keyboard, focus, contrast, and automated testing.",
+      "hosts": {
+        "codex": {
+          "invoke": "$accessibility",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/accessibility",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "api-design",
       "ships": "core",
       "category": "patterns",
       "invoke": "auto",
-      "description": "RESTful API design patterns. Use for endpoints, response formats, pagination, and error handling."
+      "description": "RESTful API design patterns. Use for endpoints, response formats, pagination, and error handling.",
+      "hosts": {
+        "codex": {
+          "invoke": "$api-design",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/api-design",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "api-security",
       "ships": "core",
       "category": "security",
       "invoke": "auto",
-      "description": "API security best practices. Use for auth, CORS, rate limiting, validation, and OWASP compliance."
+      "description": "API security best practices. Use for auth, CORS, rate limiting, validation, and OWASP compliance.",
+      "hosts": {
+        "codex": {
+          "invoke": "$api-security",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/api-security",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "architecture-patterns",
       "ships": "core",
       "category": "patterns",
       "invoke": "auto",
-      "description": "Implement Clean Architecture, Hexagonal Architecture, and DDD patterns. Use when designing new modules or refactoring for maintainability."
+      "description": "Implement Clean Architecture, Hexagonal Architecture, and DDD patterns. Use when designing new modules or refactoring for maintainability.",
+      "hosts": {
+        "codex": {
+          "invoke": "$architecture-patterns",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/architecture-patterns",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "changelog",
       "ships": "core",
       "category": "release",
       "invoke": "manual",
-      "description": "Generate a changelog from git history by parsing conventional commits and grouping them into Keep a Changelog sections, optionally updating CHANGELOG.md. --release <version> runs a release-readiness check (specs done, gates and contract-sync green, security and dependency audits clean, migrations safe), suggests the semver bump, writes CHANGELOG.md, and proposes the tag. Use when preparing a release, summarizing unreleased changes, or producing notes between two tags."
+      "description": "Generate a changelog from git history by parsing conventional commits and grouping them into Keep a Changelog sections, optionally updating CHANGELOG.md. --release <version> runs a release-readiness check (specs done, gates and contract-sync green, security and dependency audits clean, migrations safe), suggests the semver bump, writes CHANGELOG.md, and proposes the tag. Use when preparing a release, summarizing unreleased changes, or producing notes between two tags.",
+      "hosts": {
+        "codex": {
+          "invoke": "$changelog",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/changelog",
+          "availability": "explicit-only"
+        }
+      }
     },
     {
       "name": "ci-cd",
       "ships": "core",
       "category": "devops",
       "invoke": "both",
-      "description": "GitHub Actions CI/CD pipelines. Use for testing, deployment, and release automation workflows."
+      "description": "GitHub Actions CI/CD pipelines. Use for testing, deployment, and release automation workflows.",
+      "hosts": {
+        "codex": {
+          "invoke": "$ci-cd",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/ci-cd",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "deep-review",
       "ships": "core",
       "category": "quality",
       "invoke": "both",
-      "description": "Review finished code and return a blocking verdict (APPROVED / CHANGES_REQUIRED / BLOCKED). Three depths - adversarial (default; skeptical reviewer on a different model tier that ignores the original prompt), standard (structured checklist review of a branch or PR with focus modes and JSON output for CI), and quick (critical-only pass). Delegates to adversarial-reviewer and security-auditor. Use when a task, spec, branch, or set of files is complete and needs review before merge or deploy, or when asked for a code review, PR review, or security-focused review."
+      "description": "Review finished code and return a blocking verdict (APPROVED / CHANGES_REQUIRED / BLOCKED). Three depths - adversarial (default; skeptical reviewer on a different model tier that ignores the original prompt), standard (structured checklist review of a branch or PR with focus modes and JSON output for CI), and quick (critical-only pass). Delegates to adversarial-reviewer and security-auditor. Use when a task, spec, branch, or set of files is complete and needs review before merge or deploy, or when asked for a code review, PR review, or security-focused review.",
+      "hosts": {
+        "codex": {
+          "invoke": "$deep-review",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/deep-review",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "design-api",
       "ships": "core",
       "category": "design",
       "invoke": "both",
-      "description": "Design RESTful API architecture: resources, endpoints, request/response contracts, error format, and optional OpenAPI output, producing an API design document. Use when planning new endpoints or resources before implementation, generating an OpenAPI spec, or reviewing an existing API design for consistency."
+      "description": "Design RESTful API architecture: resources, endpoints, request/response contracts, error format, and optional OpenAPI output, producing an API design document. Use when planning new endpoints or resources before implementation, generating an OpenAPI spec, or reviewing an existing API design for consistency.",
+      "hosts": {
+        "codex": {
+          "invoke": "$design-api",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/design-api",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "design-schema",
       "ships": "core",
       "category": "design",
       "invoke": "both",
-      "description": "Design a database schema - entities, columns and types, relationships, indexes, naming, and migration strategy - and write it as docs/schemas/{table}.md in the schema-first format. Use when modelling new entities or relationships before writing migrations, planning a schema change, or reviewing an existing schema."
+      "description": "Design a database schema - entities, columns and types, relationships, indexes, naming, and migration strategy - and write it as docs/schemas/{table}.md in the schema-first format. Use when modelling new entities or relationships before writing migrations, planning a schema change, or reviewing an existing schema.",
+      "hosts": {
+        "codex": {
+          "invoke": "$design-schema",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/design-schema",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "error-handling-patterns",
       "ships": "core",
       "category": "patterns",
       "invoke": "auto",
-      "description": "Robust error handling with typed exceptions, Result types, and graceful degradation. Use when designing error flows or improving resilience."
+      "description": "Robust error handling with typed exceptions, Result types, and graceful degradation. Use when designing error flows or improving resilience.",
+      "hosts": {
+        "codex": {
+          "invoke": "$error-handling-patterns",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/error-handling-patterns",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "execute-task",
       "ships": "core",
       "category": "execution",
       "invoke": "both",
-      "description": "Execute an approved spec's tasks one at a time with TDD, verification gates, AC-to-test traceability, and session state for cross-session resumption. Use when a spec exists under .ai/specs/ and the user wants to build it task by task (/execute-task --spec=PROJ-123), resume after a context reset, or re-verify a task."
+      "description": "Execute an approved spec's tasks one at a time with TDD, verification gates, AC-to-test traceability, and session state for cross-session resumption. Use when a spec exists under .ai/specs/ and the user wants to build it task by task (/execute-task --spec=PROJ-123), resume after a context reset, or re-verify a task.",
+      "hosts": {
+        "codex": {
+          "invoke": "$execute-task",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/execute-task",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "fix-ci",
       "ships": "core",
       "category": "execution",
       "invoke": "both",
-      "description": "Get a red CI run or a broken local build back to green without weakening any gate. Reads the failing job (gh pr checks / gh run view --log-failed, or local output), maps the step to its stack gate (format, lint, types, tests, build, e2e, install and lockfile, contract sync, audit), reproduces it locally with the lockfile's package manager, applies the minimal fix (workflow YAML and container builds go through devops-engineer), then re-runs that gate and the full gate set. Never pushes; suppressions, skips, baselines, lowered thresholds, and removed steps need explicit user confirmation. Use when CI is red, a PR check fails, the build broke, a dependency install fails, or a ship-feature / greenfield-build report lists a gate that stayed red. Stack-specific causes come from the stack add-on. A test that fails because behavior is wrong goes to /sdd (bug route)."
+      "description": "Get a red CI run or a broken local build back to green without weakening any gate. Reads the failing job (gh pr checks / gh run view --log-failed, or local output), maps the step to its stack gate (format, lint, types, tests, build, e2e, install and lockfile, contract sync, audit), reproduces it locally with the lockfile's package manager, applies the minimal fix (workflow YAML and container builds go through devops-engineer), then re-runs that gate and the full gate set. Never pushes; suppressions, skips, baselines, lowered thresholds, and removed steps need explicit user confirmation. Use when CI is red, a PR check fails, the build broke, a dependency install fails, or a ship-feature / greenfield-build report lists a gate that stayed red. Stack-specific causes come from the stack add-on. A test that fails because behavior is wrong goes to /sdd (bug route).",
+      "hosts": {
+        "codex": {
+          "invoke": "$fix-ci",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/fix-ci",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "framework-doctor",
       "ships": "core",
       "category": "workflow",
       "invoke": "manual",
-      "description": "Diagnose a framework installation and report PASS / WARN / FAIL per check - directory layout, flat skill discovery, agents, manifest drift (locally modified framework files), workflow name collisions, MCP config, hooks wired and firing, settings leftovers, stale worktrees, permission bloat, and contradictory memory instructions. Non-destructive; --fix only sets permissions and creates missing directories. Use when the framework behaves unexpectedly, after installing or upgrading, or when skills, agents, hooks, or workflows do not show up."
+      "description": "Diagnose a framework installation and report PASS / WARN / FAIL per check - directory layout, flat skill discovery, agents, manifest drift (locally modified framework files), workflow name collisions, MCP config, hooks wired and firing, settings leftovers, stale worktrees, permission bloat, and contradictory memory instructions. Non-destructive; --fix only sets permissions and creates missing directories. Use when the framework behaves unexpectedly, after installing or upgrading, or when skills, agents, hooks, or workflows do not show up.",
+      "hosts": {
+        "codex": {
+          "invoke": "$framework-doctor",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/framework-doctor",
+          "availability": "explicit-only"
+        }
+      }
     },
     {
       "name": "generate",
       "ships": "core",
       "category": "execution",
       "invoke": "both",
-      "description": "Generate code scaffolding that follows project conventions - controllers, services, data objects, repositories, models, CRUD and API resource sets, pages, components, hooks, route handlers and test stubs - from the templates of the stack's scaffold skills (the manifest's skills.scaffold). Use when starting a new component or entity and you want boilerplate that already matches the project's patterns instead of writing it by hand."
+      "description": "Generate code scaffolding that follows project conventions - controllers, services, data objects, repositories, models, CRUD and API resource sets, pages, components, hooks, route handlers and test stubs - from the templates of the stack's scaffold skills (the manifest's skills.scaffold). Use when starting a new component or entity and you want boilerplate that already matches the project's patterns instead of writing it by hand.",
+      "hosts": {
+        "codex": {
+          "invoke": "$generate",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/generate",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "grade",
       "ships": "core",
       "category": "quality",
       "invoke": "both",
-      "description": "Grade a target artifact against a domain rubric using the outcomes-grader subagent. Returns PASS / CHANGES_REQUIRED / BLOCKED with item-level findings. Use after any non-trivial generation task before marking it done."
+      "description": "Grade a target artifact against a domain rubric using the outcomes-grader subagent. Returns PASS / CHANGES_REQUIRED / BLOCKED with item-level findings. Use after any non-trivial generation task before marking it done.",
+      "hosts": {
+        "codex": {
+          "invoke": "$grade",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/grade",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "investigate",
       "ships": "core",
       "category": "discovery",
       "invoke": "both",
-      "description": "Research a technical problem or evaluate a technology inline — searches the codebase and framework docs, compares options in a pros/cons table, and ends with a concrete recommendation, implementation steps, and a testing strategy. Use when you need a quick answer to \"how should we do X\" or \"which library fits\" before coding. For a formal, adversarially verified decision with an ADR, use /tech-research instead."
+      "description": "Research a technical problem or evaluate a technology inline — searches the codebase and framework docs, compares options in a pros/cons table, and ends with a concrete recommendation, implementation steps, and a testing strategy. Use when you need a quick answer to \"how should we do X\" or \"which library fits\" before coding. For a formal, adversarially verified decision with an ADR, use /tech-research instead.",
+      "hosts": {
+        "codex": {
+          "invoke": "$investigate",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/investigate",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "learn",
       "ships": "core",
       "category": "workflow",
       "invoke": "manual",
-      "description": "Fix the system, not the instance - turn one mistake into the cheapest durable guard so the whole class cannot recur. States the mistake class with file:line evidence, dedupes against CLAUDE.md GOTCHA/INV entries, .claude/rules and existing architecture tests, then proposes, in order, a regression or architecture test, a static-analysis or lint rule, a line in the matching path-scoped .claude/rules file, or a GOTCHA/INV entry in CLAUDE.md (hooks are proposal text only), shows the exact diff, and writes only after explicit approval. Use after a fix-bug report's Prevention section, a recurring deep-review finding, a CI fix, an incident postmortem action item, or when the user corrects Claude (\"don't do that again\", \"remember this\", \"we never do X here\")."
+      "description": "Fix the system, not the instance - turn one mistake into the cheapest durable guard so the whole class cannot recur. States the mistake class with file:line evidence, dedupes against CLAUDE.md GOTCHA/INV entries, .claude/rules and existing architecture tests, then proposes, in order, a regression or architecture test, a static-analysis or lint rule, a line in the matching path-scoped .claude/rules file, or a GOTCHA/INV entry in CLAUDE.md (hooks are proposal text only), shows the exact diff, and writes only after explicit approval. Use after a fix-bug report's Prevention section, a recurring deep-review finding, a CI fix, an incident postmortem action item, or when the user corrects Claude (\"don't do that again\", \"remember this\", \"we never do X here\").",
+      "hosts": {
+        "codex": {
+          "invoke": "$learn",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/learn",
+          "availability": "explicit-only"
+        }
+      }
     },
     {
       "name": "lint",
       "ships": "core",
       "category": "quality",
       "invoke": "both",
-      "description": "Run the code quality suite - the format, lint and type-check gates of the detected stack (taken from the stack manifest) - in check or auto-fix mode, scoped to one repo or language if needed. Use when you want to validate style and static analysis before committing or opening a PR, or to auto-fix formatting issues."
+      "description": "Run the code quality suite - the format, lint and type-check gates of the detected stack (taken from the stack manifest) - in check or auto-fix mode, scoped to one repo or language if needed. Use when you want to validate style and static analysis before committing or opening a PR, or to auto-fix formatting issues.",
+      "hosts": {
+        "codex": {
+          "invoke": "$lint",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/lint",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "new-stack",
       "ships": "core",
       "category": "workflow",
       "invoke": "manual",
-      "description": "Scaffold a new stack add-on (manifest, agent, conventions skill, lint hook) from the kit template, or stage a project-local stack. Use when the user wants SDD Kit to support a stack it does not ship, says \"add a stack\", \"new stack\", or \"scaffold a stack add-on\", or after /sdd reports that no stack matched."
+      "description": "Scaffold a new stack add-on (manifest, agent, conventions skill, lint hook) from the kit template, or stage a project-local stack. Use when the user wants SDD Kit to support a stack it does not ship, says \"add a stack\", \"new stack\", or \"scaffold a stack add-on\", or after /sdd reports that no stack matched.",
+      "hosts": {
+        "codex": {
+          "invoke": "$new-stack",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/new-stack",
+          "availability": "explicit-only"
+        }
+      }
     },
     {
       "name": "observability",
       "ships": "core",
       "category": "devops",
       "invoke": "both",
-      "description": "Observability for web applications - structured logging, error tracking, metrics, and OpenTelemetry tracing. Use when adding logging/monitoring, instrumenting requests, debugging production issues, or wiring alerting. Stack-specific setup comes from the stack add-on's references."
+      "description": "Observability for web applications - structured logging, error tracking, metrics, and OpenTelemetry tracing. Use when adding logging/monitoring, instrumenting requests, debugging production issues, or wiring alerting. Stack-specific setup comes from the stack add-on's references.",
+      "hosts": {
+        "codex": {
+          "invoke": "$observability",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/observability",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "open-pr",
       "ships": "core",
       "category": "release",
       "invoke": "manual",
-      "description": "Open spec-traced pull requests once a feature or fix is approved — one PR per changed repo, backend first, cross-linked. Checks the preconditions (spec in-progress or done, gates green, deep-review APPROVED when a report exists), builds each PR body from the spec (summary, every acceptance criterion mapped to its test, Must-NOT-change guards, manual test plan, ADR link, counterpart PR), uses a conventional-commit title, and shows the exact push and gh pr create commands before running them. Use when a spec or bug fix is built and reviewed and the user wants to open its PRs (/open-pr --spec=PROJ-123), when a ship-feature or fix-bug report ends with \"Next: /open-pr\", or when a polyrepo change needs linked backend and frontend PRs. Pushes branches and creates PRs, so it is user-invoked only."
+      "description": "Open spec-traced pull requests once a feature or fix is approved — one PR per changed repo, backend first, cross-linked. Checks the preconditions (spec in-progress or done, gates green, deep-review APPROVED when a report exists), builds each PR body from the spec (summary, every acceptance criterion mapped to its test, Must-NOT-change guards, manual test plan, ADR link, counterpart PR), uses a conventional-commit title, and shows the exact push and gh pr create commands before running them. Use when a spec or bug fix is built and reviewed and the user wants to open its PRs (/open-pr --spec=PROJ-123), when a ship-feature or fix-bug report ends with \"Next: /open-pr\", or when a polyrepo change needs linked backend and frontend PRs. Pushes branches and creates PRs, so it is user-invoked only.",
+      "hosts": {
+        "codex": {
+          "invoke": "$open-pr",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/open-pr",
+          "availability": "explicit-only"
+        }
+      }
     },
     {
       "name": "product-brief",
       "ships": "core",
       "category": "upstream",
       "invoke": "both",
-      "description": "Turn an idea, or a pile of \"what if\" / \"users say\" input, into a product brief (problem, users and roles, MVP scope, non-goals, numbered draft business rules BR-01…, success metrics, open questions) and a dependency-ordered backlog of vertical slices, each sized XS/S/M/L, citing its BR ids, and ending in a ready /sdd invocation. Use when starting a new product or app and no product-brief.md exists yet, when /sdd's new-app route has no brief, when the user asks \"what should we build first?\", to revise a brief (--revise), or to fold raw feedback, feature requests, and ideas into an existing backlog (--intake). Writes planning docs only, never code."
+      "description": "Turn an idea, or a pile of \"what if\" / \"users say\" input, into a product brief (problem, users and roles, MVP scope, non-goals, numbered draft business rules BR-01…, success metrics, open questions) and a dependency-ordered backlog of vertical slices, each sized XS/S/M/L, citing its BR ids, and ending in a ready /sdd invocation. Use when starting a new product or app and no product-brief.md exists yet, when /sdd's new-app route has no brief, when the user asks \"what should we build first?\", to revise a brief (--revise), or to fold raw feedback, feature requests, and ideas into an existing backlog (--intake). Writes planning docs only, never code.",
+      "hosts": {
+        "codex": {
+          "invoke": "$product-brief",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/product-brief",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "progress",
       "ships": "core",
       "category": "workflow",
       "invoke": "both",
-      "description": "Where-was-I dashboard over .ai/specs - per-spec task completion from tasks.md, status and priority from spec-lite frontmatter, the execute-task resume point from session state, recent git activity, and a next-task recommendation. --health adds a one-screen project snapshot (git state plus per-repo gate, security and dependency status) by delegating to /lint, /run-tests and /security-scan. Use when resuming work and asking \"where was I?\" or \"what should I work on next?\", or for a quick project health check."
+      "description": "Where-was-I dashboard over .ai/specs - per-spec task completion from tasks.md, status and priority from spec-lite frontmatter, the execute-task resume point from session state, recent git activity, and a next-task recommendation. --health adds a one-screen project snapshot (git state plus per-repo gate, security and dependency status) by delegating to /lint, /run-tests and /security-scan. Use when resuming work and asking \"where was I?\" or \"what should I work on next?\", or for a quick project health check.",
+      "hosts": {
+        "codex": {
+          "invoke": "$progress",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/progress",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "run-tests",
       "ships": "core",
       "category": "quality",
       "invoke": "both",
-      "description": "Run the test suites of the detected stack - the test gates from the stack manifest, with filtering by name or module, coverage and parallel runs, plus --e2e for browser journeys (the manifest's e2e block). Polyrepo-aware, analyzes failures, and ends with a per-repo verdict. Use when you need to verify a change, investigate failing tests, check coverage, or confirm the suites are green before a merge or release."
+      "description": "Run the test suites of the detected stack - the test gates from the stack manifest, with filtering by name or module, coverage and parallel runs, plus --e2e for browser journeys (the manifest's e2e block). Polyrepo-aware, analyzes failures, and ends with a per-repo verdict. Use when you need to verify a change, investigate failing tests, check coverage, or confirm the suites are green before a merge or release.",
+      "hosts": {
+        "codex": {
+          "invoke": "$run-tests",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/run-tests",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "schema-first",
       "ships": "core",
       "category": "patterns",
       "invoke": "auto",
-      "description": "Document schemas before migrations. Use when designing databases or planning data models."
+      "description": "Document schemas before migrations. Use when designing databases or planning data models.",
+      "hosts": {
+        "codex": {
+          "invoke": "$schema-first",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/schema-first",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "sdd",
       "ships": "core",
       "category": "workflow",
       "invoke": "both",
-      "description": "The single front door for spec-driven work. Classifies a ticket or request (bug / feature / decision / shipped code / new project / trivial), confirms the route with the user, collects every input the background workflow needs, and launches exactly one fixed pipeline — features always go spec → human approval → ship-feature. Use when the user starts work on a ticket (e.g. PROJ-123), describes a bug, feature, or technology choice to build, or asks to \"use a workflow\" / \"run a workflow\" for a task."
+      "description": "The single front door for spec-driven work. Classifies a ticket or request (bug / feature / decision / shipped code / new project / trivial), confirms the route with the user, collects every input the background workflow needs, and launches exactly one fixed pipeline — features always go spec → human approval → ship-feature. Use when the user starts work on a ticket (e.g. PROJ-123), describes a bug, feature, or technology choice to build, or asks to \"use a workflow\" / \"run a workflow\" for a task.",
+      "hosts": {
+        "codex": {
+          "invoke": "$sdd",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/sdd",
+          "availability": "available"
+        }
+      }
+    },
+    {
+      "name": "security-audit",
+      "ships": "core",
+      "category": "security",
+      "invoke": "auto",
+      "description": "Security guidance and vulnerability review for codebases, APIs, services, CLIs and libraries. Use for security questions, focused reviews and pen-test method. Full background audits run through /sdd or the security-audit workflow.",
+      "hosts": {
+        "codex": {
+          "invoke": "$security-audit",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/security-audit",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "security-scan",
       "ships": "core",
       "category": "quality",
       "invoke": "both",
-      "description": "Run security checks — dependency vulnerability audits (the manifest's audit commands), code scans for SQL injection, XSS, CSRF gaps, hardcoded secrets, auth bypasses, and server-side handlers that skip authorization, plus an OWASP Top 10 checklist — and report findings by severity with fixes. --dependencies is the kit's one read-only dependency audit (advisories plus outdated and unused packages) that /progress --health, /changelog --release and /upgrade-deps --audit-only rely on. Use when preparing a release, after adding dependencies or auth-related code, or for a periodic security review. Upgrading packages is /upgrade-deps."
+      "description": "Run security checks — dependency vulnerability audits (the manifest's audit commands), code scans for SQL injection, XSS, CSRF gaps, hardcoded secrets, auth bypasses, and server-side handlers that skip authorization, plus an OWASP Top 10 checklist — and report findings by severity with fixes. --dependencies is the kit's one read-only dependency audit (advisories plus outdated and unused packages) that /progress --health, /changelog --release and /upgrade-deps --audit-only rely on. Use when preparing a release, after adding dependencies or auth-related code, or for a periodic security review. Upgrading packages is /upgrade-deps.",
+      "hosts": {
+        "codex": {
+          "invoke": "$security-scan",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/security-scan",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "simple-task",
       "ships": "core",
       "category": "execution",
       "invoke": "both",
-      "description": "Execute a small-to-medium task (bug fix, small feature, refactor, safe symbol rename, or research-only question) in a single context window — investigate, clarify if ambiguous, implement test-first, run the verification gates, and leave a resumable task log. Use when the change touches roughly three files or fewer (the same XS threshold as /sdd and write-spec) and needs no formal spec; escalates to /write-spec when complexity thresholds are exceeded."
+      "description": "Execute a small-to-medium task (bug fix, small feature, refactor, safe symbol rename, or research-only question) in a single context window — investigate, clarify if ambiguous, implement test-first, run the verification gates, and leave a resumable task log. Use when the change touches roughly three files or fewer (the same XS threshold as /sdd and write-spec) and needs no formal spec; escalates to /write-spec when complexity thresholds are exceeded.",
+      "hosts": {
+        "codex": {
+          "invoke": "$simple-task",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/simple-task",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "source-verification",
       "ships": "core",
       "category": "quality",
       "invoke": "auto",
-      "description": "Rules for verifying claims against the actual code before stating or changing anything — read referenced files, cite file:line, never assume. Use when investigating code, reviewing, or writing specs and docs about existing behavior."
+      "description": "Rules for verifying claims against the actual code before stating or changing anything — read referenced files, cite file:line, never assume. Use when investigating code, reviewing, or writing specs and docs about existing behavior.",
+      "hosts": {
+        "codex": {
+          "invoke": "$source-verification",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/source-verification",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "spec-board",
       "ships": "core",
       "category": "workflow",
       "invoke": "both",
-      "description": "Visual Kanban board of the specs under .ai/specs - columns by status (draft, approved, in-progress, done) plus a Backlog column of product-brief slices from backlog.md that have no spec yet, task progress, open-question and approval warnings, filters and search, and a detail drawer with the rendered spec, task checklist with AC traceability, the other spec files, and execute-task resume hints. Runs as a live local server (127.0.0.1, auto-refresh) or writes one self-contained offline HTML file; supports polyrepo (api/.ai/specs web/.ai/specs) and legacy numbered specs. Use when the user wants to see, browse, share, or review the board of their specs, or asks what is awaiting approval or in flight. For where-was-I and next-task questions use progress."
+      "description": "Visual Kanban board of the specs under .ai/specs - columns by status (draft, approved, in-progress, done) plus a Backlog column of product-brief slices from backlog.md that have no spec yet, task progress, open-question and approval warnings, filters and search, and a detail drawer with the rendered spec, task checklist with AC traceability, the other spec files, and execute-task resume hints. Runs as a live local server (127.0.0.1, auto-refresh) or writes one self-contained offline HTML file; supports polyrepo (api/.ai/specs web/.ai/specs) and legacy numbered specs. Use when the user wants to see, browse, share, or review the board of their specs, or asks what is awaiting approval or in flight. For where-was-I and next-task questions use progress.",
+      "hosts": {
+        "codex": {
+          "invoke": "$spec-board",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/spec-board",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "stack-trust",
       "ships": "core",
       "category": "workflow",
       "invoke": "manual",
-      "description": "Review and approve overlay stack manifests (project .claude/stacks, user stacks directory, third-party plugin stack.json) before their gate commands run. Shows the commands, asks for confirmation, and records the manifest hash. Use when a workflow reports \"not run (untrusted manifest)\", when /sdd lists untrusted manifests, or after authoring a stack with /new-stack."
+      "description": "Review and approve overlay stack manifests (project .claude/stacks, user stacks directory, third-party plugin stack.json) before their gate commands run. Shows the commands, asks for confirmation, and records the manifest hash. Use when a workflow reports \"not run (untrusted manifest)\", when /sdd lists untrusted manifests, or after authoring a stack with /new-stack.",
+      "hosts": {
+        "codex": {
+          "invoke": "$stack-trust",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/stack-trust",
+          "availability": "explicit-only"
+        }
+      }
     },
     {
       "name": "sync-obsidian",
       "ships": "core",
       "category": "workflow",
       "invoke": "manual",
-      "description": "Sync human-verified project knowledge - specs, review output, a spec-board status note, and architecture/context docs - into an Obsidian vault with frontmatter, tags, wiki-links, and an index note. Use when publishing reviewed project knowledge to a shared Obsidian vault; supports --dry-run to preview. Only content a human has verified is synced."
+      "description": "Sync human-verified project knowledge - specs, review output, a spec-board status note, and architecture/context docs - into an Obsidian vault with frontmatter, tags, wiki-links, and an index note. Use when publishing reviewed project knowledge to a shared Obsidian vault; supports --dry-run to preview. Only content a human has verified is synced.",
+      "hosts": {
+        "codex": {
+          "invoke": "$sync-obsidian",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/sync-obsidian",
+          "availability": "explicit-only"
+        }
+      }
     },
     {
       "name": "upgrade-deps",
       "ships": "core",
       "category": "quality",
       "invoke": "manual",
-      "description": "Audit and upgrade dependencies (any package manager the stack uses) safely — report outdated/vulnerable packages, bump in tiers (patch → minor → major), and verify with the quality gates after each tier. Use when packages are outdated, a security advisory lands, or before a release."
+      "description": "Audit and upgrade dependencies (any package manager the stack uses) safely — report outdated/vulnerable packages, bump in tiers (patch → minor → major), and verify with the quality gates after each tier. Use when packages are outdated, a security advisory lands, or before a release.",
+      "hosts": {
+        "codex": {
+          "invoke": "$upgrade-deps",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/upgrade-deps",
+          "availability": "explicit-only"
+        }
+      }
     },
     {
       "name": "verification-gates",
       "ships": "core",
       "category": "quality",
       "invoke": "auto",
-      "description": "Standard post-implementation quality gates (format, lint, types, tests, coverage, build, browser journeys, accessibility, contract sync) taken from the stack manifest, the one recipe for finding stack data (gates, audit, scaffold, migrations) that /lint, /run-tests, /security-scan, /generate and the migrate commands share, and how to report gates. Use after implementing any change, before declaring it done; \"tool unreachable\" is never a pass."
+      "description": "Standard post-implementation quality gates (format, lint, types, tests, coverage, build, browser journeys, accessibility, contract sync) taken from the stack manifest, the one recipe for finding stack data (gates, audit, scaffold, migrations) that /lint, /run-tests, /security-scan, /generate and the migrate commands share, and how to report gates. Use after implementing any change, before declaring it done; \"tool unreachable\" is never a pass.",
+      "hosts": {
+        "codex": {
+          "invoke": "$verification-gates",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/verification-gates",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "write-docs",
       "ships": "core",
       "category": "workflow",
       "invoke": "both",
-      "description": "Generate documentation from code (business rules, API contracts, architecture overview), import external docs into the context paths CLAUDE.md loads (--import), or audit docs and code against the project's conventions and report drift (--audit) - always with lowercase filenames and file:line citations. Use when a project needs docs derived from the actual code, when business rules or architecture notes from a wiki, PDF or ticket should become project context, or to check whether docs and code still follow CLAUDE.md, AGENTS.md and .claude/rules. For a traceable QA plan plus docs for shipped features, use /qa-and-docs instead."
+      "description": "Generate documentation from code (business rules, API contracts, architecture overview), import external docs into the context paths CLAUDE.md loads (--import), or audit docs and code against the project's conventions and report drift (--audit) - always with lowercase filenames and file:line citations. Use when a project needs docs derived from the actual code, when business rules or architecture notes from a wiki, PDF or ticket should become project context, or to check whether docs and code still follow CLAUDE.md, AGENTS.md and .claude/rules. For a traceable QA plan plus docs for shipped features, use /qa-and-docs instead.",
+      "hosts": {
+        "codex": {
+          "invoke": "$write-docs",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/write-docs",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "write-spec",
       "ships": "core",
       "category": "upstream",
       "invoke": "both",
-      "description": "Turn a ticket or request into a right-sized, execution-ready spec under .ai/specs/ — sizes the work first (XS gets no spec), investigates the codebase, asks clarifying questions, writes spec-lite.md + tasks.md with EARS/Given-When-Then acceptance criteria, a Must-NOT-change list, boundaries, and AC-to-test traceability, then runs a fresh-context clarity gate. Use when work needs planning before implementation, when /sdd routes a feature here, or to revise an existing spec. --background runs the create-spec research workflow instead."
+      "description": "Turn a ticket or request into a right-sized, execution-ready spec under .ai/specs/ — sizes the work first (XS gets no spec), investigates the codebase, asks clarifying questions, writes spec-lite.md + tasks.md with EARS/Given-When-Then acceptance criteria, a Must-NOT-change list, boundaries, and AC-to-test traceability, then runs a fresh-context clarity gate. Use when work needs planning before implementation, when /sdd routes a feature here, or to revise an existing spec. --background runs the create-spec research workflow instead.",
+      "hosts": {
+        "codex": {
+          "invoke": "$write-spec",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/write-spec",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "design-ui",
       "ships": "design plugin",
       "category": "design",
       "invoke": "both",
-      "description": "Design UI/UX for a feature: user flows, component hierarchy, state management, data fetching, and accessibility, producing a UI design document for Next.js. Use when planning a new page, component, or user flow before implementation, or when reviewing existing frontend component patterns."
+      "description": "Design UI/UX for a feature: user flows, component hierarchy, state management, data fetching, and accessibility, producing a UI design document for Next.js. Use when planning a new page, component, or user flow before implementation, or when reviewing existing frontend component patterns.",
+      "hosts": {
+        "codex": {
+          "invoke": "$design-ui",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/design-ui",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "ddev",
       "ships": "devenv plugin",
       "category": "devops",
       "invoke": "both",
-      "description": "DDEV local development environment. Use for container management, debugging, and Laravel/Next.js development."
+      "description": "DDEV local development environment. Use for container management, debugging, and Laravel/Next.js development.",
+      "hosts": {
+        "codex": {
+          "invoke": "$ddev",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/ddev",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "docker",
       "ships": "devenv plugin",
       "category": "devops",
       "invoke": "both",
-      "description": "Docker for Laravel + Next.js. Use for Dockerfiles, compose setup, and container configuration."
+      "description": "Docker for Laravel + Next.js. Use for Dockerfiles, compose setup, and container configuration.",
+      "hosts": {
+        "codex": {
+          "invoke": "$docker",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/docker",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "drupal-11",
       "ships": "drupal plugin",
       "category": "drupal",
       "invoke": "both",
-      "description": "Drupal 11 module development patterns. Use for entities, services, plugins, hooks, and backend architecture decisions."
+      "description": "Drupal 11 module development patterns. Use for entities, services, plugins, hooks, and backend architecture decisions.",
+      "hosts": {
+        "codex": {
+          "invoke": "$drupal-11",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/drupal-11",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "ios-native",
       "ships": "ios plugin",
       "category": "ios",
       "invoke": "both",
-      "description": "Native iOS development with Swift 6 and SwiftUI. Use for views, @Observable view models, structured concurrency, URLSession networking, and SwiftData persistence in iOS/iPadOS apps and Swift packages."
+      "description": "Native iOS development with Swift 6 and SwiftUI. Use for views, @Observable view models, structured concurrency, URLSession networking, and SwiftData persistence in iOS/iPadOS apps and Swift packages.",
+      "hosts": {
+        "codex": {
+          "invoke": "$ios-native",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/ios-native",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "swift-testing",
       "ships": "ios plugin",
       "category": "ios",
       "invoke": "both",
-      "description": "Testing iOS/Swift code with the Swift Testing framework (@Test / #expect) and XCTest. Use when writing unit tests for view models, clients, and Swift packages, or running xcodebuild test on the simulator."
+      "description": "Testing iOS/Swift code with the Swift Testing framework (@Test / #expect) and XCTest. Use when writing unit tests for view models, clients, and Swift packages, or running xcodebuild test on the simulator.",
+      "hosts": {
+        "codex": {
+          "invoke": "$swift-testing",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/swift-testing",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "dto-first",
       "ships": "laravel plugin",
       "category": "patterns",
       "invoke": "auto",
-      "description": "DTO patterns with Spatie Laravel Data. Use for request/response data handling and layer boundaries."
+      "description": "DTO patterns with Spatie Laravel Data. Use for request/response data handling and layer boundaries.",
+      "hosts": {
+        "codex": {
+          "invoke": "$dto-first",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/dto-first",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "event-driven",
       "ships": "laravel plugin",
       "category": "patterns",
       "invoke": "auto",
-      "description": "Event-driven architecture in Laravel. Use for events, listeners, and async processing patterns."
+      "description": "Event-driven architecture in Laravel. Use for events, listeners, and async processing patterns.",
+      "hosts": {
+        "codex": {
+          "invoke": "$event-driven",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/event-driven",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "laravel-12",
       "ships": "laravel plugin",
       "category": "frameworks",
       "invoke": "both",
-      "description": "Laravel 12 API patterns. Use for services, models, controllers, and backend architecture decisions."
+      "description": "Laravel 12 API patterns. Use for services, models, controllers, and backend architecture decisions.",
+      "hosts": {
+        "codex": {
+          "invoke": "$laravel-12",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/laravel-12",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "laravel-migration-coordinator",
       "ships": "laravel plugin",
       "category": "frameworks",
       "invoke": "both",
-      "description": "Plan, write, and verify safe Laravel migrations. Use when adding/altering DB schema, splitting NOT-NULL backfills, fixing foreign-key ordering, designing zero-downtime migrations, or auditing an existing migration before merge. Pairs with Pest 3 integration tests and `php artisan migrate --pretend` for evidence-based safety checks."
+      "description": "Plan, write, and verify safe Laravel migrations. Use when adding/altering DB schema, splitting NOT-NULL backfills, fixing foreign-key ordering, designing zero-downtime migrations, or auditing an existing migration before merge. Pairs with Pest 3 integration tests and `php artisan migrate --pretend` for evidence-based safety checks.",
+      "hosts": {
+        "codex": {
+          "invoke": "$laravel-migration-coordinator",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/laravel-migration-coordinator",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "migrate-db",
       "ships": "laravel plugin",
       "category": "execution",
       "invoke": "manual",
-      "description": "Create, modify, roll back, and inspect Laravel database migrations schema-first — update the schema doc in docs/schemas/ before generating the migration, check it with the laravel-migration-coordinator safety rules, then run and report migration status. Use when adding or altering tables, rolling back a batch, or checking which migrations are pending. Runs migrations, so it is user-invoked only."
+      "description": "Create, modify, roll back, and inspect Laravel database migrations schema-first — update the schema doc in docs/schemas/ before generating the migration, check it with the laravel-migration-coordinator safety rules, then run and report migration status. Use when adding or altering tables, rolling back a batch, or checking which migrations are pending. Runs migrations, so it is user-invoked only.",
+      "hosts": {
+        "codex": {
+          "invoke": "$migrate-db",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/migrate-db",
+          "availability": "explicit-only"
+        }
+      }
     },
     {
       "name": "oauth2-passport",
       "ships": "laravel plugin",
       "category": "security",
       "invoke": "auto",
-      "description": "Laravel Passport OAuth2 patterns. Use for token auth, scopes, PKCE, and API authentication."
+      "description": "Laravel Passport OAuth2 patterns. Use for token auth, scopes, PKCE, and API authentication.",
+      "hosts": {
+        "codex": {
+          "invoke": "$oauth2-passport",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/oauth2-passport",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "pest-3",
       "ships": "laravel plugin",
       "category": "frameworks",
       "invoke": "auto",
-      "description": "Pest PHP 3.x testing patterns. Use for writing tests, expectations, and test architecture."
+      "description": "Pest PHP 3.x testing patterns. Use for writing tests, expectations, and test architecture.",
+      "hosts": {
+        "codex": {
+          "invoke": "$pest-3",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/pest-3",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "service-repository",
       "ships": "laravel plugin",
       "category": "patterns",
       "invoke": "auto",
-      "description": "Service-Repository architecture pattern. Use for business logic, layer separation, and data access."
+      "description": "Service-Repository architecture pattern. Use for business logic, layer separation, and data access.",
+      "hosts": {
+        "codex": {
+          "invoke": "$service-repository",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/service-repository",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "nextjs-15",
       "ships": "nextjs plugin",
       "category": "frameworks",
       "invoke": "both",
-      "description": "Next.js 15 App Router patterns. Use for pages, components, server actions, and frontend architecture."
+      "description": "Next.js 15 App Router patterns. Use for pages, components, server actions, and frontend architecture.",
+      "hosts": {
+        "codex": {
+          "invoke": "$nextjs-15",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/nextjs-15",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "nextjs-auth",
       "ships": "nextjs plugin",
       "category": "security",
       "invoke": "auto",
-      "description": "Next.js auth patterns for a separate API backend (token proxy, HttpOnly cookies). Use for token flow, middleware, and protected routes."
+      "description": "Next.js auth patterns for a separate API backend (token proxy, HttpOnly cookies). Use for token flow, middleware, and protected routes.",
+      "hosts": {
+        "codex": {
+          "invoke": "$nextjs-auth",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/nextjs-auth",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "nextjs-performance-profiler",
       "ships": "nextjs plugin",
       "category": "frameworks",
       "invoke": "both",
-      "description": "Profile and optimize Next.js 15 App Router apps for Core Web Vitals (LCP/INP/CLS), bundle size, server-component balance, and image/font delivery. Use when investigating slow page loads, before a release, or when CWV regress. Runs Lighthouse, bundle analysis, and provides targeted fix patterns."
+      "description": "Profile and optimize Next.js 15 App Router apps for Core Web Vitals (LCP/INP/CLS), bundle size, server-component balance, and image/font delivery. Use when investigating slow page loads, before a release, or when CWV regress. Runs Lighthouse, bundle analysis, and provides targeted fix patterns.",
+      "hosts": {
+        "codex": {
+          "invoke": "$nextjs-performance-profiler",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/nextjs-performance-profiler",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "nextjs-testing",
       "ships": "nextjs plugin",
       "category": "frameworks",
       "invoke": "auto",
-      "description": "Testing patterns for the Next.js 15 frontend of an API-backed app - Vitest with React Testing Library component tests, MSW mocks built from the backend's API contract, Server Action and Route Handler tests, and Playwright E2E journeys against an isolated, seeded e2e environment (the references use a Laravel API as the worked backend). Use when writing or fixing *.test.ts(x) or e2e/*.spec.ts files, setting up vitest.config or playwright.config, mocking the backend API in frontend tests, naming frontend tests after spec acceptance criteria (AC-n) for traceability, or deciding which layer a frontend behaviour belongs to."
+      "description": "Testing patterns for the Next.js 15 frontend of an API-backed app - Vitest with React Testing Library component tests, MSW mocks built from the backend's API contract, Server Action and Route Handler tests, and Playwright E2E journeys against an isolated, seeded e2e environment (the references use a Laravel API as the worked backend). Use when writing or fixing *.test.ts(x) or e2e/*.spec.ts files, setting up vitest.config or playwright.config, mocking the backend API in frontend tests, naming frontend tests after spec acceptance criteria (AC-n) for traceability, or deciding which layer a frontend behaviour belongs to.",
+      "hosts": {
+        "codex": {
+          "invoke": "$nextjs-testing",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/nextjs-testing",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "tailwind-4",
       "ships": "nextjs plugin",
       "category": "frameworks",
       "invoke": "auto",
-      "description": "Tailwind CSS v4 patterns. Use for styling, layouts, responsive design, and dark mode."
+      "description": "Tailwind CSS v4 patterns. Use for styling, layouts, responsive design, and dark mode.",
+      "hosts": {
+        "codex": {
+          "invoke": "$tailwind-4",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/tailwind-4",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "typescript",
       "ships": "nextjs plugin",
       "category": "frameworks",
       "invoke": "auto",
-      "description": "TypeScript patterns for full-stack apps. Use for type definitions, API clients, and Zod validation."
+      "description": "TypeScript patterns for full-stack apps. Use for type definitions, API clients, and Zod validation.",
+      "hosts": {
+        "codex": {
+          "invoke": "$typescript",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/typescript",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "deploy",
       "ships": "ops plugin",
       "category": "ops",
       "invoke": "manual",
-      "description": "Deploy the application to staging or production with pre-deploy gates (tests, lint, build), confirmation for production, and post-deploy health and smoke checks. Use when shipping a release to an environment, doing a dry run of a deployment, or deploying a specific branch."
+      "description": "Deploy the application to staging or production with pre-deploy gates (tests, lint, build), confirmation for production, and post-deploy health and smoke checks. Use when shipping a release to an environment, doing a dry run of a deployment, or deploying a specific branch.",
+      "hosts": {
+        "codex": {
+          "invoke": "$deploy",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/deploy",
+          "availability": "explicit-only"
+        }
+      }
     },
     {
       "name": "feature-flag",
       "ships": "ops plugin",
       "category": "ops",
       "invoke": "manual",
-      "description": "Create, list, enable, disable, roll out, and clean up feature flags (boolean, percentage, user-targeted) with config, env, and documentation updates. Use when releasing a change gradually, gating unfinished work behind a flag, planning a percentage rollout, or removing stale flags."
+      "description": "Create, list, enable, disable, roll out, and clean up feature flags (boolean, percentage, user-targeted) with config, env, and documentation updates. Use when releasing a change gradually, gating unfinished work behind a flag, planning a percentage rollout, or removing stale flags.",
+      "hosts": {
+        "codex": {
+          "invoke": "$feature-flag",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/feature-flag",
+          "availability": "explicit-only"
+        }
+      }
     },
     {
       "name": "health-check",
       "ships": "ops plugin",
       "category": "ops",
       "invoke": "both",
-      "description": "Verify system health across the app, database, cache, queues, disk, and external services, and report a pass/warn/fail summary. Use when checking an environment after a deploy or incident, investigating degraded behavior, or confirming infrastructure is ready before a release."
+      "description": "Verify system health across the app, database, cache, queues, disk, and external services, and report a pass/warn/fail summary. Use when checking an environment after a deploy or incident, investigating degraded behavior, or confirming infrastructure is ready before a release.",
+      "hosts": {
+        "codex": {
+          "invoke": "$health-check",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/health-check",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "incident",
       "ships": "ops plugin",
       "category": "ops",
       "invoke": "both",
-      "description": "Run an incident response workflow: open an incident record, triage by severity, investigate logs and recent deploys, mitigate, resolve, and draft a postmortem with action items. Use when production is broken or degraded, when updating or resolving an active incident, or when writing a postmortem."
+      "description": "Run an incident response workflow: open an incident record, triage by severity, investigate logs and recent deploys, mitigate, resolve, and draft a postmortem with action items. Use when production is broken or degraded, when updating or resolving an active incident, or when writing a postmortem.",
+      "hosts": {
+        "codex": {
+          "invoke": "$incident",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/incident",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "rollback",
       "ships": "ops plugin",
       "category": "ops",
       "invoke": "manual",
-      "description": "Roll back a deployment safely: capture current state, identify the known-good target, revert code and migrations under maintenance mode, and verify health afterwards. Use when a deploy caused a regression, when reverting to a specific commit or N steps, or during an emergency recovery."
+      "description": "Roll back a deployment safely: capture current state, identify the known-good target, revert code and migrations under maintenance mode, and verify health afterwards. Use when a deploy caused a regression, when reverting to a specific commit or N steps, or during an emergency recovery.",
+      "hosts": {
+        "codex": {
+          "invoke": "$rollback",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/rollback",
+          "availability": "explicit-only"
+        }
+      }
     }
   ],
   "agents": [
@@ -436,7 +1063,17 @@ window.CATALOG = {
       "category": "quality",
       "model": "opus",
       "effort": "high",
-      "description": "Skeptical post-implementation reviewer that assumes code has bugs until proven otherwise. Uses different model from generation to catch blind spots."
+      "description": "Skeptical post-implementation reviewer that assumes code has bugs until proven otherwise. Uses different model from generation to catch blind spots.",
+      "hosts": {
+        "codex": {
+          "invoke": "$sdd-runtime",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/adversarial-reviewer",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "api-architect",
@@ -444,7 +1081,17 @@ window.CATALOG = {
       "category": "design",
       "model": "opus",
       "effort": "high",
-      "description": "API and system architecture - resource and contract design, integration patterns, scalability and technology-fit assessment for API-backed web systems in any stack. Use PROACTIVELY for architectural decisions, design patterns, high-load planning, and integration design."
+      "description": "API and system architecture - resource and contract design, integration patterns, scalability and technology-fit assessment for API-backed web systems in any stack. Use PROACTIVELY for architectural decisions, design patterns, high-load planning, and integration design.",
+      "hosts": {
+        "codex": {
+          "invoke": "$sdd-runtime",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/api-architect",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "changelog-writer",
@@ -452,7 +1099,17 @@ window.CATALOG = {
       "category": "release",
       "model": "haiku",
       "effort": "low",
-      "description": "Generate comprehensive changelogs from git history, categorize changes, and maintain CHANGELOG.md in Keep a Changelog format."
+      "description": "Generate comprehensive changelogs from git history, categorize changes, and maintain CHANGELOG.md in Keep a Changelog format.",
+      "hosts": {
+        "codex": {
+          "invoke": "$sdd-runtime",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/changelog-writer",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "code-explorer",
@@ -460,7 +1117,17 @@ window.CATALOG = {
       "category": "discovery",
       "model": "sonnet",
       "effort": "low",
-      "description": "Explore and analyze codebase structure, patterns, and implementations across any repo, one or several, including existing-implementation detection (present / partial / missing per layer, with file:line). Use for understanding existing code before making changes."
+      "description": "Explore and analyze codebase structure, patterns, and implementations across any repo, one or several, including existing-implementation detection (present / partial / missing per layer, with file:line). Use for understanding existing code before making changes.",
+      "hosts": {
+        "codex": {
+          "invoke": "$sdd-runtime",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/code-explorer",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "code-quality",
@@ -468,7 +1135,17 @@ window.CATALOG = {
       "category": "quality",
       "model": "sonnet",
       "effort": "medium",
-      "description": "Single quality-gate runner for any stack - runs the gate commands from the stack manifest per repo (format, lint, types, tests, build), auto-fixes formatter-class issues only, and reports pass/fail per gate with condensed failure analysis. Also has a cleanup mode that reports dead code with evidence. Use after implementing a task, before a PR, or when tests fail."
+      "description": "Single quality-gate runner for any stack - runs the gate commands from the stack manifest per repo (format, lint, types, tests, build), auto-fixes formatter-class issues only, and reports pass/fail per gate with condensed failure analysis. Also has a cleanup mode that reports dead code with evidence. Use after implementing a task, before a PR, or when tests fail.",
+      "hosts": {
+        "codex": {
+          "invoke": "$sdd-runtime",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/code-quality",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "database-designer",
@@ -476,7 +1153,17 @@ window.CATALOG = {
       "category": "design",
       "model": "sonnet",
       "effort": "medium",
-      "description": "Database designer and migration author. MUST BE USED for schema design, data modeling, migrations, models and factories that mirror the schema, indexing, and query optimization. Use PROACTIVELY whenever a table, column, index, constraint, or relationship is added or changed, or when a query is slow. Works schema-first and keeps migrations safe and reversible."
+      "description": "Database designer and migration author. MUST BE USED for schema design, data modeling, migrations, models and factories that mirror the schema, indexing, and query optimization. Use PROACTIVELY whenever a table, column, index, constraint, or relationship is added or changed, or when a query is slow. Works schema-first and keeps migrations safe and reversible.",
+      "hosts": {
+        "codex": {
+          "invoke": "$sdd-runtime",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/database-designer",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "devops-engineer",
@@ -484,7 +1171,17 @@ window.CATALOG = {
       "category": "execution",
       "model": "sonnet",
       "effort": "medium",
-      "description": "DevOps engineering agent specializing in CI/CD pipelines, containerization, and deployment automation for web applications in any stack."
+      "description": "DevOps engineering agent specializing in CI/CD pipelines, containerization, and deployment automation for web applications in any stack.",
+      "hosts": {
+        "codex": {
+          "invoke": "$sdd-runtime",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/devops-engineer",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "doc-creator",
@@ -492,7 +1189,17 @@ window.CATALOG = {
       "category": "operations",
       "model": "sonnet",
       "effort": "",
-      "description": "Documentation writer for write-docs (generate, --import, --audit) - turns cited code analysis and external material into clear markdown, verifies every behavioral claim against file:line, and enforces lowercase filenames."
+      "description": "Documentation writer for write-docs (generate, --import, --audit) - turns cited code analysis and external material into clear markdown, verifies every behavioral claim against file:line, and enforces lowercase filenames.",
+      "hosts": {
+        "codex": {
+          "invoke": "$sdd-runtime",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/doc-creator",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "outcomes-grader",
@@ -500,7 +1207,17 @@ window.CATALOG = {
       "category": "quality",
       "model": "opus",
       "effort": "high",
-      "description": "Rubric-based grader that scores prior agent output against a domain rubric and either approves it or returns concrete failures for the writer to address. Use PROACTIVELY after any non-trivial generation task (API implementation, UI component, migration, test suite) before considering it done. Returns pass/fail verdict plus item-by-item grades."
+      "description": "Rubric-based grader that scores prior agent output against a domain rubric and either approves it or returns concrete failures for the writer to address. Use PROACTIVELY after any non-trivial generation task (API implementation, UI component, migration, test suite) before considering it done. Returns pass/fail verdict plus item-by-item grades.",
+      "hosts": {
+        "codex": {
+          "invoke": "$sdd-runtime",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/outcomes-grader",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "performance-tester",
@@ -508,7 +1225,17 @@ window.CATALOG = {
       "category": "quality",
       "model": "sonnet",
       "effort": "medium",
-      "description": "Performance optimization for APIs and web frontends in any stack - measures a baseline and requires a target before changing anything, then finds the bottleneck (queries, caching, queues, Core Web Vitals, bundles) and verifies the gain. Use PROACTIVELY for slow endpoints or pages, performance budgets, and scalability planning."
+      "description": "Performance optimization for APIs and web frontends in any stack - measures a baseline and requires a target before changing anything, then finds the bottleneck (queries, caching, queues, Core Web Vitals, bundles) and verifies the gain. Use PROACTIVELY for slow endpoints or pages, performance budgets, and scalability planning.",
+      "hosts": {
+        "codex": {
+          "invoke": "$sdd-runtime",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/performance-tester",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "requirements-analyst",
@@ -516,7 +1243,17 @@ window.CATALOG = {
       "category": "upstream",
       "model": "sonnet",
       "effort": "",
-      "description": "Elicit, validate, and formalize requirements - scores input clarity, asks targeted questions in bounded rounds, and writes testable acceptance criteria. Used by write-spec for L-size specs and by product-brief for idea and feedback intake."
+      "description": "Elicit, validate, and formalize requirements - scores input clarity, asks targeted questions in bounded rounds, and writes testable acceptance criteria. Used by write-spec for L-size specs and by product-brief for idea and feedback intake.",
+      "hosts": {
+        "codex": {
+          "invoke": "$sdd-runtime",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/requirements-analyst",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "security-auditor",
@@ -524,7 +1261,35 @@ window.CATALOG = {
       "category": "quality",
       "model": "opus",
       "effort": "high",
-      "description": "MUST BE USED for security reviews, vulnerability detection, OWASP compliance checks, and application security validation. Use PROACTIVELY for any security-related concerns, authentication flows, or sensitive data handling."
+      "description": "MUST BE USED for security reviews, vulnerability detection, OWASP compliance checks, and application security validation. Use PROACTIVELY for any security-related concerns, authentication flows, or sensitive data handling.",
+      "hosts": {
+        "codex": {
+          "invoke": "$sdd-runtime",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/security-auditor",
+          "availability": "available"
+        }
+      }
+    },
+    {
+      "name": "security-hunter",
+      "ships": "core",
+      "category": "security",
+      "model": "sonnet",
+      "effort": "high",
+      "description": "Read-only, memory-less security analyst for the security-audit workflow - hunts one coverage unit, critiques coverage, or casts one independent verification vote from repository source, and returns only the structured result its prompt asks for. Use PROACTIVELY when the security-audit workflow assigns a hunt unit, a coverage critique or a verifier vote; for an interactive security review use security-auditor.",
+      "hosts": {
+        "codex": {
+          "invoke": "$sdd-runtime",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/security-hunter",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "test-writer",
@@ -532,7 +1297,17 @@ window.CATALOG = {
       "category": "quality",
       "model": "sonnet",
       "effort": "medium",
-      "description": "Test writing for any stack (unit, integration, component and end-to-end) with schema-first and data-object-first patterns, using the repo's own test runner. Writes RED-phase tests that carry the spec's AC ids. Use for creating feature, unit, integration, component, and end-to-end tests."
+      "description": "Test writing for any stack (unit, integration, component and end-to-end) with schema-first and data-object-first patterns, using the repo's own test runner. Writes RED-phase tests that carry the spec's AC ids. Use for creating feature, unit, integration, component, and end-to-end tests.",
+      "hosts": {
+        "codex": {
+          "invoke": "$sdd-runtime",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/test-writer",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "ui-ux-advisor",
@@ -540,7 +1315,17 @@ window.CATALOG = {
       "category": "design",
       "model": "sonnet",
       "effort": "",
-      "description": "Frontend design patterns, Next.js architecture, React component design, and UI/UX recommendations. Use PROACTIVELY for frontend architecture decisions, component design, and user experience optimization."
+      "description": "Frontend design patterns, Next.js architecture, React component design, and UI/UX recommendations. Use PROACTIVELY for frontend architecture decisions, component design, and user experience optimization.",
+      "hosts": {
+        "codex": {
+          "invoke": "$sdd-runtime",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/ui-ux-advisor",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "ios-mobile-dev",
@@ -548,7 +1333,17 @@ window.CATALOG = {
       "category": "ios",
       "model": "sonnet",
       "effort": "",
-      "description": "iOS mobile development agent with expertise in Swift 6, SwiftUI, @Observable MVVM, structured concurrency, and SwiftData persistence. Use for native iOS/iPadOS features and Swift package work."
+      "description": "iOS mobile development agent with expertise in Swift 6, SwiftUI, @Observable MVVM, structured concurrency, and SwiftData persistence. Use for native iOS/iPadOS features and Swift package work.",
+      "hosts": {
+        "codex": {
+          "invoke": "$sdd-runtime",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/ios-mobile-dev",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "laravel-backend-dev",
@@ -556,7 +1351,17 @@ window.CATALOG = {
       "category": "execution",
       "model": "sonnet",
       "effort": "medium",
-      "description": "Laravel backend implementer for domain features, REST API endpoints, and external integrations. Use PROACTIVELY for services, repositories, DTOs, invokable controllers, JsonResources, routes, policies, events and queued jobs, third-party API clients, and inbound or outbound webhooks. Follows service-repository and DTO-first patterns with consistent JSON responses."
+      "description": "Laravel backend implementer for domain features, REST API endpoints, and external integrations. Use PROACTIVELY for services, repositories, DTOs, invokable controllers, JsonResources, routes, policies, events and queued jobs, third-party API clients, and inbound or outbound webhooks. Follows service-repository and DTO-first patterns with consistent JSON responses.",
+      "hosts": {
+        "codex": {
+          "invoke": "$sdd-runtime",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/laravel-backend-dev",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "nextjs-frontend-dev",
@@ -564,7 +1369,17 @@ window.CATALOG = {
       "category": "execution",
       "model": "sonnet",
       "effort": "medium",
-      "description": "Next.js frontend development agent with expertise in App Router, Server Components, TypeScript, API integration patterns, and the frontend tests that prove them (Vitest + Testing Library + MSW, Playwright E2E)."
+      "description": "Next.js frontend development agent with expertise in App Router, Server Components, TypeScript, API integration patterns, and the frontend tests that prove them (Vitest + Testing Library + MSW, Playwright E2E).",
+      "hosts": {
+        "codex": {
+          "invoke": "$sdd-runtime",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/nextjs-frontend-dev",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "deployment-specialist",
@@ -572,7 +1387,17 @@ window.CATALOG = {
       "category": "ops",
       "model": "sonnet",
       "effort": "medium",
-      "description": "Handle multi-environment deployments for Laravel and Next.js applications with pre/post deployment checks and verification."
+      "description": "Handle multi-environment deployments for Laravel and Next.js applications with pre/post deployment checks and verification.",
+      "hosts": {
+        "codex": {
+          "invoke": "$sdd-runtime",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/deployment-specialist",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "incident-responder",
@@ -580,7 +1405,17 @@ window.CATALOG = {
       "category": "ops",
       "model": "sonnet",
       "effort": "medium",
-      "description": "Triage incidents, coordinate response, manage communication, and ensure proper incident resolution for production issues."
+      "description": "Triage incidents, coordinate response, manage communication, and ensure proper incident resolution for production issues.",
+      "hosts": {
+        "codex": {
+          "invoke": "$sdd-runtime",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/incident-responder",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "ops-analyst",
@@ -588,7 +1423,17 @@ window.CATALOG = {
       "category": "ops",
       "model": "haiku",
       "effort": "low",
-      "description": "Read-only operations analyst for Laravel and Next.js applications with three modes - monitor (health checks, metrics, anomaly detection, alert tuning), logs (log search, error and performance pattern analysis, request tracing), and triage (user-reported issues - gather diagnostics, reproduce, classify, and draft user communication). Use PROACTIVELY when checking production health, investigating errors or slowness, or turning a support ticket into an engineering-ready report."
+      "description": "Read-only operations analyst for Laravel and Next.js applications with three modes - monitor (health checks, metrics, anomaly detection, alert tuning), logs (log search, error and performance pattern analysis, request tracing), and triage (user-reported issues - gather diagnostics, reproduce, classify, and draft user communication). Use PROACTIVELY when checking production health, investigating errors or slowness, or turning a support ticket into an engineering-ready report.",
+      "hosts": {
+        "codex": {
+          "invoke": "$sdd-runtime",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/ops-analyst",
+          "availability": "available"
+        }
+      }
     },
     {
       "name": "rollback-specialist",
@@ -596,7 +1441,17 @@ window.CATALOG = {
       "category": "ops",
       "model": "sonnet",
       "effort": "medium",
-      "description": "Execute safe rollbacks, manage database migration reversals, and coordinate emergency recovery procedures."
+      "description": "Execute safe rollbacks, manage database migration reversals, and coordinate emergency recovery procedures.",
+      "hosts": {
+        "codex": {
+          "invoke": "$sdd-runtime",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/rollback-specialist",
+          "availability": "available"
+        }
+      }
     }
   ],
   "workflows": [
@@ -745,6 +1600,53 @@ window.CATALOG = {
         {
           "title": "Report",
           "detail": "Coverage matrix + grade + locations"
+        }
+      ]
+    },
+    {
+      "name": "security-audit",
+      "description": "Detect stack → set up an ignored run dir and resolve the pinned skill → reconnaissance → coverage ledger → hunting waves with coverage critics → independent static verification → validated findings → target-neutral report. Never runs target code.",
+      "whenToUse": "When a codebase or a scope needs a deep, coverage-led security audit with independently verified findings (an explicit audit, pen-test or full security review; a quick checklist is /security-scan). Pass { scope:{paths:[...]} | {gitRange:\"<base>..HEAD\"}, repo, profile:\"quick\"|\"standard\"|\"deep\", budget, maxUnits, outputDir, models }. Run artifacts go to a VCS-ignored run dir; a target-neutral summary is saved to .ai/reports/. A lead is confirmed only when two independent verifiers agree on static source evidence; anything that needs running the code stays needs_validation.",
+      "phases": [
+        {
+          "title": "Detect",
+          "detail": "Identify the repo layout and pick the target repo (gate commands are recorded, never run)"
+        },
+        {
+          "title": "Setup",
+          "detail": "Git check, ignored run dir, revision stamp, pinned skill resolution, budget gate"
+        },
+        {
+          "title": "Recon",
+          "detail": "Four reconnaissance agents map the product, principals, entry surfaces and local visibility"
+        },
+        {
+          "title": "Plan",
+          "detail": "Architecture summary and the deterministic coverage ledger, written and validated"
+        },
+        {
+          "title": "Hunt",
+          "detail": "Coverage-led hunting waves, one hunter per ledger unit"
+        },
+        {
+          "title": "Critic",
+          "detail": "A fresh coverage critic after each wave and a final-clean pass"
+        },
+        {
+          "title": "Validate",
+          "detail": "Two fresh verifier votes per candidate and a tie-breaker on disagreement"
+        },
+        {
+          "title": "Findings",
+          "detail": "findings.json, both upstream validators, one repair, target tamper check"
+        },
+        {
+          "title": "RecordVerify",
+          "detail": "A fresh agent checks every retained record"
+        },
+        {
+          "title": "Report",
+          "detail": "REPORT.md, FINDINGS-DETAIL.md, NEEDS-VALIDATION.md and the committed summary"
         }
       ]
     },

@@ -383,7 +383,7 @@ where the session started. [Chapter 03](03-decision-spa-auth-adr.md) started ins
 `"."` and `"../web"`.
 
 The arguments are documented in
-[references/ship-feature.md](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/plugins/sdd-kit/skills/sdd/references/ship-feature.md). The
+[references/ship-feature.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/plugins/sdd-kit/skills/sdd/references/ship-feature.md). The
 `ticket` arg only names the folder in free-text `feature` mode. In spec mode it is ignored, which is
 harmless. The key still shows up in the report because it is part of the spec id
 `spec-HIRE-3-accounts-and-roles`.

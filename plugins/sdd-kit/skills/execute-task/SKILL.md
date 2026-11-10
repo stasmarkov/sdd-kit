@@ -4,10 +4,10 @@ description: Execute an approved spec's tasks one at a time with TDD, verificati
 argument-hint: "--spec=<folder | number | ticket key | timestamp id> | --continue | --task=[number] | --auto-continue | --verify-only"
 allowed-tools: Agent, Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion
 metadata:
-  mcp-tools: context7
-  version: 2.1
+  mcp-tools: "context7"
+  version: "2.1"
   subagents: "test-writer, laravel-backend-dev, nextjs-frontend-dev, code-quality"
-  checkpoint_enabled: true
+  checkpoint_enabled: "true"
   last_verified: "2026-10-19"
   next_review: "2027-01-19"
 ---

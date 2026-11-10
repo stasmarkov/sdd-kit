@@ -1,6 +1,6 @@
 {
   "name": "sdd-kit-drupal",
-  "version": "3.1.0",
+  "version": "4.0.0",
   "description": "Drupal 11 add-on: drupal-11 skill with module scaffolding.",
   "author": {
     "name": "Stas Markov"

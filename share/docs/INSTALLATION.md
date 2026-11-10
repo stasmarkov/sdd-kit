@@ -6,6 +6,8 @@ changes and how to set up MCP servers. For your first session after installing, 
 
 - [Prerequisites](#prerequisites)
 - [Choose a mode](#choose-a-mode)
+- [Codex](#codex)
+- [Cursor](#cursor)
 - [Plugin mode](#plugin-mode)
 - [File-copy mode](#file-copy-mode)
 - [MCP servers](#mcp-servers)
@@ -33,7 +35,53 @@ New to Claude Code? Install it first: [GETTING-STARTED, section 0](GETTING-START
 
 - **Plugin mode**: install from the marketplace; one pinned version per team, updated with `/plugin`.
 - **File-copy mode**: `./install.sh` merges the kit into `.claude/`; you can edit agents and skills in place.
-- Both ship the same agents, skills, workflows, and hooks. The full comparison (hooks, permissions, namespacing, limitations) is in [plugin-mode.md](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/docs/reference/plugin-mode.md).
+- Both ship the same agents, skills, workflows, and hooks. The full comparison (hooks, permissions, namespacing, limitations) is in [plugin-mode.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/plugin-mode.md).
+
+## Codex plugins
+
+The distribution root carries `.agents/plugins/marketplace.json` beside `.claude-plugin/marketplace.json`, with the Codex packages under `hosts/codex/`:
+
+```bash
+codex plugin marketplace add stasmarkov/sdd-kit
+codex plugin add sdd-kit@sdd-kit
+```
+
+For a file-copy install use `install.sh --host codex` (or `--host cursor`).
+
+## Codex
+
+Codex support is an unverified preview in 4.0: it is built and tested, but no real Codex session has been recorded yet ([hosts.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/hosts.md)). Codex plugins cannot ship agents, so the plugin install carries skills, hooks and the bridge; custom agents come with the file-copy install. You need Codex, git, jq and Node.js 20+. Windows is not supported.
+
+Plugin install, from your shell:
+
+```bash
+codex plugin marketplace add stasmarkov/sdd-kit
+codex plugin add sdd-kit@sdd-kit
+```
+
+File-copy install, from your project root (skills go to `.agents/skills`, agents to `.codex/agents`):
+
+```bash
+bash install.sh --host codex --project --dry-run
+bash install.sh --host codex --project
+npx github:stasmarkov/sdd-kit install --host codex --project
+```
+
+Flags: `--project` or `--user`, `--stack=LIST`, `--with=LIST`, `--prune`, `--dry-run`, `--yes` and `--uninstall`. Codex skills start with `$`, for example `$sdd`.
+
+## Cursor
+
+Cursor support is an unverified preview in 4.0, like Codex. You need Cursor, git, jq and Node.js 20+. Windows is not supported. For a team, import the distribution repo as a team marketplace in the Cursor dashboard (Plugins & MCPs, Add Marketplace, Import from Repo; this needs a Teams or Enterprise plan).
+
+File-copy install, from your project root (skills go to `.cursor/skills`, agents to `.cursor/agents`, rules to `.cursor/rules`):
+
+```bash
+bash install.sh --host cursor --project --dry-run
+bash install.sh --host cursor --project
+npx github:stasmarkov/sdd-kit install --host cursor --project
+```
+
+Flags: `--project` or `--user`, `--stack=LIST`, `--with=LIST`, `--prune`, `--dry-run`, `--yes` and `--uninstall`. Cursor skills start with `/`, for example `/sdd`. If Cursor's Third-Party Imports also loads a Claude install of the kit, turn that setting off (Settings > Agents > Third-Party Imports) so the kit does not load twice.
 
 ## Plugin mode
 
@@ -158,7 +206,7 @@ in the session.
 ### Team rollout
 
 To pin a reviewed version for a whole team, publish your own marketplace that points at a
-release tag and commit. See [team-marketplace.md](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/docs/reference/team-marketplace.md).
+release tag and commit. See [team-marketplace.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/team-marketplace.md).
 
 ## File-copy mode
 
@@ -181,7 +229,7 @@ previews and `npx github:stasmarkov/sdd-kit install --project` installs; every
 the same `install.sh` as a clone, so the result is identical, and it needs bash, git, jq and
 Node 18+. On Windows use Git Bash or WSL, or the plugin.
 
-Add `#v3.1.0` to pin a release (`npx github:stasmarkov/sdd-kit#v3.1.0 install --project`);
+Add `#v4.0.0` to pin a release (`npx github:stasmarkov/sdd-kit#v4.0.0 install --project`);
 without a tag npx fetches the default branch. npx caches the download. The package is not
 published to npm.
 
@@ -196,7 +244,7 @@ published to npm.
 | `--stack=LIST` | Stack add-ons to install, comma-separated, or `none` for core only. Default: `laravel,nextjs` on a fresh install, the installed stacks on an upgrade. Other stacks: `drupal`, `ios`. An add-on that is not a stack (`devenv`, `ops`, `design`) is rejected with a hint to use `--with` |
 | `--with=LIST` | Add optional add-ons, comma-separated: `devenv`, `ops`, `design`, plus any stack add-on |
 | `--prune` | On an upgrade, remove installed add-ons that are not selected. Without it, flags and prompt answers only add, and unselected add-ons are kept. Modified files are never deleted, and everything removed is backed up |
-| `--third-party` | Also install the pinned third-party skills from `src/settings/third-party.json` and print the recommended plugin commands. Policy: [third-party.md](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/docs/reference/third-party.md) |
+| `--third-party` | Also install the pinned third-party skills from `src/settings/third-party.json` and print the recommended plugin commands. Policy: [third-party.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/third-party.md) |
 | `--dry-run` | Print added / updated / removed files and stop. Nothing is written |
 | `--yes`, `-y` | Skip the confirmation prompt |
 | `--help`, `-h` | Show help |
@@ -232,10 +280,10 @@ install; clone the repository (or use npx) and run `install.sh` as a command.
 
 | | `--minimal` | `--full` |
 |---|---|---|
-| Skills | The main path: `sdd`, `product-brief`, `write-spec`, `execute-task`, `simple-task`, `run-tests`, `deep-review`, `open-pr`, `framework-doctor`, `stack-trust` (overlay approvals), the shared `verification-gates` and `source-verification` references, and the stack-neutral `api-design` and `api-security` | Every core skill ([skill index](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/docs/reference/skills.md)) |
-| Agents | Every agent the main path hands off to: `code-explorer`, `requirements-analyst` (product-brief, write-spec), `test-writer`, `code-quality` (execute-task), `adversarial-reviewer`, `security-auditor` (deep-review) | Every core agent ([agents index](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/docs/reference/agents.md)) |
+| Skills | The main path: `sdd`, `product-brief`, `write-spec`, `execute-task`, `simple-task`, `run-tests`, `deep-review`, `open-pr`, `framework-doctor`, `stack-trust` (overlay approvals), `security-audit`, the shared `verification-gates` and `source-verification` references, and the stack-neutral `api-design` and `api-security` | Every core skill ([skill index](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/skills.md)) |
+| Agents | Every agent the main path hands off to: `code-explorer`, `requirements-analyst` (product-brief, write-spec), `test-writer`, `code-quality` (execute-task), `adversarial-reviewer`, `security-auditor` (deep-review), `security-hunter` (security-audit workflow) | Every core agent ([agents index](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/agents.md)) |
 | Not included | Four of the after-`/sdd` commands (`/progress`, `/spec-board`, `/investigate`, `/learn`) and `/fix-ci`, the `/sdd` route for red CI. Use `--full` if you want them | Included |
-| Workflows | All six: `ship-feature`, `create-spec`, `fix-bug`, `qa-and-docs`, `tech-research`, `greenfield-build` | Same |
+| Workflows | All of them: `ship-feature`, `create-spec`, `fix-bug`, `qa-and-docs`, `tech-research`, `greenfield-build`, `security-audit` | Same |
 | Templates | Context and spec templates | All templates |
 | Hooks | Lifecycle hooks merged into `settings.json` | Same, plus the git/CI scripts in `.claude/hooks/` |
 | Also | Settings templates, MCP configs, output styles, hook scripts | Same, plus these docs and the 1.x redirect stubs in `.claude/commands/` |
@@ -344,7 +392,7 @@ the install commands, or run them yourself:
 /plugin install typescript-lsp@claude-plugins-official
 ```
 
-See [third-party.md](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/docs/reference/third-party.md)
+See [third-party.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/third-party.md)
 for the review policy behind the list.
 
 **Permissions and sandboxing.** Permission mode and sandboxing depend on your machine and
@@ -354,13 +402,13 @@ threat model, so the kit does not force either, and the installer does not write
 `rm -rf`, force-push, `git reset --hard`) and `env.CLAUDE_BUDGET_THRESHOLD`. Copy what you want
 from it into your own `settings.json`, in either mode. A plugin's `settings.json` does not apply
 these keys; see
-[plugin-mode.md](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/docs/reference/plugin-mode.md#limitation-plugin-settingsjson).
+[plugin-mode.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/plugin-mode.md#limitation-plugin-settingsjson).
 To opt in to a stricter `defaultMode` or sandbox, set them in your own `settings.json`.
 Filesystem sandboxing limits where Claude can write; do not rely on network sandboxing as a
 security control.
 
 A stack manifest (`stack.json`) is the only thing that makes a stack; its fields and the trust
-rules are in [stack-manifest.md](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/docs/reference/stack-manifest.md).
+rules are in [stack-manifest.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/stack-manifest.md).
 
 **Read rules for overlay stacks.** Workflows read four locations outside the project: the trust
 store, the user stacks directory, the installed plugin list and the plugin cache that holds each
@@ -383,7 +431,17 @@ With `CLAUDE_CONFIG_DIR` set, the last three name that directory as an absolute 
 database records it: neither `$HOME` nor `CLAUDE_CONFIG_DIR` moves it.
 
 Model tiers and effort per workflow phase are covered in
-[effort-guidelines.md](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/docs/reference/effort-guidelines.md).
+[effort-guidelines.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/effort-guidelines.md).
+
+## Upgrading from 3.x to 4.0
+
+4.0 adds Codex and Cursor. A Claude Code install behaves as it did in 3.x: names, hooks, trust store and flags are unchanged, and an install with no `--host` produces the same `.claude/` tree. Re-run `install.sh` (use `--dry-run` first) or update the plugin as usual.
+
+If you adopt Codex:
+
+- **Re-trust hooks.** Codex ties trust to each hook's hash, and installing a plugin does not trust its hooks. Open `/hooks` in Codex and approve the kit's hooks after every install or update.
+- **Fork runs.** If you ran a fork of the Codex workflow bridge, its `.ai/codex-workflows` runs cannot be resumed by the kit's bridge. Finish them first or start new runs, which are kept under `.ai/workflow-runs/`.
+- **Windows.** Codex and Cursor installs are not supported on Windows. Use WSL, or stay on Claude Code there.
 
 ## Upgrading from 2.x
 
@@ -408,9 +466,9 @@ them up first. It only removes a file whose content matches a copy the kit shipp
 edited or replaced (for example an upstream Stripe or skill-creator skill installed at the same
 path) is listed as "kept (modified or not from the kit)" and left for you to review.
 
-The tables below match the CHANGELOG's [Migrating from 1.x](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/CHANGELOG.md#migrating-from-1x) section. They list what a 1.x release shipped; components that were added and removed again during the 2.0 cycle appear only in the CHANGELOG's *Removed* table.
-Current lists: [skills](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/docs/reference/skills.md),
-[agents](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/docs/reference/agents.md).
+The tables below match the CHANGELOG's [Migrating from 1.x](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/CHANGELOG.md#migrating-from-1x) section. They list what a 1.x release shipped; components that were added and removed again during the 2.0 cycle appear only in the CHANGELOG's *Removed* table.
+Current lists: [skills](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/skills.md),
+[agents](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/agents.md).
 
 ### Commands
 

@@ -21,6 +21,9 @@
  *   trust-store.mjs --read-rules [--json]       whether the user settings hold the Read rules Detect needs
  *   trust-store.mjs --add-read-rules            add the missing ones to the user settings (only after the user agrees)
  *
+ * --host <name> selects the host whose trust store is read and written (claude, codex or cursor); the
+ * default is claude. An unknown name exits 2 and lists the valid hosts.
+ *
  * --approve and check run the workflows' own manifest checks (mergeOverlay from the registry runtime), so
  * a manifest the workflows would reject or ignore is never approved or reported trusted (exit 2).
  *
@@ -289,7 +292,7 @@ const WORKFLOW_REGISTRY = (() => {
     'adversarial-reviewer', 'api-architect', 'changelog-writer', 'code-explorer',
     'code-quality', 'database-designer', 'devops-engineer', 'doc-creator',
     'outcomes-grader', 'performance-tester', 'requirements-analyst', 'security-auditor',
-    'test-writer',
+    'security-hunter', 'test-writer',
   ]
   const FIRST_PARTY_FILES = { drupal: ['drupal'], ios: ['ios'], laravel: ['laravel'], nextjs: ['nextjs', 'nuxt'] }
   const FIRST_PARTY_PLUGINS = [
@@ -307,6 +310,44 @@ const WORKFLOW_REGISTRY = (() => {
     ios: '9da615defa84b98b3c85cbb8041df8e4885249d750a5dfcdf3e2148a5d48ebb4',
     laravel: 'e54880dc92b09aba010e67c9e7c48e236d1a5952b7da32ad97bcc13ee1bd079d',
     nextjs: 'b790c60abe6c9be788705cab1bf179d5dea009009934b2881f6f079ec4b811da',
+  }
+  const HOSTS = {
+    claude: {
+      agentNamespace: 'sdd-kit:',
+      browserToolPrefix: ['mcp__playwright__', 'mcp__plugin_sdd-kit_playwright__'],
+      browserGuide: null,
+      trustStoreDir: '<OS home>/.claude/sdd-kit',
+      configDir: '.claude',
+      stacksDir: '.claude/stacks',
+      stackAddonsDir: '.claude/stack-addons',
+      agentsDir: '.claude/agents',
+      agentsFormat: 'md',
+      skillsDir: '.claude/skills',
+    },
+    codex: {
+      agentNamespace: '',
+      browserToolPrefix: ['mcp__playwright__'],
+      browserGuide: 'BROWSER: when this step needs a browser (web UI, navigation, visual or end-to-end checks), drive it with the tools of the playwright MCP server (tool names start with mcp__playwright__): navigate, snapshot, click, type, fill form, wait, screenshot, console messages and network requests. Assert against the accessibility snapshot, use screenshots only as evidence, and check console errors and failed network requests on every page you visit. If the playwright server is unavailable, report the browser check as not run, never claim it passed. API-only checks use HTTP (curl) instead of a browser.',
+      trustStoreDir: '<OS home>/.codex/sdd-kit',
+      configDir: '.codex',
+      stacksDir: '.codex/stacks',
+      stackAddonsDir: '.codex/stack-addons',
+      agentsDir: '.codex/agents',
+      agentsFormat: 'toml',
+      skillsDir: '.agents/skills',
+    },
+    cursor: {
+      agentNamespace: '',
+      browserToolPrefix: ['mcp__playwright__'],
+      browserGuide: 'BROWSER: when this step needs a browser (web UI, navigation, visual or end-to-end checks), drive it with the tools of the playwright MCP server (tool names start with mcp__playwright__): navigate, snapshot, click, type, fill form, wait, screenshot, console messages and network requests. Assert against the accessibility snapshot, use screenshots only as evidence, and check console errors and failed network requests on every page you visit. If the playwright server is unavailable, report the browser check as not run, never claim it passed. API-only checks use HTTP (curl) instead of a browser.',
+      trustStoreDir: '<OS home>/.cursor/sdd-kit',
+      configDir: '.cursor',
+      stacksDir: '.cursor/stacks',
+      stackAddonsDir: '.cursor/stack-addons',
+      agentsDir: '.cursor/agents',
+      agentsFormat: 'md',
+      skillsDir: '.cursor/skills',
+    },
   }
   const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key)
 
@@ -739,6 +780,11 @@ const WORKFLOW_REGISTRY = (() => {
       const base = MODEL_TIERS[tier]
       if (!base) throw new Error(`Unknown model tier "${tier}" for phase "${phase}" (use ${Object.keys(MODEL_TIERS).join(' | ')})`)
       const o = overrides[tier]
+      // A bridge host picks its own models, so its jobs carry the tier and the effort only.
+      if (HOST !== 'claude') {
+        resolved[phase] = { tier, effort: (o && typeof o === 'object' && o.effort) || base.effort }
+        continue
+      }
       resolved[phase] = typeof o === 'string' ? { ...base, model: o } : { ...base, ...(o || {}) }
     }
     return resolved
@@ -748,6 +794,19 @@ const WORKFLOW_REGISTRY = (() => {
   // first (built in), Claude in Chrome as a fallback, and an honest "not run".
   const BROWSER_PHASES = new Set(['Reproduce', 'Acceptance', 'Visual'])
   const BROWSER_GUIDE = `BROWSER: when this step needs a browser (web UI, navigation, visual or end-to-end checks), drive it with the Playwright MCP tools, named mcp__playwright__browser_* when the server comes from the project and mcp__plugin_sdd-kit_playwright__browser_* when it comes from the sdd-kit plugin (use whichever is available): browser_navigate, browser_snapshot, browser_click, browser_type, browser_fill_form, browser_wait_for, browser_take_screenshot, browser_console_messages, browser_network_requests, browser_resize (load each with ToolSearch "select:<name>" before its first call). Assert against browser_snapshot (the accessibility tree), use screenshots only as evidence, and check console errors and failed network requests on every page you visit. If the Playwright tools are unavailable, use Claude in Chrome (mcp__claude-in-chrome__*). If neither is available, report the browser check as not run — never claim it passed. API-only checks use HTTP (curl) instead of a browser.`
+  // The host reaches the runtime only through the sddHost global that the workflow bridge injects;
+  // Claude Code has no bridge, so the global is absent and the registry text below applies unchanged.
+  const HOST = typeof sddHost === 'string' && hasOwn(HOSTS, sddHost) ? sddHost : 'claude'
+  const browserGuideFor = () => HOSTS[HOST].browserGuide || BROWSER_GUIDE
+  // Where the host keeps project stacks, user stacks, agents and its trust store; Claude's values reproduce the text below unchanged.
+  const HOST_STACKS_DIR = HOSTS[HOST].stacksDir
+  const HOST_USER_STACKS_DIR = `~/${HOSTS[HOST].configDir}/stacks`
+  // A bridge host resolves specialists from the kit and from approved stack add-ons only, never from its own agents folder.
+  const addAgentHint = (name) => (HOST === 'claude'
+    ? `add ${name}.md to ${HOSTS[HOST].agentsDir}/`
+    : `add ${name}.md to agents/ of an approved stack add-on under ${HOSTS[HOST].stackAddonsDir}/`)
+  const HOST_TRUST_STORE_DIR = HOSTS[HOST].trustStoreDir.replace('<OS home>', '<home>')
+  const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')
   // Plugin installs namespace agents ("sdd-kit:code-explorer", "<plugin>:<agent>");
   // file-copy installs use bare names. Workflows cannot tell which mode they run
   // in, so candidates are tried in order and the default agent is the last resort:
@@ -768,14 +827,14 @@ const WORKFLOW_REGISTRY = (() => {
       const stacks = info.stacks.join(', ')
       const hint = info.plugin
         ? `install ${info.plugin} for ${stacks}`
-        : `add ${name}.md to .claude/agents/${info.source ? ` or set agent.plugin in ${info.source}` : ''}`
+        : `${addAgentHint(name)}${info.source ? ` or set agent.plugin in ${info.source}` : ''}`
       return { candidates, hint }
     }
-    return { candidates: [name], hint: `add ${name}.md to .claude/agents/` }
+    return { candidates: [name], hint: addAgentHint(name) }
   }
 
   async function runAgent(prompt, opts) {
-    if (opts && BROWSER_PHASES.has(opts.phase)) prompt = `${prompt}\n\n${BROWSER_GUIDE}`
+    if (opts && BROWSER_PHASES.has(opts.phase)) prompt = `${prompt}\n\n${browserGuideFor()}`
     if (!opts || !opts.agentType || opts.agentType === 'general-purpose') return agent(prompt, opts)
     const name = opts.agentType
     const { agentType, ...rest } = opts
@@ -1095,11 +1154,11 @@ const WORKFLOW_REGISTRY = (() => {
 
   // The source labels Detect may report. Anything else is rejected before its text is read.
   const MANIFEST_SOURCE_FORMS = [
-    /^project:\.claude\/stacks\/[^/\\\s]+$/,
-    /^user:~\/\.claude\/stacks\/[^/\\\s]+$/,
+    new RegExp(`^project:${escapeRegex(HOST_STACKS_DIR)}/[^/\\\\\\s]+$`),
+    new RegExp(`^user:${escapeRegex(HOST_USER_STACKS_DIR)}/[^/\\\\\\s]+$`),
     /^plugin:[A-Za-z0-9][A-Za-z0-9._-]*@[A-Za-z0-9._-]+$/,
   ]
-  const MISSING_SOURCE = 'missing or invalid source. Fix: report source as project:.claude/stacks/<file>, user:~/.claude/stacks/<file> or plugin:<name>@<marketplace>'
+  const MISSING_SOURCE = `missing or invalid source. Fix: report source as project:${HOST_STACKS_DIR}/<file>, user:${HOST_USER_STACKS_DIR}/<file> or plugin:<name>@<marketplace>`
   // A label must pass SOURCE_LABEL_PATTERN as well as one of the forms: it is pasted into prompts and logs.
   const isManifestSource = (source) => SOURCE_LABEL_PATTERN.test(source) && MANIFEST_SOURCE_FORMS.some((re) => re.test(source))
   const STACK_KEY_PATTERN = /^[a-z][a-z0-9-]{1,31}$/
@@ -1112,10 +1171,10 @@ const WORKFLOW_REGISTRY = (() => {
     let dir = null
     let plugin = null
     if (scope === 'project') {
-      const m = /^\.claude\/stacks\/([^/]+)\.json$/.exec(rest)
+      const m = new RegExp(`^${escapeRegex(HOST_STACKS_DIR)}/([^/]+)\\.json$`).exec(rest)
       dir = m && m[1]
     } else if (scope === 'user') {
-      const m = /^~\/\.claude\/stacks\/([^/]+)\.json$/.exec(rest)
+      const m = new RegExp(`^${escapeRegex(HOST_USER_STACKS_DIR)}/([^/]+)\\.json$`).exec(rest)
       dir = m && m[1]
     } else if (scope === 'plugin') {
       plugin = rest.split('@')[0]
@@ -1397,7 +1456,7 @@ const WORKFLOW_REGISTRY = (() => {
   function firstPartyHashLine() {
     return Object.keys(FIRST_PARTY_FILES)
       .filter((dir) => hasOwn(FIRST_PARTY_FILE_HASHES, dir))
-      .map((dir) => `${dir} (.claude/stacks/${dir}.json, ~/.claude/stacks/${dir}.json, plugin sdd-kit-${dir}): ${FIRST_PARTY_FILE_HASHES[dir]}`)
+      .map((dir) => `${dir} (${HOST_STACKS_DIR}/${dir}.json, ${HOST_USER_STACKS_DIR}/${dir}.json, plugin sdd-kit-${dir}): ${FIRST_PARTY_FILE_HASHES[dir]}`)
       .join('; ')
   }
 
@@ -1409,7 +1468,7 @@ const WORKFLOW_REGISTRY = (() => {
     const hashRule = firstParty
       ? ` For a first-party location inside the project, hash the file first with \`${MANIFEST_HASH_COMMAND} <file>\`; when the hash equals the one listed for that add-on, return {source, sha256} and no raw. Expected hashes: ${firstParty}. A first-party location outside the project, or one whose hash differs or cannot be computed, returns raw like any other manifest.`
       : ''
-    return `STACK MANIFESTS — follow your stack discovery recipe and also return: stackManifests (one item per manifest you found: source as project:.claude/stacks/<file>, user:~/.claude/stacks/<file> or plugin:<name>@<marketplace> (plugin:<name>@inline for a --plugin-dir plugin), raw = the file text, unmodified.${hashRule}), trustStore (the verbatim text of <home>/.claude/sdd-kit/trusted-stacks.json, where <home> is the home directory your recipe reads from the OS user database, never $HOME or CLAUDE_CONFIG_DIR; null or omitted when the file is absent; null or omitted plus "trustStore unreadable" in discovery.errors when <home> cannot be resolved or the Read is refused or fails), and discovery {mode, method, errors}. Outside the project use only the Read and Glob tools, on literal absolute paths under the <config> directory and the <home>/.claude/sdd-kit directory your recipe resolves: never cat, ls or find there, and no Bash command with a variable in braces. A refused read goes into discovery.errors ("trustStore unreadable", "user stacks unreadable", "plugin list unreadable") and is never treated as trusted. A repo that matches no catalog stack but matches a manifest's detect text takes that manifest's name as stack. For each repo and each gate of its stack that lists unless globs, add {gate, glob} to unlessMatched for every glob that matches a file or directory in that repo.${execWrapperDetectLine()}${gateGuardDetectLine()}
+    return `STACK MANIFESTS — follow your stack discovery recipe and also return: stackManifests (one item per manifest you found: source as project:${HOST_STACKS_DIR}/<file>, user:${HOST_USER_STACKS_DIR}/<file> or plugin:<name>@<marketplace> (plugin:<name>@inline for a --plugin-dir plugin), raw = the file text, unmodified.${hashRule}), trustStore (the verbatim text of ${HOST_TRUST_STORE_DIR}/trusted-stacks.json, where <home> is the home directory your recipe reads from the OS user database, never $HOME or CLAUDE_CONFIG_DIR; null or omitted when the file is absent; null or omitted plus "trustStore unreadable" in discovery.errors when <home> cannot be resolved or the Read is refused or fails), and discovery {mode, method, errors}. Outside the project use only the Read and Glob tools, on literal absolute paths under the <config> directory and the ${HOST_TRUST_STORE_DIR} directory your recipe resolves: never cat, ls or find there, and no Bash command with a variable in braces. A refused read goes into discovery.errors ("trustStore unreadable", "user stacks unreadable", "plugin list unreadable") and is never treated as trusted. A repo that matches no catalog stack but matches a manifest's detect text takes that manifest's name as stack. For each repo and each gate of its stack that lists unless globs, add {gate, glob} to unlessMatched for every glob that matches a file or directory in that repo.${execWrapperDetectLine()}${gateGuardDetectLine()}
 
   ${REPO_PATH_RULE}`
   }
@@ -1895,7 +1954,7 @@ const WORKFLOW_REGISTRY = (() => {
     const reported = (result.gates || []).map((g) => (wrapped.has(g && g.name) && !String(g.details || '').includes(wrapped.get(g.name)) ? { ...g, details: `${g.details ? `${g.details} ` : ''}(via ${wrapped.get(g.name)})` } : g))
     return plan.fixed.length || wrapped.size ? { ...result, gates: [...reported, ...plan.fixed] } : result
   }
-  return { mergeOverlay, manifestHash, validateStackManifest }
+  return { mergeOverlay, manifestHash, validateStackManifest, HOSTS }
 })();
 // First-party entries and add-on plugins, for staged-copy detection and messages.
 const FIRST_PARTY_REGISTRY = {
@@ -2550,14 +2609,50 @@ export function osHomeDir() {
   return home;
 }
 
+/** The host whose trust store the commands use; main() sets it from --host. */
+let activeHost = 'claude';
+
 /**
- * The trust store: <home>/.claude/sdd-kit/trusted-stacks.json with <home> from osHomeDir. Fixed on
- * purpose; $HOME and CLAUDE_CONFIG_DIR do not move it.
+ * The trust store: <home>/<host config dir>/sdd-kit/trusted-stacks.json with <home> from osHomeDir and the
+ * directory from the host table (claude: <home>/.claude/sdd-kit/trusted-stacks.json). Fixed on purpose;
+ * $HOME and CLAUDE_CONFIG_DIR do not move it.
+ * @param {string} [host] host name; defaults to the one selected with --host, else claude
  * @returns {string} absolute path of the trust store
- * @throws {Error} when the OS user database has no home directory for the current user
+ * @throws {Error} when the host is unknown or the OS user database has no home directory for the current user
  */
-export function storePath() {
-  return path.join(osHomeDir(), '.claude', 'sdd-kit', 'trusted-stacks.json');
+export function storePath(host = activeHost) {
+  const entry = Object.hasOwn(WORKFLOW_REGISTRY.HOSTS, host) ? WORKFLOW_REGISTRY.HOSTS[host] : null;
+  if (!entry) throw new Error(unknownHostMessage(host));
+  return path.join(entry.trustStoreDir.replace('<OS home>', osHomeDir()), 'trusted-stacks.json');
+}
+
+/**
+ * Where a non-Claude host keeps overlay manifests: the project stacks and stack-addons directories from the host
+ * table and the user stacks directory under <OS home>/<config dir>. Null for claude, which keeps the .claude
+ * layout, CLAUDE_CONFIG_DIR handling and plugin discovery.
+ * @param {string} [host] host name; defaults to the one selected with --host
+ * @returns {{ stacksDir: string, addonsDir: string, userDir: string, userLabel: string }|null} layout, null for claude
+ */
+function hostLayout(host = activeHost) {
+  if (host === 'claude') return null;
+  const entry = Object.hasOwn(WORKFLOW_REGISTRY.HOSTS, host) ? WORKFLOW_REGISTRY.HOSTS[host] : null;
+  if (!entry) throw new Error(unknownHostMessage(host));
+  const configName = entry.configDir;
+  return {
+    stacksDir: entry.stacksDir,
+    addonsDir: entry.stackAddonsDir,
+    userDir: path.join(osHomeDir(), configName, 'stacks'),
+    userLabel: `user:~/${configName}/stacks`,
+  };
+}
+
+// Manifests of a non-Claude host are checked under one neutral label, as the bridge does: the workflows'
+// source labels name only the .claude locations.
+const NEUTRAL_SOURCE = 'plugin:overlay@inline';
+
+/** The usage error for an unknown --host value, with the valid names. */
+function unknownHostMessage(host) {
+  return `unknown host "${host}". Fix: use one of: ${Object.keys(WORKFLOW_REGISTRY.HOSTS).join(', ')}.`;
 }
 
 /**
@@ -2833,7 +2928,8 @@ export function inlineAddons({ cwd = process.cwd(), listing } = {}) {
     seen.add(key);
     out.push(entry);
   };
-  const base = path.join(cwd, '.claude', 'stack-addons');
+  const layout = hostLayout();
+  const base = path.join(cwd, layout ? layout.addonsDir : '.claude/stack-addons');
   let names = [];
   try {
     names = fs.readdirSync(base).sort();
@@ -2843,9 +2939,9 @@ export function inlineAddons({ cwd = process.cwd(), listing } = {}) {
   for (const d of names) {
     const dir = path.join(base, d);
     if (!fs.statSync(dir, { throwIfNoEntry: false })?.isDirectory()) continue;
-    push({ name: pluginName(dir, d), path: dir, origin: 'stack-addons', alias: `project:.claude/stack-addons/${d}/stack.json` });
+    push({ name: pluginName(dir, d), path: dir, origin: 'stack-addons', alias: `project:${layout ? layout.addonsDir : '.claude/stack-addons'}/${d}/stack.json` });
   }
-  for (const p of sessionPluginDirs({ cwd, listing })) push({ ...p, origin: 'plugin-dir', alias: null });
+  if (!layout) for (const p of sessionPluginDirs({ cwd, listing })) push({ ...p, origin: 'plugin-dir', alias: null });
   return out;
 }
 
@@ -2877,7 +2973,9 @@ export function discoverOverlays({ cwd = process.cwd(), env = process.env, listi
     if (isFirstPartyCopy(parsed, registry)) return;
     found.push({ source, aliases, file, pluginDir, sha256: manifestHash(parsed), keys: manifestEntries(parsed).map((e) => e.name), parsed, raw: read.text, error: null });
   };
-  for (const f of listJson(path.join(cwd, '.claude', 'stacks'))) add(`project:.claude/stacks/${path.basename(f)}`, f);
+  const layout = hostLayout();
+  const stacksDir = layout ? layout.stacksDir : '.claude/stacks';
+  for (const f of listJson(path.join(cwd, stacksDir))) add(`project:${stacksDir}/${path.basename(f)}`, f);
   for (const a of inlineAddons({ cwd, listing })) {
     const file = path.join(a.path, 'stack.json');
     if (firstPartyPlugins.has(a.name)) {
@@ -2892,6 +2990,10 @@ export function discoverOverlays({ cwd = process.cwd(), env = process.env, listi
   }
   // A config directory inside the project holds no user stacks or plugin list this script will read.
   // The trust store is never there (storePath), so this only keeps planted manifests out of the list.
+  if (layout) {
+    for (const f of listJson(layout.userDir)) add(`${layout.userLabel}/${path.basename(f)}`, f, [`user:stacks/${path.basename(f)}`]);
+    return found;
+  }
   const configUsable = !configDirProblem(env, cwd);
   for (const f of configUsable ? listJson(path.join(configDir(env), 'stacks')) : []) {
     add(`user:~/.claude/stacks/${path.basename(f)}`, f, [`user:stacks/${path.basename(f)}`]);
@@ -2914,16 +3016,37 @@ function carriesOwnKeys(file, registry) {
   }
 }
 
-// The plugin name a --plugin-dir session reports for a project add-on directory.
-function pluginName(dir, fallback) {
-  const read = readJsonFile(path.join(dir, '.claude-plugin', 'plugin.json'));
-  try {
-    const name = read && JSON.parse(read.text).name;
-    if (typeof name === 'string' && name) return name;
-  } catch {
-    // an unreadable plugin.json falls back to the directory name
+const PLUGIN_MANIFESTS = ['.claude-plugin', '.codex-plugin', '.cursor-plugin'];
+
+/**
+ * The plugin name an add-on directory reports: the `name` in its Claude, Codex or Cursor plugin manifest,
+ * else the directory name. The stack-trust command and the bridge label add-ons through this one function.
+ * @param {string} dir add-on directory
+ * @param {string} fallback name to use when no manifest names the plugin
+ * @returns {string} plugin name
+ */
+export function pluginName(dir, fallback) {
+  for (const folder of PLUGIN_MANIFESTS) {
+    const read = readJsonFile(path.join(dir, folder, 'plugin.json'));
+    try {
+      const name = read && JSON.parse(read.text).name;
+      if (typeof name === 'string' && name) return name;
+    } catch {
+      // an unreadable plugin.json falls through to the next manifest, then the directory name
+    }
   }
   return fallback;
+}
+
+/**
+ * True for an add-on that carries a first-party name but only first-party keys: the workflows compare it
+ * with the inlined registry, so it is no overlay and nothing to approve.
+ * @param {string} name the add-on's plugin name
+ * @param {string} stackFile path of its stack.json
+ * @returns {boolean} whether to leave it out of the overlay list
+ */
+export function isFirstPartyAddonCopy(name, stackFile) {
+  return new Set(FIRST_PARTY_REGISTRY.firstPartyPlugins || []).has(name) && !carriesOwnKeys(stackFile, FIRST_PARTY_REGISTRY);
 }
 
 /**
@@ -2945,7 +3068,7 @@ export function findOverlay(source, opts = {}) {
 export function listOverlays(opts = {}) {
   const store = readStore();
   const overlays = discoverOverlays(opts).map((o) => {
-    const rejected = workflowRejection(o.raw, o.source);
+    const rejected = workflowRejection(o.raw, hostLayout() ? NEUTRAL_SOURCE : o.source);
     // A rejected manifest's keys are text the manifest chose, so listings do not report them.
     return { ...o, keys: rejected ? [] : o.keys, rejected, trusted: !rejected && o.sha256 !== null && store.hashes.has(o.sha256) };
   });
@@ -3015,7 +3138,8 @@ export function checkManifest(file) {
   // The workflows accept only their own source labels; a checked file is judged as a project manifest of its
   // name, or of a neutral name when its name holds characters a source label may not.
   const base = path.basename(file);
-  const rejection = workflowRejection(raw, `project:.claude/stacks/${/^[A-Za-z0-9._~@:-]{1,90}\.json$/.test(base) ? base : 'manifest.json'}`);
+  const layout = hostLayout();
+  const rejection = workflowRejection(raw, layout ? NEUTRAL_SOURCE : `project:.claude/stacks/${/^[A-Za-z0-9._~@:-]{1,90}\.json$/.test(base) ? base : 'manifest.json'}`);
   if (rejection) return { trusted: false, rejected: true, sha256, reason: `rejected ${file}: ${rejection}. The workflows do not use this manifest, so its commands never run.` };
   const store = readStore();
   if (store.hashes.has(sha256)) return { trusted: true, sha256, reason: `trusted ${file} sha256 ${sha256}` };
@@ -3049,7 +3173,7 @@ export function approve(source, opts = {}) {
   const overlay = findOverlay(source, opts);
   if (!overlay) throw new Error(notFoundMessage(source));
   if (overlay.error) throw new Error(`${source} is ${overlay.error}. Fix: correct the manifest first.`);
-  const rejection = workflowRejection(overlay.raw, overlay.source);
+  const rejection = workflowRejection(overlay.raw, hostLayout() ? NEUTRAL_SOURCE : overlay.source);
   if (rejection) throw new ManifestRejectedError(`Not approved: the workflows reject ${overlay.source}: ${rejection}.`);
   let file;
   try {
@@ -3068,7 +3192,17 @@ export function approve(source, opts = {}) {
 
 function main(argv) {
   const json = argv.includes('--json');
-  const args = argv.filter((a) => a !== '--json');
+  let args = argv.filter((a) => a !== '--json');
+  const hostAt = args.indexOf('--host');
+  if (hostAt !== -1) {
+    const host = args[hostAt + 1];
+    if (!host || !Object.hasOwn(WORKFLOW_REGISTRY.HOSTS, host)) {
+      process.stderr.write(`${unknownHostMessage(host || '')}\n`);
+      return 2;
+    }
+    activeHost = host;
+    args = args.filter((_, i) => i !== hostAt && i !== hostAt + 1);
+  }
   const [cmd, arg, extra] = args;
   const out = (s) => process.stdout.write(`${s}\n`);
   try {
@@ -3076,7 +3210,7 @@ function main(argv) {
       const { overlays, storeError } = listOverlays();
       const rows = cmd === '--list' ? overlays : overlays.filter((o) => !o.trusted);
       if (storeError) process.stderr.write(`${storeError}; every overlay is treated as untrusted\n`);
-      const configProblem = configDirProblem();
+      const configProblem = hostLayout() ? null : configDirProblem();
       if (configProblem) process.stderr.write(`${configProblem}; user stacks and plugins there are not listed\n`);
       if (json) {
         out(JSON.stringify(rows.map(({ source, aliases, sha256, keys, trusted, rejected, error }) => ({ source, aliases, sha256, keys, trusted, rejected, error })), null, 2));
@@ -3091,7 +3225,7 @@ function main(argv) {
       if (!o) throw new Error(notFoundMessage(arg));
       if (o.error) throw new Error(`${arg} is ${o.error}.`);
       const shown = { source: o.source, file: o.file, sha256: o.sha256, entries: commandFields(o.parsed) };
-      const rejection = workflowRejection(o.raw, o.source);
+      const rejection = workflowRejection(o.raw, hostLayout() ? NEUTRAL_SOURCE : o.source);
       if (rejection) {
         shown.rejected = `the workflows reject this manifest and --approve refuses it: ${rejection}`;
         shown.problems = WORKFLOW_REGISTRY.validateStackManifest(o.parsed, { overlay: true }).map((p) => `${p.pointer} ${p.problem}. Fix: ${p.fix}`);

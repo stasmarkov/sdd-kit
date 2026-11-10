@@ -17,6 +17,7 @@ Free-form "launch a workflow for this" gives every person a different sequence o
 /sdd <ticket-id | description>
    ├─ trivial   → /simple-task                  (no spec)
    ├─ bug       → fix-bug workflow
+   ├─ audit     → security-audit workflow
    ├─ decision  → tech-research workflow → ADR
    ├─ feature   → /write-spec → HUMAN APPROVAL → ship-feature { spec }
    ├─ shipped   → qa-and-docs workflow
@@ -37,6 +38,7 @@ Pick exactly one route using the first rule that matches:
 |---|---|
 | `trivial` | Clear change, ≤ ~3 files, no design choice, no behavior contract at risk (copy fix, config tweak, rename); the same threshold as write-spec's XS |
 | `bug` | Existing behavior is wrong: a symptom, error, regression, "used to work" |
+| `audit` | An explicit request to audit, pen-test, or run a full, comprehensive or end-to-end security review of a codebase or a scope, or to produce audit report artifacts. A concrete vulnerability symptom stays `bug`; a quick checklist, dependency audit or pre-release check is `/security-scan` |
 | `decision` | A choice between technologies or approaches must be made before building ("X or Y?", "which queue?") |
 | `shipped` | Code already exists and needs a QA/test plan or docs, not changes |
 | `new app` | Little or no code exists yet for the target (new service, new repo, new module from scratch) |
@@ -55,6 +57,7 @@ Background workflows **cannot stop and ask questions**, so gather everything now
 - **Repos**: single repo, or polyrepo `{ backend, frontend }` paths (check for sibling repos / a parent-folder workspace). With several frontends, ask for a dev URL per frontend and either pass them all in one `repos` array or plan one run per frontend.
 - **Dev URL** for browser acceptance, when there is a UI.
 - Route-specific inputs from the table in Step 4.
+- `audit` route: **scope** (paths, or a git range `<base>..HEAD`), **profile** (`quick`, `standard` recommended, `deep`), **outputDir** (`.ai/security-audit/` in the repo, or `~/security-audit-skill/<repo>/` outside it), and one cap question: `maxUnits` (default 12), a `budget` of audit-agent invocations, or both.
 
 ## Step 4 — Launch the route
 
@@ -66,6 +69,7 @@ Then show the exact call and note that it runs many agents in the background. La
 |---|---|---|---|---|
 | `trivial` | the change | `Skill("simple-task", "<request>")` | diff + gate results | gates green |
 | `bug` | symptom, repro steps, expected vs actual, **must-not-change** behavior (what nearby must stay identical) | `Workflow({ name: "fix-bug", args: { bug, mustNotChange, repos, url } })` | root cause, regression test, fix, manual test steps | verdict `FIXED`: regression test red → green, guard tests green, gates green, original report re-walked |
+| `audit` | scope, profile, outputDir, a cap (maxUnits, budget or both) | `Workflow({ name: "security-audit", args: { scope, profile, budget, maxUnits, outputDir, repo } })` | validated coverage ledger, findings.json, report files in outputDir, summary in `.ai/reports/` | run `complete`: both validators pass and every retained finding was verified; otherwise `incomplete` with the reason |
 | `decision` | question, candidate options, criteria (weighted if known) | `Workflow({ name: "tech-research", args: { question, options, criteria, repos } })` | ADR with sourced claims | ADR written **and** signed off by a human |
 | `feature` | see 4a / 4b | — | spec folder, then shipped feature | see 4b |
 | `shipped` | scope: spec id, paths, or git range | `Workflow({ name: "qa-and-docs", args: { spec \| paths \| gitRange, repos } })` | traceable QA plan + docs | grader passes coverage and phantom-link gates |
@@ -102,7 +106,7 @@ Look for `product-brief.md` in the current folder or its parent (a polyrepo work
 
 ### Route details
 
-Each workflow's phases, arguments, outputs, and done-definition are in `references/` (model tiers: `docs/effort-guidelines.md`): [fix-bug](references/fix-bug.md), [ship-feature](references/ship-feature.md), [tech-research](references/tech-research.md), [qa-and-docs](references/qa-and-docs.md), [greenfield-build](references/greenfield-build.md). Load the one for the chosen route before launching. [routing-guide](references/routing-guide.md) maps other tasks to individual skills.
+Each workflow's phases, arguments, outputs, and done-definition are in `references/` (model tiers: `docs/effort-guidelines.md`): [fix-bug](references/fix-bug.md), [security-audit](references/security-audit.md), [ship-feature](references/ship-feature.md), [tech-research](references/tech-research.md), [qa-and-docs](references/qa-and-docs.md), [greenfield-build](references/greenfield-build.md). Load the one for the chosen route before launching. [routing-guide](references/routing-guide.md) maps other tasks to individual skills.
 
 ## Step 5 — Hand off
 
@@ -123,6 +127,12 @@ Next:
   /open-pr --spec=spec-PROJ-123-refund-guard --report=<its reportPath, .ai/reports/ship-…md>
                                                  (fix-bug: /open-pr --report=<its reportPath, .ai/reports/fix-…md>)
   /learn <the report's Prevention item>          (only when the report has a Prevention section)
+```
+
+After **SHIP**, offer the security audit (never launch it unprompted) when the report's `confirmedFindings` contain an entry with `dimension === 'security'`, or the spec's `spec-lite.md` has a line matching `NFR-[0-9]+\**:?\**\s*(authori[sz]ation|personal[- ]data|privacy)` (case-insensitive). Scope it to the branch with `gitRange` (the workflow reads the files of `git diff --name-only <default branch>...HEAD` itself, so long lists, names with spaces and deleted files need no handling here), pass the quick profile and the repo ship-feature changed (its path or role from the report), and confirm it as in Step 4:
+
+```
+Workflow({ name: "security-audit", args: { scope: { gitRange: "<default branch>...HEAD" }, profile: "quick", repo } })
 ```
 
 ## Rules

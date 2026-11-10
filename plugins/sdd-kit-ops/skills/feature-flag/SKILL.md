@@ -5,7 +5,7 @@ argument-hint: "create|list|enable|disable|rollout|cleanup [flag-name]"
 allowed-tools: Read, Write, Edit, Grep, Glob, Bash
 disable-model-invocation: true
 metadata:
-  version: 1.0
+  version: "1.0"
 ---
 
 # /feature-flag

@@ -1,6 +1,6 @@
 # Hireboard: building a Laravel + Next.js app from scratch with SDD Kit
 
-This is a worked example of SDD Kit v3.1.0 (the 3.x line) used on a real-sized project.
+This is a worked example of SDD Kit v4.0.0 (the 4.x line) used on a real-sized project.
 It starts from an empty folder and ends with a small job board, **Hireboard**, run by a team.
 Every step goes through the kit's single front door, `/sdd`. Twelve chapters take eleven tickets
 (`HIRE-1` to `HIRE-11`) through the route the kit picks for each one.
@@ -74,8 +74,8 @@ first. For a one-paragraph version of each route, see
 
 ## Route map
 
-`/sdd` sorts each request into one of six routes and launches exactly one pipeline
-([sdd SKILL.md](https://github.com/stasmarkov/sdd-kit/blob/v3.1.0/plugins/sdd-kit/skills/sdd/SKILL.md)). Each route appears at least once:
+`/sdd` sorts each request into one of the routes and launches exactly one pipeline
+([sdd SKILL.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/plugins/sdd-kit/skills/sdd/SKILL.md)). Each route appears at least once:
 
 | `/sdd` route | Pipeline | Chapter(s) | Ticket(s) |
 |--------------|----------|------------|-----------|

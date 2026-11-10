@@ -1,0 +1,8 @@
+name: '{{MODULE_NAME}}'
+type: module
+description: '{{DESCRIPTION}}'
+core_version_requirement: ^11
+package: Custom
+dependencies:
+  - drupal:node
+  - drupal:user

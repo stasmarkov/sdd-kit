@@ -4,7 +4,7 @@ description: Where-was-I dashboard over .ai/specs - per-spec task completion fro
 argument-hint: "[--spec=<folder|ticket>] [--next] [--health] [--export=markdown|json]"
 allowed-tools: Read, Grep, Glob, Bash
 metadata:
-  version: 3.0
+  version: "3.0"
   last_verified: "2026-10-19"
   next_review: "2027-01-19"
 ---

@@ -1,12 +1,12 @@
 ---
 name: open-pr
-description: Open spec-traced pull requests once a feature or fix is approved — one PR per changed repo, backend first, cross-linked. Checks the preconditions (spec in-progress or done, gates green, deep-review APPROVED when a report exists), builds each PR body from the spec (summary, every acceptance criterion mapped to its test, Must-NOT-change guards, manual test plan, ADR link, counterpart PR), uses a conventional-commit title, and shows the exact push and gh pr create commands before running them. Use when a spec or bug fix is built and reviewed and the user wants to open its PRs (/open-pr --spec=PROJ-123), when a ship-feature or fix-bug report ends with "Next: /open-pr", or when a polyrepo change needs linked backend and frontend PRs. Pushes branches and creates PRs, so it is user-invoked only.
+description: 'Open spec-traced pull requests once a feature or fix is approved — one PR per changed repo, backend first, cross-linked. Checks the preconditions (spec in-progress or done, gates green, deep-review APPROVED when a report exists), builds each PR body from the spec (summary, every acceptance criterion mapped to its test, Must-NOT-change guards, manual test plan, ADR link, counterpart PR), uses a conventional-commit title, and shows the exact push and gh pr create commands before running them. Use when a spec or bug fix is built and reviewed and the user wants to open its PRs (/open-pr --spec=PROJ-123), when a ship-feature or fix-bug report ends with "Next: /open-pr", or when a polyrepo change needs linked backend and frontend PRs. Pushes branches and creates PRs, so it is user-invoked only.'
 argument-hint: "[--spec=<folder | number | ticket key | timestamp id>] [--report=<.ai/reports/ship-… or fix-… path>] [--repos=backend:<path>,frontend:<path>] [--base=<branch>] [--draft] [--reviewer=<login>] [--label=<name>]"
 allowed-tools: Bash, Read, Grep, Glob, AskUserQuestion
 disable-model-invocation: true
 license: Apache-2.0
 metadata:
-  version: 1.0
+  version: "1.0"
   last_verified: "2026-10-19"
   next_review: "2027-01-19"
 ---

@@ -1,0 +1,16 @@
+{
+  "name": "sdd-kit-ops",
+  "version": "4.0.0",
+  "description": "Operations add-on: deploy, rollback, feature flags, health checks, incident response, and ops analysis agents.",
+  "displayName": "SDD Kit ops",
+  "author": {
+    "name": "Stas Markov"
+  },
+  "homepage": "https://github.com/stasmarkov/sdd-kit",
+  "keywords": [
+    "sdd",
+    "spec-driven-development"
+  ],
+  "skills": "./skills/",
+  "agents": "./agents/"
+}
