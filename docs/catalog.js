@@ -1328,6 +1328,24 @@ window.CATALOG = {
       }
     },
     {
+      "name": "drupal-backend-dev",
+      "ships": "drupal plugin",
+      "category": "execution",
+      "model": "sonnet",
+      "effort": "medium",
+      "description": "Drupal 11 backend implementer for custom modules, services, plugins, entities, forms, routes and configuration. Use PROACTIVELY for any work in web/modules/custom, hook and event subscriber code, config schema and exports, and Drush-driven checks. Follows Drupal coding standards and runs the project's PHPCS, PHPStan and PHPUnit gates through DDEV when present.",
+      "hosts": {
+        "codex": {
+          "invoke": "$sdd-runtime",
+          "availability": "explicit-only"
+        },
+        "cursor": {
+          "invoke": "/drupal-backend-dev",
+          "availability": "available"
+        }
+      }
+    },
+    {
       "name": "ios-mobile-dev",
       "ships": "ios plugin",
       "category": "ios",

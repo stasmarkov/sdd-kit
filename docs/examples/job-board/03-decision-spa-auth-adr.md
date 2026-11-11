@@ -101,7 +101,7 @@ Alex picks **decision**. `/sdd` then gathers the inputs a background workflow ca
 ```
 
 Before launching, `/sdd` shows the exact call, as the decision row of its Step 4 table and
-[references/tech-research.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/plugins/sdd-kit/skills/sdd/references/tech-research.md) prescribe:
+[references/tech-research.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/skills/sdd/references/tech-research.md) prescribe:
 
 ```js
 Workflow({
@@ -364,7 +364,7 @@ decision is in context for every future session.
 
 - [src/docs/USAGE-EXAMPLES.md, "3. Technology decision"](../../reference/usage-examples.md#3-technology-decision)
   covers the general version of this flow.
-- [src/skills/sdd/references/tech-research.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/plugins/sdd-kit/skills/sdd/references/tech-research.md)
+- [src/skills/sdd/references/tech-research.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/skills/sdd/references/tech-research.md)
   lists the route's arguments, phases, outputs and done condition.
 - [docs/multi-repo.md](../../reference/multi-repo.md) explains why `--add-dir` needs the environment variable.
 

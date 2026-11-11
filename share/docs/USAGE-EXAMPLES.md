@@ -2,11 +2,11 @@
 
 What to type for each kind of work in SDD Kit, and what you get back.
 
-See every route used on one project: the [Hireboard worked example](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/examples/job-board/README.md).
+See every route used on one project: the [Hireboard worked example](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/examples/job-board/README.md).
 
-Start with `/sdd` unless you already know you want a specific skill. It classifies the request, confirms the route with you, collects every input up front, and launches one fixed pipeline. The route tree itself is in the [README](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/README.md); this page shows each route in practice.
+Start with `/sdd` unless you already know you want a specific skill. It classifies the request, confirms the route with you, collects every input up front, and launches one fixed pipeline. The route tree itself is in the [README](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/README.md); this page shows each route in practice.
 
-Skill names below are bare (`/sdd`, `/write-spec`). In plugin mode they are namespaced: `/sdd-kit:sdd`, `/sdd-kit-ops:deploy`. The full lists are in [skill index](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/skills.md) and [agent index](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/agents.md).
+Skill names below are bare (`/sdd`, `/write-spec`). In plugin mode they are namespaced: `/sdd-kit:sdd`, `/sdd-kit-ops:deploy`. The full lists are in [skill index](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/reference/skills.md) and [agent index](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/reference/agents.md).
 
 | Kind of work | Type | Runs |
 |---|---|---|
@@ -56,7 +56,7 @@ Skill names below are bare (`/sdd`, `/write-spec`). In plugin mode they are name
 
 Watch the spec's status with `/spec-board` (or `npx github:stasmarkov/sdd-kit spec-board --serve` without Claude Code).
 
-Spec format, sizes (XS/S/M/L), and acceptance-criteria style: [specification-system.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/specification-system.md).
+Spec format, sizes (XS/S/M/L), and acceptance-criteria style: [specification-system.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/reference/specification-system.md).
 
 ## 2. Bug
 
@@ -154,7 +154,7 @@ Verdict:
 
 **You get:** a scaffold with CI, one working slice, and handoff docs: `getting-started.md`, `architecture.md` (a lightweight ADR), and `manual-test.md`. The slice is marked `shipped` in `backlog.md` and the next slices are added to it. Verdict: `SHIP-SLICE`, `FIX-FIRST`, or `BLOCKED` (target was not empty). Build later slices with their `Run:` line (scenario 1). Feedback from a demo or sprint review goes back into the backlog with `/product-brief --intake "<notes>"`.
 
-Supported stacks come from the registry in [src/workflows/lib/stacks.js](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/plugins/sdd-kit/workflows/lib/stacks.js).
+Supported stacks come from the registry in [src/workflows/lib/stacks.js](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/workflows/lib/stacks.js).
 
 ## 6. Small change
 
@@ -337,17 +337,17 @@ Workflow({
 
 Or run once per frontend with `{ repos: { backend: "be", frontend: "fe" }, url }`.
 
-Layout, the parent-folder `CLAUDE.md`, contract rules, and merge order: [multi-repo.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/multi-repo.md).
+Layout, the parent-folder `CLAUDE.md`, contract rules, and merge order: [multi-repo.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/reference/multi-repo.md).
 
 ## 12. Overnight headless codebase review
 
 **When:** you want a full adversarially validated review of an existing codebase without sitting in a session.
 
-The pipeline runs `claude -p` from a plain terminal (not from inside Claude Code). Setup, configuration, and phases: [scripts/review/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/plugins/sdd-kit/scripts/review/README.md).
+The pipeline runs `claude -p` from a plain terminal (not from inside Claude Code). Setup, configuration, and phases: [scripts/review/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/scripts/review/README.md).
 
 ## 13. Add-ons: ops and design
 
-These skills ship in optional add-on plugins, not in the core `sdd-kit` (as do stack skills, which `--stack` selects). Install the add-on first: `./install.sh --project --with=ops,design`, or enable `sdd-kit-ops` / `sdd-kit-design` in plugin mode ([plugin-mode.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/plugin-mode.md)).
+These skills ship in optional add-on plugins, not in the core `sdd-kit` (as do stack skills, which `--stack` selects). Install the add-on first: `./install.sh --project --with=ops,design`, or enable `sdd-kit-ops` / `sdd-kit-design` in plugin mode ([plugin-mode.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/reference/plugin-mode.md)).
 
 **Ops (`sdd-kit-ops`):**
 
@@ -432,7 +432,7 @@ workflow_submit({ id, jobId, claim, output })
 workflow_resume({ id, workspace })           // after a restart
 ```
 
-The tool contract, run state and resume rules are in [workflow-bridge.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/workflow-bridge.md).
+The tool contract, run state and resume rules are in [workflow-bridge.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/reference/workflow-bridge.md).
 
 ```js
 // Build an approved spec. ship-feature refuses draft specs.
@@ -460,4 +460,4 @@ Workflow({ name: "create-spec", args: { description: "Order cancellation", ticke
 
 To build an existing spec, pass `{ spec: "<ref>" }` (folder name, ticket key, timestamp id, or legacy number). There is no `--spec` flag for workflows; `/ship-feature --spec=...` would be read as a feature description.
 
-Every workflow accepts `args.models` to pin a model per tier (`deep`, `standard`, `light`) for one run. Which tier each phase uses, and when to override it, is in [effort-guidelines.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/effort-guidelines.md).
+Every workflow accepts `args.models` to pin a model per tier (`deep`, `standard`, `light`) for one run. Which tier each phase uses, and when to override it, is in [effort-guidelines.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/reference/effort-guidelines.md).

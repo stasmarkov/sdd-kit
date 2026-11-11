@@ -1,12 +1,12 @@
 {
   "name": "sdd-kit-drupal",
-  "version": "4.0.0",
-  "description": "Drupal 11 add-on: drupal-11 skill with module scaffolding.",
+  "version": "4.0.1",
+  "description": "Drupal 11 add-on: drupal-backend-dev agent, drupal-11 skill with module scaffolding and the Drupal stack manifest.",
   "skills": "./skills/",
   "requires_local_executor": true,
   "interface": {
     "displayName": "SDD Kit drupal",
-    "shortDescription": "Drupal 11 add-on: drupal-11 skill with module scaffolding.",
+    "shortDescription": "Drupal 11 add-on: drupal-backend-dev agent, drupal-11 skill with module scaffolding and the Drupal stack manifest.",
     "developerName": "Stas Markov",
     "category": "Developer Tools",
     "websiteURL": "https://github.com/stasmarkov/sdd-kit",

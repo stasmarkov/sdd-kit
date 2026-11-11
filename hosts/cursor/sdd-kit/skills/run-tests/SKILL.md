@@ -42,10 +42,10 @@ Single repo: run from its root. Polyrepo: find the backend and the frontend the 
 Resolve each repo's stack data with the recipe in the `verification-gates` skill (project and user `.cursor/stacks`, then the generated `stacks.json`, then plugin add-on manifests, else `other` with `stack manifest not found` and the `/new-stack` hint, running the test tooling the repo visibly has only under the conditions of verification-gates step 4, else `not run (no allowlisted gate)`). Then:
 
 - Run the gates of kind `test`. Run kind `e2e` only with `--e2e`, using the manifest's `e2e` block. Kinds `format`, `lint`, `types`, `build`, `other` and an absent kind are not run here.
-- Evaluate each gate's `unless` globs (Glob in the repo); a match is reported `skipped — <glob> present` and the gate is not run.
-- For gates from a project or user manifest or a third-party plugin manifest, run `node ../stack-trust/scripts/trust-store.mjs --host cursor check <manifest file>`. When the manifest is not trusted, print `not run (untrusted manifest). Fix: run /stack-trust.` and do not run its gates. First-party entries are always trusted.
+- Plan the gates with the plan step of `verification-gates` (Planning the gates): `node ../stack-trust/scripts/trust-store.mjs plan --repo <repo> --key <key> --kinds test`. Report every `fixed` entry and `notices` line verbatim and run only `run[].command`, in the repo directory; for key `other`, fall back to the visible test tooling as above. If the planner is unavailable, run no gate and report each as `not run (gate planner unavailable). Fix: reinstall sdd-kit`.
+- The plan applies `unless` and trust: skipped gates are reported as `skipped — <glob> present`, and gates of an untrusted manifest as `not run (untrusted manifest). Fix: run /stack-trust.` (the same rule as `node ../stack-trust/scripts/trust-store.mjs --host cursor check <manifest file>` in `verification-gates`).
 
-`<pm>` and `<pmx>` follow the `verification-gates` package-manager rule (lockfile to package runner). Filters, coverage and parallel flags per test runner are in the stack add-on's conventions skill, under `references/quality-tools.md`; if the project runs in a container wrapper, prefix the commands with its exec form.
+The plan fills `<pm>` and `<pmx>`; for a command you add yourself (a filter, a single file), follow the `verification-gates` package-manager rule. Filters, coverage and parallel flags per test runner are in the stack add-on's conventions skill, under `references/quality-tools.md`.
 
 ## Browser journeys (`--e2e`)
 

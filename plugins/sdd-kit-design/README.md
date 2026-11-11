@@ -3,7 +3,7 @@
 
 UI design add-on: ui-ux-advisor agent and design-ui skill. Third-party design skills are listed in docs/third-party.md.
 
-- Version: 4.0.0
+- Version: 4.0.1
 - Keywords: design, ui, ux
 
 ## Install
@@ -16,4 +16,4 @@ UI design add-on: ui-ux-advisor agent and design-ui skill. Third-party design sk
 ## Learn more
 
 - [Interactive guide](https://stasmarkov.github.io/sdd-kit/)
-- [Worked example: Hireboard](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/examples/job-board/README.md)
+- [Worked example: Hireboard](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/examples/job-board/README.md)

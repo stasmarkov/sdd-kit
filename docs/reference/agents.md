@@ -21,6 +21,7 @@ Subagents are delegated to with the Agent tool (`subagent_type: "<name>"`). Add-
 | `security-hunter` | core | sonnet | Read-only, memory-less security analyst for the security-audit workflow - hunts one coverage unit, critiques coverage, or casts one… |
 | `test-writer` | core | sonnet | Test writing for any stack (unit, integration, component and end-to-end) with schema-first and data-object-first patterns, using the… |
 | `ui-ux-advisor` | design plugin | sonnet | Frontend design patterns, Next.js architecture, React component design, and UI/UX recommendations. Use PROACTIVELY for frontend… |
+| `drupal-backend-dev` | drupal plugin | sonnet | Drupal 11 backend implementer for custom modules, services, plugins, entities, forms, routes and configuration. Use PROACTIVELY for any… |
 | `ios-mobile-dev` | ios plugin | sonnet | iOS mobile development agent with expertise in Swift 6, SwiftUI, @Observable MVVM, structured concurrency, and SwiftData persistence. Use… |
 | `laravel-backend-dev` | laravel plugin | sonnet | Laravel backend implementer for domain features, REST API endpoints, and external integrations. Use PROACTIVELY for services,… |
 | `nextjs-frontend-dev` | nextjs plugin | sonnet | Next.js frontend development agent with expertise in App Router, Server Components, TypeScript, API integration patterns, and the frontend… |

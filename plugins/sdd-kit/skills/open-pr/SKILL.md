@@ -1,7 +1,7 @@
 ---
 name: open-pr
 description: 'Open spec-traced pull requests once a feature or fix is approved — one PR per changed repo, backend first, cross-linked. Checks the preconditions (spec in-progress or done, gates green, deep-review APPROVED when a report exists), builds each PR body from the spec (summary, every acceptance criterion mapped to its test, Must-NOT-change guards, manual test plan, ADR link, counterpart PR), uses a conventional-commit title, and shows the exact push and gh pr create commands before running them. Use when a spec or bug fix is built and reviewed and the user wants to open its PRs (/open-pr --spec=PROJ-123), when a ship-feature or fix-bug report ends with "Next: /open-pr", or when a polyrepo change needs linked backend and frontend PRs. Pushes branches and creates PRs, so it is user-invoked only.'
-argument-hint: "[--spec=<folder | number | ticket key | timestamp id>] [--report=<.ai/reports/ship-… or fix-… path>] [--repos=backend:<path>,frontend:<path>] [--base=<branch>] [--draft] [--reviewer=<login>] [--label=<name>]"
+argument-hint: "[--spec=<folder | number | ticket key | timestamp id>] [--report=<.ai/reports/ship-… or fix-… path>] [--repos=backend:<path>,frontend:<path>] [--base=<branch>] [--render|--dry-run] [--draft] [--reviewer=<login>] [--label=<name>]"
 allowed-tools: Bash, Read, Grep, Glob, AskUserQuestion
 disable-model-invocation: true
 license: Apache-2.0
@@ -42,6 +42,7 @@ A PR is the last place a reviewer sees the contract before it merges. `/open-pr`
 | `--report` | newest matching file in `.ai/reports/` | Saved workflow report (path in the run's `reportPath`). With `--spec`: the ship-feature report (`.ai/reports/ship-<spec>-<timestamp>.md`), used as gate and review evidence. Alone: the fix-bug report (`.ai/reports/fix-<ticket or slug>-<timestamp>.md`) for a fix without a spec |
 | `--repos` | detected | Polyrepo map, same shape as the workflows' `repos: { backend, frontend }` |
 | `--base` | the repo's default branch | Target branch for every PR |
+| `--render`, `--dry-run` | off | Render mode: write the bodies and print the push line and the host's next step; no gh call, no commit, no push. Switches on by itself when the origin is not GitHub or gh is unavailable (see *Origin host*) |
 | `--draft` | off | Open as draft (offered automatically when the spec is not complete) |
 | `--reviewer`, `--label` | config | Passed through to `gh pr create`; repeatable |
 
@@ -64,10 +65,23 @@ Without `--spec`, take the ticket key from the current branch (`git branch --sho
 
 ```bash
 git -C "$REPO" fetch origin --quiet
-BASE=${BASE:-$(cd "$REPO" && gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)}
+BASE=${BASE:-$(cd "$REPO" && gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)}   # gh flow only
 git -C "$REPO" log --oneline "origin/$BASE..HEAD"      # empty → no PR for this repo
 git -C "$REPO" status --porcelain                      # uncommitted work → Step 2
 ```
+
+**Origin host.** Read `git remote get-url origin` per repo. Accepted forms: `git@<host>:<path>`, `ssh://[user@]<host>[:port]/<path>`, `http(s)://[user@]<host>[:port]/<path>`. Lowercase the host, drop the port, and drop a trailing `.git` from the path. For the two SSH forms the host may be an alias from `~/.ssh/config` (`git@github-work:org/repo.git`): replace it with the `hostname` line that `ssh -G <host>` prints (it reads the config and connects to nothing), and treat `ssh.github.com` as `github.com`.
+
+| Host | gh | Render mode | Next step printed |
+|------|----|-------------|-------------------|
+| `github.com` | `gh auth status --hostname github.com`; exit 0 keeps the GitHub flow | Only when gh is missing or that check fails (Warn row below) | The plain push line `git push -u origin <branch>`, then `https://github.com/<owner>/<repo>/compare/<base>...<branch>?expand=1` |
+| `bitbucket.org` | none | Always | The plain push line `git push -u origin <branch>`, then `https://bitbucket.org/<workspace>/<repo>/pull-requests/new?source=<branch>&dest=<base>` (workspace and repo are the first two path segments) |
+| `gitlab.com`, or a first label of `gitlab` | none | Always | `git push -u -o merge_request.create -o merge_request.target=<base> -o 'merge_request.title=<title>' origin <branch>` in place of the plain push line; paste the body from the file |
+| any other host | `gh auth status --hostname <host>` when gh is installed; exit 0 means GitHub Enterprise and keeps the GitHub flow | Otherwise | The plain push line `git push -u origin <branch>`, then `Open a pull request from <branch> into <base> on <host> and paste the body file.` |
+
+In the Bitbucket URL, percent-encode branch and base except `A-Z a-z 0-9 - _ . ~ /`. In the GitLab push line, write a `'` in the title as `'\''`.
+
+**Base without gh.** Resolve in order: `--base`, `open-pr.base` in the project `CLAUDE.md`, `git symbolic-ref --short refs/remotes/origin/HEAD` with the `origin/` prefix removed, then ask the user, naming `git remote set-head origin --auto` as the fix.
 
 A repo with no commits ahead of base and a clean tree gets no PR; say so in the report ("No web PR: no changes"). Each repo's role (frontend, backend) comes from the stack manifest the workflows' Detect phase reports.
 
@@ -77,7 +91,8 @@ Run every check, then show one table. **Block** stops the run with the fix; **Wa
 
 | Check | How | Fails as |
 |-------|-----|----------|
-| `gh` installed and authenticated | `gh auth status` | Block — `gh auth login` |
+| Origin host | per *Origin host* in Step 1 | Not GitHub (`bitbucket.org`, GitLab, or a host where `gh auth status --hostname <host>` fails): Warn `origin is <host>, not GitHub — rendering the PR instead. Fix: run the printed push, then open the printed link` and switch to render mode |
+| `gh` installed and authenticated | `gh auth status --hostname <origin host>` (GitHub flow only) | `github.com` with gh missing or the check failing: Warn `gh unavailable or not authenticated — rendering instead. Fix: gh auth login` and switch to render mode |
 | Spec status | `status:` in spec-lite.md frontmatter is `in-progress` or `done` | Block on `draft` (→ `/sdd <spec>` for approval) or `approved` (→ `/execute-task` or ship-feature; nothing is built yet). Legacy spec without frontmatter → Warn |
 | Spec complete | every `- [ ] N.` in tasks.md checked, every Traceability "Verified by" cell filled | Warn — offer `--draft` |
 | Spec lint | `node ${CLAUDE_SKILL_DIR}/../write-spec/scripts/spec-lint.mjs --verified <spec-folder>`; report each finding | Warn — list the findings in the output |
@@ -88,7 +103,7 @@ Run every check, then show one table. **Block** stops the run with the fix; **Wa
 | Working tree | `git status --porcelain` per repo | Warn — list the files; offer one commit with a conventional message (Step 3), staging the listed paths explicitly, never `git add -A` |
 | Spec folder tracked | `git -C <spec repo> status --porcelain .ai/specs/<folder>` | Warn — it ships with the PR of the repo that holds it |
 | Secrets | changed paths (`git diff --name-only origin/$BASE...HEAD` plus staged files) matching `.env`, `.env.*` (not `.env.example`), `*.pem`, `*.key`, `auth.json`, `credentials*` | Block — never pushed |
-| Existing PR | `gh pr list --head <branch> --state open --json number,url` | Not a failure: switch that repo to update mode (`gh pr edit <n> --body-file`) |
+| Existing PR | `gh pr list --head <branch> --state open --json number,url` | Not a failure: switch that repo to update mode (`gh pr edit <n> --body-file`). In render mode: `not checked (render mode)` |
 
 **Gate evidence.** Accept, newest first: a report in `.ai/verification/<spec-folder>/` (from `/execute-task`), or a saved workflow report under `.ai/reports/` (`ship-*.md` from ship-feature, `fix-*.md` from fix-bug) whose *Quality gates* section shows every gate passing for this repo, **only if** the file is newer than the repo's last commit (`git log -1 --format=%cI`). A report that exists only in the conversation is not evidence: every claim comes from a file you read. Otherwise run the gate set from the `verification-gates` skill now, per repo, with the tools installed there: the manifest's gates for that repo (format, lint, types, test, build) and its e2e gate when the change touches a journey. `<pm>` / `<pmx>` follow that skill's package-manager rule. Conditional gates are skipped only with the reason logged, as that skill describes.
 
@@ -120,6 +135,12 @@ mktemp "${TMPDIR:-/tmp}/open-pr-api.XXXXXX"     # prints e.g. /tmp/open-pr-api.k
 ```
 
 Then write the body to that literal path (heredoc in a later Bash call) and show the same literal path in Step 4.
+
+## Render mode
+
+Render mode runs Step 1, every Step 2 row except `Existing PR`, and Step 3 without creating a commit. Block rows still stop the run. If `git fetch origin` fails, show the Warn row `could not fetch origin — comparing with the local <base> branch. Fix: check the remote URL and your access` and use the local `<base>`.
+
+It writes one body file per repo with the `mktemp` names from Step 3, then prints per repo: the title, the body file path, any pending commit command, the push line (the plain `git push -u origin <branch>` unless the host row names its own), and the host's next step from the *Origin host* table. It makes no gh call, no commit and no push, asks no Step 4 question, and skips Step 5. Counterpart references are plain text (`references/pr-body.md`, *Links*).
 
 ## Step 4 — Confirm the exact commands
 

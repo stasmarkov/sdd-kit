@@ -66,6 +66,12 @@ Read both outputs and write the link with those values typed in: `https://github
 
 A pinned link keeps pointing at the reviewed code after later pushes. In the template below, `$BLOB` is a text placeholder for `https://github.com/<owner>/<repo>/blob/<sha>`. Replace it with the literal URL in the body file: before Step 4 when no commit is pending, otherwise in Step 5.1 right after the commit.
 
+**Render mode and non-GitHub origins.**
+
+- Counterpart references are plain `<repo directory name> PR` text (for example `api PR`), never `owner/repo#N`, because no PR exists yet.
+- On a non-GitHub origin, write repo-relative file paths in place of `$BLOB` links.
+- On a GitHub origin, fill `$BLOB` as `https://<host>/<owner>/<repo>/blob/<HEAD sha>` from the parsed remote, with no gh call.
+
 ## Polyrepo
 
 - The spec lives in one repo, usually the backend. Both PRs link the spec and `manual-test.md` with that repo's `$BLOB` URLs.

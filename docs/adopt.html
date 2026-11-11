@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adopt SDD Kit: launch plan · SDD Kit</title>
+<link rel="icon" href="data:,">
+<script>
+  (function () {
+    var root = document.documentElement, stored = null;
+    try { stored = localStorage.getItem('sdd-guide-theme'); } catch (e) { stored = null; }
+    var theme = stored === 'light' || stored === 'dark' ? stored : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    root.dataset.theme = theme;
+    root.style.colorScheme = theme;
+  })();
+</script>
+<link rel="stylesheet" href="guide.css">
+</head>
+<body class="doc-page adopt-page">
+<a class="skip-link" href="#content">Skip to content</a>
+<header class="site-header">
+  <div class="brand">
+    <a class="brand-name" href="index.html">SDD Kit</a>
+    <span class="badge" id="version"></span>
+  </div>
+  <div class="header-actions">
+    <a class="btn" href="index.html" aria-label="Back to the guide"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
+    <label class="host-select"><span class="btn-label">Host</span> <select id="host-select" class="btn" aria-label="Host"></select></label>
+    <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
+  </div>
+</header>
+<main id="content" class="doc-main adopt-main">
+  <article class="doc-body" id="adopt" aria-labelledby="adopt-h">
+    <p class="kicker">Adopt</p>
+    <h1 id="adopt-h">Launch AI-assisted development on any project</h1>
+    <div id="adopt-host" class="adopt-host" hidden></div>
+    <div id="adopt-intro"></div>
+    <div class="adopt-toolbar" role="group" aria-label="Levels">
+      <button type="button" class="btn" id="expand-all">Expand all levels</button>
+      <button type="button" class="btn" id="collapse-all">Collapse all levels</button>
+    </div>
+    <div id="adopt-levels"></div>
+    <div id="adopt-limits"></div>
+    <div id="adopt-checklist"></div>
+    <div id="adopt-stuck"></div>
+  </article>
+</main>
+<footer class="site-footer">
+  <div>This page is generated from the kit's launch recipe (<code>docs/adoption/launch-recipe.md</code>). Back to the <a href="index.html">interactive guide</a>, or see <a href="index.html#help">When something is off</a>.</div>
+</footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="host-data.js"></script>
+<script src="adopt-data.js"></script>
+<script src="adopt.js"></script>
+</body>
+</html>

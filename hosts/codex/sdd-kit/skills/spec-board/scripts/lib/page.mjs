@@ -549,6 +549,7 @@ button,input,select{font:inherit;color:inherit}
 .field label{font-size:11.5px;font-weight:550;color:var(--muted)}
 .field input[type="search"],.field select{height:30px;border:1px solid var(--control-border);border-radius:6px;background:var(--surface);padding:0 8px;font-size:13px;max-width:100%}
 .field input[type="search"]{width:clamp(180px,26vw,340px)}
+.field input[type="search"]::placeholder{color:var(--muted);opacity:1}
 .check{display:inline-flex;align-items:center;gap:6px;min-height:30px;font-size:13px;cursor:pointer}
 .check input{width:16px;height:16px;margin:0}
 .btn{display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:0 10px;border:1px solid var(--control-border);border-radius:6px;background:var(--surface);cursor:pointer;font-size:13px;white-space:nowrap}
@@ -557,7 +558,7 @@ button,input,select{font:inherit;color:inherit}
 .f-panel{display:contents}
 .f-sort{order:1}
 .f-clear{order:2}
-.count{order:3;margin:0 0 0 auto;align-self:center;color:var(--muted);font-size:12.5px}
+.count{order:3;display:flex;align-items:center;min-height:30px;margin:0 0 0 auto;align-self:flex-end;color:var(--muted);font-size:12.5px}
 .columns{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(200px,1fr);gap:12px;align-items:start;padding:14px 0 4px;overflow-x:auto}
 .col{--c:var(--s-draft);--c-bg:var(--s-draft-bg);background:var(--col);border:1px solid var(--border);border-top:3px solid var(--c);border-radius:10px;padding:8px;min-width:0}
 .col-approved{--c:var(--s-approved);--c-bg:var(--s-approved-bg)}
@@ -2360,7 +2361,7 @@ export function renderPage({ board, live = false, title = 'Spec board' } = {}) {
 <div class="banner" id="banner" role="region" aria-label="Board issues" hidden></div>
 <div class="banner" id="offline" role="region" aria-label="Live server connection" hidden></div>
 <div class="toolbar" id="toolbar" role="search" aria-label="Filter specs">
-<div class="field f-search"><label for="q">Search</label><input id="q" type="search" placeholder="Search title, id, ticket, criteria…" autocomplete="off" spellcheck="false"></div>
+<div class="field f-search"><label for="q">Search</label><input id="q" type="search" placeholder="Title, id, ticket, criteria…" autocomplete="off" spellcheck="false"></div>
 <div class="field f-sort"><label for="f-sort">Sort</label><select id="f-sort">${sortOptions}</select></div>
 <button class="btn f-toggle" id="f-toggle" type="button" aria-expanded="false" aria-controls="f-panel">Filters</button>
 <div class="f-panel" id="f-panel">

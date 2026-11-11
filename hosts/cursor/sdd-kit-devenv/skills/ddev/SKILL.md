@@ -217,4 +217,6 @@ After `ddev start`:
 
 ## Quality gates in a DDEV project
 
-When a repo has `.ddev/config.yaml`, the Laravel stack manifest declares an `execWrapper`, so the workflow gates (Pint, PHPStan, tests) run as `ddev exec <gate command>` and the gate details name the wrapper. If `ddev describe` fails, each wrapped gate is reported as `not run (ddev not running)` instead of failing; start the project with `ddev start` and re-run. Repos without the marker keep their plain gate commands.
+When a repo has `.ddev/config.yaml`, the Laravel and Drupal stack manifests declare an `execWrapper`, so the workflow gates (for example Pint, PHPCS, PHPStan, tests) run as `ddev exec <gate command>` and the gate details name the wrapper. If the running check fails, each wrapped gate is reported as `not run (ddev not running)` instead of failing; start the project with `ddev start` and re-run. Laravel checks with `ddev describe`; Drupal checks with `ddev describe -j` and requires `raw.status` to equal `running`, so a stopped project is never started by a gate. Repos without the marker keep their plain gate commands.
+
+**HTTPS and URLs.** For trusted `https://<project>.ddev.site` URLs, run `mkcert -install` once, then `ddev restart`; `ddev utility tls-diagnose` reports what is wrong when the browser still warns. Workflows accept `*.ddev.site` as a dev URL. A custom `project_tld` is not accepted: pass the `http://127.0.0.1:<port>` URL that `ddev describe` lists.

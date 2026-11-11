@@ -3,7 +3,7 @@
 
 SDD Kit: spec-driven development for Claude Code. A single /sdd front door, background multi-agent workflows with stack detection and cross-repo support, specialized agents and skills, and guardrail hooks. Stack-agnostic core; stacks come from add-on plugins.
 
-- Version: 4.0.0
+- Version: 4.0.1
 - Keywords: spec-driven-development, full-stack, tdd, agents, hooks, skills, workflows
 
 ## Install
@@ -16,4 +16,4 @@ SDD Kit: spec-driven development for Claude Code. A single /sdd front door, back
 ## Learn more
 
 - [Interactive guide](https://stasmarkov.github.io/sdd-kit/)
-- [Worked example: Hireboard](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/examples/job-board/README.md)
+- [Worked example: Hireboard](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/examples/job-board/README.md)

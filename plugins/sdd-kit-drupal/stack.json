@@ -3,9 +3,13 @@
   "name": "drupal",
   "order": 20,
   "role": "backend",
+  "devUrlHosts": [
+    "ddev.site"
+  ],
   "detect": "composer.json requiring drupal/core (often web/index.php)",
   "agent": {
-    "name": "general-purpose"
+    "name": "drupal-backend-dev",
+    "plugin": "sdd-kit-drupal"
   },
   "conventions": [
     "module structure",
@@ -17,18 +21,72 @@
   "gates": [
     {
       "name": "PHPCS",
-      "command": "./vendor/bin/phpcs --standard=Drupal,DrupalPractice",
-      "kind": "lint"
+      "command": "./vendor/bin/phpcs --standard=Drupal,DrupalPractice --extensions=php,module,inc,install,test,profile,theme,info,yml web/modules/custom",
+      "kind": "lint",
+      "requires": [
+        "vendor/drupal/coder",
+        "vendor/squizlabs/php_codesniffer/CodeSniffer.conf",
+        "web/modules/custom"
+      ],
+      "unless": [
+        "phpcs.xml",
+        "phpcs.xml.dist",
+        ".phpcs.xml",
+        ".phpcs.xml.dist"
+      ]
+    },
+    {
+      "name": "PHPCS (project ruleset)",
+      "command": "./vendor/bin/phpcs",
+      "kind": "lint",
+      "requires": [
+        [
+          "phpcs.xml",
+          "phpcs.xml.dist",
+          ".phpcs.xml",
+          ".phpcs.xml.dist"
+        ],
+        "vendor/bin/phpcs"
+      ]
     },
     {
       "name": "PHPStan",
-      "command": "./vendor/bin/phpstan analyse",
-      "kind": "types"
+      "command": "./vendor/bin/phpstan analyse --no-progress",
+      "kind": "types",
+      "requires": [
+        [
+          "phpstan.neon",
+          "phpstan.neon.dist",
+          "phpstan.dist.neon"
+        ],
+        "vendor/bin/phpstan"
+      ]
     },
     {
       "name": "PHPUnit",
-      "command": "./vendor/bin/phpunit",
-      "kind": "test"
+      "command": "./vendor/bin/phpunit -c web/core --fail-on-empty-test-suite web/modules/custom",
+      "kind": "test",
+      "requires": [
+        "vendor/bin/phpunit",
+        "web/core/phpunit.xml.dist",
+        "web/modules/custom"
+      ],
+      "unless": [
+        "phpunit.xml",
+        "phpunit.xml.dist"
+      ]
+    },
+    {
+      "name": "PHPUnit (project config)",
+      "command": "./vendor/bin/phpunit --fail-on-empty-test-suite",
+      "kind": "test",
+      "requires": [
+        [
+          "phpunit.xml",
+          "phpunit.xml.dist"
+        ],
+        "vendor/bin/phpunit"
+      ]
     }
   ],
   "debugPatterns": [
@@ -43,6 +101,15 @@
     "modules/"
   ],
   "acceptance": "exercise the routes/controllers over HTTP",
+  "execWrapper": {
+    "when": ".ddev/config.yaml",
+    "command": "ddev exec",
+    "requiresRunning": {
+      "command": "ddev describe -j",
+      "jsonField": "raw.status",
+      "equals": "running"
+    }
+  },
   "skills": {
     "conventions": [
       "drupal-11"

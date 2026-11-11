@@ -314,7 +314,7 @@ function firstPartyKeyMessage(key, registry, root, stacksDir = '.claude/stacks')
     .map((s) => `${key}${s}`)
     .find((n) => NAME_PATTERN.test(n) && !taken.has(n) && !fs.existsSync(path.join(root, stacksDir, `${n}.json`)));
   const example = suggestion ? `, for example "${suggestion}"` : '';
-  const head = `answers: "${key}" is a first-party stack key; workflows ignore a project manifest that reuses it.`;
+  const head = `answers: "${key}" is a first-party stack key; workflows ignore a project manifest that reuses it. To adjust the ${key} stack for this project, give the manifest its own name and declare "extends": "${key}".`;
   const dir = registry && typeof registry.addonFor === 'function' ? registry.addonFor(key).dir : null;
   if (dir) return `${head} Fix: install the first-party add-on instead (install.sh --stack=${dir} or /plugin install sdd-kit-${dir}@sdd-kit), or choose another name${example}.`;
   if (key === 'other') return `${head} Fix: "other" is the built-in catch-all stack and needs no add-on; choose another name${example}.`;

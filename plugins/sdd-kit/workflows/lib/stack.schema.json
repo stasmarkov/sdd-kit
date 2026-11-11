@@ -104,8 +104,33 @@
                 }
               },
               "requires": {
-                "type": "string",
-                "pattern": "^[A-Za-z0-9_./-]+$"
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_./-]+$"
+                  },
+                  {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "oneOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^[A-Za-z0-9_./-]+$"
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 1,
+                          "items": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_./-]+$"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "description": "A path, or a list of requirements. Every list entry is required; an entry that is itself a list is met when at least one of its paths exists."
               },
               "lintFix": {
                 "type": "object",
@@ -198,8 +223,35 @@
               "pattern": "^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"
             },
             "requiresRunning": {
-              "type": "string",
-              "pattern": "^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"
+              "oneOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "command",
+                    "jsonField",
+                    "equals"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "command": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"
+                    },
+                    "jsonField": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"
+                    },
+                    "equals": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9._-]+$"
+                    }
+                  }
+                }
+              ]
             }
           },
           "description": "Run this stack's gates through a wrapper (for example a container exec) when the marker file `when` exists in the repo: each gate runs as `<command> <gate command>`. `requiresRunning` is a command whose success shows the wrapper is up; when it fails the wrapped gates are skipped."
@@ -416,6 +468,19 @@
               }
             }
           }
+        },
+        "devUrlHosts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+(\\.[a-z0-9-]+)+$"
+          },
+          "description": "First-party manifests only: hostname suffixes whose subdomains are accepted as dev URLs, next to localhost and test."
+        },
+        "extends": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{1,31}$",
+          "description": "Overlay manifests only: the first-party stack this overlay refines."
         }
       }
     },
@@ -522,8 +587,33 @@
                   }
                 },
                 "requires": {
-                  "type": "string",
-                  "pattern": "^[A-Za-z0-9_./-]+$"
+                  "oneOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9_./-]+$"
+                    },
+                    {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "oneOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_./-]+$"
+                          },
+                          {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z0-9_./-]+$"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "description": "A path, or a list of requirements. Every list entry is required; an entry that is itself a list is met when at least one of its paths exists."
                 },
                 "lintFix": {
                   "type": "object",
@@ -616,8 +706,35 @@
                 "pattern": "^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"
               },
               "requiresRunning": {
-                "type": "string",
-                "pattern": "^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"
+                  },
+                  {
+                    "type": "object",
+                    "required": [
+                      "command",
+                      "jsonField",
+                      "equals"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                      "command": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"
+                      },
+                      "jsonField": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"
+                      },
+                      "equals": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9._-]+$"
+                      }
+                    }
+                  }
+                ]
               }
             },
             "description": "Run this stack's gates through a wrapper (for example a container exec) when the marker file `when` exists in the repo: each gate runs as `<command> <gate command>`. `requiresRunning` is a command whose success shows the wrapper is up; when it fails the wrapped gates are skipped."
@@ -834,6 +951,19 @@
                 }
               }
             }
+          },
+          "devUrlHosts": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]+(\\.[a-z0-9-]+)+$"
+            },
+            "description": "First-party manifests only: hostname suffixes whose subdomains are accepted as dev URLs, next to localhost and test."
+          },
+          "extends": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{1,31}$",
+            "description": "Overlay manifests only: the first-party stack this overlay refines."
           }
         }
       }

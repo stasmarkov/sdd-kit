@@ -2,7 +2,7 @@
 
 A stack manifest, `stack.json`, is the one file that teaches the SDD Kit workflows a stack: how to recognise it, which agent implements it, which gates verify it and how to scaffold, deploy and test it. The workflows read manifests and never name a stack themselves, so a new stack is a new manifest, not a code change.
 
-The format is defined by [`src/workflows/lib/stack.schema.json`](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/plugins/sdd-kit/workflows/lib/stack.schema.json). The examples on this page use a fictional stack, `acme`. To generate a manifest and a full add-on from a few answers, run `/new-stack`; this page is the field reference behind it.
+The format is defined by [`src/workflows/lib/stack.schema.json`](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/workflows/lib/stack.schema.json). The examples on this page use a fictional stack, `acme`. To generate a manifest and a full add-on from a few answers, run `/new-stack`; this page is the field reference behind it.
 
 ## Shape
 
@@ -57,7 +57,7 @@ Each gate is an object with `name` and `command`, plus optional fields:
 - `kind`: `format`, `lint`, `types`, `test`, `e2e`, `build` or `other`. When absent the kind is `other`: the kit never infers a kind from a name or command. `/lint` runs `format`, `lint` and `types`; `/run-tests` runs `test` (and `e2e` with `--e2e`); `build` and `other` gates run through the verification gates and the workflow gate step.
 - `skipWhenScaffolded`: `true` skips the gate on a freshly scaffolded project, before its tooling exists.
 - `unless`: globs relative to the repository root. The gate is skipped, with the reason `skipped — <glob> present`, when any glob matches. Use it for a fallback gate that applies only when a better one is not configured.
-- `requires`: a file path relative to the repository root that the gate's tool needs. When Detect finds it missing (checked through the exec wrapper when one applies), the gate is reported as `not run (<file name> not installed)` instead of failing.
+- `requires`: what the gate's tool needs, as paths relative to the repository root. A string is one required path; when Detect finds it missing (checked through the exec wrapper when one applies), the gate is reported as `not run (<file name> not installed)` instead of failing. A list form holds strings and inner lists, all of which must be satisfied; an inner list is an "any of" group, satisfied when one of its paths exists. When something is missing the gate is reported as `not run (requires <path>; <path>)`, and an unmet group reads `one of <path>, <path>`. Paths are checked in the listed order. The first-party Drupal gates use this form.
 - `lintFix`: `{ flag, fallback }` for a lint gate whose project script may rewrite files. When the repo's script contains `flag`, the gate runs `fallback` instead (`<pm>` and `<pmx>` expand per `packageManagers`).
 - `scriptFallback`: `{ dependency, manifest, minMajor, contains, fallback }` for a gate whose project script calls a command a newer release of `dependency` removed. `manifest` is the file, relative to the repository root, that declares the dependency's version range (for example `package.json` or `composer.json`). Detect reports the lowest major that range admits, per dependency, so two gates can follow two different dependencies. The gate runs `fallback` instead when its script contains `contains` and the major is `minMajor` or later, or when the major cannot be read (the fallback must therefore also work on older releases).
 
@@ -79,7 +79,9 @@ Anything else, including a reformatted copy of a declined manifest's command, is
 | `devUrl` | `"http://localhost:8080"` | Default application URL for browser acceptance; a URL passed to the workflow wins. |
 | `visual` | `"browser"` | Names the tool visual checks use for this stack. |
 | `buildGateGuard` | `"The build shares a directory with the dev server at {devUrl}; check it responds first."` | A warning added to the build gate's instructions. `{devUrl}` is replaced with the application URL. |
-| `execWrapper` | `{ "when": ".ddev/config.yaml", "command": "ddev exec", "requiresRunning": "ddev describe" }` | Runs the stack's gates through a wrapper when the marker file `when` exists in the repo: each gate runs as `<command> <gate command>`. When `requiresRunning` is set and fails, each wrapped gate is skipped as `not run (<first word of command> not running)`. Values are plain words and paths, no shell syntax. |
+| `execWrapper` | `{ "when": ".ddev/config.yaml", "command": "ddev exec", "requiresRunning": "ddev describe" }` | Runs the stack's gates through a wrapper when the marker file `when` exists in the repo: each gate runs as `<command> <gate command>`. When `requiresRunning` is set and fails, each wrapped gate is skipped as `not run (<first word of command> not running)`. `requiresRunning` is a string command (success means running), or an object `{ "command": "ddev describe -j", "jsonField": "raw.status", "equals": "running" }` that reads the `jsonField` of the command's JSON output (a dotted path) and compares it with `equals`. Values are plain words and paths, no shell syntax. For a Docker-only project, set `working_dir:` on the compose service to the mounted project root (the command pattern allows no `/`, so it cannot pass `-w`), use `docker compose exec -T php` as the command, and optionally `docker compose exec -T php true` as the running check; that check does not start a stopped service. |
+| `devUrlHosts` | `["ddev.site"]` | First-party manifests only. Host suffixes, beyond `localhost` and `test`, that a dev URL may use. An overlay that declares it is rejected. The suffixes apply to every stack, because the dev-URL rule is shared. |
+| `extends` | `"drupal"` | Overlay manifests only. See [Extending a first-party stack](#extending-a-first-party-stack). |
 | `contractSync` | see below | API contract synchronisation between a backend and its consumer. |
 | `skills` | see below | Skill names the workflows load for this stack. |
 | `packageManagers` | see below | Package managers the stack can use, matched by lockfile. |
@@ -173,13 +175,13 @@ Without an `e2e` block the stack declares no browser tests. A frontend's `e2e` b
 
 Where a manifest comes from decides whether its commands may run:
 
-- **Add-ons in the kit** (`src/plugins/<dir>/stack.json`) are first-party. They need `agent.plugin` equal to their own plugin name, `sdd-kit-<dir>`, and verify Check 16 enforces it.
-- **Overlay manifests** are third-party or project-local: `.claude/stacks/*.json` in a project, `stacks/*.json` in the user config directory, and `stack.json` in any other enabled plugin. They are validated with extra limits (strings up to 500 characters, lists up to 32 items) `agent.plugin` may not be `sdd-kit`, and `agent.name` may not be a core agent name (such as `test-writer` or `code-explorer`), so an overlay can never take over a core agent. A project or user overlay may not use a first-party key either: `/new-stack --target project` refuses one, and a workflow ignores such a file. Their commands (gates, `scaffold`, `ci`, `e2e.run`, `contractSync.routeListCommand`, `buildGateGuard`, `execWrapper`, `e2eBackend`) run only after you approve the exact content with `/stack-trust`, which records its hash. Any edit asks again. Until then workflows run none of them and print `not run (untrusted manifest)` against each gate by position (`gate 1 (untrusted manifest)`), never by the name the manifest gives it. An untrusted manifest's specialist agent and skill names are not used either: its steps run as the default agent with no stack skills, and the run log says so; a run is held at BLOCKED (NOT-RESOLVED for fix-bug) only when one of its repos uses the untrusted stack, and other untrusted manifests are listed for information. Once approved, workflows run the gate commands of the approved manifest, with `<pm>`/`<pmx>` filled from its `packageManagers`, not commands reported during detection.
+- **Add-ons in the kit** (`src/plugins/<dir>/stack.json`) are first-party. They need `agent.plugin` equal to their own plugin name, `sdd-kit-<dir>`, and verify Check 16 enforces it. The agent file `src/plugins/<dir>/agents/<agent.name>.md` must exist (`gen-stacks` reports a missing one); a first-party stack that has no specialist names `general-purpose` and sets no `plugin`.
+- **Overlay manifests** are third-party or project-local: `.claude/stacks/*.json` in a project, `stacks/*.json` in the user config directory, and `stack.json` in any other enabled plugin. They are validated with extra limits (strings up to 500 characters, lists up to 32 items) `agent.plugin` may not be `sdd-kit`, and `agent.name` may not be a core agent name (such as `test-writer` or `code-explorer`), so an overlay can never take over a core agent. A project or user overlay may not use a first-party key as its own name either: `/new-stack --target project` refuses one (use `extends` instead), and a workflow ignores such a file. Their commands (gates, `scaffold`, `ci`, `e2e.run`, `contractSync.routeListCommand`, `buildGateGuard`, `execWrapper`, `e2eBackend`) run only after you approve the exact content with `/stack-trust`, which records its hash. Any edit asks again. Until then workflows run none of them and print `not run (untrusted manifest)` against each gate by position (`gate 1 (untrusted manifest)`), never by the name the manifest gives it. An untrusted manifest's specialist agent and skill names are not used either: its steps run as the default agent with no stack skills, and the run log says so; a run is held at BLOCKED (NOT-RESOLVED for fix-bug) only when one of its repos uses the untrusted stack, and other untrusted manifests are listed for information. Once approved, workflows run the gate commands of the approved manifest, with `<pm>`/`<pmx>` filled from its `packageManagers`, not commands reported during detection.
 
 **Threat model (OD-17).** A manifest that is neither first-party nor approved through `/stack-trust` (hash-matched) never supplies a command, path, URL or other value that reaches a shell, a gate plan or an agent prompt as an instruction. On top of that, every value the Detect or Scaffold agent reports is checked before a prompt or command quotes it, and an invalid value is dropped and logged:
 
 - **Repo paths**: relative, inside the workspace, `[A-Za-z0-9._/-]` only, no `..` segment and no leading `-`. A repo root you pass in `args.repos` (such as `../web`) defines the workspace and is accepted verbatim; a repo with any other path is dropped.
-- **devUrl**: `http(s)://` on `localhost`, `127.0.0.1`, `[::1]`, `*.localhost` or `*.test`, with an optional port and a plain path. A manifest's `devUrl` is used only when the manifest is first-party or trusted.
+- **devUrl**: `http(s)://` on `localhost`, `127.0.0.1`, `[::1]`, `*.localhost`, `*.test` or a suffix a first-party manifest lists in `devUrlHosts` (today `*.ddev.site`), with an optional port and a plain path. The run-level `url` argument passes the same check on every stack; an invalid one is ignored with a log line that names the accepted hosts. A custom DDEV `project_tld` is not accepted: pass the `http://127.0.0.1:<port>` URL that `ddev describe` lists. A manifest's `devUrl` is used only when the manifest is first-party or trusted, and only when it passes this same check; `/stack-trust` shows it before approval and flags one the workflows would never open.
 - **packageManager**: one of the names the first-party or trusted manifest declares in `packageManagers`.
 - **Gate names, script names and evidence files**: only what the allowlist produces (see [Which commands run](#which-commands-run)).
 - **Prose** (conventions, warnings, blockers, scaffold gate details): words and plain punctuation only, no quotes or shell syntax. Conventions reported for an untrusted or rejected stack are dropped.
@@ -188,15 +190,48 @@ Report prompts get these validated fields, never the raw Detect object. A reject
 
 The trust check that skills run is the kit's own `trust-store.mjs`. The script is self-contained: `tools/gen-stacks.mjs` bundles the workflows' manifest checks and the first-party entries into it, and it loads no other script or registry file, so the hash covers everything it runs. A project copy is used only when its SHA-256 equals the hash generated into the `verification-gates` skill, and never by a hash stored in the project. When no copy can be verified, the check reports `trust check unavailable` and every overlay counts as untrusted. The trust store is always `~/.claude/sdd-kit/trusted-stacks.json` in your home directory as the operating system's user database records it; neither `$HOME` nor `CLAUDE_CONFIG_DIR` moves it, because a project setting can change both. User stack manifests still live in the config directory (`CLAUDE_CONFIG_DIR`, else `~/.claude`), since each one needs an approval anyway. As a further check, a config directory that resolves inside the current directory, its git toplevel, `CLAUDE_PROJECT_DIR`, or any ancestor of the current directory that holds `.git` is refused: the user stacks and plugin list there are reported unreadable.
 
-The shell guard that refuses writes to a trust store and agent-run approvals (`block-dangerous.sh`) is best-effort hardening, not a boundary: it matches text in the command, so a symlink to the store, a directory glob or a script assembled at run time can get past it. Those are known limits, listed in [hooks/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/share/hooks/README.md) (Trust store guard), and the approval itself stays a human action in your own terminal.
+The shell guard that refuses writes to a trust store and agent-run approvals (`block-dangerous.sh`) is best-effort hardening, not a boundary: it matches text in the command, so a symlink to the store, a directory glob or a script assembled at run time can get past it. Those are known limits, listed in [hooks/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/share/hooks/README.md) (Trust store guard), and the approval itself stays a human action in your own terminal.
 
 Out of scope: running a workflow on a repository you do not trust. Agents read repository files and have Bash, so hostile repository content can steer them whatever `/stack-trust` says. `/stack-trust` controls manifests, not repository content. That includes values a repository's settings supply, such as the settings `env` values in `.claude/settings.json` (`NODE_OPTIONS`, `PATH`): they reach every process the agents start and sit outside the threat model.
 
 A project-local manifest should set `agent.plugin` to the add-on that ships its agent, for example `sdd-kit-acme` from `.claude/stack-addons/sdd-kit-acme/`. Workflows, `/stack-trust` and `/framework-doctor` see a `--plugin-dir` add-on in two ways: a directory or symlink under the project's `.claude/stack-addons/`, or the `--plugin-dir` flags on the Claude Code command line. Either is reported as `plugin:<name>@inline`.
 
+## Extending a first-party stack
+
+An overlay normally applies only to repos that match no stack the kit ships. To change how a first-party stack runs in one project, for example to wrap its gates in `docker compose exec`, declare `extends`:
+
+```json
+{
+  "name": "drupal-docker",
+  "order": 50,
+  "extends": "drupal",
+  "execWrapper": { "when": "docker-compose.yml", "command": "docker compose exec -T php" }
+}
+```
+
+- **Required:** `name`, `order` and `extends`. `extends` names a first-party key (any stack the kit ships, whether or not its add-on is installed), never `other` or an overlay key.
+- **Semantics:** fields the overlay declares replace the first-party values wholesale; every other field is inherited, `devUrl` included. A trusted extending overlay takes over the repos Detect classifies as the extended stack, and the run report shows the overlay's key for them. If it declares `agent`, that agent implements the repo.
+- **Refused fields:** `detect`, `markers` and `role` (classification never changes), and `devUrlHosts`. Such a manifest is rejected (`rule extendsField`). The overlay's own name may not be a first-party key (`rule extendsName`), and `extends` may not name a key outside the first-party list (`rule extendsTarget`). A first-party manifest may not declare `extends`.
+- **Trust:** the same `/stack-trust` approval as any overlay, by content hash. Until it is approved, or after an edit, the overlay is ignored with a log line and the first-party stack keeps running unchanged. `/stack-trust` shows the extended key and every inherited command before you approve. Detect runs the overlay's own commands, such as its running check, only once its hash is in the trust store.
+- **Tie-break:** when several trusted overlays extend the same key, the lowest `order` wins, then the key in code-unit order. Each loser is logged.
+
+## The plan step
+
+Skills that run gates outside a workflow (`/lint`, `/run-tests`, `verification-gates`) ask the kit for a plan instead of reading the manifest themselves:
+
+```
+node trust-store.mjs plan --repo <dir> --key <stack key> [--kinds format,lint,types]
+```
+
+It merges the overlays with the trust store, applies the same wrapper, `requires`, `unless` and lockfile rules as the workflows, and prints JSON with the resolved `key`, `notices`, the gates to `run` (with the wrapper applied and `<pm>`/`<pmx>` filled from the repo's lockfile) and the `fixed` entries that are skipped with their reason. `--kinds` keeps only gates of those kinds; a gate with no `kind` is left out, and the filter applies before anything is probed. A usage error exits 2 with a `Fix:` message.
+
+- **Probes:** when the wrapper is present and running (or declares no running check), every `requires` path of the planned gates is checked in one wrapped call, `<wrapper> ls -1d ./<path> ...`; otherwise the paths are checked on the host. The running check and that call share a 60-second limit, and a call that times out counts as not running or missing, with a notice.
+- **`unless` globs** are relative to the repo root; `*` and `?` match within one path segment. Detect is told the same rule.
+- **Notices:** more than one lockfile (the plan uses the first manager the manifest lists, and asks you to confirm which is canonical), a timed-out probe, and key `other`, for which the plan has no gates and the skills fall back to the tooling the repo visibly has.
+
 ## Discovery
 
-Workflows discover manifests in this order: the project's `.claude/stacks/`, then the user config directory's `stacks/`, then the manifests of enabled plugins (from `claude plugin list --json`, then the installed-plugins file, then a cache sweep). The kit's own add-ons are inlined into the workflows. The first valid entry for a key wins, project before plugin before user. An entry that reuses a first-party key is ignored.
+Workflows discover manifests in this order: the project's `.claude/stacks/`, then the user config directory's `stacks/`, then the manifests of enabled plugins (from `claude plugin list --json`, then the installed-plugins file, then a cache sweep). The kit's own add-ons are inlined into the workflows. The first valid entry for a key wins, project before plugin before user. An entry that reuses a first-party key as its name is ignored; to adjust a first-party stack, declare `extends`.
 
 A manifest Detect returns without a source label of the form `project:.claude/stacks/<file>`, `user:~/.claude/stacks/<file>` or `plugin:<name>@<marketplace>` is rejected with the reason `missing or invalid source`, and its text is not read.
 
@@ -221,6 +256,6 @@ Loading an add-on plugin is consent to its hooks, so an add-on's `hooks/hooks.js
 
 ## Related
 
-- `/new-stack` scaffolds a manifest and add-on from a few answers; its template is [`src/templates/stack-addon/`](https://github.com/stasmarkov/sdd-kit/tree/v4.0.0/share/templates/stack-addon).
+- `/new-stack` scaffolds a manifest and add-on from a few answers; its template is [`src/templates/stack-addon/`](https://github.com/stasmarkov/sdd-kit/tree/v4.0.1/share/templates/stack-addon).
 - `node tools/gen-stacks.mjs` regenerates the workflow registry from the kit's manifests; `./verify.sh` checks the add-on layout (Check 16).
 - [Plugin mode](plugin-mode.md) explains add-on installation.

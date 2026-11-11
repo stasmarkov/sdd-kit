@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../index.html">SDD Kit</a>
-    <span class="badge">v4.0.0</span>
+    <span class="badge">v4.0.1</span>
   </div>
   <div class="header-actions">
     <a class="btn" href="../index.html"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
@@ -160,7 +160,7 @@ previews and <code>npx github:stasmarkov/sdd-kit install --project</code> instal
 <code>install.sh</code> flag below works (<code>--stack</code>, <code>--minimal</code>, <code>--full</code>, <code>--with=ops</code>, <code>--yes</code>, <code>--user</code>). It runs
 the same <code>install.sh</code> as a clone, so the result is identical, and it needs bash, git, jq and
 Node 18+. On Windows use Git Bash or WSL, or the plugin.</p>
-<p>Add <code>#v4.0.0</code> to pin a release (<code>npx github:stasmarkov/sdd-kit#v4.0.0 install --project</code>);
+<p>Add <code>#v4.0.1</code> to pin a release (<code>npx github:stasmarkov/sdd-kit#v4.0.1 install --project</code>);
 without a tag npx fetches the default branch. npx caches the download. The package is not
 published to npm.</p>
 <h4 id="flags">Flags</h4>
@@ -297,7 +297,7 @@ installed that 2.0 no longer ships (retired agents, skills, templates, and scrip
 them up first. It only removes a file whose content matches a copy the kit shipped; a file you
 edited or replaced (for example an upstream Stripe or skill-creator skill installed at the same
 path) is listed as &quot;kept (modified or not from the kit)&quot; and left for you to review.</p>
-<p>The tables below match the CHANGELOG&#39;s <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/CHANGELOG.md#migrating-from-1x" target="_blank" rel="noopener noreferrer">Migrating from 1.x</a> section. They list what a 1.x release shipped; components that were added and removed again during the 2.0 cycle appear only in the CHANGELOG&#39;s <em>Removed</em> table.
+<p>The tables below match the CHANGELOG&#39;s <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/CHANGELOG.md#migrating-from-1x" target="_blank" rel="noopener noreferrer">Migrating from 1.x</a> section. They list what a 1.x release shipped; components that were added and removed again during the 2.0 cycle appear only in the CHANGELOG&#39;s <em>Removed</em> table.
 Current lists: <a href="skills.html">skills</a>,
 <a href="agents.html">agents</a>.</p>
 <h4 id="commands">Commands</h4>
@@ -356,7 +356,7 @@ commands stay behind. <code>/framework-doctor</code> flags them; delete the name
 <code>.claude/commands/</code>.</li></ul>
 <h3 id="verifying-an-install">Verifying an install</h3>
 <div class="table-wrap"><table><thead><tr><th>Check</th><th>What it tells you</th></tr></thead><tbody><tr><td><code>/framework-doctor</code></td><td>Directory layout, flat skill discovery, manifest drift, workflow name collisions, MCP config, and that hooks are wired and actually fire (it sends a harmless payload that must be blocked)</td></tr><tr><td><code>/hooks</code></td><td>Active hooks and where they come from</td></tr><tr><td><code>/memory</code></td><td>Loaded <code>CLAUDE.md</code>, <code>AGENTS.md</code>, and rules files</td></tr><tr><td><code>/plugin</code> → <strong>Errors</strong> tab</td><td>Plugin components that failed to load (plugin mode)</td></tr><tr><td><code>claude plugin validate &lt;path&gt;</code></td><td>Manifest and frontmatter problems in a plugin directory</td></tr></tbody></table></div>
-<p>The hooks themselves are documented in <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/share/hooks/README.md" target="_blank" rel="noopener noreferrer">src/hooks/README.md</a>.</p>
+<p>The hooks themselves are documented in <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/share/hooks/README.md" target="_blank" rel="noopener noreferrer">src/hooks/README.md</a>.</p>
 <h3 id="uninstalling">Uninstalling</h3>
 <p><strong>Plugin mode:</strong> <code>/plugin uninstall sdd-kit@sdd-kit</code> and the same for each add-on.</p>
 <p><strong>File-copy mode:</strong> there is no <code>--uninstall</code> flag. The manifest lists every file the kit
@@ -403,7 +403,7 @@ argument to <code>ship-feature</code> is treated as a new feature description.</
 <p><strong>Something else.</strong> Run <code>/framework-doctor</code>, then re-run the installer with <code>--dry-run</code> to see
 whether files have drifted from the manifest.</p>
   </article>
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/reference/installation.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/reference/installation.md">View the Markdown source</a></p>
 </main>
 <script>
   (function () {

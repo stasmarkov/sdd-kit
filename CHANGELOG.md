@@ -7,6 +7,28 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [4.0.1] - 2026-11-11
+
+Drupal projects on DDEV get the same quality gates, dev-URL rule and specialist agent as Laravel ones. Claude Code behaviour is unchanged apart from the files listed below. The Drupal path is covered by tests against a scripted `ddev`; a recorded run on a real DDEV project is still to come, so Drupal stays an early preview.
+
+### Added
+
+- **Adopt page.** The interactive guide gains `adopt.html`, the launch plan for bringing the kit to any project in levels 0 to 10 (goal, steps, done-when check and common failure each, with Laravel and Drupal examples, the checklist and the stuck table), linked from the Tech lead role. Its data is generated from `docs/adoption/launch-recipe.md` by `tools/gen-guide-adopt.mjs`, and `verify.sh` fails when it is stale.
+
+### Changed
+
+- **Drupal gates and DDEV hosts in 4.0.1.** Drupal gets the DDEV wrapper, five quality gates and the `drupal-backend-dev` agent; manifests gain `requires` lists, an object `requiresRunning`, `devUrlHosts` and overlay `extends`; the gate skills take their commands from `trust-store.mjs plan`; `/open-pr` checks `gh auth status` for the origin host.
+- **One dev-URL rule on every stack.** A run's `url` argument must now be a local dev URL (localhost, 127.0.0.1, [::1], *.localhost, *.test or *.ddev.site); any other value is ignored with a log line. `*.ddev.site` URLs are accepted on every stack.
+- **`/open-pr` render mode and non-GitHub origins.** `--render` (alias `--dry-run`) writes the PR body files and prints the push line and the host's next step without any gh call, commit or push. Bitbucket and GitLab origins render automatically (Bitbucket prints its create-PR URL, GitLab a push with merge-request options), other hosts use `gh auth status --hostname <host>`, and the base branch resolves without gh. Behaviour change: a github.com origin whose gh is missing or not authenticated now renders with a Warn row (`Fix: gh auth login`) instead of stopping with a Block.
+- **Gate planner matches the workflows.** `trust-store.mjs plan` fills `<pm>` and `<pmx>` from the repo's lockfile (with a notice when there is more than one), checks every `requires` path in one wrapped call within a 60-second limit, leaves gates with no `kind` out of `--kinds` and filters before probing, matches `unless` globs per path segment, and says so when key `other` has no gates. An extending overlay keeps the inherited wrapper fact, so its gates never run unwrapped.
+- **Overlay dev URLs and review.** A trusted overlay's `devUrl` is used only when it passes the dev-URL rule, and `/stack-trust` shows `devUrl`, `visual`, `acceptance`, `conventions` and `notes` before approval. `/open-pr` resolves SSH host aliases with `ssh -G`, so a `git@github-work:` origin keeps the GitHub flow.
+- **Spec board search box.** The search placeholder uses the themed muted colour (readable in dark mode) and a shorter text, and the spec count lines up with the Sort and Filters controls on narrow screens.
+- **DDEV skill names the Drupal wrapper.** The "Quality gates in a DDEV project" section of the `ddev` skill now covers the Laravel and Drupal manifests and the Drupal running check (`ddev describe -j`), and its HTTPS note covers `mkcert -install`, `*.ddev.site` dev URLs and the unsupported custom `project_tld`.
+
+### Fixed
+
+- **Plugin-mode rule templates.** GETTING-STARTED fetches only the core tests rule from `share/` and points to each add-on's `rules/` folder for the stack rules; the old `share/templates/rules/` URLs for the stack rules returned 404 since 3.0.
+
 ## [4.0.0] - 2026-11-10
 
 SDD Kit now runs on Codex and Cursor as well as Claude Code. Claude Code behaviour is unchanged apart from the files listed below. Upgrading: [Upgrading from 3.x to 4.0](https://github.com/stasmarkov/sdd-kit/blob/main/share/docs/INSTALLATION.md#upgrading-from-3x-to-40). Codex and Cursor ship as an **unverified preview**: they are tested in this repo's suites, not yet in recorded real-host sessions ([docs/hosts.md](https://github.com/stasmarkov/sdd-kit/blob/main/docs/reference/hosts.md)).

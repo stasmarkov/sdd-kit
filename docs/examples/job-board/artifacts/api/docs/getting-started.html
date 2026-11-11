@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../../../../../index.html">SDD Kit</a>
-    <span class="badge">v4.0.0</span>
+    <span class="badge">v4.0.1</span>
   </div>
   <div class="header-actions">
     <a class="btn" href="../../../../../index.html"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
@@ -75,7 +75,7 @@ php artisan migrate --pretend           # read the SQL before running a new migr
 <h3 id="troubleshooting">Troubleshooting</h3>
 <div class="table-wrap"><table><thead><tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr></thead><tbody><tr><td><code>/jobs</code> shows &quot;Jobs could not be loaded&quot;</td><td>API not running or <code>API_BASE_URL</code> missing</td><td>Start <code>php artisan serve --port=8000</code>; check <code>web/.env.local</code></td></tr><tr><td><code>Database file at path [...] does not exist</code></td><td>No SQLite file</td><td><code>touch database/database.sqlite</code></td></tr><tr><td>Tests change your dev data</td><td>Tests not using <code>phpunit.xml</code> env</td><td>Run <code>php artisan test</code>, not a custom runner pointing at <code>.env</code></td></tr></tbody></table></div>
   </article>
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/docs/examples/job-board/artifacts/api/docs/getting-started.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/examples/job-board/artifacts/api/docs/getting-started.md">View the Markdown source</a></p>
 </main>
 <script>
   (function () {

@@ -56,7 +56,7 @@ the spec belongs in `web/`, since the change starts and ends there. Neither `/sd
 ```
 
 `write-spec` sizes the work before investigating
-([write-spec Step 1](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/plugins/sdd-kit/skills/write-spec/SKILL.md)). Its investigation is
+([write-spec Step 1](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/skills/write-spec/SKILL.md)). Its investigation is
 what makes the size small. Everything the page needs is already shipped:
 
 ```text
@@ -239,7 +239,7 @@ Workflow({
   nothing in `api/` moved.
 
 The phases are the same as for an M spec
-([ship-feature reference](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/plugins/sdd-kit/skills/sdd/references/ship-feature.md)). They
+([ship-feature reference](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/skills/sdd/references/ship-feature.md)). They
 are just shorter:
 
 ```text
@@ -417,7 +417,7 @@ presentational. The cost is real. `formatSalary` has three branches of pure logi
 tests. Moving it to `lib/format-salary.ts` with a Vitest case would be the stricter alternative;
 chapter 10's QA plan lists the missing coverage.
 
-The `trivial` signal in [/sdd Step 2](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/plugins/sdd-kit/skills/sdd/SKILL.md) is "≤ ~5 files,
+The `trivial` signal in [/sdd Step 2](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/skills/sdd/SKILL.md) is "≤ ~5 files,
 no design choice, no behavior contract at risk". This is the same line `write-spec` draws as
 **XS**: "≤ ~3 files, one obvious change … **No spec.** Recommend `/simple-task`". Had Alex
 routed it as a feature, `write-spec` would have sized it XS and sent it back to this route.

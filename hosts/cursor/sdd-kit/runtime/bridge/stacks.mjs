@@ -6,7 +6,7 @@ import path from 'node:path'
 import { loadSkillScript } from './skill-script.mjs'
 import { markersIn } from '../lib/locate.mjs'
 
-const { COMMAND_FIELDS, canonicalJson, canonicalManifest, isFirstPartyAddonCopy, manifestHash, osHomeDir, pluginName, workflowRejection } = await loadSkillScript('stack-trust', 'trust-store.mjs')
+const { COMMAND_FIELDS, canonicalJson, canonicalManifest, isFirstPartyAddonCopy, manifestHash, mergeManifests, osHomeDir, pluginName, workflowRejection } = await loadSkillScript('stack-trust', 'trust-store.mjs')
 
 // The manifest checks do not depend on where a manifest sits, and the trust script's source labels name only
 // the canonical locations, so every host's manifest is checked under one neutral label.
@@ -56,11 +56,14 @@ export function readTrustedHashes(trustStoreDir, homeDir) {
  *
  * @param {{ workspace: string, host: object, homeDir: string, firstParty: Record<string, object> }} opts scope
  * @returns {{ source: string, file: string, addonDir: string|null, addonName: string|null, keys: string[], commands: string[],
- *   sha256: string|null, trusted: boolean, rejected?: string }[]} overlays
+ *   sha256: string|null, trusted: boolean, rejected?: string, extends?: Record<string, string>,
+ *   extendsStatus?: 'active'|'ignored'|'untrusted', notice?: string }[]} overlays; the extends fields only for an
+ *   overlay that declares extends (see applyExtends)
  */
 export function discoverOverlays({ workspace, host, homeDir, firstParty }) {
   const trusted = readTrustedHashes(host.trustStoreDir, homeDir)
   const out = []
+  const raws = new Map()
   const add = (source, file, addonDir, addonName) => {
     let raw
     try {
@@ -86,7 +89,12 @@ export function discoverOverlays({ workspace, host, homeDir, firstParty }) {
     const sha256 = manifestHash(parsed)
     const commands = []
     for (const e of entries) for (const f of COMMAND_FIELDS) if (f in e) leafStrings(e[f], commands)
-    out.push({ source, file, addonDir, addonName, keys: entries.map((e) => e.name), commands, sha256, trusted: trusted.has(sha256) })
+    const extending = entries.filter((e) => typeof e.extends === 'string')
+    out.push({
+      source, file, addonDir, addonName, keys: entries.map((e) => e.name), commands, sha256, trusted: trusted.has(sha256),
+      ...(extending.length ? { extends: Object.fromEntries(extending.map((e) => [e.name, e.extends])) } : {}),
+    })
+    raws.set(source, raw)
   }
   for (const f of listJson(path.join(workspace, host.stacksDir))) add(`project:${host.stacksDir}/${path.basename(f)}`, f, null, null)
   const addonsBase = path.join(workspace, host.stackAddonsDir)
@@ -104,7 +112,33 @@ export function discoverOverlays({ workspace, host, homeDir, firstParty }) {
     add(`plugin:${name}@inline`, path.join(dir, 'stack.json'), dir, name)
   }
   for (const f of listJson(path.join(homeDir, host.configDir, 'stacks'))) add(`user:~/${host.configDir}/stacks/${path.basename(f)}`, f, null, null)
-  return out
+  return applyExtends(out, raws, trusted)
+}
+
+/**
+ * Settles the overlays that declare `extends` with the workflows' own merge: a trusted one that wins its
+ * key is `active`; a trusted loser is `ignored`; an untrusted one is `untrusted`. Each non-active overlay
+ * carries the line the workflows log for it as `notice`. Overlays that extend nothing are left as they are.
+ * @param {object[]} overlays the discovered overlays
+ * @param {Map<string, string>} raws manifest text by source
+ * @param {Set<string>} trusted approved sha256 values
+ * @returns {object[]} the same overlays
+ */
+function applyExtends(overlays, raws, trusted) {
+  const extending = overlays.filter((o) => o.extends && o.sha256)
+  if (!extending.length) return overlays
+  // Neutral labels keep the merge independent of the host's directory names; the index preserves discovery order.
+  const labels = extending.map((o, i) => `plugin:extends-${String(i).padStart(3, '0')}@inline`)
+  const merged = mergeManifests(extending.map((o, i) => ({ source: labels[i], raw: raws.get(o.source) })), [...trusted])
+  const back = (text) => labels.reduce((t, label, i) => t.split(label).join(extending[i].source), text)
+  const logged = (label) => merged.logs.find((line) => line.startsWith(`${label} `) || line.startsWith(`Stack manifest ignored: ${label} `))
+  extending.forEach((o, i) => {
+    const label = labels[i]
+    const status = merged.ignored.some((x) => x.source === label) ? 'ignored' : merged.untrusted.some((u) => u.source === label) ? 'untrusted' : 'active'
+    const line = status === 'active' ? null : logged(label)
+    Object.assign(o, { extendsStatus: status }, line ? { notice: back(line) } : {})
+  })
+  return overlays
 }
 
 /**

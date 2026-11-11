@@ -25,7 +25,7 @@
     {
       "name": "sdd-kit-drupal",
       "source": "hosts/cursor/sdd-kit-drupal",
-      "description": "Drupal 11 add-on: drupal-11 skill with module scaffolding."
+      "description": "Drupal 11 add-on: drupal-backend-dev agent, drupal-11 skill with module scaffolding and the Drupal stack manifest."
     },
     {
       "name": "sdd-kit-ios",

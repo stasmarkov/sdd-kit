@@ -672,6 +672,8 @@ export class Engine {
         sha256: o.sha256,
         trusted: o.trusted,
         ...(o.rejected ? { rejected: o.rejected } : {}),
+        ...(o.extends ? { extends: o.extends, extendsStatus: o.extendsStatus } : {}),
+        ...(o.notice ? { notice: o.notice } : {}),
       })),
     }
   }

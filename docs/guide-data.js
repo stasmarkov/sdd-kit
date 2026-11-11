@@ -5,7 +5,7 @@
 // text: renderers set it with textContent.
 window.GUIDE = {
   product: 'SDD Kit',
-  version: '4.0.0',
+  version: '4.0.1',
   repo: 'https://github.com/stasmarkov/sdd-kit',
   tagline: 'One front door, fixed pipelines, verified outcomes.',
   promise: 'Write down what "done" means, let the agent build it through gates, and approve the result as a human.',
@@ -77,7 +77,7 @@ window.GUIDE = {
         { text: 'Preview from your project root', code: 'npx github:stasmarkov/sdd-kit install --project --dry-run' },
         { text: 'Install', code: 'npx github:stasmarkov/sdd-kit install --project' },
       ],
-      note: 'You need Claude Code, git, jq, Node 18+ and Google Chrome (or Chromium selected with --browser chromium, see the README\'s MCP servers section). Without jq the guardrail hooks cannot read their input; without a browser, browser checks report "not run". Run it from your project root; it uses the same install.sh as a clone, so every flag works, and also needs bash. Add #v4.0.0 after the repo name to pin a release. The package is not published to npm.',
+      note: 'You need Claude Code, git, jq, Node 18+ and Google Chrome (or Chromium selected with --browser chromium, see the README\'s MCP servers section). Without jq the guardrail hooks cannot read their input; without a browser, browser checks report "not run". Run it from your project root; it uses the same install.sh as a clone, so every flag works, and also needs bash. Add #v4.0.1 after the repo name to pin a release. The package is not published to npm.',
     },
     flags: [
       { flag: '--project | --user', meaning: 'Install into ./.claude or ~/.claude' },
@@ -140,7 +140,7 @@ window.GUIDE = {
       { label: 'Snapshot', code: 'npx github:stasmarkov/sdd-kit spec-board --out /tmp/spec-board.html' },
       { label: 'Split repos', code: 'npx github:stasmarkov/sdd-kit spec-board api/.ai/specs web/.ai/specs --serve' },
     ],
-    note: 'The npx form needs Node 18+ and git, and works in any repo that has .ai/specs. Add #v4.0.0 after the repo name to pin a release. The package is not published to npm.',
+    note: 'The npx form needs Node 18+ and git, and works in any repo that has .ai/specs. Add #v4.0.1 after the repo name to pin a release. The package is not published to npm.',
     exampleHref: 'example-board.html',
   },
 
@@ -153,7 +153,7 @@ window.GUIDE = {
   stacks: {
     now: 'Laravel API + Next.js',
     roadmap: 'Symfony and Java as first-class stacks, and Drupal and Swift beyond their early previews; add your own with /new-stack',
-    href: 'https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/README.md',
+    href: 'https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/README.md',
   },
 
   routes: [
@@ -326,12 +326,13 @@ window.GUIDE = {
   roles: [
     { role: 'New to Claude Code', focus: 'Read the primer, install the kit, run /write-docs --type=all in your Laravel + Next.js project (new product: /product-brief), then run /sdd on a small ticket, then read Hireboard chapter 04 to see a whole feature go through the kit.' },
     { role: 'Developer', focus: 'Start every piece of work with /sdd; keep CLAUDE.md short; promote repeated mistakes into rules, skills, or hooks with /learn.' },
-    { role: 'Tech lead', focus: 'Pin the plugin version, review specs before implementation, keep CI gates identical to local gates, rerun evals on upgrades.' },
+    { role: 'Tech lead', focus: 'Roll the kit out level by level with the Adopt page, pin the plugin version, review specs before implementation, keep CI gates identical to local gates, rerun evals on upgrades.', label: 'Adopt: the launch plan', href: 'adopt.html' },
     { role: 'PM / client', focus: 'Read and approve spec-lite.md — one page in plain language. Open the spec board to see what awaits approval. Ask for the stakeholder output style for summaries.' },
     { role: 'QA', focus: 'qa-and-docs turns shipped code and acceptance criteria into a traceable test plan.' },
   ],
 
   links: [
+    { label: 'Adopt: launch plan', href: 'adopt.html' },
     { label: 'Getting started', href: 'reference/getting-started.html' },
     { label: 'Installation & upgrade', href: 'reference/installation.html' },
     { label: 'Playwright in plugin mode', href: 'reference/installation.html#playwright-in-plugin-mode' },
@@ -339,7 +340,7 @@ window.GUIDE = {
     { label: 'Usage examples', href: 'reference/usage-examples.html' },
     { label: 'Worked example: Hireboard', href: 'examples/job-board/README.html' },
     { label: 'Example spec board', href: 'example-board.html' },
-    { label: 'Spec board skill', href: 'https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/plugins/sdd-kit/skills/spec-board/SKILL.md' },
+    { label: 'Spec board skill', href: 'https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/skills/spec-board/SKILL.md' },
     { label: 'Plugin mode', href: 'reference/plugin-mode.html' },
     { label: 'Multi-repo', href: 'reference/multi-repo.html' },
     { label: 'Model tiers', href: 'reference/effort-guidelines.html' },

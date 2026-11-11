@@ -229,7 +229,7 @@ previews and `npx github:stasmarkov/sdd-kit install --project` installs; every
 the same `install.sh` as a clone, so the result is identical, and it needs bash, git, jq and
 Node 18+. On Windows use Git Bash or WSL, or the plugin.
 
-Add `#v4.0.0` to pin a release (`npx github:stasmarkov/sdd-kit#v4.0.0 install --project`);
+Add `#v4.0.1` to pin a release (`npx github:stasmarkov/sdd-kit#v4.0.1 install --project`);
 without a tag npx fetches the default branch. npx caches the download. The package is not
 published to npm.
 
@@ -466,7 +466,7 @@ them up first. It only removes a file whose content matches a copy the kit shipp
 edited or replaced (for example an upstream Stripe or skill-creator skill installed at the same
 path) is listed as "kept (modified or not from the kit)" and left for you to review.
 
-The tables below match the CHANGELOG's [Migrating from 1.x](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/CHANGELOG.md#migrating-from-1x) section. They list what a 1.x release shipped; components that were added and removed again during the 2.0 cycle appear only in the CHANGELOG's *Removed* table.
+The tables below match the CHANGELOG's [Migrating from 1.x](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/CHANGELOG.md#migrating-from-1x) section. They list what a 1.x release shipped; components that were added and removed again during the 2.0 cycle appear only in the CHANGELOG's *Removed* table.
 Current lists: [skills](skills.md),
 [agents](agents.md).
 
@@ -613,7 +613,7 @@ frontmatter). The installer already removes the `knowledge-graph-manager` and
 | `/plugin` → **Errors** tab | Plugin components that failed to load (plugin mode) |
 | `claude plugin validate <path>` | Manifest and frontmatter problems in a plugin directory |
 
-The hooks themselves are documented in [src/hooks/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.0/share/hooks/README.md).
+The hooks themselves are documented in [src/hooks/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/share/hooks/README.md).
 
 ## Uninstalling
 

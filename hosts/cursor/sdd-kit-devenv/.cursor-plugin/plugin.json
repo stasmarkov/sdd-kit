@@ -1,6 +1,6 @@
 {
   "name": "sdd-kit-devenv",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Dev-environment add-on: docker and ddev skills, plus an optional DDEV MCP entry. Not tied to a stack.",
   "displayName": "SDD Kit devenv",
   "author": {

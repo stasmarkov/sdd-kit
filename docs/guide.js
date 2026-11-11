@@ -1485,7 +1485,9 @@
       h('label', { class: 'search' }, h('span', { class: 'sr-only' }, 'Search troubleshooting by symptom'), helpInput),
       helpCards,
       h('h3', 'By role'),
-      h('div', { class: 'roles' }, G.roles.map(function (r) { return h('div', { class: 'role' }, h('h4', r.role), para(r.focus)); }))
+      h('div', { class: 'roles' }, G.roles.map(function (r) {
+        return h('div', { class: 'role' }, h('h4', r.role), para(r.focus), r.href ? h('p', plain(r.href, r.label || r.href, 'inline')) : null);
+      }))
     ]);
     renderHelpCards();
     done('help');

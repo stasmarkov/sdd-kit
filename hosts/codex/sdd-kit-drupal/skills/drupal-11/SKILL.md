@@ -287,6 +287,27 @@ $nids = $query->execute();
 $nodes = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($nids);
 ```
 
+## Gate setup
+
+The workflow gates run only when the project has what they need; a missing piece is reported as a skip, never a failure. In a DDEV project the gates run as `ddev exec <command>` and need the project running (`ddev start`).
+
+1. Allow the Composer plugins before the require, in `composer.json` under `config.allow-plugins`: `dealerdirect/phpcodesniffer-composer-installer` and `phpstan/extension-installer`.
+2. `composer require --dev drupal/core-dev` and `drush/drush`. This brings coder, PHPStan with phpstan-drupal, and PHPUnit.
+3. Add a `phpstan.neon` at the repo root. Do not set `drupal_root`; phpstan-drupal finds it.
+4. Optional: a root `phpunit.xml` for project-specific test settings.
+5. For Kernel and Functional tests, set the environment once and restart: `ddev config --web-environment-add="SIMPLETEST_DB=mysql://db:db@db/db,SIMPLETEST_BASE_URL=http://web"`, then `ddev restart`.
+
+| Gate | Skip text | Setup that clears it |
+|------|-----------|----------------------|
+| PHPCS | `skipped — <ruleset file> present` | Intended: the project ruleset gate runs instead |
+| PHPCS | `not run (requires vendor/drupal/coder; vendor/squizlabs/php_codesniffer/CodeSniffer.conf; web/modules/custom)` | Steps 1 and 2, and create `web/modules/custom` |
+| PHPCS (project ruleset) | `not run (requires one of phpcs.xml, phpcs.xml.dist, .phpcs.xml, .phpcs.xml.dist; vendor/bin/phpcs)` | Add a ruleset file, or ignore: the default PHPCS gate covers the project |
+| PHPStan | `not run (requires one of phpstan.neon, phpstan.neon.dist, phpstan.dist.neon; vendor/bin/phpstan)` | Steps 2 and 3 |
+| PHPUnit | `skipped — <config file> present` | Intended: the project config gate runs instead |
+| PHPUnit | `not run (requires vendor/bin/phpunit; web/core/phpunit.xml.dist; web/modules/custom)` | Step 2, and create `web/modules/custom` |
+| PHPUnit (project config) | `not run (requires one of phpunit.xml, phpunit.xml.dist; vendor/bin/phpunit)` | Step 4, or ignore: the default PHPUnit gate covers the project |
+| any | `not run (ddev not running)` | `ddev start`, then re-run |
+
 ## Scaffolding
 
 ```bash
