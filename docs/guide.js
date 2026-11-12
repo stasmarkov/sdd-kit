@@ -67,7 +67,7 @@
   var tocList = document.getElementById('toc-list');
   var linkFor = {};
   sections.forEach(function (section) {
-    var heading = section.querySelector('h1, h2');
+    var heading = section.querySelector('h1, h2, h3');
     var li = document.createElement('li');
     var a = document.createElement('a');
     a.href = '#' + section.id;
@@ -97,6 +97,17 @@
     sections.forEach(function (s) { spy.observe(s); });
   }
   if (sections.length) setCurrent(sections[0].id);
+
+  // The header sizes to its content and wraps onto extra rows on narrow screens. --header-h
+  // offsets the TOC sheet, scrim and anchor targets below it; the header itself never reads it.
+  var siteHeader = document.querySelector('.site-header');
+  function syncHeaderOffset() {
+    var h = siteHeader ? Math.ceil(siteHeader.getBoundingClientRect().height) : 0;
+    if (h) document.documentElement.style.setProperty('--header-h', h + 'px');
+  }
+  if (siteHeader && typeof ResizeObserver === 'function') new ResizeObserver(syncHeaderOffset).observe(siteHeader);
+  else window.addEventListener('resize', syncHeaderOffset);
+  syncHeaderOffset();
 
   // Mobile menu: the TOC opens as a sheet below 1024 px
   var menuButton = document.getElementById('menu-button');
@@ -191,7 +202,7 @@
     el.textContent = '';
     append(el, Array.isArray(kids) ? kids : [kids]);
   }
-  function body(id) { return $(id).querySelector('.section-body'); }
+  function body(id) { return $(id).querySelector(':scope > .section-body'); }
   function done(id) { rendered.push(id); }
   function pad2(n) { return String(n).padStart(2, '0'); }
   function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
@@ -255,6 +266,10 @@
   function routeById(id) { return G.routes.filter(function (r) { return r.id === id; })[0]; }
   function workflowByName(n) { return C.workflows.filter(function (w) { return w.name === n; })[0]; }
   function itemByName(list, n) { return list.filter(function (x) { return x.name === n; })[0]; }
+  function addonBlurb(name) {
+    var a = (C.addons || []).filter(function (x) { return x.name === name; })[0];
+    return a ? a.description : '';
+  }
   function addonShips(name) { return name.replace(/^sdd-kit-/, '') + ' plugin'; }
   function catLabel(c) { return c && c !== 'skills' ? c : 'uncategorized'; }
   function routeKind(r) { return /workflow/.test(r.launches) ? 'workflow' : 'skill'; }
@@ -469,7 +484,7 @@
       meta.push(h('dt', 'Model'), h('dd', chip(it.model || '—', 'agent')), h('dt', 'Effort'), h('dd', it.effort || 'not set'));
     }
     var out = [para(it.description), h('h3', 'Details'), h('dl', { class: 'meta-grid' }, meta)];
-    if (addon && host === HOSTS.default) out.push(h('h3', 'Add-on'), para(addon.what, 'muted'), codeBlock('/plugin install ' + addon.name + '@sdd-kit', 'install command for ' + addon.name));
+    if (addon && host === HOSTS.default) out.push(h('h3', 'Add-on'), para(addonBlurb(addon.name), 'muted'), codeBlock('/plugin install ' + addon.name + '@sdd-kit', 'install command for ' + addon.name));
     if (type === 'skill') {
       var routes = G.routes.filter(function (r) { return routeLinks(r).skills.indexOf(it) !== -1; });
       if (routes.length) out.push(h('h3', 'Reached from /sdd'), routeButtons(routes));
@@ -487,32 +502,8 @@
     if (G.stacks) {
       fill($('stack-note'), ['Supported stacks: ' + G.stacks.now + '. ', 'Next on the ', plain(G.stacks.href, 'roadmap', 'inline'), ': ' + G.stacks.roadmap + '.']);
     }
+    fill($('signposts'), G.signposts.map(function (x) { return h('li', plain(x.href, x.label, 'linkbtn')); }));
     done('start');
-  }
-
-  /* ---------- Primer ---------- */
-  function renderPrimer() {
-    var pr = G.primer, out = [];
-    if (!pr) { $('primer').hidden = true; done('primer'); return; }
-    out.push(para(pr.what));
-    out.push(h('h3', 'Install Claude Code'), h('div', { class: 'stack-gap' }, pr.install.map(function (i) { return labeled(i.label, i.code); })));
-    if (pr.installNote) out.push(para(pr.installNote, 'note'));
-    out.push(h('h3', 'Your first session'), h('ol', { class: 'do-list' }, pr.firstSession.map(function (f) {
-      return h('li', h('b', f.do), h('span', f.how));
-    })));
-    out.push(h('h3', 'Words you will meet'), h('dl', { class: 'gloss' }, pr.glossary.map(function (g) {
-      return h('div', h('dt', g.term), h('dd', g.meaning, h('br'), 'In the kit: ', h('code', g.kitExample)));
-    })));
-    var docs = pr.docs || [{ label: 'Claude Code docs', href: pr.docsHref }];
-    out.push(h('h3', 'Official docs'), h('div', { class: 'linkrow' }, docs.map(function (d) {
-      return h('a', { class: 'linkbtn', href: d.href, rel: 'noopener' }, d.label + ' ↗');
-    })));
-    var first = E ? E.chapters.filter(function (c) { return c.route === 'feature'; })[0] : null;
-    out.push(h('h3', 'Next'), para(pr.next), h('div', { class: 'linkrow' },
-      plain('#install', 'Install the kit'), plain('#after', 'After /sdd'),
-      first ? plain('#example/' + first.n, E.product + ' chapter ' + first.n) : null));
-    fill(body('primer'), out);
-    done('primer');
   }
 
   /* ---------- Host selector ---------- */
@@ -636,6 +627,7 @@
         return h('div', { class: 'istep' }, h('span', h('b', pad2(i + 1)), s.text), codeBlock(s.code, s.text));
       });
       out.push(para(m.note, 'note'));
+      if (m.href) out.push(h('p', { class: 'note' }, plain(m.href, m.hrefLabel, 'inline'), '.'));
       if (mode === 'file-copy' && installFlags().length) {
         out.push(h('table', { class: 'flags' }, h('caption', { class: 'sr-only' }, 'Installer flags'),
           h('thead', h('tr', h('th', { scope: 'col' }, 'Flag'), h('th', { scope: 'col' }, 'Meaning'))),
@@ -839,7 +831,7 @@
       h('h3', p.title),
       h('div', { class: 'chips' }, chip(p.who, p.accent ? 'you' : whoKind(p.who)), p.accent ? chip('human checkpoint', 'you') : null),
       para(p.text),
-      p.href ? h('p', { class: 'note' }, 'How manifests are checked and approved: ', plain(p.href, 'stack manifest', 'inline'), '.') : null,
+      p.href ? h('p', { class: 'note' }, 'How the spec is checked before approval: ', plain(p.href, 'spec lint', 'inline'), '.') : null,
       p.id === 'acceptance' && G.browser ? para(G.browser, 'note') : null,
       p.id === 'docs' && A ? h('p', { class: 'note' }, 'Next: ', plain('#after', 'after /sdd', 'inline'), ', ' + A.intro) : null),
       h('div', { class: 'hint' }, (i + 1) + ' / ' + P.length)];
@@ -919,131 +911,26 @@
     return true;
   }
 
-  /* ---------- Spec anatomy ---------- */
-  var S = G.spec;
-  var specLite = 'spec-lite.md';
-  var specTasks = 'tasks.md';
-  var specNodes = {};
-  var specSize = 1;
-  var specSel = 'spec-lite';
-  var specTree, specDetail, specSizes;
-  function buildSpecNodes() {
-    var qsApprove = G.quickstart.filter(function (q) { return q.code.indexOf(specLite) !== -1; })[0];
-    var execStage = P.filter(function (p) { return p.id === 'execute'; })[0];
-    var liteMeaning = (P.filter(function (p) { return p.accent; })[0] || {}).text || '';
-    var fullSet = S.sizes.filter(function (z) { return /Full set/.test(z.artifacts); })[0];
-    var extras = fullSet ? fullSet.artifacts.replace(/^Full set:\s*\+\s*/, '').replace(/\s+—.*$/, '') : '';
-    specNodes.folder = { title: S.folder, crumb: S.folder, paras: [S.naming] };
-    specNodes['spec-lite'] = { title: specLite, crumb: S.folder + specLite, file: specLite, paras: [qsApprove && qsApprove.text, liteMeaning], preview: true };
-    S.frontmatter.forEach(function (f, i) {
-      specNodes['fm-' + i] = { title: f.key, crumb: S.folder + specLite + ' › frontmatter', file: specLite, paras: [f.meaning], preview: true };
-    });
-    S.sections.forEach(function (sec, i) {
-      specNodes['sec-' + i] = {
-        title: sec.name, crumb: S.folder + specLite + ' › ## ' + sec.name, file: specLite, paras: [sec.meaning],
-        quote: /Acceptance/.test(sec.name) ? S.example : null, preview: true
-      };
-    });
-    specNodes.tasks = { title: specTasks, crumb: S.folder + specTasks, file: specTasks, paras: [execStage && execStage.text] };
-    if (extras) specNodes.extras = { title: extras, crumb: S.folder + '…', file: 'extras', paras: [fullSet.artifacts], label: extras };
-  }
-  function fileExists(file) {
-    var a = S.sizes[specSize].artifacts;
-    if (/^No spec/.test(a)) return false;
-    if (/Full set/.test(a)) return true;
-    return file === 'extras' ? false : a.indexOf(file) !== -1;
-  }
-  function renderSizes() {
-    fill(specSizes, [h('span', { class: 'lbl' }, 'Size')].concat(S.sizes.map(function (z, i) {
-      return h('button', {
-        type: 'button', class: 'chip', 'aria-pressed': String(i === specSize),
-        onclick: function () { specSize = i; renderSizes(); renderSpecTree(); renderSpecDetail(); }
-      }, z.size);
-    })));
-  }
-  function treeButton(id, glyph, label) {
-    return h('button', { type: 'button', 'data-node': id, 'aria-current': String(specSel === id), onclick: function () { selectSpec(id, true); } },
-      h('span', { class: 'gl', 'aria-hidden': 'true' }, glyph), label);
-  }
-  function renderSpecTree() {
-    var exL = fileExists(specLite), exT = fileExists(specTasks), exE = fileExists('extras');
-    var absent = function (ok) { return ok ? null : 'absent'; };
-    var inner = [
-      h('li', { class: absent(exL) }, treeButton('spec-lite', '§', specLite), h('ul',
-        h('li', { class: 'grp' }, 'frontmatter'),
-        S.frontmatter.map(function (f, i) { return h('li', { class: absent(exL) }, treeButton('fm-' + i, '·', f.key)); }),
-        h('li', { class: 'grp' }, 'sections'),
-        S.sections.map(function (sec, i) { return h('li', { class: absent(exL) }, treeButton('sec-' + i, '#', sec.name)); }))),
-      h('li', { class: absent(exT) }, treeButton('tasks', '☐', specTasks)),
-      specNodes.extras ? h('li', { class: absent(exE) }, treeButton('extras', '+', specNodes.extras.label)) : null
-    ];
-    fill(specTree, h('li', treeButton('folder', '▾', S.folder), h('ul', inner)));
-    var btns = Array.prototype.slice.call(specTree.querySelectorAll('[data-node]'));
-    btns.forEach(function (b, i) {
-      b.addEventListener('keydown', function (e) {
-        var n = e.key === 'ArrowDown' ? i + 1 : e.key === 'ArrowUp' ? i - 1 : null;
-        if (n !== null && btns[n]) { e.preventDefault(); btns[n].focus(); }
-      });
-    });
-  }
-  function selectSpec(id, updateHash) {
-    if (!specNodes[id]) return false;
-    specSel = id;
-    Array.prototype.slice.call(specTree.querySelectorAll('[data-node]')).forEach(function (b) {
-      b.setAttribute('aria-current', String(b.getAttribute('data-node') === id));
-    });
-    renderSpecDetail();
-    if (updateHash) setHash('spec/' + id);
-    return true;
-  }
-  function renderSpecDetail() {
-    var n = specNodes[specSel], z = S.sizes[specSize];
-    var out = [h('div', { class: 'crumb' }, n.crumb), h('h3', n.title)];
-    (n.paras || []).forEach(function (t) { if (t) out.push(para(t)); });
-    if (n.quote) out.push(h('blockquote', { class: 'ac' }, n.quote));
-    if (n.file && !fileExists(n.file)) out.push(para('Not created at size ' + z.size + ': ' + z.artifacts + '.', 'note'));
-    if (n.preview) {
-      var line = function (id, kids, tab) {
-        return h('button', { type: 'button', 'aria-current': String(specSel === id), tabindex: tab === false ? '-1' : null, onclick: function () { selectSpec(id, true); } }, kids);
-      };
-      out.push(h('div', { class: 'filecard', role: 'group', 'aria-label': specLite + ' outline' },
-        line('spec-lite', h('span', { class: 'c' }, '---')),
-        S.frontmatter.map(function (f, i) { return line('fm-' + i, [h('span', { class: 'k' }, f.key + ':'), '  ', h('span', { class: 'c' }, '# ' + f.meaning)]); }),
-        line('spec-lite', h('span', { class: 'c' }, '---'), false),
-        S.sections.map(function (sec, i) { return line('sec-' + i, h('span', { class: 'hd' }, '## ' + sec.name)); })));
-    }
-    out.push(h('h4', 'Which files exist by size'), h('dl', { class: 'meta-grid' }, S.sizes.map(function (s) { return [h('dt', s.size), h('dd', { class: 'muted' }, s.artifacts)]; })));
-    fill(specDetail, out);
-  }
+  /* ---------- Spec card ---------- */
   function renderSpec() {
-    buildSpecNodes();
-    specSizes = h('div', { class: 'sizes', role: 'group', 'aria-label': 'Spec size' });
-    specTree = h('ul', { class: 'tree', 'aria-label': 'Spec folder' });
-    specDetail = h('div', { class: 'spec-detail', 'aria-live': 'polite' });
-    var intro = h('p', { class: 'note' }, 'Size decides which files exist. Select any file, frontmatter key, or section to see what it means. ');
+    var S = G.spec;
     var real = E && E.specAnatomy.length ? specByKey(E.specAnatomy[0].from) : null;
-    if (real) intro.appendChild(openLink('See a real one: ' + real.shortId + ', section by section', 'spec/' + real.key));
-    append(body('spec'), [intro, h('div', { class: 'spec-grid' }, h('div', { class: 'spec-tree' }, specSizes, specTree), specDetail)]);
-    renderSizes();
-    renderSpecTree();
-    renderSpecDetail();
+    append(body('spec'), [
+      h('p', h('code', S.folder)),
+      para(S.naming),
+      h('dl', { class: 'meta-grid' }, S.sizes.map(function (z) { return [h('dt', z.size), h('dd', { class: 'muted' }, z.artifacts)]; })),
+      h('p', { class: 'note' }, plain(S.href, S.label, 'inline'), real ? ' · ' : null,
+        real ? openLink('See a real one: ' + real.shortId + ', section by section', 'spec/' + real.key) : null)
+    ]);
     done('spec');
   }
 
   /* ---------- Hooks ---------- */
   function renderHooks() {
+    var k = G.hooksSummary;
     append(body('hooks'), [
-      para('Hooks run automatically. Verify they fire with /framework-doctor.', 'note'),
-      h('ul', { class: 'tl-legend' },
-        h('li', h('i', { class: 'f-pre' }), 'before a tool runs'),
-        h('li', h('i', { class: 'f-post' }), 'after a tool runs'),
-        h('li', h('i', { class: 'f-session' }), 'prompt, stop, and session events')),
-      h('ol', { class: 'timeline' }, G.hooks.map(function (k) {
-        var parts = k.event.split(' · ');
-        var fam = /^PreToolUse/.test(k.event) ? 'f-pre' : /^PostToolUse/.test(k.event) ? 'f-post' : 'f-session';
-        var tool = /ToolUse/.test(parts[0]);
-        return h('li', { class: fam }, h('div', { class: 'ev' }, tool ? parts[0] : parts.join(' · '), tool ? h('small', parts.slice(1).join(' · ')) : null), para(k.does));
-      }))
+      para(k.text),
+      h('p', { class: 'note' }, 'Verify they fire with /framework-doctor. ', plain(k.href, 'Hooks reference', 'inline'), '.')
     ]);
     done('hooks');
   }
@@ -1051,7 +938,7 @@
   /* ---------- Workflows (direct), more commands, add-ons ---------- */
   function renderWorkflowsDirect() {
     var w = G.workflowsDirect;
-    append(body('workflows-direct'), [para(w.text), h('div', { class: 'stack-gap' }, w.examples.map(function (x) { return labeled(x.label, x.code); }))]);
+    append(body('workflows-direct'), [h('p', w.text + ' ', plain(w.href, w.label, 'inline'), '.')]);
     done('workflows-direct');
   }
   var catState = { tab: 'skills', q: '', ships: '', invoke: '', model: '' };
@@ -1065,9 +952,14 @@
       G.addonsNote ? para(G.addonsNote, 'note') : null,
       trust ? h('p', { class: 'note' }, trust.text + ' ', plain(trust.href, trust.label, 'inline')) : null
     ];
-    fill($('addons'), notes.concat(G.addons.map(function (a) {
+    // Cards follow the marketplace order (CATALOG.addons, D-24); guide-data adds install commands and skills
+    var byName = {};
+    G.addons.forEach(function (a) { byName[a.name] = a; });
+    var ordered = (C.addons || []).map(function (c) { return byName[c.name]; }).filter(Boolean);
+    G.addons.forEach(function (a) { if (ordered.indexOf(a) === -1) ordered.push(a); });
+    fill(body('addons'), notes.concat(ordered.map(function (a) {
       var count = C.skills.concat(C.agents).filter(function (x) { return x.ships === addonShips(a.name); }).length;
-      return h('div', { class: 'addon-card' }, h('h4', a.name), para(a.what),
+      return h('div', { class: 'addon-card' }, h('h4', a.name), para(addonBlurb(a.name)),
         h('div', { class: 'linkrow' }, a.skills.map(function (s) { return itemByName(C.skills, s) ? openLink(s, 'skill/' + s) : chip(s); })),
         count ? h('button', {
           type: 'button', class: 'btn',
@@ -1084,6 +976,7 @@
         }, 'View ' + count + ' in catalog') : null);
     })));
     done('everyday');
+    done('addons');
   }
 
   /* ---------- Hireboard example ---------- */
@@ -1483,11 +1376,7 @@
     helpCards = h('div', { class: 'tcards', 'aria-live': 'polite' });
     append(body('help'), [
       h('label', { class: 'search' }, h('span', { class: 'sr-only' }, 'Search troubleshooting by symptom'), helpInput),
-      helpCards,
-      h('h3', 'By role'),
-      h('div', { class: 'roles' }, G.roles.map(function (r) {
-        return h('div', { class: 'role' }, h('h4', r.role), para(r.focus), r.href ? h('p', plain(r.href, r.label || r.href, 'inline')) : null);
-      }))
+      helpCards
     ]);
     renderHelpCards();
     done('help');
@@ -1519,6 +1408,7 @@
    * and kind 'none' means the hash names nothing on this page.
    */
   function plan(raw) {
+    var LEGACY_SECTIONS = { primer: 'start' };
     var r = parseHash(raw), head = r.head, rest = r.rest;
     if (!head || head === 'top') return { kind: 'top', section: 'start' };
     if (head === 'route') return { kind: 'route', id: rest, section: 'map', ok: !!routeById(rest) };
@@ -1535,7 +1425,7 @@
     if (head === 'spec') {
       var sp = specByKey(rest);
       if (sp) return { kind: 'spec', id: sp.key, section: 'board', ok: true };
-      return { kind: 'anatomy', id: rest, section: 'spec', ok: !rest || !!specNodes[rest] };
+      return { kind: 'section', section: 'spec', ok: true };
     }
     if (head === 'workflow') return { kind: 'workflow', id: rest, section: 'map', ok: !!workflowByName(rest) };
     if (head === 'skill' || head === 'agent') return { kind: head, id: rest, section: 'catalog', ok: !!itemByName(head === 'skill' ? C.skills : C.agents, rest) };
@@ -1548,6 +1438,7 @@
     }
     if (head === 'install') return { kind: 'install', id: rest, section: 'install', ok: !rest || hasInstMode(rest) };
     if (head === 'help') return { kind: 'help', q: r.params.q || '', section: 'help', ok: true };
+    if (Object.prototype.hasOwnProperty.call(LEGACY_SECTIONS, head)) return { kind: 'section', section: LEGACY_SECTIONS[head], ok: true };
     if ($(head)) return { kind: 'section', section: head, ok: true };
     return { kind: 'none', ok: false };
   }
@@ -1580,7 +1471,6 @@
       renderFilters();
       renderGroups();
     } else if (p.kind === 'pipeline' && p.index !== -1) selectStage(p.index, false);
-    else if (p.kind === 'anatomy' && p.id) selectSpec(p.id, false);
     else if (p.kind === 'install' && p.id) renderInstall.select(p.id, false);
     else if (p.kind === 'help') { helpInput.value = p.q; renderHelpCards(); }
   }
@@ -1602,7 +1492,7 @@
     rendered.forEach(function (id) {
       var section = $(id);
       if (!section) return;
-      var heading = section.querySelector && section.querySelector('h1, h2');
+      var heading = section.querySelector && section.querySelector('h1, h2, h3');
       var lede = section.querySelector && section.querySelector('.lede');
       var title = heading && heading.textContent ? heading.textContent : id;
       add('section', id, title, lede && lede.textContent, '#' + id);
@@ -1772,7 +1662,6 @@
   }
 
   renderHero();
-  renderPrimer();
   renderInstall();
   renderQuickstart();
   renderPicker();
@@ -1780,9 +1669,11 @@
   renderPipeline();
   renderAfter();
   renderSpec();
+  done('routes');
   renderHooks();
   renderWorkflowsDirect();
   renderEveryday();
+  done('commands');
   if (E) { renderExample(); renderBoard(); } else { dropSection('example'); dropSection('board'); }
   renderCatalog();
   renderHelp();

@@ -23,13 +23,20 @@
     <a class="brand-name" href="index.html">SDD Kit</a>
     <span class="badge" id="version"></span>
   </div>
+  <nav class="site-nav" aria-label="Site">
+    <ul>
+      <li><a href="index.html">Guide</a></li>
+      <li><a href="adopt.html" aria-current="page">Adopt</a></li>
+      <li><a href="reference/index.html">Reference</a></li>
+      <li><a href="index.html#example">Example</a></li>
+    </ul>
+  </nav>
   <div class="header-actions">
-    <a class="btn" href="index.html" aria-label="Back to the guide"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
     <label class="host-select"><span class="btn-label">Host</span> <select id="host-select" class="btn" aria-label="Host"></select></label>
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main adopt-main">
+<main id="content" class="doc-main adopt-main" tabindex="-1">
   <article class="doc-body" id="adopt" aria-labelledby="adopt-h">
     <p class="kicker">Adopt</p>
     <h1 id="adopt-h">Launch AI-assisted development on any project</h1>
@@ -46,7 +53,7 @@
   </article>
 </main>
 <footer class="site-footer">
-  <div>This page is generated from the kit's launch recipe (<code>docs/adoption/launch-recipe.md</code>). Back to the <a href="index.html">interactive guide</a>, or see <a href="index.html#help">When something is off</a>.</div>
+  <div>Back to the <a href="index.html">interactive guide</a>, or see <a href="index.html#help">Help</a> when something is off.</div>
 </footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="host-data.js"></script>

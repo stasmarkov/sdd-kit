@@ -2,9 +2,9 @@
 
 What to type for each kind of work in SDD Kit, and what you get back.
 
-See every route used on one project: the [Hireboard worked example](../examples/job-board/README.md).
+See the routes used on one project in the [Hireboard worked example](../examples/job-board/README.md).
 
-Start with `/sdd` unless you already know you want a specific skill. It classifies the request, confirms the route with you, collects every input up front, and launches one fixed pipeline. The route tree itself is in the [README](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/README.md); this page shows each route in practice.
+Start with `/sdd` unless you already know you want a specific skill. It classifies the request, confirms the route with you, collects every input up front, and launches one fixed pipeline. The route tree itself is in the [README](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/README.md); this page shows each route in practice.
 
 Skill names below are bare (`/sdd`, `/write-spec`). In plugin mode they are namespaced: `/sdd-kit:sdd`, `/sdd-kit-ops:deploy`. The full lists are in [skill index](skills.md) and [agent index](agents.md).
 
@@ -154,7 +154,7 @@ Verdict:
 
 **You get:** a scaffold with CI, one working slice, and handoff docs: `getting-started.md`, `architecture.md` (a lightweight ADR), and `manual-test.md`. The slice is marked `shipped` in `backlog.md` and the next slices are added to it. Verdict: `SHIP-SLICE`, `FIX-FIRST`, or `BLOCKED` (target was not empty). Build later slices with their `Run:` line (scenario 1). Feedback from a demo or sprint review goes back into the backlog with `/product-brief --intake "<notes>"`.
 
-Supported stacks come from the registry in [src/workflows/lib/stacks.js](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/workflows/lib/stacks.js).
+Supported stacks come from the registry in [src/workflows/lib/stacks.js](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/workflows/lib/stacks.js).
 
 ## 6. Small change
 
@@ -343,7 +343,7 @@ Layout, the parent-folder `CLAUDE.md`, contract rules, and merge order: [multi-r
 
 **When:** you want a full adversarially validated review of an existing codebase without sitting in a session.
 
-The pipeline runs `claude -p` from a plain terminal (not from inside Claude Code). Setup, configuration, and phases: [scripts/review/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/scripts/review/README.md).
+The pipeline runs `claude -p` from a plain terminal (not from inside Claude Code). Setup, configuration, and phases: [scripts/review/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/scripts/review/README.md).
 
 ## 13. Add-ons: ops and design
 
@@ -399,13 +399,16 @@ Routines run without you, so keep them report-only; act on findings through `/sd
 ```
 /fix-ci 482                               # the PR's failing checks
 /fix-ci --run=1234567890                  # one Actions run
+/fix-ci --run=https://bitbucket.org/acme/api/pipelines/results/412   # one Bitbucket pipeline
 /fix-ci local "<types gate command>"
 ```
 
+The CI provider comes from the `origin` host: GitHub through `gh`, GitLab through `glab`, and Bitbucket Pipelines through read-only API calls that need `BITBUCKET_EMAIL` and `BITBUCKET_API_TOKEN` (or `BITBUCKET_ACCESS_TOKEN`) in your environment ([INSTALLATION.md](installation.md#recommended-settings)). Without them, paste the failing step's log or use `/fix-ci local`.
+
 **What happens:**
 
-- It reads the failing job's log, reproduces the failure locally with CI's exact command, and classifies it (code, flaky test, tooling drift, environment, contract sync).
-- It fixes the cause, never the gate. Baselines, `@ts-ignore`, skipped tests, `continue-on-error`, and lowered thresholds are blocked unless you approve a specific exception, which is listed under *Gate exceptions* in the report.
+- It reads the failing job's log (GitHub Actions, GitLab CI or Bitbucket Pipelines), reproduces the failure locally with CI's exact command, and classifies it (code, flaky test, tooling drift, environment, contract sync).
+- It fixes the cause, never the gate. Baselines, `@ts-ignore`, skipped tests, `continue-on-error`, `allow_failure`, and lowered thresholds are blocked unless you approve a specific exception, which is listed under *Gate exceptions* in the report.
 - It re-runs the failing gate and the full gate set, and checks its own diff for any weakening. It does not commit or push.
 - A failing test that shows the product is actually wrong goes back to `/sdd` as a bug.
 

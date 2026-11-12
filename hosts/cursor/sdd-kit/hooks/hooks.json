@@ -30,6 +30,10 @@
         "matcher": "Read|Grep|Glob"
       },
       {
+        "command": "node ./runtime/hooks/dispatch.mjs preToolUse --host cursor --hook drupal-test-first.sh",
+        "matcher": "Write"
+      },
+      {
         "command": "node ./runtime/hooks/dispatch.mjs preToolUse --host cursor --hook laravel-test-first.sh",
         "matcher": "Write"
       },
@@ -55,6 +59,10 @@
       {
         "command": "node ./runtime/hooks/dispatch.mjs afterFileEdit --host cursor --hook gate-guard.sh",
         "timeout": 10
+      },
+      {
+        "command": "node ./runtime/hooks/dispatch.mjs afterFileEdit --host cursor --hook drupal-lint.sh",
+        "timeout": 30
       },
       {
         "command": "node ./runtime/hooks/dispatch.mjs afterFileEdit --host cursor --hook laravel-lint.sh",

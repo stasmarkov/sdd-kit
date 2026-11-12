@@ -6,8 +6,8 @@
 #   ./install.sh                               # interactive
 #   ./install.sh --project [--minimal|--full]  # install into ./.claude
 #   ./install.sh --user    [--minimal|--full]  # install into ~/.claude
-#   ./install.sh --project --stack=laravel     # choose stack add-ons (default: laravel,nextjs; none = core only)
-#   ./install.sh --project --with=ops,ios      # add optional add-ons (derived from src/plugins/*/.claude-plugin/plugin.json)
+#   ./install.sh --project --stack=laravel     # choose stack add-ons (default: the detected stack, else laravel,nextjs; none = core only)
+#   ./install.sh --project --with=ops,ios      # add optional add-ons (derived from src/plugins/*/.claude-plugin/plugin.json; none = skip devenv)
 #   ./install.sh --project --prune             # on an upgrade, remove installed add-ons that are not selected
 #   ./install.sh --project --dry-run           # show what would change, write nothing
 #   ./install.sh --host codex --project        # install for another host (claude is the default)
@@ -91,6 +91,7 @@ STACK_NONE=false
 STACK_LIST=""
 WITH_GIVEN=false
 WITH_LIST=""
+WITH_NONE=false
 PRUNE=false
 INTERACTIVE=false
 UPGRADE=false
@@ -100,6 +101,8 @@ KEEPING_ADDONS=""
 REMOVING_ADDONS=""
 DROPPED_HOOKS=""
 DEFAULT_STACKS="laravel nextjs"
+DETECTED_STACKS=""
+DETECTED_FROM=""
 THIRD_PARTY=false
 DRY_RUN=false
 ASSUME_YES=false
@@ -201,8 +204,13 @@ ${BOLD}OPTIONS${NC}
                      workflows, the core agents they hand off to, hooks, plus the selected stack add-ons
   --full             Everything in core (default)
   --stack=LIST       Stack add-ons to install: ${STACK_ADDONS// /, }, or none (core only).
-                     Default: laravel,nextjs on a fresh install, the installed stacks on an upgrade
+                     Default on a fresh --project install: the stacks whose markers or composer/npm
+                     packages are in the current directory (not its subdirectories) when they go
+                     beyond laravel,nextjs, else laravel,nextjs. --user: laravel,nextjs.
+                     Upgrade: the installed stacks
   --with=LIST        Add optional add-ons: ${ADDONS_AVAILABLE// /, }
+                     A fresh full install adds devenv unless --stack=none or --minimal;
+                     --with=none skips it (fresh installs only)
   --prune            On an upgrade, remove installed add-ons that are not selected
                      (user-modified files are kept; everything removed is backed up)
   --third-party      Also install pinned third-party skills (docs/third-party.md)
@@ -392,6 +400,7 @@ parse_args() {
             --minimal) INSTALL_TYPE=minimal ;;
             --full) INSTALL_TYPE=full ;;
             --stack=*) STACK_GIVEN=true; stack_raw="${1#*=}" ;;
+            --with=none) WITH_NONE=true; WITH_LIST="" ;;
             --with=*) WITH_GIVEN=true; WITH_LIST="${1#*=}"; WITH_LIST="${WITH_LIST//,/ }" ;;
             --prune) PRUNE=true ;;
             --third-party) THIRD_PARTY=true ;;
@@ -404,6 +413,10 @@ parse_args() {
     done
     check_requirements
     local addon
+    if has_word none "$WITH_LIST" || { $WITH_NONE && $WITH_GIVEN; }; then
+        log_error "'none' cannot be combined with other add-ons. Fix: use --with=none to skip the default add-ons, or --with=<list>."
+        exit 1
+    fi
     for addon in $WITH_LIST; do
         if ! has_word "$addon" "$ADDONS_AVAILABLE"; then
             log_error "Unknown add-on '$addon'. Available: $ADDONS_AVAILABLE"
@@ -470,18 +483,67 @@ detect_installed() {
     done
 }
 
-# Default stacks of a fresh install, limited to the add-ons this tree ships.
+# First package listed under packages.$2 (composer or npm) in stack manifest $1 that project
+# file $3 declares in one of the dependency objects named by $4.. Prints "<file>: <package>".
+package_match() {
+    local manifest="$1" manager="$2" file="$3"; shift 3
+    [[ -f "$file" ]] || return 0
+    jq -r --arg m "$manager" --slurpfile p "$file" '
+        ($p[0] | objects | [.[$ARGS.positional[]] | objects | keys[]]) as $have
+        | [(if type == "array" then . else [.] end)[] | (.packages[$m] // [])[] | select(. as $n | $have | index($n))][0]
+        // empty' --args "$@" <"$manifest" 2>/dev/null | sed "1s|^|$file: |;1q" || true
+}
+
+# Stack add-ons this project looks like: a manifest marker glob matches in the current directory,
+# or composer.json / package.json there requires one of the manifest's packages. Only the current
+# directory is read, so a project nested below it is not seen. Sets DETECTED_STACKS (add-on names)
+# and DETECTED_FROM ("<add-on> (<matched path or file: package>)", comma separated).
+detect_project_stacks() {
+    local addon manifest marker from
+    DETECTED_STACKS=""; DETECTED_FROM=""
+    for addon in $STACK_ADDONS; do
+        manifest="$(addon_dir "$addon")/stack.json"
+        from=""
+        while IFS= read -r marker; do
+            [[ -n "$marker" ]] || continue
+            from=$(compgen -G "$marker" 2>/dev/null | head -n 1) || true
+            [[ -z "$from" ]] || break
+        done < <(jq -r '(if type == "array" then . else [.] end)[] | (.markers // [])[]' "$manifest")
+        [[ -n "$from" ]] || from=$(package_match "$manifest" composer composer.json require require-dev)
+        [[ -n "$from" ]] || from=$(package_match "$manifest" npm package.json dependencies devDependencies)
+        [[ -n "$from" ]] || continue
+        add_words DETECTED_STACKS "$addon"
+        DETECTED_FROM+="${DETECTED_FROM:+, }$addon ($from)"
+    done
+}
+
+# Detection picks the default only when it found a stack outside DEFAULT_STACKS, so a tree that
+# looks like a default stack, or like nothing, keeps the default pair.
+detection_decides() {
+    local addon
+    for addon in $DETECTED_STACKS; do
+        has_word "$addon" "$DEFAULT_STACKS" || return 0
+    done
+    return 1
+}
+
+# Default stacks of a fresh install: the detected stacks when detection decides, otherwise
+# DEFAULT_STACKS limited to the add-ons this tree ships.
 default_stacks() {
     local addon out=""
+    if detection_decides; then
+        printf '%s' "$DETECTED_STACKS"
+        return 0
+    fi
     for addon in $DEFAULT_STACKS; do
         ! has_word "$addon" "$STACK_ADDONS" || add_words out "$addon"
     done
     printf '%s' "$out"
 }
 
-# The dev-environment add-on joins installs that make no stack choice, unless --minimal.
+# The dev-environment add-on joins every fresh full install, unless --with=none.
 default_tools() {
-    if [[ "$INSTALL_TYPE" != minimal ]] && has_word devenv "$TOOL_ADDONS"; then
+    if [[ "$INSTALL_TYPE" != minimal ]] && ! $WITH_NONE && has_word devenv "$TOOL_ADDONS"; then
         printf 'devenv'
     fi
 }
@@ -493,6 +555,7 @@ prompt_stacks() {
         default="$INSTALLED_STACKS"; extras="$INSTALLED_TOOLS"
     else
         default=$(default_stacks); extras=$(default_tools)
+        if detection_decides; then printf 'Detected %s.\n' "$DETECTED_FROM"; fi
     fi
     shown="$(join_words , $default)"
     printf 'Stacks [%s]%s: ' "${shown:-none}" "${extras:+ (+ $(join_words ', ' $extras))}"
@@ -511,13 +574,20 @@ prompt_stacks() {
 }
 
 # Two axes (stacks, tool add-ons). Fresh install: stacks from --stack, the prompt or
-# the default; tool add-ons exactly --with when any flag is given, else the default,
-# with the dev-environment add-on joining whenever no --stack is given. Upgrade:
-# selections only add to the installed set; --prune makes the installed set exactly
-# the selection. Sets ADDONS, KEEPING_ADDONS and REMOVING_ADDONS.
+# the default (detected from the project for --project); tool add-ons are --with plus
+# the dev-environment add-on, which only --stack=none, --minimal and --with=none leave
+# out. Upgrade: selections only add to the installed set; --prune makes the installed
+# set exactly the selection. Sets ADDONS, KEEPING_ADDONS and REMOVING_ADDONS.
 select_addons() {
     local addon sel_stacks="" sel_tools="" with_stacks="" with_tools="" stacks_chosen=false
     PROMPT_STACKS=""
+    if $WITH_NONE && $UPGRADE; then
+        log_error "--with=none applies to a fresh install only; nothing was written. Fix: to remove add-ons from an installed project use --prune --with=<list>."
+        exit 1
+    fi
+    if [[ "$INSTALL_MODE" == project ]] && ! $UPGRADE && ! $STACK_GIVEN; then
+        detect_project_stacks
+    fi
     for addon in $WITH_LIST; do
         if has_word "$addon" "$STACK_ADDONS"; then add_words with_stacks "$addon"; else add_words with_tools "$addon"; fi
     done
@@ -538,7 +608,7 @@ select_addons() {
         if $PRUNE && ! $WITH_GIVEN; then sel_tools="$INSTALLED_TOOLS"; else sel_tools="$with_tools"; fi
     else
         sel_tools="$with_tools"
-        $STACK_GIVEN || add_words sel_tools $(default_tools)
+        { $STACK_GIVEN && $STACK_NONE; } || add_words sel_tools $(default_tools)
     fi
 
     local final_stacks="$sel_stacks" final_tools="$sel_tools"
@@ -569,8 +639,15 @@ select_addons() {
         [[ -f "$(addon_dir "$addon")/hooks/hooks.json" ]] && DROPPED_HOOKS+="${DROPPED_HOOKS:+ }$(addon_dir "$addon")/hooks/hooks.json"
     done
     if ! $UPGRADE && ! $STACK_GIVEN && ! $INTERACTIVE; then
-        printf 'Installed default stacks %s%s. Choose others with --stack=<list> or --stack=none.\n' \
-            "$(join_words , $sel_stacks)" "${final_tools:+ (+ $(join_words ', ' $final_tools))}"
+        local done_word=Installed
+        $DRY_RUN && done_word=Selected
+        if detection_decides; then
+            printf 'Detected %s; selected stacks %s%s. Choose others with --stack=<list> or --stack=none.\n' \
+                "$DETECTED_FROM" "$(join_words , $sel_stacks)" "${final_tools:+ (+ $(join_words ', ' $final_tools))}"
+        else
+            printf '%s default stacks %s%s. Choose others with --stack=<list> or --stack=none.\n' \
+                "$done_word" "$(join_words , $sel_stacks)" "${final_tools:+ (+ $(join_words ', ' $final_tools))}"
+        fi
     fi
     return 0
 }

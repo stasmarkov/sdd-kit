@@ -128,6 +128,14 @@ DB_USERNAME=db
 DB_PASSWORD=db
 ```
 
+### Drupal settings
+With settings management on (`disable_settings_management: false`, the default), DDEV writes `settings.ddev.php` with these credentials, so `settings.php` needs no database values. Use Drush inside the container:
+
+```bash
+ddev drush sql:cli                 # SQL shell on the site database
+ddev drush sql:dump > dump.sql     # Dump the site database
+```
+
 ## External Database Tools
 
 ### Connect from Host Machine

@@ -7,8 +7,8 @@ So far every change has started from a spec. This one starts from a defect, and 
 Reference pages, so this chapter doesn't repeat them:
 
 - [USAGE-EXAMPLES.md, section 2 "Bug"](../../reference/usage-examples.md#2-bug): the general flow
-- [`/sdd` route reference: fix-bug](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/skills/sdd/references/fix-bug.md): args, phases, outputs, done-when
-- [`src/workflows/fix-bug.js`](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/workflows/fix-bug.js): the workflow source
+- [`/sdd` route reference: fix-bug](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/sdd/references/fix-bug.md): args, phases, outputs, done-when
+- [`src/workflows/fix-bug.js`](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/workflows/fix-bug.js): the workflow source
 
 | | |
 |---|---|

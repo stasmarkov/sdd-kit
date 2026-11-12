@@ -45,7 +45,7 @@ has to change too. Grep every frontend before you call the backend task done.
 ## Process
 
 - Commit in each repo separately (`git -C be ...`, `git -C fe ...`). Never run git from this root.
-- Use the same branch name in both repos for one change: `<feature|fix>/<ticket>-<slug>`.
+- Use the same branch name in both repos for one change: `<feature|fix>/<ticket>-<slug>` (`/open-pr` also reads `bugfix/` and `hotfix/`).
 - A spec lives in the repo that starts the change (usually `be/.ai/specs/`). It lists every
   affected repo with per-repo tasks. `resume_hint` in the session state hands off between repos.
 - Workflows take every repo: `/sdd <ticket>`, or pass `repos` as an array of `{ path, role, url }`

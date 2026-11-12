@@ -89,17 +89,26 @@ export function walk(dir, rel = '') {
 /**
  * Parses the installer's own arguments.
  * @param {string[]} argv arguments after the script name
- * @returns {{ mode: string, stack: string[]|null, stackGiven: boolean, withList: string[], prune: boolean, dryRun: boolean, yes: boolean, uninstall: boolean }}
- * @throws {UsageError} for an unknown option or a missing value
+ * @returns {{ mode: string, stack: string[]|null, stackGiven: boolean, withList: string[], withNone: boolean, prune: boolean, dryRun: boolean, yes: boolean, uninstall: boolean }}
+ *   withNone is true for --with=none, which leaves withList empty and skips the default tool add-ons
+ * @throws {UsageError} for an unknown option, a missing value, or 'none' combined with other add-ons
  */
 export function parseArgs(argv) {
-  const o = { mode: '', stack: null, stackGiven: false, withList: [], prune: false, dryRun: false, yes: false, uninstall: false }
+  const o = { mode: '', stack: null, stackGiven: false, withList: [], withNone: false, prune: false, dryRun: false, yes: false, uninstall: false }
   const list = (v) => v.split(/[,\s]+/).filter(Boolean)
+  // As in install.sh, the last add-on list wins, while --with=none anywhere conflicts with any other --with=.
+  let withOther = false
   for (const a of argv) {
     if (a === '--project') o.mode = 'project'
     else if (a === '--user') o.mode = 'user'
     else if (a.startsWith('--stack=')) { o.stackGiven = true; o.stack = list(a.slice(8)) }
-    else if (a.startsWith('--with=')) o.withList = list(a.slice(7))
+    else if (a.startsWith('--with=')) {
+      const names = list(a.slice(7))
+      if (names.includes('none')) o.withNone = true
+      if (names.some((n) => n !== 'none') || names.length === 0) withOther = true
+      if (o.withNone && withOther) throw new UsageError("'none' cannot be combined with other add-ons. Fix: use --with=none to skip the default add-ons, or --with=<list>.")
+      o.withList = o.withNone ? [] : names
+    }
     else if (a === '--prune') o.prune = true
     else if (a === '--dry-run') o.dryRun = true
     else if (a === '--yes' || a === '-y') o.yes = true
@@ -332,10 +341,101 @@ export function discoverAddons(repo) {
   return { stacks, tools, all: [...stacks, ...tools], defaultStacks: stacks.filter((a) => defaults.includes(a)), defaultTools: tools.filter((a) => defaults.includes(a)) }
 }
 
-/** The add-ons to install, validated like the Claude installer: `--stack` names stack add-ons, `--with` any add-on. */
-export function selectAddons(opts, found, previous) {
+const GLOB_CHARS = /[*?]/
+
+/**
+ * The first existing file or directory that `pattern`, a path relative to `dir`, names, as a relative POSIX
+ * path; '' when none. A segment holding `*` or `?` matches entries of one directory level and never a
+ * leading dot, like the shell glob the Claude installer uses.
+ * @example firstGlobMatch('/srv/app', 'config/*.json') // 'config/app.json'
+ */
+function firstGlobMatch(dir, pattern) {
+  let bases = [dir]
+  for (const part of pattern.split('/').filter(Boolean)) {
+    if (!GLOB_CHARS.test(part)) {
+      bases = bases.map((b) => path.join(b, part)).filter((p) => fs.existsSync(p))
+      continue
+    }
+    const source = part.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*').replace(/\?/g, '.')
+    const re = new RegExp(`^${source}$`)
+    bases = bases.flatMap((b) => {
+      try {
+        return fs.readdirSync(b).filter((n) => !n.startsWith('.') && re.test(n)).sort().map((n) => path.join(b, n))
+      } catch {
+        return []
+      }
+    })
+  }
+  return bases.length ? posix(path.relative(dir, bases[0])) : ''
+}
+
+// Project files whose dependency objects hold the package names a manifest's `packages` lists, per manager.
+const PACKAGE_FILES = {
+  composer: { file: 'composer.json', keys: ['require', 'require-dev'] },
+  npm: { file: 'package.json', keys: ['dependencies', 'devDependencies'] },
+}
+
+/** Package names `file` in `dir` declares under `keys`; empty when the file is missing or not a JSON object. */
+function declaredPackages(dir, { file, keys }) {
+  let data
+  try {
+    data = readJson(path.join(dir, file))
+  } catch {
+    return []
+  }
+  if (!data || typeof data !== 'object') return []
+  return keys.flatMap((k) => (data[k] && typeof data[k] === 'object' && !Array.isArray(data[k]) ? Object.keys(data[k]) : []))
+}
+
+/**
+ * The stack add-ons a project directory looks like, read from each stack manifest: a `markers` glob matches
+ * in `cwd`, or its composer.json / package.json requires a name from `packages`. Only `cwd` itself is read,
+ * so a project nested below it is not seen.
+ * @param {string} repo checkout holding src/plugins/<addon>/stack.json
+ * @param {string} cwd project directory
+ * @param {string[]} stacks stack add-on names, in the order to report them
+ * @returns {{ addon: string, from: string }[]} from is the path a marker matched or '<file>: <package>'
+ */
+export function detectStacks(repo, cwd, stacks) {
+  const declared = Object.fromEntries(Object.entries(PACKAGE_FILES).map(([m, spec]) => [m, declaredPackages(cwd, spec)]))
+  const hits = []
+  for (const addon of stacks) {
+    let entries
+    try {
+      entries = [readJson(path.join(repo, 'src/plugins', addon, 'stack.json'))].flat()
+    } catch {
+      continue
+    }
+    let from = ''
+    for (const marker of entries.flatMap((e) => e.markers || [])) {
+      from = firstGlobMatch(cwd, marker)
+      if (from) break
+    }
+    for (const manager of Object.keys(PACKAGE_FILES)) {
+      if (from) break
+      const name = entries.flatMap((e) => e.packages?.[manager] || []).find((p) => declared[manager].includes(p))
+      if (name) from = `${PACKAGE_FILES[manager].file}: ${name}`
+    }
+    if (from) hits.push({ addon, from })
+  }
+  return hits
+}
+
+/**
+ * The add-ons to install, validated like the Claude installer: `--stack` names stack add-ons, `--with` any
+ * add-on. A fresh project install without --stack takes the detected stacks when one of them is outside the
+ * default stacks, and the defaults otherwise.
+ * @param {object} opts parsed arguments (parseArgs)
+ * @param {{ stacks: string[], tools: string[], all: string[], defaultStacks: string[], defaultTools: string[] }} found discoverAddons()
+ * @param {object|null} previous the installed.json of an earlier install, or null
+ * @param {{ repo?: string, cwd?: string, log?: (line: string) => void }} [project] where detection reads from
+ * @returns {string[]} add-on names
+ * @throws {UsageError} for an unknown add-on or stack, or --with=none on an upgrade
+ */
+export function selectAddons(opts, found, previous, { repo = REPO, cwd = '', log = () => {} } = {}) {
   const bad = opts.withList.find((a) => !found.all.includes(a))
   if (bad) throw new UsageError(`Unknown add-on '${bad}'. Available: ${found.all.join(' ')}`)
+  if (opts.withNone && previous) throw new UsageError('--with=none applies to a fresh install only. Fix: to remove add-ons from an installed project use --prune --with=<list>.')
   let stacks
   if (opts.stackGiven) {
     const none = opts.stack.includes('none')
@@ -347,10 +447,15 @@ export function selectAddons(opts, found, previous) {
     stacks = previous.addons.filter((a) => found.stacks.includes(a))
   } else {
     stacks = found.defaultStacks
+    const detected = opts.mode === 'project' && cwd ? detectStacks(repo, cwd, found.stacks) : []
+    if (detected.some(({ addon }) => !found.defaultStacks.includes(addon))) {
+      stacks = detected.map(({ addon }) => addon)
+      log(`Detected ${detected.map(({ addon, from }) => `${addon} (${from})`).join(', ')}.`)
+    }
   }
   let tools
   if (previous) tools = previous.addons.filter((a) => found.tools.includes(a))
-  else tools = opts.stackGiven ? [] : found.defaultTools
+  else tools = opts.withNone || (opts.stackGiven && opts.stack.includes('none')) ? [] : found.defaultTools
   const selected = new Set([...stacks, ...opts.withList])
   tools.forEach((a) => selected.add(a))
   if (previous && !opts.prune) previous.addons.forEach((a) => selected.add(a))

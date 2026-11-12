@@ -52,6 +52,10 @@
         "hooks": [
           {
             "type": "command",
+            "command": "node \"${PLUGIN_ROOT}/runtime/hooks/dispatch.mjs\" PreToolUse --host codex --hook drupal-test-first.sh"
+          },
+          {
+            "type": "command",
             "command": "node \"${PLUGIN_ROOT}/runtime/hooks/dispatch.mjs\" PreToolUse --host codex --hook laravel-test-first.sh"
           },
           {
@@ -87,6 +91,11 @@
             "type": "command",
             "command": "node \"${PLUGIN_ROOT}/runtime/hooks/dispatch.mjs\" PostToolUse --host codex --hook gate-guard.sh",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "node \"${PLUGIN_ROOT}/runtime/hooks/dispatch.mjs\" PostToolUse --host codex --hook drupal-lint.sh",
+            "timeout": 30
           },
           {
             "type": "command",

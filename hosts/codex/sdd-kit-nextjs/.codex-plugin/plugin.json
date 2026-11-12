@@ -1,6 +1,6 @@
 {
   "name": "sdd-kit-nextjs",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "Next.js add-on: nextjs-frontend-dev agent, Next.js, TypeScript and Tailwind skills, path-scoped rules and the Next.js and Nuxt stack manifests.",
   "skills": "./skills/",
   "requires_local_executor": true,

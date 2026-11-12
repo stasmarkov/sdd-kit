@@ -1,6 +1,6 @@
 # Module Development
 
-Patterns for building custom Drupal 11 modules.
+Patterns for building custom Drupal 10.3+ and 11 modules.
 
 ## Module Scaffolding
 
@@ -11,7 +11,7 @@ Patterns for building custom Drupal 11 modules.
 name: 'My Module'
 type: module
 description: 'Custom module providing order management.'
-core_version_requirement: ^11
+core_version_requirement: ^10.3 || ^11
 package: Custom
 dependencies:
   - drupal:node

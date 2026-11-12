@@ -108,6 +108,10 @@
       "command": "ddev describe -j",
       "jsonField": "raw.status",
       "equals": "running"
+    },
+    "workdir": {
+      "flag": "--dir",
+      "root": "/var/www/html"
     }
   },
   "skills": {
@@ -117,6 +121,13 @@
   },
   "markers": [
     "core/lib/Drupal.php",
-    "web/core/lib/Drupal.php"
-  ]
+    "web/core/lib/Drupal.php",
+    "docroot/core/lib/Drupal.php"
+  ],
+  "packages": {
+    "composer": [
+      "drupal/core",
+      "drupal/core-recommended"
+    ]
+  }
 }

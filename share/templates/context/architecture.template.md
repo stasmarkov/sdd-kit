@@ -2,6 +2,8 @@
 
 *Essential technical patterns for development*
 
+Every section is a placeholder: fill it from the code and AGENTS.md, delete what does not apply.
+
 ---
 
 ## Foundational Principles
@@ -18,75 +20,51 @@
 
 ---
 
-## Module Structure
+## Repository Layout
 
 ```
-Modules/{{Domain}}/{{SubModule}}/
-├── Application/Http/Controllers/     # Request handlers
-├── Domain/
-│   ├── Models/                       # ORM models
-│   ├── Services/                     # Business logic
-│   ├── Repositories/                 # Data access
-│   ├── DataTransferObjects/          # DTOs
-│   ├── Enums/                        # Type-safe enums
-│   └── Policies/                     # Authorization
-├── Infrastructure/
-│   ├── Database/Migrations/          # Database changes
-│   ├── Repositories/                 # Repository implementations
-│   └── Routes/                       # Route definitions
-└── Tests/                            # Feature & Unit tests
+{{the repo's real top-level layout: entry points, business logic, data access, schema, tests}}
 ```
 
 ---
 
-## Controller Pattern
+## Entry Points (routes, commands, pages)
 
-### Invokable Controllers (MANDATORY)
-
-<!-- Code example in the project's language; the stack add-on's skill has samples. -->
-
----
-
-## DTO Pattern
-
-### Entity DTO
-
-<!-- Code example in the project's language; the stack add-on's skill has samples. -->
-
-### Create DTO
+{{Where requests, commands or pages enter the code, and what a handler may and may not do}}
 
 <!-- Code example in the project's language; the stack add-on's skill has samples. -->
 
 ---
 
-## Service Pattern
+## Data at Boundaries
+
+{{How input and output are typed and validated between layers}}
 
 <!-- Code example in the project's language; the stack add-on's skill has samples. -->
 
 ---
 
-## Repository Pattern
+## Business Logic
+
+{{Where business rules live and how they are composed}}
 
 <!-- Code example in the project's language; the stack add-on's skill has samples. -->
 
 ---
 
-## API Response Format
+## Data Access
 
-### Standard Response
+{{How the code reads and writes stored data}}
 
-```json
-{
-    "success": true,
-    "status": 200,
-    "message": "Operation completed successfully",
-    "data": {}
-}
+<!-- Code example in the project's language; the stack add-on's skill has samples. -->
+
+---
+
+## Response Format (if the project exposes an API)
+
 ```
-
-### Response Methods
-
-<!-- Code example in the project's language; the stack add-on's skill has samples. -->
+{{the project's response shape}}
+```
 
 ---
 
@@ -96,12 +74,14 @@ Modules/{{Domain}}/{{SubModule}}/
 
 | Object | Convention | Example |
 |--------|------------|---------|
-| Tables | snake_case, plural | `users`, `payment_intents` |
-| Columns | snake_case | `user_id`, `created_at` |
-| Primary Keys | `id` (UUID) | `uuid` type |
-| Foreign Keys | `{table}_id` | `user_id`, `merchant_id` |
+| Tables | {{convention}} | {{example}} |
+| Columns | {{convention}} | {{example}} |
+| Primary Keys | {{convention}} | {{example}} |
+| Foreign Keys | {{convention}} | {{example}} |
 
-### Model Standard
+### Data Model
+
+{{How tables, entities or models are defined, and where the schema lives}}
 
 <!-- Code example in the project's language; the stack add-on's skill has samples. -->
 
@@ -109,7 +89,9 @@ Modules/{{Domain}}/{{SubModule}}/
 
 ## Testing Standards
 
-### Feature Test Pattern
+### Test Pattern
+
+{{Test levels, where tests live and how one is structured}}
 
 <!-- Code example in the project's language; the stack add-on's skill has samples. -->
 
@@ -122,9 +104,7 @@ Modules/{{Domain}}/{{SubModule}}/
 - [ ] Review relevant schema docs
 
 ### During Development
-- [ ] Use DTOs for all data handling
-- [ ] Follow service-repository pattern
-- [ ] Add authorization policies
+- [ ] {{the project's own conventions, from AGENTS.md and .claude/rules}}
 - [ ] Write tests first (TDD)
 
 ### Before Commit
@@ -132,10 +112,6 @@ Modules/{{Domain}}/{{SubModule}}/
 - [ ] Run static analysis
 - [ ] Run tests
 - [ ] Update documentation
-
----
-
-**⚡ Remember**: Every violation of these patterns is a blocking issue that must be fixed before merge!
 
 ---
 

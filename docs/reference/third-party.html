@@ -21,15 +21,21 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../index.html">SDD Kit</a>
-    <span class="badge">v4.0.1</span>
+    <span class="badge">v4.0.2</span>
   </div>
+  <nav class="site-nav" aria-label="Site">
+    <ul>
+      <li><a href="../index.html">Guide</a></li>
+      <li><a href="../adopt.html">Adopt</a></li>
+      <li><a href="../reference/index.html" aria-current="page">Reference</a></li>
+      <li><a href="../index.html#example">Example</a></li>
+    </ul>
+  </nav>
   <div class="header-actions">
-    <a class="btn" href="../index.html"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main">
-  <p class="doc-path mono">reference/third-party.md</p>
+<main id="content" class="doc-main" tabindex="-1">
   <article class="doc-body">
 <h2 id="third-party-skills-and-plugins">Third-Party Skills and Plugins</h2>
 <p>Skills, plugins, and MCP servers run with your privileges, and their payload is often plain English instructions that static scanners miss (Snyk&#39;s 2026 ToxicSkills scan found critical issues in 13.4% of public skills). SDD Kit therefore <strong>recommends</strong> third-party components but never vendors them. Each one is listed in a manifest with its source, license, pinned commit, and risk notes.</p>
@@ -46,8 +52,10 @@ A <code>manual</code> entry is reviewed, licensed, and pinned for reference, but
 <p>It is copied, not recommended, because the <code>security-audit</code> workflow checks its validators and references against pinned hashes, which only works for files the kit ships. Changes from upstream are path-only and listed in <code>src/skills/security-audit/references/upstream-changes.md</code>. It is not in <code>src/settings/third-party.json</code>. Rationale: ADR 0005.</p>
 <p>The installer prints the plugin commands. It never runs them: installing a plugin is a decision for each user or team.</p>
   </article>
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/reference/third-party.md">View the Markdown source</a></p>
 </main>
+<footer class="site-footer">
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/reference/third-party.md">View the Markdown source</a></p>
+</footer>
 <script>
   (function () {
     var KEY = 'sdd-guide-theme', NEXT = { system: 'light', light: 'dark', dark: 'system' };

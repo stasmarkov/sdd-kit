@@ -20,7 +20,7 @@ Generate them from the code, never from memory:
 /write-docs --import <file|url> --as=business       # rules that already live in a wiki, PDF, or ticket
 ```
 
-`write-docs` starts a missing business-rules or architecture document from the templates in this folder and fills it from the code. Generated business rules describe what the code does, which is not always what the business wants: each stays marked "needs human validation" until someone confirms it. For a new product, `/product-brief` writes the draft rules first (`BR-01`…); once the owner validates them, `docs/context/business-rules.md` keeps the same ids.
+`write-docs` starts a missing business-rules or architecture document from the templates in this folder (it ships byte-identical copies in its own `assets/`) and fills it from the code. Generated business rules describe what the code does, which is not always what the business wants: each carries `**Validation**: needs human validation` until someone confirms it. For a new product, `/product-brief` writes the draft rules first (`BR-01`…); once the owner validates them, `docs/context/business-rules.md` keeps the same ids.
 
 ## Keeping them useful
 

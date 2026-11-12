@@ -11,13 +11,13 @@ Start spec-driven work with `/sdd`. "Manual only" skills have side effects and n
 | `api-security` | core | auto only | API security best practices. Use for auth, CORS, rate limiting, validation, and OWASP compliance. |
 | `architecture-patterns` | core | auto only | Implement Clean Architecture, Hexagonal Architecture, and DDD patterns. Use when designing new modules or refactoring for maintainability. |
 | `changelog` | core | `/changelog` (manual only) | Generate a changelog from git history by parsing conventional commits and grouping them into Keep a Changelog sections, optionally… |
-| `ci-cd` | core | `/ci-cd` | GitHub Actions CI/CD pipelines. Use for testing, deployment, and release automation workflows. |
+| `ci-cd` | core | `/ci-cd` | CI/CD pipelines for GitHub Actions, GitLab CI and Bitbucket Pipelines, built from the stack's gate commands. Use for testing, deployment… |
 | `deep-review` | core | `/deep-review` | Review finished code and return a blocking verdict (APPROVED / CHANGES_REQUIRED / BLOCKED). Three depths - adversarial (default; skeptical… |
 | `design-api` | core | `/design-api` | Design RESTful API architecture: resources, endpoints, request/response contracts, error format, and optional OpenAPI output, producing an… |
 | `design-schema` | core | `/design-schema` | Design a database schema - entities, columns and types, relationships, indexes, naming, and migration strategy - and write it as… |
 | `error-handling-patterns` | core | auto only | Robust error handling with typed exceptions, Result types, and graceful degradation. Use when designing error flows or improving resilience. |
 | `execute-task` | core | `/execute-task` | Execute an approved spec's tasks one at a time with TDD, verification gates, AC-to-test traceability, and session state for cross-session… |
-| `fix-ci` | core | `/fix-ci` | Get a red CI run or a broken local build back to green without weakening any gate. Reads the failing job (gh pr checks / gh run view… |
+| `fix-ci` | core | `/fix-ci` | Get a red CI run or a broken local build back to green without weakening any gate. Reads the failing job from GitHub Actions, GitLab CI or… |
 | `framework-doctor` | core | `/framework-doctor` (manual only) | Diagnose a framework installation and report PASS / WARN / FAIL per check - directory layout, flat skill discovery, agents, manifest drift… |
 | `generate` | core | `/generate` | Generate code scaffolding that follows project conventions - controllers, services, data objects, repositories, models, CRUD and API… |
 | `grade` | core | `/grade` | Grade a target artifact against a domain rubric using the outcomes-grader subagent. Returns PASS / CHANGES_REQUIRED / BLOCKED with… |
@@ -44,9 +44,9 @@ Start spec-driven work with `/sdd`. "Manual only" skills have side effects and n
 | `write-docs` | core | `/write-docs` | Generate documentation from code (business rules, API contracts, architecture overview), import external docs into the context paths… |
 | `write-spec` | core | `/write-spec` | Turn a ticket or request into a right-sized, execution-ready spec under .ai/specs/ — sizes the work first (XS gets no spec), investigates… |
 | `design-ui` | design plugin | `/design-ui` | Design UI/UX for a feature: user flows, component hierarchy, state management, data fetching, and accessibility, producing a UI design… |
-| `ddev` | devenv plugin | `/ddev` | DDEV local development environment. Use for container management, debugging, and Laravel/Next.js development. |
+| `ddev` | devenv plugin | `/ddev` | DDEV local development environment for PHP and Node.js projects (Drupal, Laravel, Next.js and others). Use for container management,… |
 | `docker` | devenv plugin | `/docker` | Docker for Laravel + Next.js. Use for Dockerfiles, compose setup, and container configuration. |
-| `drupal-11` | drupal plugin | `/drupal-11` | Drupal 11 module development patterns. Use for entities, services, plugins, hooks, and backend architecture decisions. |
+| `drupal-11` | drupal plugin | `/drupal-11` | Drupal 10.3+ and 11 module development patterns. Use for entities, services, plugins, hooks, tests, and backend architecture decisions. |
 | `ios-native` | ios plugin | `/ios-native` | Native iOS development with Swift 6 and SwiftUI. Use for views, @Observable view models, structured concurrency, URLSession networking,… |
 | `swift-testing` | ios plugin | `/swift-testing` | Testing iOS/Swift code with the Swift Testing framework (@Test / #expect) and XCTest. Use when writing unit tests for view models,… |
 | `dto-first` | laravel plugin | auto only | DTO patterns with Spatie Laravel Data. Use for request/response data handling and layer boundaries. |

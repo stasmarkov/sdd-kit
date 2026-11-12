@@ -61,7 +61,7 @@ before the repos exist. In any Claude Code session:
 /plugin install sdd-kit@sdd-kit
 ```
 
-Since 3.0 the core is stack-neutral. Hireboard is Laravel plus Next.js, so also install the preset,
+The core is stack-neutral. Hireboard is Laravel plus Next.js, so also install the preset,
 which pulls in the Laravel, Next.js and devenv add-ons:
 
 ```
@@ -117,7 +117,7 @@ cp ~/tools/sdd-kit/share/templates/multi-repo/CLAUDE.md CLAUDE.md   # Step 4 fir
 Simulated output (abridged):
 
 ```
-SDD Kit v4.0.1
+SDD Kit v4.0.2
 Target: /Users/alex/work/hireboard/.claude (project, full)
   added:   ...  (skills, agents, workflows, scripts, templates, settings.json)
   updated: 0
@@ -149,7 +149,7 @@ then `cd ../web && .../install.sh --project --stack=nextjs`). That is the point 
 inside `api/` or `web/` before chapter 02 (F1). The flags (`--stack=`, `--with=`, `--user`, `--yes`) are
 documented in [INSTALLATION.md, file-copy mode](../../reference/installation.md#file-copy-mode).
 
-**Other hosts.** Hireboard's team could also use Codex or Cursor (both an unverified preview in 4.0; see [hosts.md](../../reference/hosts.md)). The file-copy install is the same dry run, then the real run, with `--host`:
+**Other hosts.** Hireboard's team could also use Codex or Cursor (both an unverified preview; see [hosts.md](../../reference/hosts.md)). The file-copy install is the same dry run, then the real run, with `--host`:
 
 ```bash
 ~/tools/sdd-kit/install.sh --host codex --project --stack=laravel,nextjs --dry-run
@@ -327,7 +327,7 @@ for you. Type it:
 Simulated output, plugin mode (abridged):
 
 ```
-Framework Health Check (plugin, v4.0.1)
+Framework Health Check (plugin, v4.0.2)
 =======================================
 [WARN] Golden Triangle: docs/context/ not found
 [SKIP] Manifest integrity: plugin mode

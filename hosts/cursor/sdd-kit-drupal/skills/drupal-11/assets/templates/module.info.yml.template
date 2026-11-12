@@ -1,7 +1,7 @@
 name: '{{MODULE_NAME}}'
 type: module
 description: '{{DESCRIPTION}}'
-core_version_requirement: ^11
+core_version_requirement: ^10.3 || ^11
 package: Custom
 dependencies:
   - drupal:node

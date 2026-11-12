@@ -1,6 +1,6 @@
 ---
 name: drupal-11
-description: Drupal 11 module development patterns. Use for entities, services, plugins, hooks, and backend architecture decisions.
+description: Drupal 10.3+ and 11 module development patterns. Use for entities, services, plugins, hooks, tests, and backend architecture decisions.
 allowed-tools: Read, Grep, Glob, Edit, Write, Bash
 paths:
   - "**/*.module"
@@ -8,9 +8,9 @@ paths:
   - "**/*.php"
 ---
 
-# Drupal 11 Development Patterns
+# Drupal 10.3+ and 11 Development Patterns
 
-Apply these patterns when building Drupal 11 modules and sites.
+Apply these patterns when building Drupal 10.3+ and 11 modules and sites.
 
 ## Quick Reference
 
@@ -19,14 +19,15 @@ Apply these patterns when building Drupal 11 modules and sites.
 | Module structure | `.info.yml` + `.module` + `.services.yml` + `.routing.yml` |
 | Content entities | `baseFieldDefinitions()` with PHP attributes |
 | Services & DI | `services.yml` + constructor injection |
-| Hooks | `hook_form_alter`, `hook_entity_presave`, prefer event subscribers |
+| Hooks | Procedural in `.module`; `#[Hook]` classes only for modules requiring `^11.1` |
 | Routing | `.routing.yml` + controller classes |
 | Forms | Extend `FormBase` or `ConfigFormBase` |
 | Config management | `config/install/` + `config/schema/` |
 | Plugins | PHP attributes (`#[Block]`, `#[FieldType]`) |
 | Render API | Render arrays with `#theme`, `#type` |
 | Caching | Cache tags, contexts, max-age |
-| Drush | `drush cr`, `drush cex`, `drush cim`, `drush updb` |
+| Tests | Unit, Kernel, Functional under `tests/src/`, `@group <module>` |
+| Drush | `drush cr`, `drush cex`, `drush cim`, `drush updb` (in DDEV: `ddev drush ...`) |
 
 ## When to Load References
 
@@ -38,6 +39,8 @@ Apply these patterns when building Drupal 11 modules and sites.
 | Working with Form API | `references/form-patterns.md` |
 | Theming and Twig templates | `references/theming-patterns.md` |
 | Building REST/JSON:API endpoints | `references/api-patterns.md` |
+| Writing tests | `references/testing-patterns.md` |
+| Exploring the codebase (where routes, handlers, data access and tests live) | `references/exploration-recipes.md` |
 
 ## Code Templates
 
@@ -56,7 +59,7 @@ Use templates from `assets/templates/` for scaffolding:
 | `plugin-block.php.template` | Block plugin |
 | `event-subscriber.php.template` | Event subscriber |
 
-## Drupal 11 Module Structure
+## Module Structure
 
 ```
 modules/custom/my_module/
@@ -96,7 +99,7 @@ modules/custom/my_module/
 name: 'My Module'
 type: module
 description: 'Provides custom functionality.'
-core_version_requirement: ^11
+core_version_requirement: ^10.3 || ^11
 package: Custom
 dependencies:
   - drupal:node
@@ -228,21 +231,41 @@ Request → Routing → Controller → Service → EntityTypeManager → Databas
 
 ### 5. Hooks vs Event Subscribers
 
-Prefer event subscribers over hooks when possible:
+Which form a hook takes depends on the module's core floor:
+
+| Module supports | Hooks go in |
+|-----------------|-------------|
+| `^10.3 \|\| ^11` (default) | Procedural functions in `my_module.module` |
+| `^11.1` only | `#[Hook]` methods on classes in `src/Hook/` (autowired services) |
 
 ```php
-// Prefer: Event subscriber (OOP, testable)
-final class OrderEventSubscriber implements EventSubscriberInterface {
-  public static function getSubscribedEvents(): array {
-    return [EntityHookEvents::ENTITY_PRESAVE => 'onEntityPresave'];
-  }
-}
-
-// Legacy: Hook implementation (still needed for some integrations)
-function my_module_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  // Form alterations
+// my_module.module: works on 10.3 and 11
+/**
+ * Implements hook_entity_presave().
+ */
+function my_module_entity_presave(EntityInterface $entity): void {
+  \Drupal::service('my_module.order_service')->stamp($entity);
 }
 ```
+
+```php
+// src/Hook/OrderHooks.php: Drupal 11.1+ only
+final class OrderHooks {
+
+  public function __construct(
+    #[Autowire(service: 'my_module.order_service')]
+    private readonly OrderService $orderService,
+  ) {}
+
+  #[Hook('entity_presave')]
+  public function entityPresave(EntityInterface $entity): void {
+    $this->orderService->stamp($entity);
+  }
+
+}
+```
+
+Keep procedural hooks thin: delegate to a service so the logic is testable. Use event subscribers for real Symfony and core events (`KernelEvents`, `RoutingEvents`, `ConfigEvents`, migrate events). Core dispatches no entity save or delete events, so entity reactions stay hooks.
 
 ### 6. Caching
 
@@ -287,12 +310,48 @@ $nids = $query->execute();
 $nodes = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($nids);
 ```
 
+### 9. Testing
+
+Write the failing test first. Pick the cheapest type that exercises the behaviour:
+
+| Code under test | Base class | Folder |
+|-----------------|------------|--------|
+| Pure logic with mocked collaborators | `UnitTestCase` | `tests/src/Unit/` |
+| Services, entities, config, subscribers, plugins | `KernelTestBase` | `tests/src/Kernel/` |
+| Routes, controllers, forms, access | `BrowserTestBase` (`$defaultTheme = 'stark'`) | `tests/src/Functional/` |
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace Drupal\Tests\my_module\Kernel;
+
+use Drupal\KernelTests\KernelTestBase;
+use Drupal\my_module\Service\OrderService;
+
+/**
+ * @group my_module
+ */
+final class OrderServiceTest extends KernelTestBase {
+
+  protected static $modules = ['system', 'user', 'node', 'my_module'];
+
+  public function testServiceIsRegistered(): void {
+    $this->assertInstanceOf(OrderService::class, $this->container->get('my_module.order_service'));
+  }
+
+}
+```
+
+Use the `@group` annotation: PHPUnit 9.6 on Drupal 10.3 ignores the `#[Group]` attribute. List every module the test needs in `$modules`. The add-on's test-first hook blocks edits to Controller, Form, Service(s), Access and EventSubscriber classes until a test under the module's `tests/src` is named after the class or names it; Plugin and Entity classes only get a warning (`CLAUDE_SKIP_TEST_FIRST=1` bypasses it). Base classes, environment variables and run commands: `references/testing-patterns.md`.
+
 ## Gate setup
 
-The workflow gates run only when the project has what they need; a missing piece is reported as a skip, never a failure. In a DDEV project the gates run as `ddev exec <command>` and need the project running (`ddev start`).
+The workflow gates run only when the project has what they need; a missing piece is reported as a skip, never a failure. In a DDEV project the gates run as `ddev exec <command>` and need the project running (`ddev start`). Inside DDEV, also run Composer and Drush as `ddev composer` and `ddev drush`, because the host may have no PHP (see the `ddev` skill).
 
 1. Allow the Composer plugins before the require, in `composer.json` under `config.allow-plugins`: `dealerdirect/phpcodesniffer-composer-installer` and `phpstan/extension-installer`.
-2. `composer require --dev drupal/core-dev` and `drush/drush`. This brings coder, PHPStan with phpstan-drupal, and PHPUnit.
+2. `composer require --dev drupal/core-dev` and `drush/drush` (in DDEV: `ddev composer require --dev ...`). This brings coder, PHPStan with phpstan-drupal, and PHPUnit.
 3. Add a `phpstan.neon` at the repo root. Do not set `drupal_root`; phpstan-drupal finds it.
 4. Optional: a root `phpunit.xml` for project-specific test settings.
 5. For Kernel and Functional tests, set the environment once and restart: `ddev config --web-environment-add="SIMPLETEST_DB=mysql://db:db@db/db,SIMPLETEST_BASE_URL=http://web"`, then `ddev restart`.
@@ -310,8 +369,10 @@ The workflow gates run only when the project has what they need; a missing piece
 
 ## Scaffolding
 
+In a DDEV project, prefix each command with `ddev`, for example `ddev drush generate module` or `ddev drush cr`.
+
 ```bash
-# Generate module boilerplate (requires drush + drupal/core-dev)
+# Generate module boilerplate (requires drush + drupal/core-dev; in DDEV: ddev drush generate ...)
 drush generate module
 drush generate controller
 drush generate service
@@ -319,7 +380,7 @@ drush generate plugin:block
 drush generate form:config
 drush generate entity:content
 
-# Common drush commands
+# Common drush commands (in DDEV: ddev drush cr, ddev drush cim -y, ...)
 drush cr              # Cache rebuild
 drush cex -y          # Config export
 drush cim -y          # Config import

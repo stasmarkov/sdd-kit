@@ -74,6 +74,6 @@ Run these exact commands. A change is done only when every gate passes for the c
 
 ## Git
 
-- Branches: `<feature|fix>/<ticket>-<slug>`. Use the same branch name across repos for cross-repo work.
-- Commits: Conventional Commits (`feat(orders): ...`). Keep each commit to one logical change.
+- Branches: `<feature|fix>/<ticket>-<slug>` (`/open-pr` also reads `bugfix/` and `hotfix/`). Use the same branch name across repos for cross-repo work.
+- Commits: Conventional Commits with the ticket key at the end (`feat(orders): ... (PROJ-123)`); the commit hook also accepts the key as the scope (`feat(PROJ-123): ...`). Keep each commit to one logical change.
 - If a doc conflicts with the code, trust the code and fix the doc in the same change.

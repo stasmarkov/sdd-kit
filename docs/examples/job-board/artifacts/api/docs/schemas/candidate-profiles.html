@@ -21,15 +21,21 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../../../../../../index.html">SDD Kit</a>
-    <span class="badge">v4.0.1</span>
+    <span class="badge">v4.0.2</span>
   </div>
+  <nav class="site-nav" aria-label="Site">
+    <ul>
+      <li><a href="../../../../../../index.html">Guide</a></li>
+      <li><a href="../../../../../../adopt.html">Adopt</a></li>
+      <li><a href="../../../../../../reference/index.html">Reference</a></li>
+      <li><a href="../../../../../../index.html#example" aria-current="page">Example</a></li>
+    </ul>
+  </nav>
   <div class="header-actions">
-    <a class="btn" href="../../../../../../index.html"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main">
-  <p class="doc-path mono">examples/job-board/artifacts/api/docs/schemas/candidate-profiles.md</p>
+<main id="content" class="doc-main" tabindex="-1">
   <article class="doc-body">
 <h2 id="schema-candidateprofiles">Schema: candidate_profiles</h2>
 <h3 id="purpose">Purpose</h3>
@@ -47,8 +53,10 @@
 <h3 id="notes">Notes</h3>
 <ul><li>BR-20: one profile per candidate, and only candidates have profiles.</li><li>BR-21: the profile is private. It is read and written only through <code>/api/v1/me/profile</code>, resolved from the authenticated user, with no endpoint taking a profile id. Employers see name, email and headline only through applications to their own jobs (HIRE-6), never the full profile.</li><li><code>PUT /api/v1/me/profile</code> is a full replacement (upsert). Omitted nullable fields become null.</li></ul>
   </article>
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/examples/job-board/artifacts/api/docs/schemas/candidate-profiles.md">View the Markdown source</a></p>
 </main>
+<footer class="site-footer">
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/examples/job-board/artifacts/api/docs/schemas/candidate-profiles.md">View the Markdown source</a></p>
+</footer>
 <script>
   (function () {
     var KEY = 'sdd-guide-theme', NEXT = { system: 'light', light: 'dark', dark: 'system' };

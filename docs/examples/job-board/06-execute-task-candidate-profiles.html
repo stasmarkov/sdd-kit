@@ -21,15 +21,21 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../../index.html">SDD Kit</a>
-    <span class="badge">v4.0.1</span>
+    <span class="badge">v4.0.2</span>
   </div>
+  <nav class="site-nav" aria-label="Site">
+    <ul>
+      <li><a href="../../index.html">Guide</a></li>
+      <li><a href="../../adopt.html">Adopt</a></li>
+      <li><a href="../../reference/index.html">Reference</a></li>
+      <li><a href="../../index.html#example" aria-current="page">Example</a></li>
+    </ul>
+  </nav>
   <div class="header-actions">
-    <a class="btn" href="../../index.html"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main">
-  <p class="doc-path mono">examples/job-board/06-execute-task-candidate-profiles.md</p>
+<main id="content" class="doc-main" tabindex="-1">
   <article class="doc-body">
 <h2 id="06--build-task-by-task-and-resume-candidate-profiles-with-execute-task-hire-5">06 — Build task by task and resume: candidate profiles with /execute-task (HIRE-5)</h2>
 <p>In chapters <a href="04-feature-accounts-and-roles.html">04</a> and <a href="05-feature-company-reviews-full-spec.html">05</a>, approved specs went straight into <code>ship-feature</code>, which builds the whole feature in the background. This chapter uses the interactive alternative. Maya approves the spec without building it, then Alex runs <code>/execute-task</code> one task at a time, with TDD and a verification report after each task. He stops halfway at the end of the day and picks up the next morning in a fresh session from the saved state.</p>
@@ -214,7 +220,7 @@ return $this-&gt;resource($profile-&gt;toApiArray());</code></pre>
 <pre><code class="language-diff"> // web/lib/api/endpoints.ts (added in task 3)
 +  showMyProfile: { method: &#39;GET&#39;, path: &#39;/api/v1/me/profile&#39; },
 +  upsertMyProfile: { method: &#39;PUT&#39;, path: &#39;/api/v1/me/profile&#39; },</code></pre>
-<p>The rest of the API code is in <a href="https://github.com/stasmarkov/sdd-kit/tree/v4.0.1/docs/examples/job-board/artifacts/api/app" target="_blank" rel="noopener noreferrer"><code>artifacts/api/app/</code></a>: <code>Services/CandidateProfileService.php</code>, <code>Repositories/CandidateProfileRepository.php</code>, <code>Policies/CandidateProfilePolicy.php</code>, <code>Exceptions/ProfileNotFoundException.php</code>, plus the routes file <a href="artifacts/api/routes/api/v1/profiles.php"><code>routes/api/v1/profiles.php</code></a> and the tests in <a href="https://github.com/stasmarkov/sdd-kit/tree/v4.0.1/docs/examples/job-board/artifacts/api/tests/Feature/Profiles" target="_blank" rel="noopener noreferrer"><code>tests/Feature/Profiles/</code></a>.</p>
+<p>The rest of the API code is in <a href="https://github.com/stasmarkov/sdd-kit/tree/v4.0.2/docs/examples/job-board/artifacts/api/app" target="_blank" rel="noopener noreferrer"><code>artifacts/api/app/</code></a>: <code>Services/CandidateProfileService.php</code>, <code>Repositories/CandidateProfileRepository.php</code>, <code>Policies/CandidateProfilePolicy.php</code>, <code>Exceptions/ProfileNotFoundException.php</code>, plus the routes file <a href="artifacts/api/routes/api/v1/profiles.php"><code>routes/api/v1/profiles.php</code></a> and the tests in <a href="https://github.com/stasmarkov/sdd-kit/tree/v4.0.2/docs/examples/job-board/artifacts/api/tests/Feature/Profiles" target="_blank" rel="noopener noreferrer"><code>tests/Feature/Profiles/</code></a>.</p>
 <p>If a gate had failed, the task would stay unchecked, the failure would go into the state file, and <code>execute-task</code> would stop. After fixing it, Alex would re-run just that task:</p>
 <pre><code>/execute-task --spec=HIRE-5 --task=2</code></pre>
 <h3 id="4-end-of-day-close-the-session">4. End of day: close the session</h3>
@@ -342,8 +348,10 @@ git -C web push -u origin feature/HIRE-5-candidate-profiles</code></pre>
 <ul><li>A private candidate profile: <code>GET/PUT /api/v1/me/profile</code> with 7 Pest tests, and a <code>/profile</code> page for candidates. This is the prerequisite HIRE-6 checks with <code>profile_required</code>.</li><li>A spec, <code>spec-HIRE-5-candidate-profiles</code>, that went draft → approved (Approve only) → in-progress → done, with every AC and MNC traced to a test or a manual step that was run.</li><li>The task-by-task loop and its files: <code>.ai/session/&lt;spec&gt;-state.json</code> with a <code>resume_hint</code> that names the next repo, per-task reports in <code>.ai/verification/&lt;spec&gt;/</code>, and why they land in <code>api/.ai/</code> when you start Claude inside the owning repo.</li></ul>
 <p>Next: <a href="07-applications-and-deep-review.html">07 — Job applications with ship-feature, then /deep-review before merge (HIRE-6)</a></p>
   </article>
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/examples/job-board/06-execute-task-candidate-profiles.md">View the Markdown source</a></p>
 </main>
+<footer class="site-footer">
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/examples/job-board/06-execute-task-candidate-profiles.md">View the Markdown source</a></p>
+</footer>
 <script>
   (function () {
     var KEY = 'sdd-guide-theme', NEXT = { system: 'light', light: 'dark', dark: 'system' };

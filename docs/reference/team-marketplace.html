@@ -21,15 +21,21 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../index.html">SDD Kit</a>
-    <span class="badge">v4.0.1</span>
+    <span class="badge">v4.0.2</span>
   </div>
+  <nav class="site-nav" aria-label="Site">
+    <ul>
+      <li><a href="../index.html">Guide</a></li>
+      <li><a href="../adopt.html">Adopt</a></li>
+      <li><a href="../reference/index.html" aria-current="page">Reference</a></li>
+      <li><a href="../index.html#example">Example</a></li>
+    </ul>
+  </nav>
   <div class="header-actions">
-    <a class="btn" href="../index.html"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main">
-  <p class="doc-path mono">reference/team-marketplace.md</p>
+<main id="content" class="doc-main" tabindex="-1">
   <article class="doc-body">
 <h2 id="team-marketplace">Team marketplace</h2>
 <p>How a team or organization rolls this framework out through its own plugin marketplace: one catalog repo you control, the core plugin plus the add-ons you approve, each pinned to a reviewed version, enabled per project, and optionally enforced with managed settings.</p>
@@ -38,7 +44,7 @@
 <p>Key names and source formats below follow the Claude Code docs: <a href="https://code.claude.com/docs/en/plugins/create-marketplace" target="_blank" rel="noopener noreferrer">Create a marketplace</a>, <a href="https://code.claude.com/docs/en/plugins/marketplace-reference" target="_blank" rel="noopener noreferrer">Marketplace reference</a>, and <a href="https://code.claude.com/docs/en/plugins/org" target="_blank" rel="noopener noreferrer">Manage plugins for your organization</a>.</p>
 <p>This page covers Claude Code. For other hosts, see <a href="hosts.html">hosts.md</a> for what each supports:</p>
 <ul><li><strong>Codex</strong> reads <code>.agents/plugins/marketplace.json</code>, which the distribution repo ships beside the Claude marketplace. Add it with <code>codex plugin marketplace add &lt;owner&gt;/&lt;repo&gt;</code>, and have each developer approve the kit&#39;s hooks through <code>/hooks</code>.</li><li><strong>Cursor</strong> team marketplaces need a Teams or Enterprise plan and are set up in the dashboard: Plugins &amp; MCPs, Add Marketplace, Import from Repo. There is no CLI step for this. Without a team plan, use <code>install.sh --host cursor</code> per project.</li></ul>
-<p>Both hosts are an unverified preview in 4.0.</p>
+<p>Both hosts are an unverified preview.</p>
 <h3 id="1-create-the-marketplace-repo">1. Create the marketplace repo</h3>
 <pre><code>your-org/claude-marketplace/
 └── .claude-plugin/
@@ -56,8 +62,8 @@
         &quot;source&quot;: &quot;git-subdir&quot;,
         &quot;url&quot;: &quot;stasmarkov/sdd-kit&quot;,
         &quot;path&quot;: &quot;plugins/sdd-kit-laravel-nextjs&quot;,
-        &quot;ref&quot;: &quot;v4.0.1&quot;,
-        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.0.1&gt;&quot;
+        &quot;ref&quot;: &quot;v4.0.2&quot;,
+        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.0.2&gt;&quot;
       }
     },
     {
@@ -67,8 +73,8 @@
         &quot;source&quot;: &quot;git-subdir&quot;,
         &quot;url&quot;: &quot;stasmarkov/sdd-kit&quot;,
         &quot;path&quot;: &quot;plugins/sdd-kit&quot;,
-        &quot;ref&quot;: &quot;v4.0.1&quot;,
-        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.0.1&gt;&quot;
+        &quot;ref&quot;: &quot;v4.0.2&quot;,
+        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.0.2&gt;&quot;
       }
     },
     {
@@ -78,8 +84,8 @@
         &quot;source&quot;: &quot;git-subdir&quot;,
         &quot;url&quot;: &quot;stasmarkov/sdd-kit&quot;,
         &quot;path&quot;: &quot;plugins/sdd-kit-laravel&quot;,
-        &quot;ref&quot;: &quot;v4.0.1&quot;,
-        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.0.1&gt;&quot;
+        &quot;ref&quot;: &quot;v4.0.2&quot;,
+        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.0.2&gt;&quot;
       }
     },
     {
@@ -89,8 +95,8 @@
         &quot;source&quot;: &quot;git-subdir&quot;,
         &quot;url&quot;: &quot;stasmarkov/sdd-kit&quot;,
         &quot;path&quot;: &quot;plugins/sdd-kit-nextjs&quot;,
-        &quot;ref&quot;: &quot;v4.0.1&quot;,
-        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.0.1&gt;&quot;
+        &quot;ref&quot;: &quot;v4.0.2&quot;,
+        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.0.2&gt;&quot;
       }
     },
     {
@@ -100,8 +106,8 @@
         &quot;source&quot;: &quot;git-subdir&quot;,
         &quot;url&quot;: &quot;stasmarkov/sdd-kit&quot;,
         &quot;path&quot;: &quot;plugins/sdd-kit-devenv&quot;,
-        &quot;ref&quot;: &quot;v4.0.1&quot;,
-        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.0.1&gt;&quot;
+        &quot;ref&quot;: &quot;v4.0.2&quot;,
+        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.0.2&gt;&quot;
       }
     },
     {
@@ -111,8 +117,8 @@
         &quot;source&quot;: &quot;git-subdir&quot;,
         &quot;url&quot;: &quot;stasmarkov/sdd-kit&quot;,
         &quot;path&quot;: &quot;plugins/sdd-kit-ops&quot;,
-        &quot;ref&quot;: &quot;v4.0.1&quot;,
-        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.0.1&gt;&quot;
+        &quot;ref&quot;: &quot;v4.0.2&quot;,
+        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.0.2&gt;&quot;
       }
     },
     {
@@ -123,14 +129,14 @@
         &quot;source&quot;: &quot;git-subdir&quot;,
         &quot;url&quot;: &quot;stasmarkov/sdd-kit&quot;,
         &quot;path&quot;: &quot;plugins/sdd-kit-design&quot;,
-        &quot;ref&quot;: &quot;v4.0.1&quot;,
-        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.0.1&gt;&quot;
+        &quot;ref&quot;: &quot;v4.0.2&quot;,
+        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.0.2&gt;&quot;
       }
     }
   ]
 }</code></pre>
 <p>Notes:</p>
-<ul><li>Keep each entry&#39;s <code>name</code> identical to the <code>name</code> in that plugin&#39;s own <code>.claude-plugin/plugin.json</code>; the entry name is the install id (<code>&lt;name&gt;@your-org-claude</code>) and the key written to <code>enabledPlugins</code>.</li><li>Get the commit for a tag with <code>git ls-remote https://github.com/stasmarkov/sdd-kit refs/tags/v4.0.1</code> (use the <code>^{}</code> line for annotated tags).</li><li>If you fork the framework, point <code>repo</code> / <code>url</code> at your fork. A fork is the right choice when you carry local changes; otherwise reference upstream.</li><li>Stack add-ons are separate entries (<code>plugins/sdd-kit-laravel</code>, <code>plugins/sdd-kit-nextjs</code>, <code>plugins/sdd-kit-devenv</code>) that the preset resolves from your catalog. The preset <code>sdd-kit-laravel-nextjs</code> (<code>plugins/sdd-kit-laravel-nextjs</code>) is the first entry above: it only declares dependencies on the core and those three add-ons, so list all of them in your catalog too, pinned like the preset.</li><li>List only the add-ons you approve. <code>ios</code> and <code>drupal</code> can be added the same way (<code>path: plugins/sdd-kit-ios</code>, <code>plugins/sdd-kit-drupal</code>).</li><li><code>defaultEnabled: false</code> makes an add-on opt-in even after install.</li></ul>
+<ul><li>Keep each entry&#39;s <code>name</code> identical to the <code>name</code> in that plugin&#39;s own <code>.claude-plugin/plugin.json</code>; the entry name is the install id (<code>&lt;name&gt;@your-org-claude</code>) and the key written to <code>enabledPlugins</code>.</li><li>Get the commit for a tag with <code>git ls-remote https://github.com/stasmarkov/sdd-kit refs/tags/v4.0.2</code> (use the <code>^{}</code> line for annotated tags).</li><li>If you fork the framework, point <code>repo</code> / <code>url</code> at your fork. A fork is the right choice when you carry local changes; otherwise reference upstream.</li><li>Stack add-ons are separate entries (<code>plugins/sdd-kit-laravel</code>, <code>plugins/sdd-kit-nextjs</code>, <code>plugins/sdd-kit-devenv</code>) that the preset resolves from your catalog. The preset <code>sdd-kit-laravel-nextjs</code> (<code>plugins/sdd-kit-laravel-nextjs</code>) is the first entry above: it only declares dependencies on the core and those three add-ons, so list all of them in your catalog too, pinned like the preset.</li><li>List only the add-ons you approve. <code>ios</code> and <code>drupal</code> can be added the same way (<code>path: plugins/sdd-kit-ios</code>, <code>plugins/sdd-kit-drupal</code>).</li><li><code>defaultEnabled: false</code> makes an add-on opt-in even after install.</li></ul>
 <p>Validate before pushing:</p>
 <pre><code class="language-bash">claude plugin validate ./claude-marketplace</code></pre>
 <p>Then test the full loop on your machine:</p>
@@ -189,8 +195,10 @@ claude plugin details sdd-kit-laravel-nextjs</code></pre>
 <h3 id="verify-the-rollout">Verify the rollout</h3>
 <ul><li>Interactive: run <code>/plugin</code>; your marketplace and the enabled plugins are listed.</li><li>CI: <code>claude -p &quot;ok&quot; --output-format stream-json --verbose</code> and check the <code>plugins</code> list in the <code>init</code> event.</li><li>Policy problems: <code>/status</code> should list <code>Enterprise managed settings</code> under setting sources; blocked sources show <code>is not in the allowed marketplace list</code> or <code>is blocked by enterprise policy</code>.</li></ul>
   </article>
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/reference/team-marketplace.md">View the Markdown source</a></p>
 </main>
+<footer class="site-footer">
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/reference/team-marketplace.md">View the Markdown source</a></p>
+</footer>
 <script>
   (function () {
     var KEY = 'sdd-guide-theme', NEXT = { system: 'light', light: 'dark', dark: 'system' };

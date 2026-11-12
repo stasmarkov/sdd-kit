@@ -24,7 +24,9 @@ Detect          stack(s) + repo layout
 Reproduce       run the failing path, capture the actual failure → cannot reproduce = NEEDS-INFO, stop
                 slowness: the repro is a measured baseline + target (p95, query count, LCP)
 RootCause       file:line + mechanism + Must-NOT-change list; 3-vote adversarial verify
-RegressionTest  failing test (red for the right reason) + green guard test per MNC item; committed
+RegressionTest  failing test (red for the right reason) + green guard test per MNC item; committed as
+                test(<area>): ... on a fix/<KEY>-<slug> branch it creates when HEAD is a base branch
+                (/sdd offers the branch in its launch confirmation)
 Fix             minimal change; regression and guard tests are immutable
 Gates           detected tooling per repo; auto-fix loop
 Acceptance      re-walk the ORIGINAL report and every MNC behavior (diff-checked)

@@ -21,15 +21,21 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../index.html">SDD Kit</a>
-    <span class="badge">v4.0.1</span>
+    <span class="badge">v4.0.2</span>
   </div>
+  <nav class="site-nav" aria-label="Site">
+    <ul>
+      <li><a href="../index.html">Guide</a></li>
+      <li><a href="../adopt.html">Adopt</a></li>
+      <li><a href="../reference/index.html" aria-current="page">Reference</a></li>
+      <li><a href="../index.html#example">Example</a></li>
+    </ul>
+  </nav>
   <div class="header-actions">
-    <a class="btn" href="../index.html"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main">
-  <p class="doc-path mono">reference/workflow-bridge.md</p>
+<main id="content" class="doc-main" tabindex="-1">
   <article class="doc-body">
 <h2 id="workflow-bridge">Workflow bridge</h2>
 <p>Claude Code runs the kit&#39;s background workflows with its own <code>Workflow</code> tool. Hosts without that tool run the same unmodified workflow files through the bridge: a stdio MCP server (<code>src/adapters/bridge/server.mjs</code>) that turns every <code>agent()</code> call into a job the host hands to one of its own subagents.</p>
@@ -63,8 +69,10 @@
 <h3 id="limits">Limits</h3>
 <ul><li><code>budget.total</code> and <code>budget.remaining()</code> report 0 on a bridge host, so budget branches in the workflows do not trigger.</li><li>The script has no clock or randomness; pass dates and ids in through <code>args</code> or ask an agent.</li><li>Claude Code does not use the bridge. Its generated prompts, schemas and verdicts are unchanged, and the host reaches the runtime only through the <code>sddHost</code> global that the bridge injects.</li></ul>
   </article>
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/reference/workflow-bridge.md">View the Markdown source</a></p>
 </main>
+<footer class="site-footer">
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/reference/workflow-bridge.md">View the Markdown source</a></p>
+</footer>
 <script>
   (function () {
     var KEY = 'sdd-guide-theme', NEXT = { system: 'light', light: 'dark', dark: 'system' };

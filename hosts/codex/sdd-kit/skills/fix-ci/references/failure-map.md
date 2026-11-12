@@ -40,8 +40,9 @@ Do not hand-edit generated files to match.
 
 | Symptom | Typical fix |
 |---------|-------------|
-| `Invalid workflow file` | YAML or expression error; validate with `actionlint` |
+| CI config does not parse (`Invalid workflow file`, a GitLab or Bitbucket configuration error) | YAML or expression error; run the provider's validator (`actionlint`, `glab ci lint`; for Bitbucket, read the file against its configuration reference) |
 | Deprecated action version (artifact or cache actions) | Bump to the supported major |
 | Service container never healthy | Add a `--health-cmd` with retries, and wait for it before migrations |
 | Container image build stage fails | Reproduce with the project's container build command for that stage; match the base image's runtime version to the project |
+| Bitbucket step exceeds its memory or `max-time` | Raise the step to `size: 2x` or split the step; never drop the work it ran |
 | Job needs a secret that forks cannot read | Gate the step on the event, not by deleting it; document the secret |

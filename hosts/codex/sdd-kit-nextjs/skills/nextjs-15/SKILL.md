@@ -35,6 +35,7 @@ Apply these patterns when building Next.js frontends with App Router.
 | Error boundaries and error handling | `references/error-handling.md` |
 | Next.js CI pipeline | `references/ci-pipeline.md` |
 | Next.js 16 (proxy.ts, ESLint CLI, Turbopack) | `references/nextjs-16.md` |
+| Exploring the codebase (where routes, handlers, data access and tests live) | `references/exploration-recipes.md` |
 
 ## Code Templates
 

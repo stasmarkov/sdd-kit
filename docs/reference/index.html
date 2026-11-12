@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference · SDD Kit</title>
+<link rel="icon" href="data:,">
+<script>
+  (function () {
+    var root = document.documentElement, stored = null;
+    try { stored = localStorage.getItem('sdd-guide-theme'); } catch (e) { stored = null; }
+    var theme = stored === 'light' || stored === 'dark' ? stored : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    root.dataset.theme = theme;
+    root.style.colorScheme = theme;
+  })();
+</script>
+<link rel="stylesheet" href="../guide.css">
+</head>
+<body class="doc-page">
+<a class="skip-link" href="#content">Skip to content</a>
+<header class="site-header">
+  <div class="brand">
+    <a class="brand-name" href="../index.html">SDD Kit</a>
+    <span class="badge">v4.0.2</span>
+  </div>
+  <nav class="site-nav" aria-label="Site">
+    <ul>
+      <li><a href="../index.html">Guide</a></li>
+      <li><a href="../adopt.html">Adopt</a></li>
+      <li><a href="../reference/index.html" aria-current="page">Reference</a></li>
+      <li><a href="../index.html#example">Example</a></li>
+    </ul>
+  </nav>
+  <div class="header-actions">
+    <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
+  </div>
+</header>
+<main id="content" class="doc-main" tabindex="-1">
+  <h1>Reference</h1>
+  <section class="ref-group">
+    <h2>Start</h2>
+    <ul>
+      <li><a href="getting-started.html">Getting Started</a></li>
+      <li><a href="installation.html">Installing SDD Kit</a></li>
+      <li><a href="usage-examples.html">Usage Examples</a></li>
+    </ul>
+  </section>
+  <section class="ref-group">
+    <h2>Teams and hosts</h2>
+    <ul>
+      <li><a href="team-marketplace.html">Team marketplace</a></li>
+      <li><a href="multi-repo.html">Multi-repo workspaces</a></li>
+      <li><a href="hosts.html">Hosts: Claude Code, Codex and Cursor</a></li>
+      <li><a href="workflow-bridge.html">Workflow bridge</a></li>
+    </ul>
+  </section>
+  <section class="ref-group">
+    <h2>Reference</h2>
+    <ul>
+      <li><a href="specification-system.html">Specification System</a></li>
+      <li><a href="stack-manifest.html">Stack manifest reference</a></li>
+      <li><a href="plugin-mode.html">Plugin mode vs file-copy mode</a></li>
+      <li><a href="third-party.html">Third-Party Skills and Plugins</a></li>
+      <li><a href="effort-guidelines.html">Effort Scaling Guidelines</a></li>
+    </ul>
+  </section>
+  <section class="ref-group">
+    <h2>Catalogs</h2>
+    <ul>
+      <li><a href="skills.html">Skill Index</a></li>
+      <li><a href="agents.html">Agent Index</a></li>
+    </ul>
+  </section>
+</main>
+<footer class="site-footer">
+  <p class="doc-source"><a href="../index.html">Back to the guide</a></p>
+</footer>
+<script>
+  (function () {
+    var KEY = 'sdd-guide-theme', NEXT = { system: 'light', light: 'dark', dark: 'system' };
+    var root = document.documentElement, os = window.matchMedia('(prefers-color-scheme: dark)');
+    var button = document.getElementById('theme-toggle'), choice = 'system';
+    try { var v = localStorage.getItem(KEY); if (v === 'light' || v === 'dark') choice = v; } catch (e) { /* storage unavailable */ }
+    function apply() {
+      var theme = choice === 'system' ? (os.matches ? 'dark' : 'light') : choice;
+      root.dataset.theme = theme;
+      root.style.colorScheme = theme;
+      button.querySelector('.btn-label').textContent = 'Theme: ' + choice;
+      button.setAttribute('aria-label', 'Theme: ' + choice + '. Switch to ' + NEXT[choice] + '.');
+    }
+    button.addEventListener('click', function () {
+      choice = NEXT[choice];
+      try { if (choice === 'system') localStorage.removeItem(KEY); else localStorage.setItem(KEY, choice); } catch (e) { /* page view only */ }
+      apply();
+    });
+    if (os.addEventListener) os.addEventListener('change', function () { if (choice === 'system') apply(); });
+    apply();
+  })();
+</script>
+</body>
+</html>

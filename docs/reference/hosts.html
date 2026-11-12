@@ -21,15 +21,21 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../index.html">SDD Kit</a>
-    <span class="badge">v4.0.1</span>
+    <span class="badge">v4.0.2</span>
   </div>
+  <nav class="site-nav" aria-label="Site">
+    <ul>
+      <li><a href="../index.html">Guide</a></li>
+      <li><a href="../adopt.html">Adopt</a></li>
+      <li><a href="../reference/index.html" aria-current="page">Reference</a></li>
+      <li><a href="../index.html#example">Example</a></li>
+    </ul>
+  </nav>
   <div class="header-actions">
-    <a class="btn" href="../index.html"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main">
-  <p class="doc-path mono">reference/hosts.md</p>
+<main id="content" class="doc-main" tabindex="-1">
   <article class="doc-body">
 <h2 id="hosts-claude-code-codex-and-cursor">Hosts: Claude Code, Codex and Cursor</h2>
 <p>SDD Kit 4.0 runs on three coding-agent hosts. Claude Code is the reference host and is unchanged. Codex and Cursor are an <strong>unverified preview</strong>: the adapters are built and covered by automated tests, but no real Codex or Cursor session has been recorded yet. They move to &quot;supported&quot; in a 4.0.x release once that evidence exists.</p>
@@ -46,8 +52,10 @@
 <p>Official documentation the claims above rest on:</p>
 <ul><li>Codex plugins: https://developers.openai.com/plugins/build/plugins and https://learn.chatgpt.com/docs/plugins</li><li>Codex hooks and trust: https://learn.chatgpt.com/docs/hooks</li><li>Codex skills and subagents: https://learn.chatgpt.com/docs/build-skills and https://learn.chatgpt.com/docs/agent-configuration/subagents.md</li><li>Codex AGENTS.md: https://learn.chatgpt.com/docs/agent-configuration/agents-md</li><li>Cursor hooks: https://cursor.com/docs/agent/hooks and https://cursor.com/docs/reference/third-party-hooks</li><li>Cursor skills, subagents and rules: https://cursor.com/docs/skills, https://cursor.com/docs/subagents and https://cursor.com/docs/context/rules</li><li>Cursor plugins and team marketplaces: https://cursor.com/docs/reference/plugins and https://cursor.com/docs/plugins</li><li>Cursor MCP: https://cursor.com/docs/context/mcp</li></ul>
   </article>
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/reference/hosts.md">View the Markdown source</a></p>
 </main>
+<footer class="site-footer">
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/reference/hosts.md">View the Markdown source</a></p>
+</footer>
 <script>
   (function () {
     var KEY = 'sdd-guide-theme', NEXT = { system: 'light', light: 'dark', dark: 'system' };

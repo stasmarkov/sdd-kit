@@ -21,15 +21,21 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../../../../../../../index.html">SDD Kit</a>
-    <span class="badge">v4.0.1</span>
+    <span class="badge">v4.0.2</span>
   </div>
+  <nav class="site-nav" aria-label="Site">
+    <ul>
+      <li><a href="../../../../../../../index.html">Guide</a></li>
+      <li><a href="../../../../../../../adopt.html">Adopt</a></li>
+      <li><a href="../../../../../../../reference/index.html">Reference</a></li>
+      <li><a href="../../../../../../../index.html#example" aria-current="page">Example</a></li>
+    </ul>
+  </nav>
   <div class="header-actions">
-    <a class="btn" href="../../../../../../../index.html"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main">
-  <p class="doc-path mono">examples/job-board/artifacts/api/.ai/specs/spec-HIRE-4-company-reviews/decisions.md</p>
+<main id="content" class="doc-main" tabindex="-1">
   <article class="doc-body">
 <h2 id="decisions--spec-hire-4-company-reviews">Decisions — spec-HIRE-4-company-reviews</h2>
 <p>Decisions made while writing the spec. Each one names the alternative we turned down and why.</p>
@@ -40,8 +46,10 @@
 <h3 id="d3--unique-index-plus-a-service-pre-check-for-one-review-per-company">D3 — Unique index plus a service pre-check for one review per company</h3>
 <ul><li><strong>Decision</strong>: <code>UNIQUE (company_id, candidate_id)</code> in the migration, and <code>CompanyReviewService::submit()</code> checks <code>existsForCandidate()</code> first and throws <code>ReviewAlreadyExistsException</code> (409 <code>review_already_exists</code>).</li><li><strong>Alternative</strong>: rely on the index alone and translate the database error.</li><li><strong>Why</strong>: the pre-check gives the common case a clear domain error without touching the database error path. The index is still the guarantee. <code>CompanyReviewRepository::create()</code> also maps a <code>UniqueConstraintViolationException</code> to the same exception, so a double-click race answers 409 instead of 500.</li></ul>
   </article>
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/examples/job-board/artifacts/api/.ai/specs/spec-HIRE-4-company-reviews/decisions.md">View the Markdown source</a></p>
 </main>
+<footer class="site-footer">
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/examples/job-board/artifacts/api/.ai/specs/spec-HIRE-4-company-reviews/decisions.md">View the Markdown source</a></p>
+</footer>
 <script>
   (function () {
     var KEY = 'sdd-guide-theme', NEXT = { system: 'light', light: 'dark', dark: 'system' };

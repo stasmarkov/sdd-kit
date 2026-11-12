@@ -1,6 +1,6 @@
 // Codex file-copy installer, run by `install.sh --host codex`.
 //
-// Usage: node install.mjs (--project | --user) [--stack=a,b|none] [--with=x,y] [--prune] [--dry-run] [--yes] [--uninstall]
+// Usage: node install.mjs (--project | --user) [--stack=a,b|none] [--with=x,y|none] [--prune] [--dry-run] [--yes] [--uninstall]
 //
 // Writes skills to <base>/.agents/skills, agents to <config>/agents/*.toml and the runtime root to
 // <config>/sdd-kit, merges hooks.json and a marker block in config.toml, and records everything in
@@ -294,7 +294,7 @@ export function install({ opts, cwd, repo = REPO, log = () => {} }) {
   const loc = locations(opts.mode, cwd)
   const found = discoverAddons(repo)
   const prev = readInstalled(loc.runtime)
-  const addons = selectAddons(opts, found, prev)
+  const addons = selectAddons(opts, found, prev, { repo, cwd, log })
   const stamp = backupStamp()
 
   const built = fs.mkdtempSync(path.join(os.tmpdir(), 'sdd-kit-codex-'))

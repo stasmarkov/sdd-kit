@@ -21,15 +21,21 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../index.html">SDD Kit</a>
-    <span class="badge">v4.0.1</span>
+    <span class="badge">v4.0.2</span>
   </div>
+  <nav class="site-nav" aria-label="Site">
+    <ul>
+      <li><a href="../index.html">Guide</a></li>
+      <li><a href="../adopt.html">Adopt</a></li>
+      <li><a href="../reference/index.html" aria-current="page">Reference</a></li>
+      <li><a href="../index.html#example">Example</a></li>
+    </ul>
+  </nav>
   <div class="header-actions">
-    <a class="btn" href="../index.html"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main">
-  <p class="doc-path mono">reference/installation.md</p>
+<main id="content" class="doc-main" tabindex="-1">
   <article class="doc-body">
 <h2 id="installing-sdd-kit">Installing SDD Kit</h2>
 <p>How to install, update, upgrade, and remove the kit in either mode, plus what the installer
@@ -48,7 +54,7 @@ changes and how to set up MCP servers. For your first session after installing, 
 codex plugin add sdd-kit@sdd-kit</code></pre>
 <p>For a file-copy install use <code>install.sh --host codex</code> (or <code>--host cursor</code>).</p>
 <h3 id="codex">Codex</h3>
-<p>Codex support is an unverified preview in 4.0: it is built and tested, but no real Codex session has been recorded yet (<a href="hosts.html">hosts.md</a>). Codex plugins cannot ship agents, so the plugin install carries skills, hooks and the bridge; custom agents come with the file-copy install. You need Codex, git, jq and Node.js 20+. Windows is not supported.</p>
+<p>Codex support is an unverified preview: it is built and tested, but no real Codex session has been recorded yet (<a href="hosts.html">hosts.md</a>). Codex plugins cannot ship agents, so the plugin install carries skills, hooks and the bridge; custom agents come with the file-copy install. You need Codex, git, jq and Node.js 20+. Windows is not supported.</p>
 <p>Plugin install, from your shell:</p>
 <pre><code class="language-bash">codex plugin marketplace add stasmarkov/sdd-kit
 codex plugin add sdd-kit@sdd-kit</code></pre>
@@ -58,7 +64,7 @@ bash install.sh --host codex --project
 npx github:stasmarkov/sdd-kit install --host codex --project</code></pre>
 <p>Flags: <code>--project</code> or <code>--user</code>, <code>--stack=LIST</code>, <code>--with=LIST</code>, <code>--prune</code>, <code>--dry-run</code>, <code>--yes</code> and <code>--uninstall</code>. Codex skills start with <code>$</code>, for example <code>$sdd</code>.</p>
 <h3 id="cursor">Cursor</h3>
-<p>Cursor support is an unverified preview in 4.0, like Codex. You need Cursor, git, jq and Node.js 20+. Windows is not supported. For a team, import the distribution repo as a team marketplace in the Cursor dashboard (Plugins &amp; MCPs, Add Marketplace, Import from Repo; this needs a Teams or Enterprise plan).</p>
+<p>Cursor support is an unverified preview, like Codex. You need Cursor, git, jq and Node.js 20+. Windows is not supported. For a team, import the distribution repo as a team marketplace in the Cursor dashboard (Plugins &amp; MCPs, Add Marketplace, Import from Repo; this needs a Teams or Enterprise plan).</p>
 <p>File-copy install, from your project root (skills go to <code>.cursor/skills</code>, agents to <code>.cursor/agents</code>, rules to <code>.cursor/rules</code>):</p>
 <pre><code class="language-bash">bash install.sh --host cursor --project --dry-run
 bash install.sh --host cursor --project
@@ -77,7 +83,7 @@ npx github:stasmarkov/sdd-kit install --host cursor --project</code></pre>
 /plugin install sdd-kit-devenv@sdd-kit   # docker and ddev skills
 /plugin install sdd-kit-ops@sdd-kit      # deploy, rollback, feature flags, health checks, incidents
 /plugin install sdd-kit-ios@sdd-kit      # iOS/Swift agent and skills
-/plugin install sdd-kit-drupal@sdd-kit   # Drupal 11 skill
+/plugin install sdd-kit-drupal@sdd-kit   # Drupal 10/11 agent, skills, rules, hooks
 /plugin install sdd-kit-design@sdd-kit   # UI/UX agent and /design-ui</code></pre>
 <p>To work from a local checkout (developing the kit, or testing an unreleased branch), skip the
 marketplace and load the directory directly. Pass <code>--plugin-dir</code> once per plugin:</p>
@@ -159,19 +165,23 @@ shows the change list, and asks before writing anything.</p>
 previews and <code>npx github:stasmarkov/sdd-kit install --project</code> installs; every
 <code>install.sh</code> flag below works (<code>--stack</code>, <code>--minimal</code>, <code>--full</code>, <code>--with=ops</code>, <code>--yes</code>, <code>--user</code>). It runs
 the same <code>install.sh</code> as a clone, so the result is identical, and it needs bash, git, jq and
-Node 18+. On Windows use Git Bash or WSL, or the plugin.</p>
-<p>Add <code>#v4.0.1</code> to pin a release (<code>npx github:stasmarkov/sdd-kit#v4.0.1 install --project</code>);
+npm 11 or 12. On Windows use Git Bash or WSL, or the plugin.</p>
+<p>npm 12 blocks git dependencies unless you allow them, so add <code>--allow-git=root</code>:</p>
+<pre><code class="language-bash">npx --allow-git=root github:stasmarkov/sdd-kit install --project --dry-run
+npx --allow-git=root github:stasmarkov/sdd-kit install --project</code></pre>
+<p>Supported npm versions: 11 and 12. npm 10 is not supported.</p>
+<p>Add <code>#v4.0.2</code> to pin a release (<code>npx github:stasmarkov/sdd-kit#v4.0.2 install --project</code>);
 without a tag npx fetches the default branch. npx caches the download. The package is not
 published to npm.</p>
 <h4 id="flags">Flags</h4>
-<div class="table-wrap"><table><thead><tr><th>Flag</th><th>Effect</th></tr></thead><tbody><tr><td><code>--project</code></td><td>Install into <code>./.claude</code> (this project only)</td></tr><tr><td><code>--user</code></td><td>Install into <code>~/.claude</code> (all projects). Paths in installed docs are rewritten to <code>~/.claude/</code></td></tr><tr><td><code>--minimal</code></td><td>Spec-driven core only, without <code>/progress</code>, <code>/spec-board</code>, <code>/investigate</code>, <code>/learn</code> or <code>/fix-ci</code> (see below)</td></tr><tr><td><code>--full</code></td><td>Everything in core. This is the default</td></tr><tr><td><code>--stack=LIST</code></td><td>Stack add-ons to install, comma-separated, or <code>none</code> for core only. Default: <code>laravel,nextjs</code> on a fresh install, the installed stacks on an upgrade. Other stacks: <code>drupal</code>, <code>ios</code>. An add-on that is not a stack (<code>devenv</code>, <code>ops</code>, <code>design</code>) is rejected with a hint to use <code>--with</code></td></tr><tr><td><code>--with=LIST</code></td><td>Add optional add-ons, comma-separated: <code>devenv</code>, <code>ops</code>, <code>design</code>, plus any stack add-on</td></tr><tr><td><code>--prune</code></td><td>On an upgrade, remove installed add-ons that are not selected. Without it, flags and prompt answers only add, and unselected add-ons are kept. Modified files are never deleted, and everything removed is backed up</td></tr><tr><td><code>--third-party</code></td><td>Also install the pinned third-party skills from <code>src/settings/third-party.json</code> and print the recommended plugin commands. Policy: <a href="third-party.html">third-party.md</a></td></tr><tr><td><code>--dry-run</code></td><td>Print added / updated / removed files and stop. Nothing is written</td></tr><tr><td><code>--yes</code>, <code>-y</code></td><td>Skip the confirmation prompt</td></tr><tr><td><code>--help</code>, <code>-h</code></td><td>Show help</td></tr></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Flag</th><th>Effect</th></tr></thead><tbody><tr><td><code>--project</code></td><td>Install into <code>./.claude</code> (this project only)</td></tr><tr><td><code>--user</code></td><td>Install into <code>~/.claude</code> (all projects). Paths in installed docs are rewritten to <code>~/.claude/</code></td></tr><tr><td><code>--minimal</code></td><td>Spec-driven core only, without <code>/progress</code>, <code>/spec-board</code>, <code>/investigate</code>, <code>/learn</code> or <code>/fix-ci</code> (see below)</td></tr><tr><td><code>--full</code></td><td>Everything in core. This is the default</td></tr><tr><td><code>--stack=LIST</code></td><td>Stack add-ons to install, comma-separated, or <code>none</code> for core only. Default on a fresh <code>--project</code> install: the stack the installer detects in the project root, else <code>laravel,nextjs</code> (see below); <code>laravel,nextjs</code> with <code>--user</code>; the installed stacks on an upgrade. Other stacks: <code>drupal</code>, <code>ios</code>. An add-on that is not a stack (<code>devenv</code>, <code>ops</code>, <code>design</code>) is rejected with a hint to use <code>--with</code></td></tr><tr><td><code>--with=LIST</code></td><td>Add optional add-ons, comma-separated: <code>devenv</code>, <code>ops</code>, <code>design</code>, plus any stack add-on. <code>--with=none</code> skips the default <code>devenv</code> on a fresh install</td></tr><tr><td><code>--prune</code></td><td>On an upgrade, remove installed add-ons that are not selected. Without it, flags and prompt answers only add, and unselected add-ons are kept. Modified files are never deleted, and everything removed is backed up</td></tr><tr><td><code>--third-party</code></td><td>Also install the pinned third-party skills from <code>src/settings/third-party.json</code> and print the recommended plugin commands. Policy: <a href="third-party.html">third-party.md</a></td></tr><tr><td><code>--dry-run</code></td><td>Print added / updated / removed files and stop. Nothing is written</td></tr><tr><td><code>--yes</code>, <code>-y</code></td><td>Skip the confirmation prompt</td></tr><tr><td><code>--help</code>, <code>-h</code></td><td>Show help</td></tr></tbody></table></div>
 <p>Examples:</p>
 <pre><code class="language-bash">./install.sh --project --minimal
 ./install.sh --project --with=ops,design
 ./install.sh --user --full --yes</code></pre>
 <h4 id="stacks-and-add-ons-two-axes">Stacks and add-ons: two axes</h4>
 <p><code>--stack</code> picks the stack add-ons and <code>--with</code> picks the optional ones. They are independent.</p>
-<ul><li><strong>Fresh install, no <code>--stack</code>:</strong> <code>laravel,nextjs</code> are installed. <code>devenv</code> is added to the defaults even when <code>--with</code> names other add-ons, so <code>--with=ops</code> installs laravel, nextjs, devenv and ops.</li><li><strong><code>--with</code> given:</strong> the optional add-ons are exactly the list you pass (plus the devenv rule above when <code>--stack</code> is absent).</li><li><strong><code>--stack=none</code> with a stack add-on in <code>--with</code></strong> is an error.</li><li><strong>Upgrade:</strong> flags and prompt answers add to what is installed. Add-ons you do not mention are kept (<code>Keeping installed add-on</code> in the plan).</li><li><strong><code>--prune</code>:</strong> makes the installed set exactly your selection: stacks exactly <code>--stack</code>, non-stack add-ons exactly <code>--with</code> (the installed non-stack set when <code>--with</code> is omitted). Removed files are backed up, and files you modified are kept and listed (<code>Removing add-on &#39;&lt;x&gt;&#39; (--prune)</code> in the plan).</li></ul>
+<ul><li><strong>Fresh <code>--project</code> install, no <code>--stack</code>:</strong> the installer reads each stack manifest&#39;s <code>markers</code> and <code>packages</code> against the project root: <code>web/core/lib/Drupal.php</code>, <code>core/lib/Drupal.php</code>, <code>docroot/core/lib/Drupal.php</code> or a <code>composer.json</code> requiring <code>drupal/core</code> or <code>drupal/core-recommended</code> means <code>drupal</code>, and an <code>*.xcodeproj</code> or <code>Package.swift</code> means <code>ios</code>. When it finds a stack other than Laravel or Next.js it installs the stacks it found and prints <code>Detected &lt;stack&gt; (&lt;file&gt;)</code>; at the prompt, Enter takes them. Otherwise, including a tree with only <code>artisan</code>, <code>next.config.*</code> or <code>nuxt.config.*</code>, or with no marker at all, <code>laravel,nextjs</code> are installed. Detection reads the project root only, so a project nested in a subdirectory needs <code>--stack</code>; <code>--user</code> installs and upgrades never detect.</li><li><strong><code>devenv</code>:</strong> a fresh full install adds it, with or without <code>--stack</code> and whatever <code>--with</code> names, so <code>--with=ops</code> installs laravel, nextjs, devenv and ops, and <code>--stack=drupal</code> installs drupal and devenv. <code>--stack=none</code> (core only, plus <code>--with</code>), <code>--minimal</code> and <code>--with=none</code> leave it out. <code>--with=none</code> applies to a fresh install only; on an upgrade the installer stops with a hint to use <code>--prune --with=&lt;list&gt;</code>.</li><li><strong><code>--with</code> given:</strong> the optional add-ons are the list you pass, plus the devenv rule above.</li><li><strong><code>--stack=none</code> with a stack add-on in <code>--with</code></strong> is an error.</li><li><strong>Upgrade:</strong> flags and prompt answers add to what is installed. Add-ons you do not mention are kept (<code>Keeping installed add-on</code> in the plan).</li><li><strong><code>--prune</code>:</strong> makes the installed set exactly your selection: stacks exactly <code>--stack</code>, non-stack add-ons exactly <code>--with</code> (the installed non-stack set when <code>--with</code> is omitted). Removed files are backed up, and files you modified are kept and listed (<code>Removing add-on &#39;&lt;x&gt;&#39; (--prune)</code> in the plan).</li><li><strong>Codex and Cursor</strong> (<code>--host=codex</code>, <code>--host=cursor</code>) follow the same rules, apart from <code>--minimal</code>, which they do not take.</li></ul>
 <p>Add-on templates (for example the Laravel contract-sync template) are staged to <code>.claude/templates/&lt;addon&gt;/</code>.
 Add-on rules and add-on <code>third-party.json</code> fragments are file-copy only: plugin mode has no rules directory
 and ships no third-party fragments, so copy them from the add-on if you need them. Rules are copied into
@@ -274,6 +284,14 @@ Read(~/.claude/plugins/cache/**)</code></pre>
 <code>/stack-trust</code> to get the exact text. The trust store itself always lives in
 <code>~/.claude/sdd-kit/trusted-stacks.json</code> in your home directory as the operating system&#39;s user
 database records it: neither <code>$HOME</code> nor <code>CLAUDE_CONFIG_DIR</code> moves it.</p>
+<p><strong>CI logs for <code>/fix-ci</code>.</strong> On GitHub, <code>/fix-ci</code> reads runs through <code>gh</code>, and on GitLab through
+<code>glab</code> (log in once with <code>glab auth login</code>). Bitbucket has no CLI, so for Bitbucket Pipelines it
+makes read-only API calls with credentials from your environment, never from chat:
+<code>BITBUCKET_EMAIL</code> and <code>BITBUCKET_API_TOKEN</code> (an Atlassian API token with the scopes
+<code>read:pipeline:bitbucket</code>, <code>read:pullrequest:bitbucket</code> and <code>read:repository:bitbucket</code>), or
+<code>BITBUCKET_ACCESS_TOKEN</code> (a repository or workspace access token with Pipelines, Pull requests
+and Repositories read). Grant no write scope: a rerun stays a step you take in the Bitbucket UI.
+Without credentials, <code>/fix-ci</code> asks you to paste the failing step&#39;s log.</p>
 <p>Model tiers and effort per workflow phase are covered in
 <a href="effort-guidelines.html">effort-guidelines.md</a>.</p>
 <h3 id="upgrading-from-3x-to-40">Upgrading from 3.x to 4.0</h3>
@@ -292,71 +310,12 @@ overwritten or removed file is backed up to <code>.claude/.framework-backups/&lt
 an add-on agent wins: the staged copy is dropped and the installer prints the fix. Use <code>--prune</code> to drop add-ons you no longer want.
 Bare names keep working (<code>/laravel-12</code>, <code>/migrate-db</code>, agent <code>laravel-backend-dev</code>).</p>
 <h3 id="upgrading-from-1x">Upgrading from 1.x</h3>
-<p>Re-run the 2.0 installer (or update the plugin). In file-copy mode it removes the files 1.x
-installed that 2.0 no longer ships (retired agents, skills, templates, and scripts) and backs
-them up first. It only removes a file whose content matches a copy the kit shipped; a file you
-edited or replaced (for example an upstream Stripe or skill-creator skill installed at the same
-path) is listed as &quot;kept (modified or not from the kit)&quot; and left for you to review.</p>
-<p>The tables below match the CHANGELOG&#39;s <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/CHANGELOG.md#migrating-from-1x" target="_blank" rel="noopener noreferrer">Migrating from 1.x</a> section. They list what a 1.x release shipped; components that were added and removed again during the 2.0 cycle appear only in the CHANGELOG&#39;s <em>Removed</em> table.
-Current lists: <a href="skills.html">skills</a>,
-<a href="agents.html">agents</a>.</p>
-<h4 id="commands">Commands</h4>
-<p>Commands became skills with flat names. Only the commands in the table&#39;s left column existed in
-1.x; a name that is not listed (for example <code>/kanban</code> or <code>/add-context</code>) never existed as a flat
-command and has no stub.</p>
-<div class="table-wrap"><table><thead><tr><th>1.x</th><th>2.0</th></tr></thead><tbody><tr><td><code>/upstream:create-spec</code></td><td><code>/write-spec</code></td></tr><tr><td><code>/upstream:research-spec</code></td><td><code>/write-spec --background</code> (runs the <code>create-spec</code> workflow)</td></tr><tr><td><code>/upstream:tech-research</code></td><td><code>/sdd</code> (or <code>/tech-research</code> directly)</td></tr><tr><td><code>/execution:ship-feature</code></td><td><code>/sdd</code> (or <code>/ship-feature</code> directly)</td></tr><tr><td><code>/execution:fix-bug</code></td><td><code>/sdd</code> (or <code>/fix-bug</code> directly)</td></tr><tr><td><code>/execution:greenfield-build</code></td><td><code>/sdd</code> (or <code>/greenfield-build</code> directly)</td></tr><tr><td><code>/quality:qa-and-docs</code></td><td><code>/sdd</code> (or <code>/qa-and-docs</code> directly)</td></tr><tr><td><code>/quality:code-review</code></td><td><code>/deep-review --depth=standard</code></td></tr><tr><td><code>/quality:deep-review</code></td><td><code>/deep-review</code></td></tr><tr><td><code>/quality:test</code></td><td><code>/run-tests</code></td></tr><tr><td><code>/workflow:status</code></td><td><code>/progress --health</code></td></tr><tr><td><code>/workflow:doctor</code></td><td><code>/framework-doctor</code></td></tr><tr><td><code>/workflow:update-knowledge-graph</code></td><td>Removed (knowledge graph retired)</td></tr><tr><td><code>/execution:execute-task</code>, <code>/execution:simple-task</code>, <code>/execution:generate</code>, <code>/execution:migrate-db</code></td><td><code>/execute-task</code>, <code>/simple-task</code>, <code>/generate</code>, <code>/migrate-db</code></td></tr><tr><td><code>/discovery:investigate</code></td><td><code>/investigate</code></td></tr><tr><td><code>/discovery:analyze-docs</code></td><td><code>/write-docs --audit</code></td></tr><tr><td><code>/design:design-api</code>, <code>/design:design-schema</code></td><td><code>/design-api</code>, <code>/design-schema</code></td></tr><tr><td><code>/design:design-ui</code></td><td><code>/design-ui</code> (design add-on)</td></tr><tr><td><code>/quality:grade</code>, <code>/quality:lint</code>, <code>/quality:security-scan</code>, <code>/quality:upgrade-deps</code></td><td><code>/grade</code>, <code>/lint</code>, <code>/security-scan</code>, <code>/upgrade-deps</code></td></tr><tr><td><code>/release:changelog</code></td><td><code>/changelog</code></td></tr><tr><td><code>/release:deploy</code>, <code>/release:rollback</code>, <code>/release:feature-flag</code></td><td><code>/deploy</code>, <code>/rollback</code>, <code>/feature-flag</code> (ops add-on)</td></tr><tr><td><code>/operations:health-check</code>, <code>/operations:incident</code></td><td><code>/health-check</code>, <code>/incident</code> (ops add-on)</td></tr><tr><td><code>/workflow:progress</code>, <code>/workflow:sync-obsidian</code>, <code>/workflow:write-docs</code></td><td><code>/progress</code>, <code>/sync-obsidian</code>, <code>/write-docs</code></td></tr><tr><td><code>/workflow:add-context</code></td><td><code>/write-docs --import</code></td></tr><tr><td><code>/workflow:getting-started</code></td><td><code>/framework-doctor</code>, then <code>GETTING-STARTED.md</code></td></tr><tr><td><code>/workflow:kanban</code></td><td><code>/spec-board</code></td></tr></tbody></table></div>
-<p><code>/sdd</code> routes work to the right workflow. The workflows stay directly runnable as
-<code>/ship-feature</code>, <code>/fix-bug</code>, <code>/qa-and-docs</code>, <code>/tech-research</code>, <code>/greenfield-build</code>, and
-<code>/create-spec</code>.</p>
-<p>The old namespaced commands remain as redirect stubs in <code>.claude/commands/</code>
-(full installs and plugin mode; they are still shipped in 3.x and go in a later release). They are manual-only: Claude will not pick them on its own.
-A stub translates old flags that changed meaning (<code>/workflow:add-context</code>, <code>/workflow:kanban</code>,
-<code>/workflow:status</code>) and, for a user-invoked skill such as <code>/changelog</code> or <code>/framework-doctor</code>,
-tells you the command to type. <code>/workflow:update-knowledge-graph</code> has no replacement; its stub
-only explains the retirement.</p>
-<h4 id="removed-skills-and-templates">Removed skills and templates</h4>
-<p>Skills and templates are removed as well, not only commands:</p>
-<div class="table-wrap"><table><thead><tr><th>1.x</th><th>2.0</th></tr></thead><tbody><tr><td><code>obsidian-sync</code></td><td><code>/sync-obsidian</code></td></tr><tr><td><code>stripe-best-practices</code>, <code>upgrade-stripe</code>, <code>stripe-projects</code></td><td>Stripe&#39;s published skills: <code>install.sh --project --third-party</code> installs <code>stripe-best-practices</code> and <code>upgrade-stripe</code> (pinned in <code>src/settings/third-party.json</code>); <code>stripe-projects</code> is installed by hand (<code>docs/third-party.md</code>)</td></tr><tr><td><code>skill-creator</code></td><td>Anthropic&#39;s <code>skill-creator</code> plugin (third-party manifest)</td></tr><tr><td><code>prompt-engineering-patterns</code></td><td>Removed (outside the kit&#39;s scope)</td></tr><tr><td><code>src/templates/code/*</code></td><td><code>laravel-12/assets/templates/</code>, <code>nextjs-15/assets/templates/</code>, used by <code>/generate</code></td></tr><tr><td><code>src/templates/specs/{feature,epic,user-story,requirements,code-review-checklist}.template.md</code>, <code>execute-task-workflow.md</code></td><td><code>write-spec</code> templates, <code>product-brief</code> assets, <code>specification-system.md</code></td></tr><tr><td><code>src/templates/specs/feature-flag-doc.template.md</code></td><td><code>feature-flag/references/flag-doc.template.md</code> (ops add-on)</td></tr><tr><td><code>src/templates/context/workflow.template.md</code></td><td>None: the Golden Triangle is business rules, architecture, and API contracts (<code>templates/context/golden-triangle.md</code>); the process lives in <code>/sdd</code> and <code>AGENTS.md</code></td></tr><tr><td><code>src/templates/commands/_templates/command.template.md</code></td><td><code>src/templates/skills/_templates/</code> (commands became skills)</td></tr><tr><td><code>src/templates/knowledge-graph/*</code></td><td>Removed (knowledge graph retired)</td></tr><tr><td><code>drupal-11</code> (core in 1.x)</td><td><code>drupal-11</code> in the drupal add-on (<code>--stack=drupal</code>)</td></tr></tbody></table></div>
-<h4 id="merged-moved-and-removed-agents">Merged, moved, and removed agents</h4>
-<div class="table-wrap"><table><thead><tr><th>1.x</th><th>2.0</th></tr></thead><tbody><tr><td><code>api-dev</code></td><td><code>laravel-backend-dev</code></td></tr><tr><td><code>integration-dev</code></td><td><code>laravel-backend-dev</code></td></tr><tr><td><code>database-dev</code></td><td><code>database-designer</code></td></tr><tr><td><code>monitor</code>, <code>log-analyst</code>, <code>support-analyst</code></td><td><code>ops-analyst</code> (ops add-on)</td></tr><tr><td><code>code-reviewer</code></td><td>Removed; <code>/deep-review</code> uses <code>adversarial-reviewer</code></td></tr><tr><td><code>deployment-specialist</code>, <code>rollback-specialist</code>, <code>incident-responder</code></td><td>Same names, ops add-on</td></tr><tr><td><code>release-manager</code></td><td><code>/changelog --release &lt;version&gt;</code>, then <code>/deploy</code> (ops add-on)</td></tr><tr><td><code>intake-processor</code></td><td><code>requirements-analyst</code>, <code>/product-brief --intake</code></td></tr><tr><td><code>pattern-discoverer</code></td><td><code>code-explorer</code></td></tr><tr><td><code>system-architect</code></td><td><code>api-architect</code></td></tr><tr><td><code>test-runner</code></td><td><code>code-quality</code></td></tr><tr><td><code>git-workflow</code></td><td><code>/open-pr</code></td></tr><tr><td><code>tech-researcher</code></td><td><code>tech-research</code> workflow, <code>/investigate</code></td></tr><tr><td><code>context-fetcher</code></td><td>Removed (a subagent cannot see the main context)</td></tr><tr><td><code>dependency-analyzer</code></td><td><code>/product-brief</code> (slice ordering, blockers), <code>/upgrade-deps</code>, <code>/security-scan</code>, <code>code-explorer</code></td></tr><tr><td><code>ui-ux-advisor</code></td><td>Same name, design add-on</td></tr><tr><td><code>knowledge-graph-manager</code>, <code>learning-extractor</code></td><td>Removed (knowledge graph retired)</td></tr></tbody></table></div>
-<p>If you used the moved agents, add the add-on: <code>--stack=laravel,nextjs,ios --with=ops,design</code> or the matching
-<code>sdd-kit-*</code> plugins.</p>
-<h4 id="knowledge-graph-retired">Knowledge graph retired</h4>
-<p>Memory is now Claude Code auto memory plus agent memory (<code>memory: project</code> in agent
-frontmatter). The installer already removes the <code>knowledge-graph-manager</code> and
-<code>learning-extractor</code> agents, <code>scripts/kg-capture.sh</code>, <code>scripts/init-knowledge-graph.js</code>, and
-<code>hooks/post-change-kg-sync.sh</code>, and drops the <code>kg-capture</code> hook from <code>settings.json</code>. It does
-<strong>not</strong> touch your data or MCP config, so finish the cleanup by hand:</p>
-<ol><li>Remove the <code>knowledge-graph</code> entry from <code>mcpServers</code> in <code>.mcp.json</code> (or
-<code>claude mcp remove knowledge-graph</code>).</li><li>Delete <code>.claude/knowledge-graph.jsonl</code> and <code>.ai/knowledge-graph.jsonl</code> if present. Move
-anything worth keeping into <code>CLAUDE.md</code>, <code>AGENTS.md</code>, or <code>.claude/rules/</code> first.</li></ol>
-<h4 id="other-leftovers">Other leftovers</h4>
-<ul><li>1.x left <code>*.backup.*</code> copies inside <code>.claude/</code>. The installer warns about them; delete
-them once you no longer need them.</li><li>Cards in a 1.x <code>.ai/kanban.json</code> are not read by <code>/spec-board</code>, which takes status from the
-spec files. A card with a spec needs nothing. Drop the DONE, IN_PROGRESS, and REVIEW cards
-that have no spec: that work is already started or finished, and a backlog slice would
-re-plan it. Migrate only the BACKLOG and TODO cards without a spec: paste their titles and
-descriptions into <code>/product-brief --intake &quot;&lt;cards&gt;&quot;</code> (with no <code>product-brief.md</code> yet, it
-offers to write the brief first or to start a backlog only), or turn one into a spec with
-<code>/write-spec</code>. Then delete the file.</li><li>Documents imported with 1.x <code>/workflow:add-context</code> into <code>.claude/context/business/</code>,
-<code>.claude/context/architecture/</code>, or <code>.claude/context/workflow/</code> are no longer read by anything:
-their only readers were the retired <code>context-fetcher</code> agent and the knowledge graph. Re-import
-each one into the Golden Triangle paths that <code>/write-spec</code>, <code>create-spec</code>, and
-<code>/framework-doctor</code> read: <code>/write-docs --import .claude/context/&lt;dir&gt;/&lt;file&gt; --as=business</code>
-(or <code>--as=architecture</code>, <code>--as=api</code>; for <code>workflow/</code> files, pick the one that fits or fold
-them into <code>AGENTS.md</code>). Then delete <code>.claude/context/</code>. <code>/framework-doctor</code> warns while it
-exists.</li><li><code>docs/context/workflow.md</code> from 1.x <code>/workflow:getting-started</code> is no longer generated, and
-<code>CLAUDE.md</code> no longer loads it. The SessionStart (compact) hook still re-injects its first lines after a
-compaction while the file exists, so fold anything still true into <code>AGENTS.md</code> (commands,
-red lines) and delete it.</li><li>Files the installer kept because they no longer match the kit&#39;s copy are listed as &quot;kept&quot; in
-its plan; review each and delete the ones you do not use (a kept 1.x agent in a category
-folder, such as <code>agents/quality/code-reviewer.md</code>, still loads next to the flat 2.0 agents).</li><li>A 2.0 <code>--minimal</code> install ships no <code>.claude/commands/</code>, so a 1.x full install&#39;s namespaced
-commands stay behind. <code>/framework-doctor</code> flags them; delete the namespaced folders
-(<code>upstream/</code>, <code>quality/</code>, <code>execution/</code>, <code>workflow/</code>, <code>_shared/</code>, and so on) under
-<code>.claude/commands/</code>.</li></ul>
+<p>Re-run the installer (or update the plugin). In file-copy mode every upgrade removes the files 1.x installed that the current kit no longer ships and backs them up first; no flag is needed. It only removes a file whose content matches a copy the kit shipped; a file you edited or replaced is listed as &quot;kept (modified or not from the kit)&quot; and left for you to review. <code>install.sh --prune</code> does something else: it also removes installed add-ons that you did not select (see <a href="#flags" data-anchor="flags">Flags</a>).</p>
+<p>The renamed and removed commands, agents and skills are listed in the CHANGELOG 2.0.0 entry, under <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/CHANGELOG.md#migrating-from-1x" target="_blank" rel="noopener noreferrer">Migrating from 1.x</a>. Current lists: <a href="skills.html">skills</a>, <a href="agents.html">agents</a>.</p>
+<p>If you used a moved agent (iOS, ops or design), add the add-on: <code>--stack=laravel,nextjs,ios --with=ops,design</code> or the matching <code>sdd-kit-*</code> plugins.</p>
 <h3 id="verifying-an-install">Verifying an install</h3>
 <div class="table-wrap"><table><thead><tr><th>Check</th><th>What it tells you</th></tr></thead><tbody><tr><td><code>/framework-doctor</code></td><td>Directory layout, flat skill discovery, manifest drift, workflow name collisions, MCP config, and that hooks are wired and actually fire (it sends a harmless payload that must be blocked)</td></tr><tr><td><code>/hooks</code></td><td>Active hooks and where they come from</td></tr><tr><td><code>/memory</code></td><td>Loaded <code>CLAUDE.md</code>, <code>AGENTS.md</code>, and rules files</td></tr><tr><td><code>/plugin</code> → <strong>Errors</strong> tab</td><td>Plugin components that failed to load (plugin mode)</td></tr><tr><td><code>claude plugin validate &lt;path&gt;</code></td><td>Manifest and frontmatter problems in a plugin directory</td></tr></tbody></table></div>
-<p>The hooks themselves are documented in <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/share/hooks/README.md" target="_blank" rel="noopener noreferrer">src/hooks/README.md</a>.</p>
+<p>The hooks themselves are documented in <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/share/hooks/README.md" target="_blank" rel="noopener noreferrer">src/hooks/README.md</a>.</p>
 <h3 id="uninstalling">Uninstalling</h3>
 <p><strong>Plugin mode:</strong> <code>/plugin uninstall sdd-kit@sdd-kit</code> and the same for each add-on.</p>
 <p><strong>File-copy mode:</strong> there is no <code>--uninstall</code> flag. The manifest lists every file the kit
@@ -403,8 +362,10 @@ argument to <code>ship-feature</code> is treated as a new feature description.</
 <p><strong>Something else.</strong> Run <code>/framework-doctor</code>, then re-run the installer with <code>--dry-run</code> to see
 whether files have drifted from the manifest.</p>
   </article>
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/reference/installation.md">View the Markdown source</a></p>
 </main>
+<footer class="site-footer">
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/reference/installation.md">View the Markdown source</a></p>
+</footer>
 <script>
   (function () {
     var KEY = 'sdd-guide-theme', NEXT = { system: 'light', light: 'dark', dark: 'system' };

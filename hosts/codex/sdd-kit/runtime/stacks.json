@@ -48,7 +48,11 @@
       "execWrapper": {
         "when": ".ddev/config.yaml",
         "command": "ddev exec",
-        "requiresRunning": "ddev describe"
+        "requiresRunning": {
+          "command": "ddev describe -j",
+          "jsonField": "raw.status",
+          "equals": "running"
+        }
       },
       "contractSync": {
         "routeListCommand": "php artisan route:list --json",
@@ -212,6 +216,10 @@
           "command": "ddev describe -j",
           "jsonField": "raw.status",
           "equals": "running"
+        },
+        "workdir": {
+          "flag": "--dir",
+          "root": "/var/www/html"
         }
       },
       "skills": {
@@ -221,8 +229,15 @@
       },
       "markers": [
         "core/lib/Drupal.php",
-        "web/core/lib/Drupal.php"
-      ]
+        "web/core/lib/Drupal.php",
+        "docroot/core/lib/Drupal.php"
+      ],
+      "packages": {
+        "composer": [
+          "drupal/core",
+          "drupal/core-recommended"
+        ]
+      }
     },
     "nextjs": {
       "name": "nextjs",
@@ -817,6 +832,33 @@
       }
     ],
     "addons": {
+      "drupal": {
+        "markers": [
+          "core/lib/Drupal.php",
+          "web/core/lib/Drupal.php",
+          "docroot/core/lib/Drupal.php"
+        ],
+        "packages": {
+          "composer": [
+            "drupal/core",
+            "drupal/core-recommended"
+          ]
+        },
+        "hooks": [
+          {
+            "event": "PreToolUse",
+            "matcher": "Write|Edit",
+            "script": "drupal-test-first.sh"
+          },
+          {
+            "event": "PostToolUse",
+            "matcher": "Write|Edit",
+            "script": "drupal-lint.sh",
+            "timeout": 30,
+            "async": true
+          }
+        ]
+      },
       "laravel": {
         "markers": [
           "artisan"

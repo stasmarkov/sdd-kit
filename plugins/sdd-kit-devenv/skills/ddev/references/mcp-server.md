@@ -140,6 +140,12 @@ Ask Claude: "Run the Laravel migrations"
 → Uses ddev_exec with "php artisan migrate"
 ```
 
+### Rebuild the Drupal Cache
+```
+Ask Claude: "Rebuild the Drupal cache"
+→ Uses ddev_exec with "drush cr"
+```
+
 ### Debug Setup
 ```
 Ask Claude: "Enable Xdebug for debugging"

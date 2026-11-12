@@ -2,7 +2,7 @@
 
 Commands and tool detail behind the core `/lint`, `/run-tests`, `/security-scan`, `/upgrade-deps`, `verification-gates` and the `code-quality` agent in a Laravel repo. The gate list itself comes from the stack manifest (`stack.json`); this file holds the options and examples.
 
-If the project runs in DDEV (`.ddev/` exists and `ddev describe` succeeds), prefix PHP commands with `ddev exec`.
+If the project runs in DDEV (`.ddev/` exists), check that it is running: `ddev describe -j` must report `raw.status` `running`. If it does not, stop and ask the user to run `ddev start`; do not start it yourself. While it is running, prefix PHP commands with `ddev exec`.
 
 ## Gates
 

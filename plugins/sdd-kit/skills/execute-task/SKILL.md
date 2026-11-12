@@ -5,11 +5,11 @@ argument-hint: "--spec=<folder | number | ticket key | timestamp id> | --continu
 allowed-tools: Agent, Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion
 metadata:
   mcp-tools: "context7"
-  version: "2.1"
-  subagents: "test-writer, laravel-backend-dev, nextjs-frontend-dev, code-quality"
+  version: "2.2"
+  subagents: "test-writer, code-quality, each repo's stack specialist (agent.name from the stack manifest)"
   checkpoint_enabled: "true"
-  last_verified: "2026-10-19"
-  next_review: "2027-01-19"
+  last_verified: "2026-11-11"
+  next_review: "2027-02-11"
 ---
 
 # Execute Task Command
@@ -67,7 +67,10 @@ Load State → Find Next Task → Load Context → Execute (TDD) → Verify → 
   "total_tasks": 8,
   "completed_tasks": [1, 2],
   "last_updated": "2025-01-15T14:30:00Z",
-  "resume_hint": "Completed PaymentIntentService, next is controller implementation"
+  "resume_hint": "Completed PaymentIntentService, next is controller implementation",
+  "repos": [
+    { "path": ".", "key": "<stack key>", "role": "backend", "specialist": "<agent.name or none>" }
+  ]
 }
 ```
 
@@ -106,15 +109,19 @@ Trust only this output, one line each:
 
 The next task is the first `build:` line, never a gate; exit 0 with no `build:` line means no task remains. `--task=N`, `--continue` and `--auto-continue` select only from the `build:` lines too: when task N (or the task in the session state) is not one of them, refuse it and report `not buildable: task <N>`, adding `awaiting owner: <gate title>` when it is the gate or a task after it. On exit 3 with no `build:` line, stop before any task and report `awaiting owner: <gate title>`; with `--auto-continue`, stop after the last `build:` task the same way. Fail closed: when no copy exists, the exit code is anything other than 0 or 3, or the output has any other line, stop and report `gate check unavailable: <reason>` without building a task. Never check a gate yourself.
 
-### Step 4: Detect Task Type & Load Context
+### Step 4: Resolve Repos & Load Context
+
+**Repos and stacks.** Take the repos the task touches from the spec's tasks and boundaries; when they name none, use the "Repos and stack keys" rule of the `verification-gates` skill. Resolve each repo's stack entry once with that skill's recipe, including its trust and `extends` rules, and record `repos: [{path, key, role, specialist}]` in the session state (`role` from the entry's `role`, `specialist` from its `agent.name`, or `none`). On `--continue`, reuse the recorded `repos` unless the task touches a repo that is not in it; a state file without `repos` is resolved again.
+
+**Context.** Classify the task to pick what to load:
 
 | Task Type | Keywords | Context to Load |
 |-----------|----------|-----------------|
 | database | migration, schema, table | Schema docs |
-| api | controller, endpoint, route | Controller patterns |
-| service | service, business logic | Service patterns |
+| api | endpoint, route, handler | Endpoint patterns from the stack's conventions skill |
+| service | service, business logic | Service patterns from the stack's conventions skill |
 | test | test, testing | Test patterns |
-| frontend | component, page, hook | Frontend patterns |
+| frontend | component, page, view | UI patterns from the stack's conventions skill |
 
 Load only relevant context to minimize token usage.
 
@@ -128,10 +135,9 @@ Load only relevant context to minimize token usage.
 - **Characterization task** (task 1, covering MNC ids): write tests that pin today's behavior, run them against the unchanged code, and require them to **pass**. A characterization test that fails has found that the code does not do what the MNC item says: stop and ask whether the spec or the code is right. Never change production code in this task.
 - **Restructuring tasks**: no RED step. Move code with the characterization tests green before, during, and after; never edit them. A task with a structural AC (e.g. "`OrderService` has no pricing logic") may add an architecture test for it, which fails first as usual.
 
-Invoke appropriate subagent based on task type:
-- `test-writer` for test-first phases (the stack's unit and e2e test tools from the manifest)
-- `laravel-backend-dev` for service/controller/database tasks
-- `nextjs-frontend-dev` for page/component/Server Action tasks
+`test-writer` writes the RED tests with the manifest's unit and e2e tools.
+
+For GREEN, delegate each touched repo to the agent its stack entry names in `agent.name`: try the bare name first, then, on Claude Code, `<agent.plugin>:<agent.name>` when `agent.plugin` is set. Only a first-party entry, a trusted overlay, or an extending overlay resolved by the `verification-gates` rule supplies the name. Key `other`, the name `general-purpose`, and a non-extending overlay that is rejected, untrusted or unchecked have no specialist. When there is no specialist or the name does not resolve, build in this session and say once `specialist <name> not available; building in this session`. A task that spans several repos is delegated per repo, one call each, in ascending `order` of their entries (so a backend role goes before a frontend one).
 
 ### Step 6: Verification Gates
 
@@ -193,8 +199,7 @@ Ready to continue? [Yes] [Show task details] [Start over]
 | Task Type | Subagent | Purpose |
 |-----------|----------|---------|
 | Tests | test-writer | Write failing tests (RED phase); characterization tests that pass on today's code for `type: refactor` |
-| Backend | laravel-backend-dev | Implement code (GREEN phase) |
-| Frontend | nextjs-frontend-dev | Implement pages, components, Server Actions (GREEN phase) |
+| Implementation | each repo's stack specialist (agent.name) | GREEN phase, one call per repo |
 | Verification | code-quality | Run every applicable gate, tests included, and report per gate |
 
 Use subagents when tasks can run in parallel or require isolated context. For simple single-file tasks, work directly.

@@ -91,7 +91,7 @@ window.CATALOG = {
       "ships": "core",
       "category": "devops",
       "invoke": "both",
-      "description": "GitHub Actions CI/CD pipelines. Use for testing, deployment, and release automation workflows.",
+      "description": "CI/CD pipelines for GitHub Actions, GitLab CI and Bitbucket Pipelines, built from the stack's gate commands. Use for testing, deployment and release automation.",
       "hosts": {
         "codex": {
           "invoke": "$ci-cd",
@@ -193,7 +193,7 @@ window.CATALOG = {
       "ships": "core",
       "category": "execution",
       "invoke": "both",
-      "description": "Get a red CI run or a broken local build back to green without weakening any gate. Reads the failing job (gh pr checks / gh run view --log-failed, or local output), maps the step to its stack gate (format, lint, types, tests, build, e2e, install and lockfile, contract sync, audit), reproduces it locally with the lockfile's package manager, applies the minimal fix (workflow YAML and container builds go through devops-engineer), then re-runs that gate and the full gate set. Never pushes; suppressions, skips, baselines, lowered thresholds, and removed steps need explicit user confirmation. Use when CI is red, a PR check fails, the build broke, a dependency install fails, or a ship-feature / greenfield-build report lists a gate that stayed red. Stack-specific causes come from the stack add-on. A test that fails because behavior is wrong goes to /sdd (bug route).",
+      "description": "Get a red CI run or a broken local build back to green without weakening any gate. Reads the failing job from GitHub Actions, GitLab CI or Bitbucket Pipelines, or local output, maps the step to its stack gate (format, lint, types, tests, build, e2e, install and lockfile, contract sync, audit), reproduces it locally with the lockfile's package manager, applies the minimal fix (workflow YAML and container builds go through devops-engineer), then re-runs that gate and the full gate set. Never pushes; suppressions, skips, baselines, lowered thresholds, and removed steps need explicit user confirmation. Use when CI is red, a PR check fails, the build broke, a dependency install fails, or a ship-feature / greenfield-build report lists a gate that stayed red. Stack-specific causes come from the stack add-on. A test that fails because behavior is wrong goes to /sdd (bug route).",
       "hosts": {
         "codex": {
           "invoke": "$fix-ci",
@@ -652,7 +652,7 @@ window.CATALOG = {
       "ships": "devenv plugin",
       "category": "devops",
       "invoke": "both",
-      "description": "DDEV local development environment. Use for container management, debugging, and Laravel/Next.js development.",
+      "description": "DDEV local development environment for PHP and Node.js projects (Drupal, Laravel, Next.js and others). Use for container management, running Composer, Drush, Artisan or npm inside DDEV, database work, Xdebug and quality gates in a DDEV project.",
       "hosts": {
         "codex": {
           "invoke": "$ddev",
@@ -686,7 +686,7 @@ window.CATALOG = {
       "ships": "drupal plugin",
       "category": "drupal",
       "invoke": "both",
-      "description": "Drupal 11 module development patterns. Use for entities, services, plugins, hooks, and backend architecture decisions.",
+      "description": "Drupal 10.3+ and 11 module development patterns. Use for entities, services, plugins, hooks, tests, and backend architecture decisions.",
       "hosts": {
         "codex": {
           "invoke": "$drupal-11",
@@ -1333,7 +1333,7 @@ window.CATALOG = {
       "category": "execution",
       "model": "sonnet",
       "effort": "medium",
-      "description": "Drupal 11 backend implementer for custom modules, services, plugins, entities, forms, routes and configuration. Use PROACTIVELY for any work in web/modules/custom, hook and event subscriber code, config schema and exports, and Drush-driven checks. Follows Drupal coding standards and runs the project's PHPCS, PHPStan and PHPUnit gates through DDEV when present.",
+      "description": "Drupal 10/11 backend implementer for custom modules, services, plugins, entities, forms, routes and configuration. Use PROACTIVELY for any work in web/modules/custom, hook and event subscriber code, config schema and exports, and Drush-driven checks. Follows Drupal coding standards and runs the project's PHPCS, PHPStan and PHPUnit gates through DDEV when present.",
       "hosts": {
         "codex": {
           "invoke": "$sdd-runtime",
@@ -1757,6 +1757,56 @@ window.CATALOG = {
           "detail": "Recommendation + confidence + open questions"
         }
       ]
+    }
+  ],
+  "addons": [
+    {
+      "name": "sdd-kit-laravel",
+      "description": "Laravel add-on: laravel-backend-dev agent, Laravel, Pest, Passport, DTO, service-repository, event-driven and migration skills, path-scoped rules, the contract-sync template and the Laravel stack manifest.",
+      "skills": 8,
+      "agents": 1
+    },
+    {
+      "name": "sdd-kit-nextjs",
+      "description": "Next.js add-on: nextjs-frontend-dev agent, Next.js, TypeScript and Tailwind skills, path-scoped rules and the Next.js and Nuxt stack manifests.",
+      "skills": 6,
+      "agents": 1
+    },
+    {
+      "name": "sdd-kit-devenv",
+      "description": "Dev-environment add-on: docker and ddev skills, plus an optional DDEV MCP entry. Not tied to a stack.",
+      "skills": 2,
+      "agents": 0
+    },
+    {
+      "name": "sdd-kit-laravel-nextjs",
+      "description": "The Laravel + Next.js starting set: installs the core plugin with the Laravel, Next.js and dev-environment add-ons. Ships no components of its own.",
+      "skills": 0,
+      "agents": 0
+    },
+    {
+      "name": "sdd-kit-ops",
+      "description": "Operations add-on: deploy, rollback, feature flags, health checks, incident response, and ops analysis agents.",
+      "skills": 5,
+      "agents": 4
+    },
+    {
+      "name": "sdd-kit-ios",
+      "description": "iOS/Swift add-on: ios-mobile-dev agent, ios-native (with SwiftUI code templates in its assets) and swift-testing skills.",
+      "skills": 2,
+      "agents": 1
+    },
+    {
+      "name": "sdd-kit-drupal",
+      "description": "Drupal 10/11 add-on: drupal-backend-dev agent, drupal-11 skill with module scaffolding and testing patterns, path-scoped rules, test-first and PHPCS hooks, DDEV gates and the Drupal stack manifest.",
+      "skills": 1,
+      "agents": 1
+    },
+    {
+      "name": "sdd-kit-design",
+      "description": "UI design add-on: ui-ux-advisor agent and design-ui skill. Third-party design skills are listed in docs/third-party.md.",
+      "skills": 1,
+      "agents": 1
     }
   ]
 };

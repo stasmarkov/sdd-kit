@@ -252,9 +252,28 @@
                   }
                 }
               ]
+            },
+            "workdir": {
+              "type": "object",
+              "required": [
+                "flag",
+                "root"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "flag": {
+                  "type": "string",
+                  "pattern": "^-{1,2}[A-Za-z][A-Za-z0-9-]*$"
+                },
+                "root": {
+                  "type": "string",
+                  "pattern": "^(/(?!\\.{1,2}(/|$))[A-Za-z0-9._-]+)+$"
+                }
+              },
+              "description": "For a repo below the directory that holds the marker: the wrapper's working-directory flag and the container path of that directory. The gates then run as `<command> <flag> <root>/<dir> <gate command>`, where dir is the repo's path relative to the marker's directory, and container paths under <root> in gate output are reported relative to the repo. The flag must be valid directly after `command`, so a wrapper whose command ends in an argument such as a service name cannot declare it."
             }
           },
-          "description": "Run this stack's gates through a wrapper (for example a container exec) when the marker file `when` exists in the repo: each gate runs as `<command> <gate command>`. `requiresRunning` is a command whose success shows the wrapper is up; when it fails the wrapped gates are skipped."
+          "description": "Run this stack's gates through a wrapper (for example a container exec) when the marker file `when` exists in the repo (or, with `workdir`, in a directory above it): each gate runs as `<command> <gate command>`. `requiresRunning` is a command whose success shows the wrapper is up; when it fails the wrapped gates are skipped."
         },
         "contractSync": {
           "type": "object",
@@ -425,6 +444,25 @@
           "items": {
             "type": "string"
           }
+        },
+        "packages": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "composer": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "npm": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "Package names whose presence in the project root's composer.json require/require-dev or package.json dependencies/devDependencies suggests the stack. Read by the file-copy and host installers when they pick a default stack."
         },
         "e2eBackend": {
           "type": "object",
@@ -735,9 +773,28 @@
                     }
                   }
                 ]
+              },
+              "workdir": {
+                "type": "object",
+                "required": [
+                  "flag",
+                  "root"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "flag": {
+                    "type": "string",
+                    "pattern": "^-{1,2}[A-Za-z][A-Za-z0-9-]*$"
+                  },
+                  "root": {
+                    "type": "string",
+                    "pattern": "^(/(?!\\.{1,2}(/|$))[A-Za-z0-9._-]+)+$"
+                  }
+                },
+                "description": "For a repo below the directory that holds the marker: the wrapper's working-directory flag and the container path of that directory. The gates then run as `<command> <flag> <root>/<dir> <gate command>`, where dir is the repo's path relative to the marker's directory, and container paths under <root> in gate output are reported relative to the repo. The flag must be valid directly after `command`, so a wrapper whose command ends in an argument such as a service name cannot declare it."
               }
             },
-            "description": "Run this stack's gates through a wrapper (for example a container exec) when the marker file `when` exists in the repo: each gate runs as `<command> <gate command>`. `requiresRunning` is a command whose success shows the wrapper is up; when it fails the wrapped gates are skipped."
+            "description": "Run this stack's gates through a wrapper (for example a container exec) when the marker file `when` exists in the repo (or, with `workdir`, in a directory above it): each gate runs as `<command> <gate command>`. `requiresRunning` is a command whose success shows the wrapper is up; when it fails the wrapped gates are skipped."
           },
           "contractSync": {
             "type": "object",
@@ -908,6 +965,25 @@
             "items": {
               "type": "string"
             }
+          },
+          "packages": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "composer": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "npm": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Package names whose presence in the project root's composer.json require/require-dev or package.json dependencies/devDependencies suggests the stack. Read by the file-copy and host installers when they pick a default stack."
           },
           "e2eBackend": {
             "type": "object",

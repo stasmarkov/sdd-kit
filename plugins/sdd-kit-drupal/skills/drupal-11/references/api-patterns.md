@@ -4,7 +4,9 @@ REST and JSON:API patterns for Drupal 11.
 
 ## JSON:API (Core)
 
-Drupal core includes JSON:API. Enable with `drush en jsonapi`.
+Drupal core includes JSON:API. Enable with `drush en jsonapi` (in DDEV: `ddev drush en jsonapi`).
+
+The commands on this page are the host forms. Inside DDEV, run them as `ddev drush en ...` and `ddev composer require ...`.
 
 ### Default Endpoints
 

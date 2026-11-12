@@ -21,24 +21,30 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../../index.html">SDD Kit</a>
-    <span class="badge">v4.0.1</span>
+    <span class="badge">v4.0.2</span>
   </div>
+  <nav class="site-nav" aria-label="Site">
+    <ul>
+      <li><a href="../../index.html">Guide</a></li>
+      <li><a href="../../adopt.html">Adopt</a></li>
+      <li><a href="../../reference/index.html">Reference</a></li>
+      <li><a href="../../index.html#example" aria-current="page">Example</a></li>
+    </ul>
+  </nav>
   <div class="header-actions">
-    <a class="btn" href="../../index.html"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main">
-  <p class="doc-path mono">examples/job-board/00-overview.md</p>
+<main id="content" class="doc-main" tabindex="-1">
   <article class="doc-body">
 <h2 id="00--hireboard-from-scratch-overview-and-prerequisites">00 — Hireboard from scratch: overview and prerequisites</h2>
 <p>This walkthrough builds a small job board called <strong>Hireboard</strong> from an empty folder to a
-team-ready product. It uses SDD Kit v4.0.1 (the 4.x line) for every step. Each chapter is
+team-ready product. It uses SDD Kit v4.0.2 (the 4.x line) for every step. Each chapter is
 one real ticket, taken through the <code>/sdd</code> route the kit picks for it. Read the chapters in order
 to follow the story, or jump to the one that matches the route you are about to use.</p>
 <p>Hireboard, the people involved, and every session transcript are fictional. Agent output in
 the chapters is <strong>simulated</strong>: it is abridged and marked as such. The code and documents under
-<a href="https://github.com/stasmarkov/sdd-kit/tree/v4.0.1/docs/examples/job-board/artifacts" target="_blank" rel="noopener noreferrer"><code>artifacts/</code></a> are complete files you can drop onto fresh scaffolds.</p>
+<a href="https://github.com/stasmarkov/sdd-kit/tree/v4.0.2/docs/examples/job-board/artifacts" target="_blank" rel="noopener noreferrer"><code>artifacts/</code></a> are complete files you can drop onto fresh scaffolds.</p>
 <h3 id="the-product">The product</h3>
 <p>Visitors search open job postings by keyword, location, remote and employment type, and open a
 company&#39;s careers page. Candidates register, keep a private profile, apply to open jobs, and
@@ -73,7 +79,7 @@ controllers, services, DTOs (Spatie Laravel Data) and repositories behind interf
 server-only, never <code>NEXT_PUBLIC_</code>. The browser never calls <code>:8000</code>, so no CORS config is
 needed.</li><li><code>http://localhost:3000</code> is the <code>url</code> argument passed to every workflow for browser acceptance.</li></ul>
 <h3 id="route-map">Route map</h3>
-<p><code>/sdd</code> is the single front door (<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/skills/sdd/SKILL.md" target="_blank" rel="noopener noreferrer">src/skills/sdd/SKILL.md</a>).
+<p><code>/sdd</code> is the single front door (<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/sdd/SKILL.md" target="_blank" rel="noopener noreferrer">src/skills/sdd/SKILL.md</a>).
 It sorts each request into one of the routes, confirms the route with you, collects the inputs,
 and launches exactly one fixed pipeline:</p>
 <pre><code>/sdd &lt;ticket-id | description&gt;
@@ -82,8 +88,9 @@ and launches exactly one fixed pipeline:</p>
    ├─ decision  → tech-research workflow → ADR
    ├─ feature   → /write-spec → HUMAN APPROVAL → ship-feature { spec }
    ├─ shipped   → qa-and-docs workflow
+   ├─ audit     → security-audit workflow      (not covered in this example)
    └─ new app   → greenfield-build workflow</code></pre>
-<p>The walkthrough uses every route at least once:</p>
+<p>The walkthrough uses each route except audit at least once:</p>
 <div class="table-wrap"><table><thead><tr><th>Chapter</th><th>Ticket</th><th><code>/sdd</code> route</th><th>Kit features shown</th></tr></thead><tbody><tr><td><a href="01-workspace-and-install.html">01</a></td><td>—</td><td>setup</td><td>Parent-folder workspace, plugin vs file-copy install, workspace <code>CLAUDE.md</code>, product brief</td></tr><tr><td><a href="02-greenfield-first-slice.html">02</a></td><td>HIRE-1</td><td>new app</td><td><code>greenfield-build</code> with split-repo args: scaffold, CI, first vertical slice (job search and detail), per-repo project context</td></tr><tr><td><a href="03-decision-spa-auth-adr.html">03</a></td><td>HIRE-2</td><td>decision</td><td><code>tech-research</code> with options and weighted criteria, adversarial claim checks, ADR-0001 signed off by a human</td></tr><tr><td><a href="04-feature-accounts-and-roles.html">04</a></td><td>HIRE-3</td><td>feature (M)</td><td><code>write-spec</code>, approval recorded in frontmatter, <code>ship-feature</code> with explicit <code>spec</code>/<code>repos</code>/<code>url</code> args, one PR per repo</td></tr><tr><td><a href="05-feature-company-reviews-full-spec.html">05</a></td><td>HIRE-4</td><td>feature (M), shown in full</td><td>Every spec section: Must NOT change, EARS acceptance criteria with traceability, Boundaries, decisions, the fresh-context clarity gate</td></tr><tr><td><a href="06-execute-task-candidate-profiles.html">06</a></td><td>HIRE-5</td><td>feature (M)</td><td>&quot;Approve only&quot;, then <code>/execute-task</code> task by task, stop mid-spec, resume with <code>--continue</code></td></tr><tr><td><a href="07-applications-and-deep-review.html">07</a></td><td>HIRE-6</td><td>feature (M)</td><td><code>ship-feature</code>, then <code>/deep-review</code> before merge, a fix with <code>/simple-task</code>, an adversarial re-review of the staged fix</td></tr><tr><td><a href="08-careers-page-s-spec-and-trivial-change.html">08</a></td><td>HIRE-7, HIRE-8</td><td>feature (S), trivial</td><td>A web-only S spec; a copy-sized change through <code>/simple-task</code> with no spec</td></tr><tr><td><a href="09-bug-closed-jobs-fix-bug.html">09</a></td><td>HIRE-9</td><td>bug</td><td><code>fix-bug</code> with a <code>mustNotChange</code> list: regression test red to green, guard tests, original report re-walked</td></tr><tr><td><a href="10-qa-and-docs-browse-journey.html">10</a></td><td>HIRE-10</td><td>shipped</td><td><code>qa-and-docs</code> over code that no single spec covers: traceable QA plan, user and dev docs</td></tr><tr><td><a href="11-running-it-as-a-team.html">11</a></td><td>HIRE-11 (exercise)</td><td>—</td><td>Contract-sync as a failing CI check, routines, a project eval case, a pinned team marketplace</td></tr></tbody></table></div>
 <p>Need a one-page scenario instead of a story? The scenario catalogue in
 <a href="../../reference/usage-examples.html">src/docs/USAGE-EXAMPLES.md</a> covers each route in a few
@@ -120,7 +127,7 @@ a <code>manual-test.md</code>. HIRE-5 deliberately records its single manual che
 chapter 06 flags this as a shortcut.
 The M specs live in <code>api/.ai/specs/</code> and the S spec in <code>web/.ai/specs/</code>.</li><li><code>api/docs/adr/0001-spa-auth.md</code> (ADR-0001), accepted by Maya Chen.</li><li>One <code>/deep-review</code> report with a finding that was confirmed and fixed.</li><li>A regression test and guard tests for the HIRE-9 bug.</li><li>A QA plan plus user and dev docs for the public browse journey, graded against the code.</li><li>Contract-sync in CI, which fails when <code>web/lib/api/endpoints.ts</code> drifts from the API routes.</li><li>A Hireboard routing eval case for the team&#39;s kit fork.</li><li>Demo data from <code>php artisan migrate:fresh --seed</code>, with these accounts (password <code>password</code>):<div class="table-wrap"><table><thead><tr><th>Account</th><th>Role</th></tr></thead><tbody><tr><td><code>candidate@hireboard.test</code> (Casey Candidate)</td><td>candidate</td></tr><tr><td><code>employer@acme.test</code> (Erin Employer, owns Acme Robotics)</td><td>employer</td></tr><tr><td><code>admin@hireboard.test</code> (Ari Admin)</td><td>admin</td></tr></tbody></table></div></li></ul>
 <h3 id="how-to-read-the-artifacts">How to read the artifacts</h3>
-<p>Every file the walkthrough produces is under <a href="https://github.com/stasmarkov/sdd-kit/tree/v4.0.1/docs/examples/job-board/artifacts" target="_blank" rel="noopener noreferrer"><code>artifacts/</code></a>, mapped like this:</p>
+<p>Every file the walkthrough produces is under <a href="https://github.com/stasmarkov/sdd-kit/tree/v4.0.2/docs/examples/job-board/artifacts" target="_blank" rel="noopener noreferrer"><code>artifacts/</code></a>, mapped like this:</p>
 <div class="table-wrap"><table><thead><tr><th>In this folder</th><th>In your workspace</th></tr></thead><tbody><tr><td><code>artifacts/workspace/**</code></td><td><code>~/work/hireboard/**</code></td></tr><tr><td><code>artifacts/api/**</code></td><td><code>~/work/hireboard/api/**</code> (a fresh Laravel 12 app after the scaffold commands)</td></tr><tr><td><code>artifacts/web/**</code></td><td><code>~/work/hireboard/web/**</code> (a fresh <code>create-next-app@15</code> app after the scaffold commands)</td></tr><tr><td><code>artifacts/kit-fork/**</code></td><td>a fork of the SDD Kit repo (the team eval case in chapter 11)</td></tr></tbody></table></div>
 <ul><li>Each file belongs to the chapter that <strong>first creates it</strong> and shows its
 <strong>end-of-walkthrough</strong> state.</li><li>A later change to that file appears in the later chapter as a diff, for example the HIRE-8
@@ -164,8 +171,10 @@ contract sensors for split repos.</li></ul>
 <ul><li>A map of the 12 chapters and the <code>/sdd</code> route each one uses.</li><li>The toolchain checked and an install mode chosen, with <code>api/</code> and <code>web/</code> still not created.</li><li>A rule for reading <code>artifacts/</code>: final-state files, with later edits shown as diffs.</li></ul>
 <p>Next: <a href="01-workspace-and-install.html">01 — Workspace and kit install</a></p>
   </article>
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/examples/job-board/00-overview.md">View the Markdown source</a></p>
 </main>
+<footer class="site-footer">
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/examples/job-board/00-overview.md">View the Markdown source</a></p>
+</footer>
 <script>
   (function () {
     var KEY = 'sdd-guide-theme', NEXT = { system: 'light', light: 'dark', dark: 'system' };

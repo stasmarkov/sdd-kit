@@ -2,17 +2,19 @@
 name: write-docs
 description: Generate documentation from code (business rules, API contracts, architecture overview), import external docs into the context paths AGENTS.md loads (--import), or audit docs and code against the project's conventions and report drift (--audit) - always with lowercase filenames and file:line citations. Use when a project needs docs derived from the actual code, when business rules or architecture notes from a wiki, PDF or ticket should become project context, or to check whether docs and code still follow AGENTS.md, AGENTS.md and .codex/rules. For a traceable QA plan plus docs for shipped features, use /qa-and-docs instead.
 argument-hint: "[--type=business|api|architecture|all] [--source=path] [--output=path] | --import <file|url> [--as=business|architecture|api] | --audit [--source=path|url]"
-allowed-tools: Agent, Read, Write, Edit, Bash, Grep, Glob, WebFetch, AskUserQuestion
+allowed-tools: Agent, Skill, Read, Write, Edit, Bash, Grep, Glob, WebFetch, AskUserQuestion
 effort: medium
 metadata:
-  version: "1.2"
+  version: "1.3"
   encoding: "UTF-8"
   subagents: "code-explorer, doc-creator"
   response_format: "concise"
   checkpoint_enabled: "false"
-  last_verified: "2026-10-19"
-  next_review: "2027-01-19"
+  last_verified: "2026-11-11"
+  next_review: "2027-02-11"
 ---
+Relative paths in this skill (scripts/..., ../other-skill/..., ../../runtime/...) are relative to the directory that holds this SKILL.md, not to the project directory; resolve them against it before running a command.
+
 
 # /write-docs
 
@@ -43,7 +45,7 @@ These are the paths the project `AGENTS.md` (from `CLAUDE.template.md`) loads, s
 
 ```bash
 # Generate business rules documentation
-/write-docs --type=business --source=app/Services
+/write-docs --type=business --source=<business logic directory>
 
 # Generate API documentation
 /write-docs --type=api --source=<route definitions file>
@@ -100,6 +102,10 @@ Transformation for imported or legacy names: lowercase, underscores and spaces t
 
 ## Workflow
 
+### Step 0: Stack exploration recipe
+
+Find each repo's stack entry with the `verification-gates` skill's "Repos and stack keys" rule and its recipe (the kit's `workflows/lib/stacks.json`, or a trusted project `.codex/stacks/*.json`). Among the skills its manifest names in `skills.conventions` and `skills.scaffold`, load the one that ships `references/exploration-recipes.md` with the Skill tool, read that file from the skill's base directory, and paste the recipe into the `code-explorer` prompt (the subagent cannot reach an add-on's files itself). With no stack, no installed add-on or no recipe, say so once and let `code-explorer` infer the layout from the repo.
+
 ### Step 1: Source Analysis
 
 1. If the source is code: analyze structure and patterns
@@ -113,30 +119,33 @@ Transformation for imported or legacy names: lowercase, underscores and spaces t
 
 #### Business rules (`--type=business`)
 
-Extract from service classes, FormRequest validation rules, policies, domain events and handlers, and comments tagged `@business-rule`.
+Extract from business-logic classes or functions, input validation, access checks, domain events and their handlers, and comments tagged `@business-rule`.
 
 ```markdown
 # Business Rules
 
 ## Domain: {DomainName}
 
-### Rule: {RuleName}
-**Source**: `<path to the service source file>`
+### BR-{NN}: {RuleName}
+**Source**: `{file:line}`
 **Description**: {What the rule enforces}
 **Conditions**: {When it applies}
 **Actions**: {What happens}
+**Validation**: needs human validation
 ```
+
+Ids continue the file's existing `BR-NN` numbering; an existing rule keeps its id. The `**Validation**` line is written exactly as shown and stays until someone confirms the rule, who then replaces it with `**Validation**: confirmed {YYYY-MM-DD}`.
 
 #### API documentation (`--type=api`)
 
-Extract from route definitions, controller methods, FormRequest validations, API Resources, and OpenAPI annotations.
+Extract from the route registry, the handler for each route, request validation, response serializers, and OpenAPI annotations. When there is no route registry or API handler, do not write `docs/api/api-contracts.md`; report "no API surface found".
 
 ```markdown
 # API Contracts
 
 ## Endpoint: {METHOD} {path}
 
-**Controller**: `{ControllerClass}@{method}`
+**Handler**: `{file:line}` (plus `Class@method` where the stack has one)
 **Authentication**: {Required|Optional|None}
 **Rate Limit**: {limit/period}
 
@@ -154,7 +163,7 @@ Extract from route definitions, controller methods, FormRequest validations, API
 
 #### Architecture (`--type=architecture`)
 
-Extract from directory structure, service provider registrations, config files, dependency injection patterns, and module boundaries.
+Extract from the directory layout, dependency-injection or service configuration, declarative configuration files, and module boundaries.
 
 ```markdown
 # Architecture Overview
@@ -185,7 +194,7 @@ Hand the extracted, cited content to the `doc-creator` agent to write:
 4. Add cross-references between docs
 5. Ensure lowercase filenames
 
-When `docs/context/business-rules.md` or `docs/context/architecture.md` does not exist yet, start it from the kit's context template (`templates/context/business-rules.template.md` or `architecture.template.md`: under `.codex/` in a file-copy install, under `src/` in the plugin), keep the sections the code gives content for, and drop the rest. These three files are the Golden Triangle (`templates/context/golden-triangle.md`). If a target file already exists, merge into it section by section and show the diff; never overwrite human-written rules silently. Generated business rules describe what the code does, which is not always what the business wants: mark each rule "needs human validation" until someone confirms it.
+When `docs/context/business-rules.md` or `docs/context/architecture.md` does not exist yet, start it from `assets/business-rules.template.md` or `assets/architecture.template.md` (the assets/ folder of this skill), keep the sections the code gives content for, and drop the rest. These three files (business-rules, architecture, api-contracts) are the Golden Triangle AGENTS.md loads: one fact, one place. If a target file already exists, merge into it section by section and show the diff; never overwrite human-written rules silently. Generated business rules describe what the code does, which is not always what the business wants: each carries the `**Validation**: needs human validation` line until someone confirms it.
 
 ---
 
@@ -216,20 +225,20 @@ Do not invent content that is not in the source (`source-verification`). A claim
 Checks whether docs and code still follow the project's own conventions.
 
 1. **Collect the rules** from `AGENTS.md`, `AGENTS.md`, and `.codex/sdd-kit/rules/*.md` (each rule file applies only to its `paths:` globs). These are the conventions; do not import conventions from anywhere else. With `--source=<url>`, an external document is compared against the same rules (WebFetch, or Claude in Chrome for rendered pages).
-2. **Check the code** (code-explorer): for each rule, find the files its globs cover and record compliant and violating examples with `file:line`. Typical rules: invokable controllers, DTOs at layer boundaries, service-repository layering, schema docs before migrations, policies on every endpoint, Server Actions re-checking the session, lowercase doc filenames.
-3. **Check the docs**: every endpoint in the route definitions appears in `docs/api/api-contracts.md` and vice versa; every table with a migration has `docs/schemas/{table}.md`; business rules cite code that still exists at the cited line; docs reference no removed classes or paths.
+2. **Check the code** (code-explorer): for each rule, find the files its globs cover and record compliant and violating examples with `file:line`. Typical rules: thin request handlers, typed data at layer boundaries, an access check on every endpoint, schema docs before schema changes, lowercase doc filenames.
+3. **Check the docs**: every endpoint in the route definitions appears in `docs/api/api-contracts.md` and vice versa; every table or entity type the code defines has `docs/schemas/{table}.md`; business rules cite code that still exists at the cited line; docs reference no removed classes or paths.
 4. **Report drift**, prioritized:
 
 ```
 Docs and code audit (rules: AGENTS.md, AGENTS.md, 5 rule files)
 
 Critical
-  1. Missing authorization: src/controllers/jobs/delete-job-controller:18 has no policy check (rule: api-controllers.md "every endpoint authorizes")
+  1. Missing authorization: src/controllers/jobs/delete-job-controller:18 has no access check (rule: api-controllers.md "every endpoint authorizes")
 High
-  2. Doc-code mismatch: docs/api/api-contracts.md:44 says POST /api/jobs returns 200; JobController returns 201 (src/controllers/jobs/store-job-controller:31)
+  2. Doc-code mismatch: docs/api/api-contracts.md:44 says POST /api/jobs returns 200; the handler returns 201 (src/controllers/jobs/store-job-controller:31)
   3. Undocumented endpoints: DELETE /api/jobs/{job} (src/routes/api:27)
 Medium
-  4. Missing schema doc: job_applications (database/migrations/2026_10_01_000003_create_job_applications_table)
+  4. Missing schema doc: job_applications (schema defined at src/schema/job-applications:1)
 Low
   5. Uppercase doc filename: docs/API_NOTES.md
 
@@ -290,17 +299,19 @@ Output: merged into `docs/api/api-contracts.md` (lowercase, reformatted, front m
 
 ## Domain: Orders
 
-### Rule: Minimum Order Amount
+### BR-01: Minimum Order Amount
 **Source**: `src/services/order-service:45`
 **Description**: Orders must meet minimum amount threshold
 **Conditions**: Applied to all new orders
 **Actions**: Reject orders below $10.00 with validation error
+**Validation**: needs human validation
 
-### Rule: Inventory Check
+### BR-02: Inventory Check
 **Source**: `src/services/order-service:78`
 **Description**: Verify stock availability before order confirmation
 **Conditions**: Applied during checkout process
 **Actions**: Reserve inventory or show out-of-stock message
+**Validation**: needs human validation
 ```
 
 ### api-contracts.md
@@ -309,7 +320,7 @@ Output: merged into `docs/api/api-contracts.md` (lowercase, reformatted, front m
 
 ## Endpoint: POST /api/orders
 
-**Controller**: `OrderController@store`
+**Handler**: `src/orders/create-order:12`
 **Authentication**: Required (Bearer token)
 **Rate Limit**: 60/minute
 
@@ -359,18 +370,19 @@ Use the Agent tool with:
     Context:
     - Source: [file or directory path]
     - Doc type: [business|api|architecture]
+    - Stack exploration recipe: [the recipe pasted by Step 0, or "none: infer the layout"]
 
     For business rules, extract:
-    - Service class methods with business logic
-    - Validation rules from FormRequests
-    - Policy authorization rules
-    - Domain events and handlers
+    - Business-logic classes or functions
+    - Input validation rules
+    - Access checks
+    - Domain events and their handlers
 
     For API docs, extract:
-    - Route definitions
-    - Controller methods
-    - Request validation schemas
-    - Response structures
+    - The route registry
+    - The handler for each route
+    - Request validation
+    - Response serializers and structures
 
     Cite file:line for every item.
     Return: Structured content ready for documentation

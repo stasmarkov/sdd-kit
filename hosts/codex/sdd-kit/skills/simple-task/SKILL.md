@@ -5,8 +5,8 @@ argument-hint: "[task-description] | --continue=TASK-ID | --research-only | --re
 allowed-tools: Agent, Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion, WebFetch, WebSearch
 metadata:
   mcp-tools: "context7"
-  version: "2.0"
-  subagents: "code-explorer, laravel-backend-dev, nextjs-frontend-dev, test-writer, code-quality"
+  version: "2.1"
+  subagents: "code-explorer, test-writer, code-quality, the repo's stack specialist (agent.name)"
   checkpoint_enabled: "true"
 ---
 
@@ -209,8 +209,7 @@ Reads `.ai/tasks/TASK-0043-*.md`, shows status and context, continues from last 
 | Phase | Subagent | When |
 |-------|----------|------|
 | Investigate | code-explorer | Broad codebase search needed |
-| Implement | laravel-backend-dev | Backend implementation |
-| Implement | nextjs-frontend-dev | Frontend implementation |
+| Implement | the repo's stack specialist: `agent.name` from its stack entry (the `verification-gates` recipe, including its trust and `extends` rules), tried bare and then, on Claude Code, as `<agent.plugin>:<agent.name>` | No specialist resolves: work directly and say once `specialist <name> not available; building in this session` |
 | Implement | test-writer | TDD test creation |
 | Verify | code-quality | Verification gates |
 

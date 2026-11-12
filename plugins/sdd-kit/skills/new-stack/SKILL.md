@@ -10,7 +10,7 @@ metadata:
 
 # /new-stack
 
-Creates the files that teach the workflows a stack: a `stack.json` manifest (detection rule, gates, agent), a specialist agent, a conventions skill scoped by `paths:`, and an async lint hook. The field reference is [stack-manifest.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/reference/stack-manifest.md). The examples below use the fictional stack `acme`.
+Creates the files that teach the workflows a stack: a `stack.json` manifest (detection rule, gates, agent), a specialist agent, a conventions skill scoped by `paths:`, and an async lint hook. The field reference is [stack-manifest.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/reference/stack-manifest.md). The examples below use the fictional stack `acme`.
 
 The script is `scripts/new-stack.mjs` in this skill's directory (`${CLAUDE_SKILL_DIR}/scripts/new-stack.mjs`). It fills Markdown and shell files by substitution, builds JSON structurally, validates the manifest with the same validator the workflows run, and refuses a stack key that already appears in the kit's core files.
 

@@ -21,15 +21,21 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../../index.html">SDD Kit</a>
-    <span class="badge">v4.0.1</span>
+    <span class="badge">v4.0.2</span>
   </div>
+  <nav class="site-nav" aria-label="Site">
+    <ul>
+      <li><a href="../../index.html">Guide</a></li>
+      <li><a href="../../adopt.html">Adopt</a></li>
+      <li><a href="../../reference/index.html">Reference</a></li>
+      <li><a href="../../index.html#example" aria-current="page">Example</a></li>
+    </ul>
+  </nav>
   <div class="header-actions">
-    <a class="btn" href="../../index.html"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main">
-  <p class="doc-path mono">examples/job-board/10-qa-and-docs-browse-journey.md</p>
+<main id="content" class="doc-main" tabindex="-1">
   <article class="doc-body">
 <h2 id="10--shipped-code-a-traceable-qa-plan-and-docs-for-the-public-browse-journey-hire-10">10 — Shipped code: a traceable QA plan and docs for the public browse journey (HIRE-10)</h2>
 <p><strong>Route:</strong> <code>shipped</code> → <code>qa-and-docs</code> workflow
@@ -101,7 +107,7 @@ Ticket:   HIRE-10
 Scope:    paths (7 web, 4 api)
 Launched: qa-and-docs — runs in the background; watch with /workflows
 Done when: grader passes the coverage and phantom-link gates; a human reviews before publishing</code></pre>
-<p>The phases, the args table and the done-definition for this route are in <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/skills/sdd/references/qa-and-docs.md" target="_blank" rel="noopener noreferrer">references/qa-and-docs.md</a>. <a href="../../reference/usage-examples.html#4-qa-plan-and-docs-for-shipped-code">USAGE-EXAMPLES §4</a> shows the same route with other kinds of scope.</p>
+<p>The phases, the args table and the done-definition for this route are in <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/sdd/references/qa-and-docs.md" target="_blank" rel="noopener noreferrer">references/qa-and-docs.md</a>. <a href="../../reference/usage-examples.html#4-qa-plan-and-docs-for-shipped-code">USAGE-EXAMPLES §4</a> shows the same route with other kinds of scope.</p>
 <h3 id="step-3--what-the-phases-do">Step 3 — What the phases do</h3>
 <pre><code>Detect         stack(s) + repo layout
 Index          files → methods/routes/components → features (bottom-up), one agent per repo
@@ -191,8 +197,10 @@ gh pr create --base main --title &quot;HIRE-10: QA plan and docs for the public 
 <ul><li>A committed regression plan in <code>web/docs/qa/qa-plan-2026-11-03.md</code>. Each of its 23 cases traces to a criterion that Maya Chen has validated, and to the files it exercises.</li><li>An end-user guide and a developer overview for the browse journey. Both were graded against the code, and neither contains a phantom claim.</li><li>A list of follow-ups that came from the run: automate AC-8 and AC-9, and decide in HIRE-11 whether employers may enter single-bound salaries (the display wording is already approved).</li></ul>
 <p>Next: <a href="11-running-it-as-a-team.html">11 — Running Hireboard as a team: contract-sync, routines, evals, pinned versions</a></p>
   </article>
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/examples/job-board/10-qa-and-docs-browse-journey.md">View the Markdown source</a></p>
 </main>
+<footer class="site-footer">
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/examples/job-board/10-qa-and-docs-browse-journey.md">View the Markdown source</a></p>
+</footer>
 <script>
   (function () {
     var KEY = 'sdd-guide-theme', NEXT = { system: 'light', light: 'dark', dark: 'system' };

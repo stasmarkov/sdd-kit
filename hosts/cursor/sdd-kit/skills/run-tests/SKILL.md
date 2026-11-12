@@ -45,7 +45,7 @@ Resolve each repo's stack data with the recipe in the `verification-gates` skill
 - Plan the gates with the plan step of `verification-gates` (Planning the gates): `node ../stack-trust/scripts/trust-store.mjs plan --repo <repo> --key <key> --kinds test`. Report every `fixed` entry and `notices` line verbatim and run only `run[].command`, in the repo directory; for key `other`, fall back to the visible test tooling as above. If the planner is unavailable, run no gate and report each as `not run (gate planner unavailable). Fix: reinstall sdd-kit`.
 - The plan applies `unless` and trust: skipped gates are reported as `skipped — <glob> present`, and gates of an untrusted manifest as `not run (untrusted manifest). Fix: run /stack-trust.` (the same rule as `node ../stack-trust/scripts/trust-store.mjs --host cursor check <manifest file>` in `verification-gates`).
 
-The plan fills `<pm>` and `<pmx>`; for a command you add yourself (a filter, a single file), follow the `verification-gates` package-manager rule. Filters, coverage and parallel flags per test runner are in the stack add-on's conventions skill, under `references/quality-tools.md`.
+The plan fills `<pm>` and `<pmx>`; for a command you add yourself (a filter, a single file), follow the `verification-gates` package-manager rule, start it with the plan's `wrapper.prefix` when it has one, and report output paths through `pathMap` (verification-gates, Planning the gates). Filters, coverage and parallel flags per test runner are in the stack add-on's conventions skill, under `references/quality-tools.md`.
 
 ## Browser journeys (`--e2e`)
 

@@ -21,15 +21,21 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../../index.html">SDD Kit</a>
-    <span class="badge">v4.0.1</span>
+    <span class="badge">v4.0.2</span>
   </div>
+  <nav class="site-nav" aria-label="Site">
+    <ul>
+      <li><a href="../../index.html">Guide</a></li>
+      <li><a href="../../adopt.html">Adopt</a></li>
+      <li><a href="../../reference/index.html">Reference</a></li>
+      <li><a href="../../index.html#example" aria-current="page">Example</a></li>
+    </ul>
+  </nav>
   <div class="header-actions">
-    <a class="btn" href="../../index.html"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main">
-  <p class="doc-path mono">examples/job-board/01-workspace-and-install.md</p>
+<main id="content" class="doc-main" tabindex="-1">
   <article class="doc-body">
 <h2 id="01--workspace-and-kit-install">01 — Workspace and kit install</h2>
 <p><strong>Date in the story:</strong> 2026-10-19, morning. <strong>Who:</strong> Alex Rivera (developer). <strong>Route:</strong> none yet. This chapter is setup.</p>
@@ -69,7 +75,7 @@ names instead of <code>be/</code> and <code>fe/</code>):</p>
 before the repos exist. In any Claude Code session:</p>
 <pre><code>/plugin marketplace add stasmarkov/sdd-kit
 /plugin install sdd-kit@sdd-kit</code></pre>
-<p>Since 3.0 the core is stack-neutral. Hireboard is Laravel plus Next.js, so also install the preset,
+<p>The core is stack-neutral. Hireboard is Laravel plus Next.js, so also install the preset,
 which pulls in the Laravel, Next.js and devenv add-ons:</p>
 <pre><code>/plugin install sdd-kit-laravel-nextjs@sdd-kit</code></pre>
 <p>In file-copy mode you pick the stacks yourself with <code>--stack=laravel,nextjs</code> (Step 3).
@@ -105,7 +111,7 @@ single-repo template when none exists, and it never overwrites an existing one.<
 cp ~/tools/sdd-kit/share/templates/multi-repo/CLAUDE.md CLAUDE.md   # Step 4 first
 ~/tools/sdd-kit/install.sh --project --stack=laravel,nextjs --dry-run</code></pre>
 <p>Simulated output (abridged):</p>
-<pre><code>SDD Kit v4.0.1
+<pre><code>SDD Kit v4.0.2
 Target: /Users/alex/work/hireboard/.claude (project, full)
   added:   ...  (skills, agents, workflows, scripts, templates, settings.json)
   updated: 0
@@ -125,7 +131,7 @@ cleanup after each update.</p>
 then <code>cd ../web &amp;&amp; .../install.sh --project --stack=nextjs</code>). That is the point where per-repo <code>AGENTS.md</code> and <code>.claude/rules/</code> are created. Never run it
 inside <code>api/</code> or <code>web/</code> before chapter 02 (F1). The flags (<code>--stack=</code>, <code>--with=</code>, <code>--user</code>, <code>--yes</code>) are
 documented in <a href="../../reference/installation.html#file-copy-mode">INSTALLATION.md, file-copy mode</a>.</p>
-<p><strong>Other hosts.</strong> Hireboard&#39;s team could also use Codex or Cursor (both an unverified preview in 4.0; see <a href="../../reference/hosts.html">hosts.md</a>). The file-copy install is the same dry run, then the real run, with <code>--host</code>:</p>
+<p><strong>Other hosts.</strong> Hireboard&#39;s team could also use Codex or Cursor (both an unverified preview; see <a href="../../reference/hosts.html">hosts.md</a>). The file-copy install is the same dry run, then the real run, with <code>--host</code>:</p>
 <pre><code class="language-bash">~/tools/sdd-kit/install.sh --host codex --project --stack=laravel,nextjs --dry-run
 ~/tools/sdd-kit/install.sh --host cursor --project --stack=laravel,nextjs --dry-run</code></pre>
 <p>Drop <code>--dry-run</code> to install. Skills then start with <code>$</code> on Codex (<code>$sdd</code>) and <code>/</code> on Cursor (<code>/sdd</code>). Run each repo&#39;s installer after chapter 02, as above.</p>
@@ -237,7 +243,7 @@ for you. Type it:</p>
 <pre><code>/sdd-kit:framework-doctor        # plugin mode
 /framework-doctor                # file-copy mode</code></pre>
 <p>Simulated output, plugin mode (abridged):</p>
-<pre><code>Framework Health Check (plugin, v4.0.1)
+<pre><code>Framework Health Check (plugin, v4.0.2)
 =======================================
 [WARN] Golden Triangle: docs/context/ not found
 [SKIP] Manifest integrity: plugin mode
@@ -275,8 +281,10 @@ the kit&#39;s first design rule.</p>
 <ul><li>An empty <code>~/work/hireboard/</code> workspace with no git, and with the target folders <code>api/</code> and <code>web/</code> still absent, so the scaffolders and greenfield-build&#39;s Detect phase will accept them.</li><li>The kit active for sessions started there, as a plugin (<code>/sdd-kit:*</code>) or as a file-copy install at the root.</li><li>A workspace <code>CLAUDE.md</code> that states the contract, the invariants INV-01..INV-07, the cross-repo routing, the process and where each kind of output lands.</li><li>A product brief with roles, scope, non-goals and draft business rules, ready to serve as greenfield-build&#39;s constitution.</li></ul>
 <p>Next: <a href="02-greenfield-first-slice.html">02 — New app: greenfield-build scaffolds both repos and ships the first slice (HIRE-1)</a></p>
   </article>
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/examples/job-board/01-workspace-and-install.md">View the Markdown source</a></p>
 </main>
+<footer class="site-footer">
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/examples/job-board/01-workspace-and-install.md">View the Markdown source</a></p>
+</footer>
 <script>
   (function () {
     var KEY = 'sdd-guide-theme', NEXT = { system: 'light', light: 'dark', dark: 'system' };

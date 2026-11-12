@@ -1,12 +1,12 @@
 ---
 name: ddev
-description: DDEV local development environment. Use for container management, debugging, and Laravel/Next.js development.
+description: DDEV local development environment for PHP and Node.js projects (Drupal, Laravel, Next.js and others). Use for container management, running Composer, Drush, Artisan or npm inside DDEV, database work, Xdebug and quality gates in a DDEV project.
 allowed-tools: Read, Grep, Glob, Edit, Write, Bash
 ---
 
 # DDEV Local Development
 
-DDEV is a Docker-based local development environment for PHP/Node.js applications.
+DDEV is a Docker-based local development environment for PHP and Node.js applications. Its project type (`drupal11`, `laravel`, `php` and others) decides which framework commands it adds, such as `ddev drush` or `ddev artisan`.
 
 ## Quick Reference
 
@@ -19,7 +19,8 @@ DDEV is a Docker-based local development environment for PHP/Node.js application
 | SSH into container | `ddev ssh` |
 | View logs | `ddev logs` |
 | Run Composer | `ddev composer <cmd>` |
-| Run Artisan | `ddev artisan <cmd>` or `ddev art` |
+| Run Artisan (laravel project type) | `ddev artisan <cmd>` or `ddev art` |
+| Run Drush (drupal project types) | `ddev drush <cmd>` |
 | Run npm | `ddev npm <cmd>` |
 
 ## When to Load References
@@ -90,7 +91,19 @@ ddev npm install
 ddev npm run dev
 ddev npm run build
 ddev yarn <command>
+
+# PHP/Drupal
+ddev composer require drupal/<module>
+ddev drush en <module>
+ddev drush cr
+ddev drush cex -y
+ddev drush cim -y
+ddev drush updb -y
+ddev drush config:status
+ddev drush uli
 ```
+
+`ddev drush` runs the project's `vendor/bin/drush` inside the web container, against the DDEV database. Do not call `drush` on the host in a DDEV project: the host may have no PHP, and it would not reach the container's database.
 
 ### Database
 ```bash
@@ -171,9 +184,25 @@ hooks:
     - exec: composer install
 ```
 
+### Drupal Project Config (`.ddev/config.yaml`)
+```yaml
+name: my-site
+type: drupal11            # or drupal10
+docroot: web
+php_version: "8.3"
+database:
+  type: mariadb
+  version: "10.11"
+
+hooks:
+  post-start:
+    - exec: composer install
+```
+
 ### Common Settings
 ```bash
 ddev config --project-type=laravel
+ddev config --project-type=drupal11 --docroot=web
 ddev config --php-version=8.4
 ddev config --nodejs-version=20
 ddev config --database=mysql:8.0
@@ -202,6 +231,23 @@ hooks:
     - exec: cd /var/www/html/frontend && npm install
 ```
 
+## Drupal Setup
+
+For an existing Drupal site:
+
+```bash
+ddev config --project-type=drupal11 --docroot=web
+ddev start
+ddev composer install
+ddev import-db --file=<dump.sql.gz>
+ddev drush cim -y
+ddev drush uli
+```
+
+Fresh install only; wipes the database: `ddev drush site:install`. Never run it on an existing site unless the task asks for it.
+
+For PHPCS, PHPStan and PHPUnit in a Drupal project, follow the `drupal-11` skill's Gate setup section.
+
 ## Useful URLs
 
 After `ddev start`:
@@ -217,6 +263,8 @@ After `ddev start`:
 
 ## Quality gates in a DDEV project
 
-When a repo has `.ddev/config.yaml`, the Laravel and Drupal stack manifests declare an `execWrapper`, so the workflow gates (for example Pint, PHPCS, PHPStan, tests) run as `ddev exec <gate command>` and the gate details name the wrapper. If the running check fails, each wrapped gate is reported as `not run (ddev not running)` instead of failing; start the project with `ddev start` and re-run. Laravel checks with `ddev describe`; Drupal checks with `ddev describe -j` and requires `raw.status` to equal `running`, so a stopped project is never started by a gate. Repos without the marker keep their plain gate commands.
+When a repo has `.ddev/config.yaml`, the Laravel and Drupal stack manifests declare an `execWrapper`, so the workflow gates (for example Pint, PHPCS, PHPStan, tests) run as `ddev exec <gate command>` and the gate details name the wrapper. If the running check fails, each wrapped gate is reported as `not run (ddev not running)` instead of failing; start the project with `ddev start` and re-run. Laravel and Drupal both check with `ddev describe -j` and require `raw.status` to equal `running`, so a gate never starts a stopped project. Repos without the marker keep their plain gate commands.
+
+A Drupal repo may sit below the DDEV project root (for example `<root>/.ddev` with the site in `<root>/drupal`), whether Claude is opened at `<root>` or inside `<root>/drupal`. Its gates then run as `ddev exec --dir /var/www/html/drupal <gate command>`, and container paths in their output come back relative to the repo (`/var/www/html/drupal/web/...` as `web/...`, `/var/www/html/vendor/...` as `../vendor/...`). If the gate planner reports that `ddev exec --dir` cannot enter that directory, check the project's `docroot` and mounts in `.ddev/config.yaml`. A Laravel repo needs `.ddev/config.yaml` in the repo itself.
 
 **HTTPS and URLs.** For trusted `https://<project>.ddev.site` URLs, run `mkcert -install` once, then `ddev restart`; `ddev utility tls-diagnose` reports what is wrong when the browser still warns. Workflows accept `*.ddev.site` as a dev URL. A custom `project_tld` is not accepted: pass the `http://127.0.0.1:<port>` URL that `ddev describe` lists.

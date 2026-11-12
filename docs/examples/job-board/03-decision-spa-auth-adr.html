@@ -21,15 +21,21 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../../index.html">SDD Kit</a>
-    <span class="badge">v4.0.1</span>
+    <span class="badge">v4.0.2</span>
   </div>
+  <nav class="site-nav" aria-label="Site">
+    <ul>
+      <li><a href="../../index.html">Guide</a></li>
+      <li><a href="../../adopt.html">Adopt</a></li>
+      <li><a href="../../reference/index.html">Reference</a></li>
+      <li><a href="../../index.html#example" aria-current="page">Example</a></li>
+    </ul>
+  </nav>
   <div class="header-actions">
-    <a class="btn" href="../../index.html"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main">
-  <p class="doc-path mono">examples/job-board/03-decision-spa-auth-adr.md</p>
+<main id="content" class="doc-main" tabindex="-1">
   <article class="doc-body">
 <h2 id="03--decision-spa-auth-approach-with-tech-research-hire-2--adr-0001">03 — Decision: SPA auth approach with tech-research (HIRE-2 → ADR-0001)</h2>
 <blockquote><p><strong>Date in the story:</strong> 2026-10-20 · <strong>Route:</strong> <code>decision</code> → <code>tech-research</code> → ADR
@@ -96,7 +102,7 @@ approaches that must be made before HIRE-3 is built.
   should: testable in Pest without a browser (Sanctum::actingAs)
   nice:   reusable later by a mobile client                              &gt; Keep as is</code></pre>
 <p>Before launching, <code>/sdd</code> shows the exact call, as the decision row of its Step 4 table and
-<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/skills/sdd/references/tech-research.md" target="_blank" rel="noopener noreferrer">references/tech-research.md</a> prescribe:</p>
+<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/sdd/references/tech-research.md" target="_blank" rel="noopener noreferrer">references/tech-research.md</a> prescribe:</p>
 <pre><code class="language-js">Workflow({
   name: &quot;tech-research&quot;,
   args: {
@@ -281,7 +287,7 @@ so that edit is only saved.</p>
 decision is in context for every future session.</p>
 <h3 id="further-reading">Further reading</h3>
 <ul><li><a href="../../reference/usage-examples.html#3-technology-decision">src/docs/USAGE-EXAMPLES.md, &quot;3. Technology decision&quot;</a>
-covers the general version of this flow.</li><li><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/skills/sdd/references/tech-research.md" target="_blank" rel="noopener noreferrer">src/skills/sdd/references/tech-research.md</a>
+covers the general version of this flow.</li><li><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/sdd/references/tech-research.md" target="_blank" rel="noopener noreferrer">src/skills/sdd/references/tech-research.md</a>
 lists the route&#39;s arguments, phases, outputs and done condition.</li><li><a href="../../reference/multi-repo.html">docs/multi-repo.md</a> explains why <code>--add-dir</code> needs the environment variable.</li></ul>
 <h3 id="what-you-have-now">What you have now</h3>
 <ul><li><code>api/docs/adr/0001-spa-auth.md</code>, Accepted by Maya Chen and Alex Rivera: Sanctum personal access tokens
@@ -291,8 +297,10 @@ the decision.</li><li>INV-05 in the workspace and both repo <code>CLAUDE.md</cod
 current token), ready for the HIRE-3 spec to cite.</li></ul>
 <p>Next: <a href="04-feature-accounts-and-roles.html">04 — First feature: accounts and roles via write-spec → approval → ship-feature (HIRE-3)</a></p>
   </article>
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/examples/job-board/03-decision-spa-auth-adr.md">View the Markdown source</a></p>
 </main>
+<footer class="site-footer">
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/examples/job-board/03-decision-spa-auth-adr.md">View the Markdown source</a></p>
+</footer>
 <script>
   (function () {
     var KEY = 'sdd-guide-theme', NEXT = { system: 'light', light: 'dark', dark: 'system' };

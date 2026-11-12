@@ -3,7 +3,7 @@
 
 Operations add-on: deploy, rollback, feature flags, health checks, incident response, and ops analysis agents.
 
-- Version: 4.0.1
+- Version: 4.0.2
 - Keywords: deployment, incident, operations
 
 ## Install
@@ -16,4 +16,4 @@ Operations add-on: deploy, rollback, feature flags, health checks, incident resp
 ## Learn more
 
 - [Interactive guide](https://stasmarkov.github.io/sdd-kit/)
-- [Worked example: Hireboard](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/examples/job-board/README.md)
+- [Worked example: Hireboard](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/examples/job-board/README.md)

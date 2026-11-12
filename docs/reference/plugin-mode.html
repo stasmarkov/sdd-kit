@@ -21,15 +21,21 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../index.html">SDD Kit</a>
-    <span class="badge">v4.0.1</span>
+    <span class="badge">v4.0.2</span>
   </div>
+  <nav class="site-nav" aria-label="Site">
+    <ul>
+      <li><a href="../index.html">Guide</a></li>
+      <li><a href="../adopt.html">Adopt</a></li>
+      <li><a href="../reference/index.html" aria-current="page">Reference</a></li>
+      <li><a href="../index.html#example">Example</a></li>
+    </ul>
+  </nav>
   <div class="header-actions">
-    <a class="btn" href="../index.html"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main">
-  <p class="doc-path mono">reference/plugin-mode.md</p>
+<main id="content" class="doc-main" tabindex="-1">
   <article class="doc-body">
 <h2 id="plugin-mode-vs-file-copy-mode">Plugin mode vs file-copy mode</h2>
 <p>SDD Kit installs in two ways. Both ship the same agents, skills, workflows, and hook
@@ -43,9 +49,7 @@ templates by hand (<code>src/CLAUDE.template.md</code>, <code>src/templates/AGEN
 <code>src/templates/rules/</code>). Plugins never load a <code>CLAUDE.md</code> from the plugin itself, so
 project context always lives in the project.</p>
 <h3 id="add-on-plugins">Add-on plugins</h3>
-<p>The marketplace (<code>.claude-plugin/marketplace.json</code>) publishes a core plugin and four
-optional add-ons:</p>
-<div class="table-wrap"><table><thead><tr><th>Plugin</th><th>Source</th><th>Adds</th></tr></thead><tbody><tr><td><code>sdd-kit</code></td><td>repo root</td><td><code>/sdd</code>, workflows, core agents and skills, guardrail hooks, MCP defaults</td></tr><tr><td><code>sdd-kit-laravel-nextjs</code></td><td><code>src/presets/laravel-nextjs</code></td><td>preset: depends on the core, laravel, nextjs and devenv</td></tr><tr><td><code>sdd-kit-laravel</code></td><td><code>src/plugins/laravel</code></td><td>Laravel agent, skills, rules, lint and test-first hooks, contract-sync template</td></tr><tr><td><code>sdd-kit-nextjs</code></td><td><code>src/plugins/nextjs</code></td><td>Next.js agent, skills, rules, lint and test-first hooks</td></tr><tr><td><code>sdd-kit-devenv</code></td><td><code>src/plugins/devenv</code></td><td>docker and ddev skills</td></tr><tr><td><code>sdd-kit-ops</code></td><td><code>src/plugins/ops</code></td><td>deploy, rollback, feature flags, incidents, ops agents</td></tr><tr><td><code>sdd-kit-ios</code></td><td><code>src/plugins/ios</code></td><td>iOS/Swift agent, skills, SwiftUI templates</td></tr><tr><td><code>sdd-kit-drupal</code></td><td><code>src/plugins/drupal</code></td><td>Drupal 11 skill</td></tr><tr><td><code>sdd-kit-design</code></td><td><code>src/plugins/design</code></td><td>UI/UX agent and design skill</td></tr></tbody></table></div>
+<p>The marketplace publishes the core plugin and the optional add-ons; the install commands are in <a href="installation.html#plugin-mode">INSTALLATION.md</a>.</p>
 <p>In file-copy mode the same add-ons install with <code>./install.sh --stack=laravel,nextjs --with=ops</code>. Stack add-on skills are namespaced by their own plugin, for example <code>/sdd-kit-laravel:laravel-12</code>. Rules and third-party fragments of an add-on are file-copy only.</p>
 <p>Every plugin component is namespaced under its plugin name:</p>
 <ul><li>Skills: <code>&lt;plugin&gt;:&lt;skill&gt;</code>, for example <code>/sdd-kit:sdd</code> or
@@ -81,12 +85,14 @@ in both modes. To get the deny list and env as well, copy them into the project&
 <h3 id="hooks-that-run-in-both-modes">Hooks that run in both modes</h3>
 <p>All of the kit&#39;s hooks are global (<code>hooks/hooks.json</code>), so plugin mode keeps them:</p>
 <div class="table-wrap"><table><thead><tr><th>Event</th><th>Script</th><th>Purpose</th></tr></thead><tbody><tr><td>PreToolUse (Bash)</td><td><code>block-dangerous.sh</code>, <code>check-commit-msg.sh</code></td><td>Block destructive commands; enforce commit format</td></tr><tr><td>PreToolUse (Write/Edit)</td><td><code>laravel-test-first.sh</code>, <code>nextjs-test-first.sh</code> (stack add-ons)</td><td>Block edits to Laravel controllers, models and services, and Next.js components, until a matching test exists</td></tr><tr><td>PreToolUse (Read/Grep/Glob/Bash)</td><td><code>token-budget.sh</code></td><td>Block <code>find /</code>, and unbounded reads once context usage passes the threshold</td></tr><tr><td>PostToolUse (Write/Edit)</td><td><code>laravel-lint.sh</code>, <code>nextjs-lint.sh</code> (stack add-ons), <code>scan-secrets.sh</code></td><td>Lint changed files; catch secrets</td></tr><tr><td>PostToolUse (Bash/WebFetch/MCP)</td><td><code>scan-injection.sh</code></td><td>Flag prompt-injection patterns</td></tr><tr><td>SessionStart, UserPromptSubmit, PreCompact, SessionEnd, Stop, SubagentStop, Notification</td><td>various</td><td>Context load/save, prompt preflight, completion checks</td></tr></tbody></table></div>
-<p><code>hooks/hooks.json</code> is the source of truth. If this table and that file disagree, trust the file. Every hook, with how to tune or disable it, is in <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/share/hooks/README.md" target="_blank" rel="noopener noreferrer">src/hooks/README.md</a>.</p>
+<p><code>hooks/hooks.json</code> is the source of truth. If this table and that file disagree, trust the file. Every hook, with how to tune or disable it, is in <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/share/hooks/README.md" target="_blank" rel="noopener noreferrer">src/hooks/README.md</a>.</p>
 <h3 id="verifying-an-install">Verifying an install</h3>
 <ul><li><code>/plugin</code> → <strong>Errors</strong> tab shows components that failed to load.</li><li><code>claude plugin validate &lt;path&gt;</code> checks the manifest and agent frontmatter.</li><li><code>/hooks</code> lists active hooks; <code>/memory</code> lists loaded <code>CLAUDE.md</code>, <code>AGENTS.md</code>, and rules files.</li><li><code>/framework-doctor</code> (<code>/sdd-kit:framework-doctor</code> in plugin mode) checks that hooks fire and paths resolve.</li></ul>
   </article>
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/reference/plugin-mode.md">View the Markdown source</a></p>
 </main>
+<footer class="site-footer">
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/reference/plugin-mode.md">View the Markdown source</a></p>
+</footer>
 <script>
   (function () {
     var KEY = 'sdd-guide-theme', NEXT = { system: 'light', light: 'dark', dark: 'system' };

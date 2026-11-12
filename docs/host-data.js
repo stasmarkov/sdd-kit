@@ -16,7 +16,7 @@ window.GUIDE_HOSTS = {
             { text: 'Add the kit marketplace', code: 'codex plugin marketplace add stasmarkov/sdd-kit' },
             { text: 'Install the core plugin', code: 'codex plugin add sdd-kit@sdd-kit' },
           ],
-          note: 'Codex support is an unverified preview in 4.0. You need Codex, git, jq and Node 20+. Codex plugins cannot ship agents, so the plugin reaches the kit\'s agents through the sdd-runtime skill. Invoke skills with $, for example $sdd.',
+          note: 'Codex support is an unverified preview. You need Codex, git, jq and Node 20+. Codex plugins cannot ship agents, so the plugin reaches the kit\'s agents through the sdd-runtime skill. Invoke skills with $, for example $sdd.',
         },
         fileCopy: {
           label: 'File copy (into a project or ~/.codex)',
@@ -24,14 +24,14 @@ window.GUIDE_HOSTS = {
             { text: 'From your project root, preview what will change', code: 'bash install.sh --host codex --project --dry-run' },
             { text: 'Install into this project', code: 'bash install.sh --host codex --project' },
           ],
-          note: 'Codex support is an unverified preview in 4.0. You need Codex, git, jq and Node 20+. Skills go to .agents/skills and agents to .codex/agents. Run the installer from your project root. Windows is not supported.',
+          note: 'Codex support is an unverified preview. You need Codex, git, jq and Node 20+. Skills go to .agents/skills and agents to .codex/agents. Run the installer from your project root. Windows is not supported.',
         },
         npx: {
           label: 'Without cloning (npx)',
           steps: [
             { text: 'Install from your project root', code: 'npx github:stasmarkov/sdd-kit install --host codex --project' },
           ],
-          note: 'Codex support is an unverified preview in 4.0. It runs the same install.sh as a clone, so every Codex flag works, and needs Node 20+. The package is not published to npm.',
+          note: 'Codex support is an unverified preview. It runs the same install.sh as a clone, so every Codex flag works, and needs Node 20+. The package is not published to npm.',
         },
       },
       flags: [
@@ -54,14 +54,14 @@ window.GUIDE_HOSTS = {
             { text: 'From your project root, preview what will change', code: 'bash install.sh --host cursor --project --dry-run' },
             { text: 'Install into this project', code: 'bash install.sh --host cursor --project' },
           ],
-          note: 'Cursor support is an unverified preview in 4.0. You need Cursor, git, jq and Node 20+. Skills go to .cursor/skills, agents to .cursor/agents and rules to .cursor/rules. If Cursor\'s Third-Party Imports also loads a Claude install of the kit, turn it off in Settings > Agents > Third-Party Imports so the kit does not load twice. Windows is not supported.',
+          note: 'Cursor support is an unverified preview. You need Cursor, git, jq and Node 20+. Skills go to .cursor/skills, agents to .cursor/agents and rules to .cursor/rules. If Cursor\'s Third-Party Imports also loads a Claude install of the kit, turn it off in Settings > Agents > Third-Party Imports so the kit does not load twice. Windows is not supported.',
         },
         npx: {
           label: 'Without cloning (npx)',
           steps: [
             { text: 'Install from your project root', code: 'npx github:stasmarkov/sdd-kit install --host cursor --project' },
           ],
-          note: 'Cursor support is an unverified preview in 4.0. It runs the same install.sh as a clone, so every Cursor flag works, and needs Node 20+. The package is not published to npm.',
+          note: 'Cursor support is an unverified preview. It runs the same install.sh as a clone, so every Cursor flag works, and needs Node 20+. The package is not published to npm.',
         },
       },
       flags: [

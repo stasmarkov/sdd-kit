@@ -61,13 +61,13 @@ Install the kit, either as a plugin (from inside Claude Code):
 
 In plugin mode the workflows' browser steps use the plugin's own Playwright server and need no project `.mcp.json` entry: see [Playwright in plugin mode](installation.md#playwright-in-plugin-mode).
 
-or copied into your project's `.claude/` without cloning (from your project root; needs bash, git, jq and Node 18+):
+or copied into your project's `.claude/` without cloning (from your project root; requirements in [Without cloning: npx](installation.md#without-cloning-npx)):
 
 ```bash
 npx github:stasmarkov/sdd-kit install --project
 ```
 
-Both modes, add-ons, and a clone-based install are in [INSTALLATION.md](installation.md). The core is stack-agnostic: stack add-ons supply detection, gates and specialists, and a new stack is one manifest (`/new-stack`). Plugin mode: the preset above, or the core plus your stack's add-ons (see INSTALLATION). File-copy mode installs the default stack add-ons, and `--stack` changes the choice. Coming from 2.x: [Upgrading from 2.x](installation.md#upgrading-from-2x); see [Stacks and roadmap](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/README.md).
+Both modes, add-ons, and a clone-based install are in [INSTALLATION.md](installation.md). The core is stack-agnostic: stack add-ons supply detection, gates and specialists, and a new stack is one manifest (`/new-stack`). Plugin mode: the preset above, or the core plus your stack's add-ons (see INSTALLATION). File-copy mode installs the default stack add-ons, and `--stack` changes the choice. Coming from 2.x: [Upgrading from 2.x](installation.md#upgrading-from-2x); see [Stacks and roadmap](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/README.md#stacks-and-roadmap).
 
 Start Claude Code in your project root and run the health check:
 
@@ -89,7 +89,7 @@ It reports PASS / WARN / FAIL for the directory layout, skill discovery, agents,
 Claude only knows what the code shows and what you tell it. Three files carry that context. The file-copy installer creates them and never overwrites files that already exist. Plugin mode creates none of them, so plugin users fetch the templates once from the project root (skip any file you already have):
 
 ```bash
-base=https://raw.githubusercontent.com/stasmarkov/sdd-kit/v4.0.1/share
+base=https://raw.githubusercontent.com/stasmarkov/sdd-kit/v4.0.2/share
 curl -fsSL "$base/CLAUDE.template.md" -o CLAUDE.md
 curl -fsSL "$base/templates/AGENTS.template.md" -o AGENTS.md
 mkdir -p .claude/rules
@@ -152,7 +152,7 @@ With no code yet, start with `/product-brief`: it turns the idea into a brief (u
 Route: feature. Adds a new behavior (refund guard on top-up orders); no existing behavior is broken.
 ```
 
-You confirm it or pick another route. The routes are trivial, bug, decision, feature, shipped code, new app, and security audit (a deep, coverage-led audit of existing code). The full route tree is in the [README](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/README.md). Nothing launches until you confirm.
+You confirm it or pick another route. The routes are trivial, bug, decision, feature, shipped code, new app, and security audit (a deep, coverage-led audit of existing code). The full route tree is in the [README](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/README.md). Nothing launches until you confirm.
 
 **2. Inputs up front.** Background workflows can't stop to ask questions, so `/sdd` asks two to four now: single repo or backend and frontend paths, the dev URL for browser checks, and anything specific to the route.
 
@@ -266,7 +266,7 @@ For an unattended run, set a goal with the built-in `/goal` and let Claude keep 
 | `/progress` | Where was I across all specs, and the next task (`--spec=<ref>` for one spec, `--next` for a recommendation). `/progress --health` adds git, tests, lint, and dependency health |
 | `/spec-board` | Board of every spec by status plus backlog slices, with approval and open-question warnings. `/spec-board --out /tmp/spec-board.html` writes a shareable snapshot |
 
-People without Claude Code can open the same board from GitHub: `npx github:stasmarkov/sdd-kit spec-board --serve` in a repo that has `.ai/specs` (Node 18+).
+People without Claude Code can open the same board from GitHub: `npx github:stasmarkov/sdd-kit spec-board --serve` in a repo that has `.ai/specs` (requirements in [Without cloning: npx](installation.md#without-cloning-npx)).
 
 **Finish**
 
@@ -301,7 +301,7 @@ Folder naming, how spec references resolve, and the full layout are in [specific
 
 | Read | When |
 |------|------|
-| [Hireboard worked example](../examples/job-board/README.md) | See every `/sdd` route on one project, from an empty folder to a team: 12 chapters with real commands and tested code. Start with chapter 04 for a full feature |
+| [Hireboard worked example](../examples/job-board/README.md) | See the `/sdd` routes on one project, from an empty folder to a team: 12 chapters with real commands and tested code. Start with chapter 04 for a full feature |
 | [Interactive guide](..) | The same material, clickable, with the example's spec board. Open `docs/guide/index.html` from a clone in a browser, or run `npx github:stasmarkov/sdd-kit guide` |
 | [USAGE-EXAMPLES.md](usage-examples.md) | Real scenarios, phases of each workflow, `Workflow()` arguments |
 | [INSTALLATION.md](installation.md) | Upgrading, add-ons, MCP servers, troubleshooting |

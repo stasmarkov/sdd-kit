@@ -1,0 +1,24 @@
+---
+paths:
+  - "**/modules/custom/**/config/install/**"
+  - "**/modules/custom/**/config/optional/**"
+  - "**/modules/custom/**/config/schema/**"
+  - "**/themes/custom/**/config/**"
+  - "config/sync/**"
+  - "**/config/sync/**"
+---
+
+# Configuration (Drupal)
+
+## Module config
+
+- Every key a module ships in `config/install/` or `config/optional/` has a matching entry in `config/schema/<module>.schema.yml`. Kernel tests fail on config that has no schema.
+- Default config holds no `uuid` and no `_core` key. Those belong to a site's exported config, not to a module.
+- Put config that depends on another module (a view, a field on someone else's entity) in `config/optional/`, so the module still installs without it.
+- Secrets and environment-specific values (API keys, endpoints, credentials) never go into exported config. Read them from `settings.php` or the environment.
+
+## Site config (sync directory)
+
+- Change site configuration through the UI or code, then export it with `<drush> cex`. Import with `<drush> cim`. Do not hand-edit files in the sync directory unless the task is a config-only change, and then run `<drush> cim` to prove it imports.
+- Check that the active config and the sync directory agree with `<drush> config:status` before you report a task done.
+- A config change that needs a data change ships with an update hook in the same commit.

@@ -126,14 +126,279 @@ if echo "$COMMAND" | grep -qE 'rm[[:space:]]+(-[-a-zA-Z]+[[:space:]]+)*/\*?([[:s
     exit 2
 fi
 
-# Block force push to main/master
-if echo "$COMMAND" | grep -qE 'git[[:space:]]+push[[:space:]]+.*--force.*[[:space:]]+(main|master)'; then
-    echo "Blocked: force push to main/master. Use a feature branch instead." >&2
-    exit 2
-fi
-if echo "$COMMAND" | grep -qE 'git[[:space:]]+push[[:space:]]+-f[[:space:]]+.*[[:space:]]+(main|master)'; then
-    echo "Blocked: force push to main/master. Use a feature branch instead." >&2
-    exit 2
+# Block force pushes to protected branches: main, master, the remote's default branch
+# (refs/remotes/<remote>/HEAD) and the globs in SDD_KIT_PROTECTED_BRANCHES (separated by spaces or
+# commas). The variable only adds branches. Every git call tolerates a missing repository or git, so
+# outside a repository the fixed names still apply. Keep this bash 3.2 compatible (macOS /bin/bash).
+FORCE_FIX="Push to a feature branch and open a PR. Other branches can be protected with SDD_KIT_PROTECTED_BRANCHES (see Protected branches in the hooks README)."
+
+# git -C <dir> <args>; prints nothing when the directory is no repository, git is missing or the ref is absent.
+git_in() {
+    local dir=$1
+    shift
+    git -C "$dir" "$@" 2>/dev/null || true
+}
+
+# Resolves directory $2 against base directory $1.
+resolve_dir() {
+    case "$2" in
+        '~') printf '%s' "$HOME" ;;
+        '~/'*) printf '%s/%s' "$HOME" "${2#\~/}" ;;
+        /*) printf '%s' "$2" ;;
+        *) printf '%s/%s' "$1" "$2" ;;
+    esac
+}
+
+# Succeeds when branch $1 is protected for remote $3 of the repository at $2. Called while set -f is
+# on, so the variable's globs match branch names and are never expanded against files.
+is_protected() {
+    local name=$1 default pattern patterns=() extra
+    case "$name" in
+        main|master) return 0 ;;
+    esac
+    default=$(git_in "$2" symbolic-ref --quiet --short "refs/remotes/$3/HEAD")
+    default=${default#"$3"/}
+    if [[ -n "$default" && "$name" == "$default" ]]; then
+        return 0
+    fi
+    extra=${SDD_KIT_PROTECTED_BRANCHES:-}
+    read -r -a patterns <<< "${extra//,/ }" || true
+    for pattern in ${patterns[@]+"${patterns[@]}"}; do
+        case "$name" in
+            $pattern) return 0 ;;
+        esac
+    done
+    return 1
+}
+
+# Prints the branches a wildcard destination $3 (such as `*` from refs/heads/*) reaches among main,
+# master, the SDD_KIT_PROTECTED_BRANCHES entries, the local branches and the branches tracked from
+# remote $2 of the repository at $1.
+glob_targets() {
+    local base=$1 remote=$2 pattern=$3 name extra names=()
+    extra=${SDD_KIT_PROTECTED_BRANCHES:-}
+    read -r -a names <<< "main master ${extra//,/ }" || true
+    while IFS= read -r name; do
+        names+=("$name")
+    done <<< "$(git_in "$base" for-each-ref --format='%(refname:short)' refs/heads)"
+    while IFS= read -r name; do
+        names+=("${name#"$remote"/}")
+    done <<< "$(git_in "$base" for-each-ref --format='%(refname:short)' "refs/remotes/$remote")"
+    for name in "${names[@]}"; do
+        if [[ -n "$name" && "$name" == $pattern ]]; then
+            printf '%s\n' "$name"
+        fi
+    done
+}
+
+# Prints the protected branch that the git command in TOKENS (its words after `git` start at index $1)
+# would force-push to, and nothing for any other command. $2 is the directory the command runs in.
+# A command running an inline alias that can push prints `alias:<name>` instead: the alias expansion,
+# and with it the target, cannot be read from the words.
+forced_push_target() {
+    local i=$1 base=$2 n=${#TOKENS[@]} tok j force='' all='' value_next='' options_done='' remote='' ref rforce dst
+    local cfg key value matching='' alias_name=''
+    local refs=() dests=() configs=()
+    while (( i < n )); do
+        tok=${TOKENS[i]}
+        case "$tok" in
+            -C) base=$(resolve_dir "$base" "${TOKENS[i + 1]:-.}"); i=$((i + 2)) ;;
+            -c) configs+=("${TOKENS[i + 1]:-}"); i=$((i + 2)) ;;
+            # --config-env names an environment variable the hook cannot read, so only its key is kept.
+            --config-env) configs+=("${TOKENS[i + 1]%%=*}"); i=$((i + 2)) ;;
+            --config-env=*) tok=${tok#--config-env=}; configs+=("${tok%%=*}"); i=$((i + 1)) ;;
+            --git-dir|--work-tree|--namespace|--super-prefix|--attr-source) i=$((i + 2)) ;;
+            -*) i=$((i + 1)) ;;
+            *) break ;;
+        esac
+    done
+    # A value that is unknown counts as the widest one: matching mode, or an alias that pushes.
+    for cfg in ${configs[@]+"${configs[@]}"}; do
+        key=$(printf '%s' "${cfg%%=*}" | tr '[:upper:]' '[:lower:]')
+        value='push'
+        if [[ "$cfg" == *=* ]]; then
+            value=${cfg#*=}
+        fi
+        case "$key" in
+            push.default)
+                if [[ "$cfg" != *=* || "$value" == matching ]]; then
+                    matching=1
+                fi
+                ;;
+            remote.*.push|remote.*.mirror) matching=1 ;;
+            alias.*)
+                case "$value" in
+                    push*|!*) alias_name=${key#alias.} ;;
+                esac
+                ;;
+        esac
+    done
+    if [[ "${TOKENS[i]:-}" != push ]]; then
+        if [[ -n "$alias_name" ]]; then
+            printf 'alias:%s' "$alias_name"
+        fi
+        return 0
+    fi
+    if [[ "$(git_in "$base" config push.default)" == matching ]]; then
+        matching=1
+    fi
+    i=$((i + 1))
+    while (( i < n )); do
+        tok=${TOKENS[i]}
+        i=$((i + 1))
+        if [[ -n "$value_next" ]]; then
+            value_next=''
+            continue
+        fi
+        if [[ -z "$options_done" ]]; then
+            # git accepts any unambiguous prefix of a long option: --for covers --force, --force-with-lease
+            # and --force-if-includes, --m is --mirror, --al is --all and --b is --branches.
+            case "$tok" in
+                --) options_done=1; continue ;;
+                --for*) force=1; continue ;;
+                --m*) force=1; all=1; continue ;;
+                --al*|--b*) all=1; continue ;;
+                --*=*) continue ;;
+                --rep*|--pu*|--rece*|--e*) value_next=1; continue ;;
+                -|--*) continue ;;
+                -*)
+                    # A short-option group: f forces; o takes the rest of the word, or the next word, as its value.
+                    j=1
+                    while (( j < ${#tok} )); do
+                        case "${tok:j:1}" in
+                            f) force=1 ;;
+                            o)
+                                if (( j + 1 == ${#tok} )); then
+                                    value_next=1
+                                fi
+                                break
+                                ;;
+                        esac
+                        j=$((j + 1))
+                    done
+                    continue
+                    ;;
+            esac
+        fi
+        if [[ -z "$tok" ]]; then
+            continue
+        elif [[ -z "$remote" ]]; then
+            remote=$tok
+        else
+            refs+=("$tok")
+        fi
+    done
+    remote=${remote:-origin}
+
+    if [[ -n "$all" ]]; then
+        if [[ -z "$force" ]]; then
+            return 0
+        fi
+        while IFS= read -r ref; do
+            if [[ -n "$ref" ]]; then
+                dests+=("$ref")
+            fi
+        done <<< "$(git_in "$base" for-each-ref --format='%(refname:short)' refs/heads)"
+        if [[ ${#dests[@]} -eq 0 ]]; then
+            dests=(main master)
+        fi
+    elif [[ ${#refs[@]} -eq 0 ]]; then
+        # With no refspec, push.default picks the target: the current branch or its upstream, or in
+        # matching mode (or with an inline remote.<name>.push) every branch.
+        if [[ -z "$force" ]]; then
+            return 0
+        fi
+        if [[ -n "$matching" ]]; then
+            dests=(main master)
+            while IFS= read -r ref; do
+                dests+=("$ref")
+            done <<< "$(glob_targets "$base" "$remote" '*')"
+        fi
+        dests+=("$(git_in "$base" symbolic-ref --quiet --short HEAD)")
+        dst=$(git_in "$base" rev-parse --abbrev-ref --symbolic-full-name '@{u}')
+        dests+=("${dst#*/}")
+    else
+        for ref in "${refs[@]}"; do
+            rforce=$force
+            case "$ref" in
+                +*) rforce=1; ref=${ref#+} ;;
+            esac
+            # An empty source deletes the destination, which is not a force push.
+            if [[ -z "$rforce" || "$ref" == :* ]]; then
+                continue
+            fi
+            # git expands a short destination such as heads/main through refs/%s, so it reaches refs/heads/main.
+            dst=${ref#*:}
+            case "$dst" in
+                refs/heads/*) dst=${dst#refs/heads/} ;;
+                heads/*) dst=${dst#heads/} ;;
+            esac
+            if [[ "$dst" == HEAD || "$dst" == @ ]]; then
+                dst=$(git_in "$base" symbolic-ref --quiet --short HEAD)
+            fi
+            if [[ "$dst" == *\** ]]; then
+                while IFS= read -r ref; do
+                    dests+=("$ref")
+                done <<< "$(glob_targets "$base" "$remote" "$dst")"
+                continue
+            fi
+            dests+=("$dst")
+        done
+    fi
+
+    for dst in ${dests[@]+"${dests[@]}"}; do
+        if [[ -n "$dst" ]] && is_protected "$dst" "$base" "$remote"; then
+            printf '%s' "$dst"
+            return 0
+        fi
+    done
+    return 0
+}
+
+# Line continuations are joined, then quotes and backslashes removed as in PLAIN, so "main" reads as main.
+PUSH_TEXT=${COMMAND//$'\\\n'/ }
+PUSH_TEXT=$(printf '%s' "$PUSH_TEXT" | tr -d "'\"\\\\")
+# Only a command naming git, push and a force indicator pays for parsing and git calls.
+if printf '%s\n' "$PUSH_TEXT" | grep -qE 'git.*push.*[[:space:]](--for|--m|-[[:alpha:]]*f|[+])'; then
+    BASE_DIR=$(echo "$INPUT" | jq -r '.cwd // empty')
+    BASE_DIR=${BASE_DIR:-$PWD}
+    PROTECTED_TARGET=''
+    set -f
+    # Each segment between ; & | and newlines is read on its own; the last `cd` sets the directory later
+    # segments run in. A git word anywhere in a segment counts, so sudo, env, bash -c and subshell forms
+    # are covered. Quoted text is read as words too: a commit message naming a forced push is blocked.
+    while IFS= read -r SEGMENT; do
+        TOKENS=()
+        read -r -a TOKENS <<< "$SEGMENT" || true
+        K=0
+        while (( K < ${#TOKENS[@]} )); do
+            WORD=${TOKENS[K]##*[\(\`]}
+            TOKENS[K]=${WORD%%[\)\`]*}
+            K=$((K + 1))
+        done
+        if [[ "${TOKENS[0]:-}" == cd ]]; then
+            BASE_DIR=$(resolve_dir "$BASE_DIR" "${TOKENS[1]:-$HOME}")
+            continue
+        fi
+        K=0
+        while (( K < ${#TOKENS[@]} )); do
+            if [[ "${TOKENS[K]##*/}" == git ]]; then
+                PROTECTED_TARGET=$(forced_push_target $((K + 1)) "$BASE_DIR" || true)
+                if [[ -n "$PROTECTED_TARGET" ]]; then
+                    break 2
+                fi
+            fi
+            K=$((K + 1))
+        done
+    done < <(printf '%s\n' "$PUSH_TEXT" | tr ';&|' '\n\n\n')
+    set +f
+    if [[ "$PROTECTED_TARGET" == alias:* ]]; then
+        echo "Blocked: possible force push to protected branch through the inline alias ${PROTECTED_TARGET#alias:}, whose target the guard cannot read. Fix: run git push itself instead of an alias set with -c. $FORCE_FIX" >&2
+        exit 2
+    elif [[ -n "$PROTECTED_TARGET" ]]; then
+        echo "Blocked: force push to protected branch $PROTECTED_TARGET. $FORCE_FIX" >&2
+        exit 2
+    fi
 fi
 
 # Block drop database

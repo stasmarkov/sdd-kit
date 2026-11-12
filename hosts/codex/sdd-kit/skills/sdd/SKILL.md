@@ -67,6 +67,8 @@ Background workflows **cannot stop and ask questions**, so gather everything now
 
 Before any `Workflow` call, run `node ../stack-trust/scripts/trust-store.mjs --host codex --list-untrusted`. If it lists any manifest, tell the user those stacks' gates will be reported as `not run (untrusted manifest)` and offer `/stack-trust` first. Never approve for them.
 
+**Branch check** (before a `fix-bug` or `ship-feature` launch, including from 4b): run `git branch --show-current` in each repo of the change. A repo is on a base branch when HEAD is detached or the branch is `open-pr.base` from the project `AGENTS.md`, the default from `git symbolic-ref --short refs/remotes/origin/HEAD` without its `origin/` prefix, `main`, `master`, `develop` or `release/*`. If any repo is, add `git switch -c <fix|feature>/<KEY>-<slug>` (`fix/` for a bug; no `<KEY>-` without a ticket; the same name in every repo) to the confirmation below, and run it before the `Workflow` call when the user agrees. This is part of the confirmation, not another question round. If the user keeps the base branch, say that fix-bug creates a `fix/` branch itself before its checkpoint commit and that ship-feature commits on the current branch.
+
 Then show the exact call and note that it runs many agents in the background. Launch only after the user agrees.
 
 | Route | Required inputs | Launch | Output | Done when |
@@ -98,7 +100,7 @@ Run `Skill("write-spec", "--ticket=PROJ-123 <request + ticket text>")` (omit `--
    - `approved_by:` the approving user's name (ask if unknown; `git config user.name` is a reasonable default to confirm)
    - `approved_at:` from `date -u +%Y-%m-%dT%H:%M:%SZ`
 6. **Ticket link-back** (only when there is a ticket **and** a tracker tool is available — Jira/Linear MCP or CLI): ask *"Post the spec link to PROJ-123?"* and post a short comment (spec path, approver, acceptance-criteria count) only on yes. Never post silently.
-7. Only on **Approve and build**: `Workflow({ name: "ship-feature", args: { spec: "<spec folder name>", ticket, repos, url } })`. ship-feature refuses `draft` specs and moves `approved` → `in-progress`.
+7. Only on **Approve and build**, after the Step 4 branch check: `Workflow({ name: "ship-feature", args: { spec: "<spec folder name>", ticket, repos, url } })`. ship-feature refuses `draft` specs and moves `approved` → `in-progress`.
 
 Never start `ship-feature` on a spec the user has not approved in this conversation. Approval from an earlier session, a ticket comment, or another agent does not count — ask.
 

@@ -21,15 +21,21 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../../../../../../index.html">SDD Kit</a>
-    <span class="badge">v4.0.1</span>
+    <span class="badge">v4.0.2</span>
   </div>
+  <nav class="site-nav" aria-label="Site">
+    <ul>
+      <li><a href="../../../../../../index.html">Guide</a></li>
+      <li><a href="../../../../../../adopt.html">Adopt</a></li>
+      <li><a href="../../../../../../reference/index.html">Reference</a></li>
+      <li><a href="../../../../../../index.html#example" aria-current="page">Example</a></li>
+    </ul>
+  </nav>
   <div class="header-actions">
-    <a class="btn" href="../../../../../../index.html"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main">
-  <p class="doc-path mono">examples/job-board/artifacts/api/docs/context/business-rules.md</p>
+<main id="content" class="doc-main" tabindex="-1">
   <article class="doc-body">
 <h2 id="hireboard-business-rules">Hireboard business rules</h2>
 <p>The rules the system must enforce. Specs, tests and reviews cite them by ID. Rules are
@@ -52,8 +58,10 @@ specs that cite it.</p>
 <h3 id="related">Related</h3>
 <ul><li>Invariants INV-01..INV-07: <code>CLAUDE.md</code> (this repo) and the workspace <code>CLAUDE.md</code>.</li><li>Request and response shapes: <code>docs/api/api-contracts.md</code>.</li><li>Tables: <code>docs/schemas/*.md</code>.</li></ul>
   </article>
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/examples/job-board/artifacts/api/docs/context/business-rules.md">View the Markdown source</a></p>
 </main>
+<footer class="site-footer">
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/examples/job-board/artifacts/api/docs/context/business-rules.md">View the Markdown source</a></p>
+</footer>
 <script>
   (function () {
     var KEY = 'sdd-guide-theme', NEXT = { system: 'light', light: 'dark', dark: 'system' };

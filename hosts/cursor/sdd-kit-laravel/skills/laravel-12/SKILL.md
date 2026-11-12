@@ -43,6 +43,7 @@ Apply these patterns when building Laravel API backends.
 | Dependabot for Composer and npm | `references/dependabot.md` |
 | Laravel CI pipeline | `references/ci-pipeline.md` |
 | Code examples for API design, schema design, schema-first and error handling skills | `references/api-design-examples.md`, `references/design-api-examples.md`, `references/design-schema-examples.md`, `references/schema-first-examples.md`, `references/error-handling-examples.md` |
+| Exploring the codebase (where routes, handlers, data access and tests live) | `references/exploration-recipes.md` |
 
 ## Code Templates
 

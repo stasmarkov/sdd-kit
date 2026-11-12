@@ -88,7 +88,7 @@ Create `.vscode/launch.json`:
 
 ## CLI Debugging
 
-Debug Artisan commands, Composer scripts, or PHPUnit:
+Debug Artisan or Drush commands, Composer scripts, or PHPUnit:
 
 ```bash
 # Enable Xdebug first
@@ -96,6 +96,7 @@ ddev xdebug on
 
 # Run command - Xdebug will connect to IDE
 ddev artisan migrate
+ddev drush <cmd>
 ddev exec phpunit
 ddev composer test
 ```

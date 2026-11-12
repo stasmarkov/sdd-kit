@@ -21,15 +21,21 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../../index.html">SDD Kit</a>
-    <span class="badge">v4.0.1</span>
+    <span class="badge">v4.0.2</span>
   </div>
+  <nav class="site-nav" aria-label="Site">
+    <ul>
+      <li><a href="../../index.html">Guide</a></li>
+      <li><a href="../../adopt.html">Adopt</a></li>
+      <li><a href="../../reference/index.html">Reference</a></li>
+      <li><a href="../../index.html#example" aria-current="page">Example</a></li>
+    </ul>
+  </nav>
   <div class="header-actions">
-    <a class="btn" href="../../index.html"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main">
-  <p class="doc-path mono">examples/job-board/05-feature-company-reviews-full-spec.md</p>
+<main id="content" class="doc-main" tabindex="-1">
   <article class="doc-body">
 <h2 id="05--anatomy-of-an-m-spec-company-reviews-with-moderation-hire-4">05 — Anatomy of an M spec: company reviews with moderation (HIRE-4)</h2>
 <p><a href="04-feature-accounts-and-roles.html">Chapter 04</a> took HIRE-3 through the feature pipeline quickly.
@@ -57,7 +63,7 @@ git -C web switch main &amp;&amp; git -C web pull
 git -C api switch -c feature/HIRE-4-company-reviews &amp;&amp; git -C web switch -c feature/HIRE-4-company-reviews
 claude</code></pre>
 <p>There is no tracker connected, so <code>/sdd</code> cannot fetch HIRE-4 and asks for the text
-(<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/skills/sdd/SKILL.md" target="_blank" rel="noopener noreferrer">sdd SKILL.md</a>, Step 1):</p>
+(<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/sdd/SKILL.md" target="_blank" rel="noopener noreferrer">sdd SKILL.md</a>, Step 1):</p>
 <pre><code class="language-text">&gt; /sdd HIRE-4
 
   (simulated, abridged)
@@ -85,7 +91,7 @@ the working directory, so from the root it would land in the untracked <code>~/w
 Chapter 04 covers this friction. In Step 4 below the folder-creation loop runs inside <code>api/</code>.</p>
 <h3 id="step-1--size-first">Step 1 — Size first</h3>
 <p><code>write-spec</code> classifies type and size before it reads any code
-(<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/skills/write-spec/SKILL.md" target="_blank" rel="noopener noreferrer">write-spec Step 1</a>). The size decides how much
+(<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/write-spec/SKILL.md" target="_blank" rel="noopener noreferrer">write-spec Step 1</a>). The size decides how much
 markdown the spec gets:</p>
 <pre><code class="language-text">  (simulated)
   Type: feature
@@ -96,7 +102,7 @@ markdown the spec gets:</p>
 <blockquote><p><strong>Kit friction F6: two repos do not make it L.</strong> The L row of the sizing table lists
 &quot;multi-repo&quot;. Read literally, every api + web feature in this workspace would be L. The
 write-spec template&#39;s own example settles it: its M spec has <code>stacks: [laravel, nextjs]</code>
-(<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/skills/write-spec/references/spec-lite.template.md" target="_blank" rel="noopener noreferrer">spec-lite.template.md</a>).
+(<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/write-spec/references/spec-lite.template.md" target="_blank" rel="noopener noreferrer">spec-lite.template.md</a>).
 An api + web feature is the normal M shape. The other L signal is &quot;new business rules&quot;, and it
 doesn&#39;t apply either. BR-40 to BR-43 (one review per company, pending until moderated, only
 approved reviews public, the average rule) were written and validated with Maya Chen in
@@ -152,7 +158,7 @@ average. Two real gaps are left (the clarity gate in Step 6 confirms them later)
 <p>Both answers end up in AC-1 and AC-4.</p>
 <h3 id="step-4--create-the-folder-atomically">Step 4 — Create the folder atomically</h3>
 <p>The spec id is <code>spec-&lt;TICKET&gt;-&lt;slug&gt;</code>, and the folder is created with <code>mkdir</code> <strong>without</strong> <code>-p</code>
-in a loop (<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/skills/write-spec/SKILL.md" target="_blank" rel="noopener noreferrer">write-spec Step 4</a>). Here it runs
+in a loop (<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/write-spec/SKILL.md" target="_blank" rel="noopener noreferrer">write-spec Step 4</a>). Here it runs
 inside <code>api/</code>:</p>
 <pre><code class="language-bash">cd api
 TICKET=HIRE-4
@@ -370,7 +376,7 @@ registry entries for <code>laravel</code> and <code>nextjs</code>, plus <code>np
 <p>The author of a spec is the worst person to judge whether it is clear. <code>write-spec</code> spawns a
 <strong>new</strong> general-purpose agent and gives it nothing but the folder path. It gets no conversation
 summary and no ticket text
-(<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/skills/write-spec/SKILL.md" target="_blank" rel="noopener noreferrer">write-spec Step 6</a>):</p>
+(<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/write-spec/SKILL.md" target="_blank" rel="noopener noreferrer">write-spec Step 6</a>):</p>
 <pre><code class="language-text">Agent (general-purpose, fresh context):
   Read only the files in `api/.ai/specs/spec-HIRE-4-company-reviews`. Do not open any other
   file. List every hidden assumption, undefined term, ambiguous criterion, and question an
@@ -451,7 +457,7 @@ existed. They show the other side of citing rule IDs: a reader limited to the sp
 see the rule text, so restate the essentials in the criterion, as AC-6 and AC-7 now do.</p>
 <h3 id="step-7--hand-off-then-approve-in-sdd">Step 7 — Hand off, then approve in /sdd</h3>
 <p><code>write-spec</code> ends with its hand-off block
-(<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/skills/write-spec/SKILL.md" target="_blank" rel="noopener noreferrer">write-spec Step 7</a>):</p>
+(<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/write-spec/SKILL.md" target="_blank" rel="noopener noreferrer">write-spec Step 7</a>):</p>
 <pre><code class="language-text">Spec:   api/.ai/specs/spec-HIRE-4-company-reviews/   (size M, status draft)
 Files:  spec-lite.md, tasks.md (7 tasks), decisions.md, manual-test.md (draft)
 Clarity gate: 6 raised, 6 resolved — ready for approval
@@ -461,7 +467,7 @@ Next:   /sdd spec-HIRE-4-company-reviews   (approve → ship-feature)
 <p><code>manual-test.md</code> is a draft with the <code>#step-N</code> anchors the spec cites. ship-feature&#39;s TestPlan
 phase rewrites it from the shipped code.</p>
 <p>Control returns to <code>/sdd</code> at Step 4b
-(<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/skills/sdd/SKILL.md" target="_blank" rel="noopener noreferrer">sdd SKILL.md</a>). It first checks Open questions: all
+(<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/sdd/SKILL.md" target="_blank" rel="noopener noreferrer">sdd SKILL.md</a>). It first checks Open questions: all
 six are checked, so approval can be asked for. It summarizes in plain language and asks:</p>
 <pre><code class="language-text">  (simulated)
   Spec: api/.ai/specs/spec-HIRE-4-company-reviews/spec-lite.md
@@ -517,7 +523,7 @@ Launched: ship-feature — runs in the background; watch with /workflows
 Done when: gates green, converge finds no gaps, review APPROVED, acceptance re-walks the ticket&#39;s scenario</code></pre>
 <h3 id="step-8--ship-feature-builds-it">Step 8 — ship-feature builds it</h3>
 <p>The phases are described in the
-<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/skills/sdd/references/ship-feature.md" target="_blank" rel="noopener noreferrer">ship-feature reference</a>. In spec
+<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/sdd/references/ship-feature.md" target="_blank" rel="noopener noreferrer">ship-feature reference</a>. In spec
 mode, Investigate and Spec-writing are skipped: the spec <em>is</em> the investigation. This is the run
 as <code>/workflows</code> shows it (simulated, abridged):</p>
 <pre><code class="language-text">  Detect       api (laravel, tracked, feature/HIRE-4-company-reviews)
@@ -755,8 +761,10 @@ only, and an admin queue at <code>/admin/reviews</code>.</li><li>A working model
 clarity gate as the place where ambiguity gets resolved before any code is written.</li></ul>
 <p>Next: <a href="06-execute-task-candidate-profiles.html">06 — Build task by task and resume: candidate profiles with /execute-task</a></p>
   </article>
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/examples/job-board/05-feature-company-reviews-full-spec.md">View the Markdown source</a></p>
 </main>
+<footer class="site-footer">
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/examples/job-board/05-feature-company-reviews-full-spec.md">View the Markdown source</a></p>
+</footer>
 <script>
   (function () {
     var KEY = 'sdd-guide-theme', NEXT = { system: 'light', light: 'dark', dark: 'system' };

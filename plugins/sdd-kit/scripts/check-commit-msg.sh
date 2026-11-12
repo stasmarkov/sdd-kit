@@ -6,6 +6,8 @@
 # the message follows Conventional Commits: type(scope?): subject
 # Allowed types: feat, fix, docs, style, refactor, perf, test, build, ci,
 #                chore, revert.
+# The scope is a lowercase area (refunds, api/v2) or a Jira-style ticket key
+# (PROJ-123, MY_PROJ-7). A key can also trail the subject: fix(x): y (PROJ-123).
 #
 # Pass-through for non-commit Bash commands.
 # Allows merge/revert auto-messages.
@@ -71,7 +73,7 @@ fi
 SUBJECT=$(printf '%s\n' "$MSG" | head -1)
 
 # Conventional Commits regex
-CC_RE='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9_./-]+\))?!?:[[:space:]]+.+'
+CC_RE='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(([a-z0-9_./-]+|[A-Z][A-Z0-9_]+-[0-9]+)\))?!?:[[:space:]]+.+'
 
 if ! echo "$SUBJECT" | grep -qE "$CC_RE"; then
     echo "Blocked: commit subject does not follow Conventional Commits." >&2
@@ -79,6 +81,7 @@ if ! echo "$SUBJECT" | grep -qE "$CC_RE"; then
     echo "  Required form: type(scope?): subject" >&2
     echo "  Types: feat | fix | docs | style | refactor | perf | test | build | ci | chore | revert" >&2
     echo "  Example: feat(auth): add OAuth2 callback handler" >&2
+    echo "  Ticket key: fix(refunds): subject (PROJ-123), or fix(PROJ-123): subject" >&2
     exit 2
 fi
 

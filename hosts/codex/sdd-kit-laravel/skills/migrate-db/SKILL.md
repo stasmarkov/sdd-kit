@@ -28,7 +28,7 @@ Create and run database migrations, schema-first. Two skills own the rules this 
 /migrate-db --fresh-seed                       # local and test databases only
 ```
 
-If the project runs in DDEV (`.ddev/` exists and `ddev describe` succeeds), prefix artisan commands with `ddev exec`.
+If the project runs in DDEV (`.ddev/` exists), check that it is running: `ddev describe -j` must report `raw.status` `running`. If it does not, stop and ask the user to run `ddev start`; do not start it yourself. While it is running, prefix artisan commands with `ddev exec`.
 
 The status, run and fresh commands are the `migrations` block of the laravel stack manifest (`migrate:status`, `migrate`, `migrate:fresh --seed`), found with the stack-data recipe in the `verification-gates` skill. A manifest that is not trusted is not used: `not run (untrusted manifest). Fix: run /stack-trust.`
 

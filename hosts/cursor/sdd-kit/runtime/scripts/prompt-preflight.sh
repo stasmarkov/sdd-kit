@@ -29,8 +29,8 @@ if echo "$LOWER" | grep -qE '(delete|drop|truncate|wipe|destroy)[[:space:]]+.*(p
     CONTEXT_LINES+=("Guardrail: prompt targets production data. Do NOT execute destructive operations against production. Confirm scope is a local/test environment, or refuse and ask the user to switch contexts.")
 fi
 
-if echo "$LOWER" | grep -qE '(force[[:space:]]+push|push[[:space:]]+--?force|push[[:space:]]+-f)[[:space:]]+.*(main|master|production)'; then
-    CONTEXT_LINES+=("Guardrail: force-push to main/master/production is blocked by the dangerous-command hook. Use a feature branch and a PR.")
+if echo "$LOWER" | grep -qE '(force[[:space:]]+push|push[[:space:]]+--?force|push[[:space:]]+-f)[[:space:]]+(.*[^[:alnum:]_])?(main|master|develop|production)([^[:alnum:]_]|$)'; then
+    CONTEXT_LINES+=("Guardrail: force pushes to protected branches (main, master, the remote default branch, SDD_KIT_PROTECTED_BRANCHES) are blocked by the dangerous-command hook. Use a feature branch and a PR.")
 fi
 
 if echo "$LOWER" | grep -qE '(rm[[:space:]]+-rf|rm[[:space:]]+-fr)[[:space:]]+/'; then

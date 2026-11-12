@@ -21,21 +21,27 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../../index.html">SDD Kit</a>
-    <span class="badge">v4.0.1</span>
+    <span class="badge">v4.0.2</span>
   </div>
+  <nav class="site-nav" aria-label="Site">
+    <ul>
+      <li><a href="../../index.html">Guide</a></li>
+      <li><a href="../../adopt.html">Adopt</a></li>
+      <li><a href="../../reference/index.html">Reference</a></li>
+      <li><a href="../../index.html#example" aria-current="page">Example</a></li>
+    </ul>
+  </nav>
   <div class="header-actions">
-    <a class="btn" href="../../index.html"><span aria-hidden="true">←</span><span class="btn-label">Guide</span></a>
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main">
-  <p class="doc-path mono">examples/job-board/09-bug-closed-jobs-fix-bug.md</p>
+<main id="content" class="doc-main" tabindex="-1">
   <article class="doc-body">
 <h2 id="09--bug-closed-postings-reachable-by-direct-link-fixed-with-fix-bug-hire-9">09 — Bug: closed postings reachable by direct link, fixed with fix-bug (HIRE-9)</h2>
 <p>Previous: <a href="08-careers-page-s-spec-and-trivial-change.html">08 — Proportionality: an S spec and a no-spec trivial change</a></p>
 <p>So far every change has started from a spec. This one starts from a defect, and the kit handles it differently: <strong>no spec is written, because the pipeline itself is the spec.</strong> You give <code>/sdd</code> the symptom, the repro steps, expected vs actual, and the behavior around the bug that must stay the same. The <code>fix-bug</code> workflow then reproduces the bug, verifies a root cause, commits a failing regression test plus a passing guard test for each must-not-change item, applies a minimal fix, runs the gates, and re-walks the original report in the browser.</p>
 <p>Reference pages, so this chapter doesn&#39;t repeat them:</p>
-<ul><li><a href="../../reference/usage-examples.html#2-bug">USAGE-EXAMPLES.md, section 2 &quot;Bug&quot;</a>: the general flow</li><li><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/skills/sdd/references/fix-bug.md" target="_blank" rel="noopener noreferrer"><code>/sdd</code> route reference: fix-bug</a>: args, phases, outputs, done-when</li><li><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/plugins/sdd-kit/workflows/fix-bug.js" target="_blank" rel="noopener noreferrer"><code>src/workflows/fix-bug.js</code></a>: the workflow source</li></ul>
+<ul><li><a href="../../reference/usage-examples.html#2-bug">USAGE-EXAMPLES.md, section 2 &quot;Bug&quot;</a>: the general flow</li><li><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/sdd/references/fix-bug.md" target="_blank" rel="noopener noreferrer"><code>/sdd</code> route reference: fix-bug</a>: args, phases, outputs, done-when</li><li><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/workflows/fix-bug.js" target="_blank" rel="noopener noreferrer"><code>src/workflows/fix-bug.js</code></a>: the workflow source</li></ul>
 <div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody><tr><td>Ticket</td><td>HIRE-9 &quot;Closed job postings still open by direct link&quot;</td></tr><tr><td>Route</td><td><code>bug</code> → <code>fix-bug</code> workflow</td></tr><tr><td>Repos touched</td><td><code>api/</code> only (the <code>web/</code> diff is empty)</td></tr><tr><td>Branch</td><td><code>fix/HIRE-9-closed-job-visibility</code> (api)</td></tr><tr><td>Date</td><td>2026-10-30</td></tr><tr><td>Artifact</td><td><a href="artifacts/api/tests/Feature/Jobs/ClosedJobPostingVisibilityTest.php"><a href="artifacts/api/tests/Feature/Jobs/ClosedJobPostingVisibilityTest.php"><code>artifacts/api/tests/Feature/Jobs/ClosedJobPostingVisibilityTest.php</code></a></a></td></tr></tbody></table></div>
 <blockquote><p>Command names below are bare (<code>/sdd</code>). In plugin mode they are namespaced (<code>/sdd-kit:sdd</code>). See <a href="01-workspace-and-install.html">chapter 01</a>.</p></blockquote>
 <hr>
@@ -290,8 +296,10 @@ gh pr create --base main --title &quot;HIRE-9: closed job postings still open by
 <ul><li>HIRE-9 fixed in <code>api/</code> only: <code>findOpen()</code> resolves through a status-filtered <code>findOpenById()</code>, while <code>findById()</code> still serves the applications code.</li><li>A committed <a href="artifacts/api/tests/Feature/Jobs/ClosedJobPostingVisibilityTest.php"><code>ClosedJobPostingVisibilityTest</code></a> with two regression tests and one guard per must-not-change behavior, plus MNC-5 pinned by the existing search test.</li><li>A <code>FIXED</code> report with a root cause at file:line confirmed 3/3, gate results per repo, a re-walk of the original report, and a manual test plan that covers the original case and every MNC item.</li><li>No spec, by design: for a bug, the pipeline&#39;s report and tests are the record.</li></ul>
 <p>Next: <a href="10-qa-and-docs-browse-journey.html">10 — Shipped code: a traceable QA plan and docs for the public browse journey (HIRE-10)</a></p>
   </article>
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/examples/job-board/09-bug-closed-jobs-fix-bug.md">View the Markdown source</a></p>
 </main>
+<footer class="site-footer">
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/examples/job-board/09-bug-closed-jobs-fix-bug.md">View the Markdown source</a></p>
+</footer>
 <script>
   (function () {
     var KEY = 'sdd-guide-theme', NEXT = { system: 'light', light: 'dark', dark: 'system' };

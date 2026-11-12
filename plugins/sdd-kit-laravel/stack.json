@@ -46,7 +46,11 @@
   "execWrapper": {
     "when": ".ddev/config.yaml",
     "command": "ddev exec",
-    "requiresRunning": "ddev describe"
+    "requiresRunning": {
+      "command": "ddev describe -j",
+      "jsonField": "raw.status",
+      "equals": "running"
+    }
   },
   "contractSync": {
     "routeListCommand": "php artisan route:list --json",

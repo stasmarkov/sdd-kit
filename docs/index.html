@@ -24,6 +24,14 @@
     <a class="brand-name" href="#start" id="product">SDD Kit</a>
     <span class="badge" id="version"></span>
   </div>
+  <nav class="site-nav" aria-label="Site">
+    <ul>
+      <li><a href="index.html" aria-current="page">Guide</a></li>
+      <li><a href="adopt.html">Adopt</a></li>
+      <li><a href="reference/index.html">Reference</a></li>
+      <li><a href="index.html#example">Example</a></li>
+    </ul>
+  </nav>
   <div class="header-actions">
     <label class="host-select"><span class="btn-label">Host</span> <select id="host-select" class="btn" aria-label="Host"></select></label>
     <button type="button" class="btn search-button" id="search-button" aria-label="Search">
@@ -38,17 +46,13 @@
     <h2>On this page</h2>
     <ol id="toc-list"></ol>
   </nav>
-  <main id="content">
+  <main id="content" tabindex="-1">
     <section id="start" class="hero" aria-labelledby="start-h">
       <h1 id="start-h">Spec-driven development with Claude Code</h1>
       <p class="lede" id="tagline">Write down what done means, let the agent build it through gates, and approve the result as a human.</p>
       <p class="stack-note" id="stack-note"></p>
+      <ul class="signposts" id="signposts" aria-label="Where to start"></ul>
       <ul class="stats" id="stats" aria-label="What the guide covers"></ul>
-    </section>
-    <section id="primer" aria-labelledby="primer-h">
-      <h2 id="primer-h">New to Claude Code?</h2>
-      <p class="lede">What Claude Code is, how to install it, and your first session.</p>
-      <div class="section-body"></div>
     </section>
     <section id="install" aria-labelledby="install-h">
       <h2 id="install-h">Install</h2>
@@ -60,57 +64,67 @@
       <p class="lede">From install to your first feature.</p>
       <div class="section-body"></div>
     </section>
-    <section id="which-route" aria-labelledby="which-route-h">
-      <h2 id="which-route-h">Which route?</h2>
-      <p class="lede">Answer a few questions and get the one route that fits your work.</p>
-      <div class="section-body"></div>
-    </section>
-    <section id="map" aria-labelledby="map-h">
-      <h2 id="map-h">One request, one route</h2>
+    <section id="routes" aria-labelledby="routes-h">
+      <h2 id="routes-h">Routes</h2>
       <p class="lede">Every request goes through /sdd, which classifies it and launches one fixed pipeline.</p>
-      <div class="section-body"></div>
+      <div class="sub-block" id="which-route" role="region" aria-labelledby="which-route-h">
+        <h3 id="which-route-h">Which route?</h3>
+        <p class="lede">Answer a few questions and get the one route that fits your work.</p>
+        <div class="section-body"></div>
+      </div>
+      <div class="sub-block" id="map" role="region" aria-labelledby="map-h">
+        <h3 id="map-h">One request, one route</h3>
+        <p class="lede">The routes /sdd can pick, and what each one launches.</p>
+        <div class="section-body"></div>
+      </div>
+      <div class="sub-block" id="pipeline" role="region" aria-labelledby="pipeline-h">
+        <h3 id="pipeline-h">The pipeline</h3>
+        <p class="lede">The phases a request passes through, from intake to knowledge.</p>
+        <div class="section-body"></div>
+      </div>
+      <div class="sub-block" id="spec" role="region" aria-labelledby="spec-h">
+        <h3 id="spec-h">Anatomy of a spec folder</h3>
+        <p class="lede">What each file in a spec folder holds and who reads it.</p>
+        <div class="section-body"></div>
+      </div>
     </section>
-    <section id="pipeline" aria-labelledby="pipeline-h">
-      <h2 id="pipeline-h">The pipeline</h2>
-      <p class="lede">The phases a request passes through, from intake to knowledge.</p>
-      <div class="section-body"></div>
-    </section>
-    <section id="after" aria-labelledby="after-h">
-      <h2 id="after-h">After /sdd</h2>
-      <p class="lede">Continue, check or finish the work the pipeline started.</p>
-      <div class="section-body"></div>
-    </section>
-    <section id="spec" aria-labelledby="spec-h">
-      <h2 id="spec-h">Anatomy of a spec folder</h2>
-      <p class="lede">What each file in a spec folder holds and who reads it.</p>
-      <div class="section-body"></div>
-    </section>
-    <section id="hooks" aria-labelledby="hooks-h">
-      <h2 id="hooks-h">Hooks and guardrails</h2>
-      <p class="lede">What blocks risky actions and what checks your work as you go.</p>
-      <div class="section-body"></div>
-    </section>
-    <section id="workflows-direct" aria-labelledby="workflows-direct-h">
-      <h2 id="workflows-direct-h">Workflows</h2>
-      <p class="lede">Run a background workflow directly instead of going through /sdd.</p>
-      <div class="section-body"></div>
-    </section>
-    <section id="everyday" aria-labelledby="everyday-h">
-      <h2 id="everyday-h">More commands</h2>
-      <p class="lede">Everyday commands beyond the main routes.</p>
-      <div class="section-body"></div>
-      <h3 id="addons-h">Optional add-ons</h3>
-      <div class="addons" id="addons"></div>
+    <section id="commands" aria-labelledby="commands-h">
+      <h2 id="commands-h">Commands</h2>
+      <p class="lede">What to run after /sdd, the everyday commands, add-ons and the guardrails around them.</p>
+      <div class="sub-block" id="after" role="region" aria-labelledby="after-h">
+        <h3 id="after-h">After /sdd</h3>
+        <p class="lede">Continue, check or finish the work the pipeline started.</p>
+        <div class="section-body"></div>
+      </div>
+      <div class="sub-block" id="everyday" role="region" aria-labelledby="everyday-h">
+        <h3 id="everyday-h">More commands</h3>
+        <p class="lede">Everyday commands beyond the main routes.</p>
+        <div class="section-body"></div>
+      </div>
+      <div class="sub-block" id="addons" role="region" aria-labelledby="addons-h">
+        <h3 id="addons-h">Optional add-ons</h3>
+        <div class="section-body"></div>
+      </div>
+      <div class="sub-block" id="hooks" role="region" aria-labelledby="hooks-h">
+        <h3 id="hooks-h">Hooks and guardrails</h3>
+        <p class="lede">What blocks risky actions and what checks your work as you go.</p>
+        <div class="section-body"></div>
+      </div>
+      <div class="sub-block" id="workflows-direct" role="region" aria-labelledby="workflows-direct-h">
+        <h3 id="workflows-direct-h">Workflows</h3>
+        <p class="lede">Run a background workflow directly instead of going through /sdd.</p>
+        <div class="section-body"></div>
+      </div>
     </section>
     <section id="example" aria-labelledby="example-h">
-      <h2 id="example-h">Hireboard worked example</h2>
-      <p class="lede">A real project taken chapter by chapter through every route.</p>
+      <h2 id="example-h">Example</h2>
+      <p class="lede">Hireboard, a worked project taken chapter by chapter through the routes.</p>
       <div class="section-body"></div>
-    </section>
-    <section id="board" aria-labelledby="board-h">
-      <h2 id="board-h">The example's spec board</h2>
-      <p class="lede">The example's specs by status, with the spec board that renders them.</p>
-      <div class="section-body"></div>
+      <div class="sub-block" id="board" role="region" aria-labelledby="board-h">
+        <h3 id="board-h">The example's spec board</h3>
+        <p class="lede">The example's specs by status, with the spec board that renders them.</p>
+        <div class="section-body"></div>
+      </div>
     </section>
     <section id="catalog" aria-labelledby="catalog-h">
       <h2 id="catalog-h">Catalog</h2>
@@ -118,14 +132,13 @@
       <div class="section-body"></div>
     </section>
     <section id="help" aria-labelledby="help-h">
-      <h2 id="help-h">When something is off</h2>
+      <h2 id="help-h">Help</h2>
       <p class="lede">Symptoms and fixes for the usual problems.</p>
       <div class="section-body"></div>
     </section>
   </main>
 </div>
 <footer class="site-footer">
-  <div>Content comes from <code>guide-data.js</code>, <code>host-data.js</code>, <code>catalog.js</code> and <code>example-data.js</code>; the last two are generated from the kit.</div>
   <ul id="links"></ul>
 </footer>
 <div class="drawer-scrim" id="drawer-scrim"></div>

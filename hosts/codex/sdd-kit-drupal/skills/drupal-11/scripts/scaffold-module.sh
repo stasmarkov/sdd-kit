@@ -36,7 +36,7 @@ cat > "${MODULE_DIR}/${MODULE_NAME}.info.yml" << EOF
 name: '${MODULE_NAME}'
 type: module
 description: 'Custom module.'
-core_version_requirement: ^11
+core_version_requirement: ^10.3 || ^11
 package: Custom
 EOF
 
@@ -57,8 +57,27 @@ cat > "${MODULE_DIR}/${MODULE_NAME}.services.yml" << EOF
 services: {}
 EOF
 
+# The module may sit below the DDEV project root, or MODULE_PATH may point into
+# another project, so look for .ddev from the module itself up to the filesystem root.
+in_ddev_project() {
+  local dir
+  dir="$(cd "$MODULE_DIR" && pwd)"
+  while :; do
+    if [ -f "${dir}/.ddev/config.yaml" ]; then
+      return 0
+    fi
+    [ "$dir" = "/" ] && return 1
+    dir="$(dirname "$dir")"
+  done
+}
+
+DRUSH="drush"
+if in_ddev_project; then
+  DRUSH="ddev drush"
+fi
+
 echo "Module scaffolded at: ${MODULE_DIR}"
 echo ""
 echo "Next steps:"
-echo "  drush en ${MODULE_NAME}    # Enable the module"
-echo "  drush cr                    # Clear cache"
+echo "  ${DRUSH} en ${MODULE_NAME}    # Enable the module"
+echo "  ${DRUSH} cr                    # Clear cache"

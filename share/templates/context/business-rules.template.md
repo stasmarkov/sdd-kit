@@ -20,7 +20,7 @@
 
 ## {{Domain 1}} Rules
 
-### Amount Format
+### Amount Format (example: delete if the domain has no money)
 - **{{Currency}} amounts**: {{Format description}}
 - Storage: {{How amounts are stored}}
 - Display: {{How amounts are displayed}}
@@ -114,7 +114,7 @@
 Before implementing any feature, verify:
 
 - [ ] Does not violate any prohibitions above
-- [ ] Follows amount format rules
+- [ ] Follows the domain rules above
 - [ ] Respects security requirements
 - [ ] Meets performance requirements
 

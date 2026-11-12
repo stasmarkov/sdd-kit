@@ -32,7 +32,7 @@ A PR is the last place a reviewer sees the contract before it merges. `/open-pr`
 ```bash
 /open-pr --spec=PROJ-123                      # spec by ticket key, repo = current directory
 /open-pr --spec=PROJ-123 --report=.ai/reports/ship-spec-PROJ-123-refund-guard-20261019-1012.md  # after ship-feature
-/open-pr                                      # infer the spec from the branch name (feature/PROJ-123-…)
+/open-pr                                      # infer the ticket from the branch (feature/, fix/, bugfix/, hotfix/PROJ-123-…)
 /open-pr --spec=PROJ-123 --repos=backend:api,frontend:web
 /open-pr --report=.ai/reports/fix-PROJ-130-20261019-1412.md  # bug fixed by fix-bug (no spec)
 /open-pr --spec=PROJ-123 --draft --reviewer=jdoe
@@ -59,7 +59,7 @@ elif printf '%s' "$KEY" | grep -qE '^[0-9]+$'; then ls -d .ai/specs/*/ | grep -E
 else ls -d .ai/specs/*/ | grep -iE "/(spec-)?${KEY}-"; fi
 ```
 
-Without `--spec`, take the ticket key from the current branch (`git branch --show-current`, e.g. `feature/PROJ-123-refund-guard` → `PROJ-123`) and resolve that. In a polyrepo workspace the spec lives in the repo that started the change, so search each repo's `.ai/specs/`. Several matches → list and ask. Then look for the ship-feature report: `--report`, or else the newest `.ai/reports/ship-<spec folder>-*.md` in the spec's repo. It is evidence for Step 2, not a body source. No match and no `--report` → ask whether this is a bug fix (point to the fix-bug report) or stop and suggest `/write-spec`.
+Without `--spec`, take the ticket key from the current branch (`git branch --show-current`): the first case-sensitive match of `(^|/)([A-Z][A-Z0-9_]+-[0-9]+)(-|/|$)`, under any prefix (`feature/`, `fix/`, `bugfix/`, `hotfix/`) or none. `feature/PROJ-123-refund-guard`, `bugfix/PROJ-123-null-total` and `hotfix/PROJ-9-login` give a key; `fix/ie11-1px-gap` and `feature/oauth2-123-callback` give none. When the only key-shaped segment is lowercase (`fix/proj-123-null-total`), ask the user to confirm the key; never uppercase it silently. Resolve the key as above. In a polyrepo workspace the spec lives in the repo that started the change, so search each repo's `.ai/specs/`. Several matches → list and ask. Then look for the ship-feature report: `--report`, or else the newest `.ai/reports/ship-<spec folder>-*.md` in the spec's repo. It is evidence for Step 2, not a body source. No match and no `--report` → ask whether this is a bug fix (point to the fix-bug report) or stop and suggest `/write-spec`. On a `fix/`, `bugfix/` or `hotfix/` branch, still ask, but list the bug fix first as the recommended option.
 
 **Bug mode.** With a fix-bug `--report` (`.ai/reports/fix-*.md`) and no spec, or when the user confirms a fix-bug run with no spec, read the report's Summary, Root cause, Regression test, Must NOT change, Quality gates, and Manual test plan sections. fix-bug saves its report under `.ai/reports/` and names the path in its `Next:` line; without `--report`, take the newest `.ai/reports/fix-*.md` whose name or Summary matches the branch's ticket, and confirm it with the user. A report that only exists in the conversation (an older run) → ask the user to save it to a file first so the body is built from text you can cite.
 
@@ -101,7 +101,7 @@ Run every check, then show one table. **Block** stops the run with the fix; **Wa
 | Spec approval | `approved_by` and `approved_at` in spec-lite.md frontmatter are both non-empty | Warn — the spec was never approved; say so in the output and in the PR body's Spec line |
 | Gates green | see *Gate evidence* below | Block |
 | Deep-review | newest `.ai/reviews/REVIEW-*` whose name or Source line matches the spec id, ticket, or branch | `BLOCKED` / `CHANGES_REQUIRED` → Block (fix, re-run `/deep-review`). When no deep-review report exists, the Recommendation of a saved workflow report under `.ai/reports/` counts as the review: ship-feature `SHIP` or fix-bug `FIXED` passes, anything else Blocks. No report of either kind → Warn, suggest `/deep-review --spec=<id>` |
-| Branch | current branch is not the base, and the same branch name is used in every repo of the change | Block on base — offer `git switch -c <feature\|fix>/<ticket>-<slug>` |
+| Branch | current branch is not the base, and the same branch name is used in every repo of the change | Block on base — offer `git switch -c <feature\|fix>/<ticket>-<slug>`, with `fix/` in bug mode and `feature/` otherwise |
 | Working tree | `git status --porcelain` per repo | Warn — list the files; offer one commit with a conventional message (Step 3), staging the listed paths explicitly, never `git add -A` |
 | Spec folder tracked | `git -C <spec repo> status --porcelain .ai/specs/<folder>` | Warn — it ships with the PR of the repo that holds it |
 | Secrets | changed paths (`git diff --name-only origin/$BASE...HEAD` plus staged files) matching `.env`, `.env.*` (not `.env.example`), `*.pem`, `*.key`, `auth.json`, `credentials*` | Block — never pushed |

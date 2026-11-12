@@ -1,0 +1,55 @@
+---
+paths:
+  - "**/modules/custom/**/tests/**"
+  - "**/themes/custom/**/tests/**"
+---
+
+# Tests (Drupal)
+
+## Rules
+
+- Write the failing test first. Run it and watch it fail for the expected reason before you fix anything.
+- Each acceptance criterion in a spec maps to at least one test or to a manual-test step in the spec.
+- Never delete, skip, or weaken an assertion just to make a test pass. If the test is wrong, say so and explain why.
+- No live network calls. Mock HTTP clients and external services.
+
+## Choosing a test type
+
+| Code under test | Test type | Base class | Folder |
+|-----------------|-----------|------------|--------|
+| Pure logic in a service, no database | Unit | `UnitTestCase` | `tests/src/Unit/` |
+| Services with storage, entities, config, event subscribers, plugins | Kernel | `KernelTestBase` | `tests/src/Kernel/` |
+| Routes, controllers, forms, access, permissions | Functional | `BrowserTestBase` | `tests/src/Functional/` |
+| Behaviour that needs JavaScript | FunctionalJavascript | `WebDriverTestBase` | `tests/src/FunctionalJavascript/` |
+
+- The namespace is `Drupal\Tests\<module>\<Type>`, for example `Drupal\Tests\my_module\Kernel\OrderServiceTest`.
+- Kernel and Functional tests list every module they need in `protected static $modules`.
+- Functional tests set `protected $defaultTheme = 'stark';`.
+- Mock with PHPUnit's `createMock()`; do not add Prophecy to new tests.
+
+## Groups
+
+- Put `@group <module>` in the class docblock. It works on Drupal 10.3 and 11.
+- Use the `#[Group('<module>')]` attribute only in modules that require Drupal 11; PHPUnit 9 on Drupal 10 ignores it.
+
+```php
+/**
+ * Tests the order total calculation.
+ *
+ * @group my_module
+ */
+final class OrderTotalTest extends KernelTestBase {
+
+  protected static $modules = ['system', 'user', 'my_module'];
+
+}
+```
+
+## Running
+
+- Run tests through the PHPUnit gate or `/run-tests`. By hand: `<phpunit> -c <docroot>/core <docroot>/modules/custom/<module>`, or one file with `<phpunit> -c <docroot>/core <path to the test>`.
+- Kernel and Functional tests need `SIMPLETEST_DB` (and `SIMPLETEST_BASE_URL` for Functional) in the environment the tests run in.
+
+## Test-first hook
+
+The Drupal add-on's test-first hook blocks edits to custom-module classes under `src/Controller`, `src/Form`, `src/Service`, `src/Services`, `src/Access` and `src/EventSubscriber` until the module's `tests/src` has a `<Class>Test.php` or a test that names the class. `src/Plugin` and `src/Entity` classes get a warning only, and classes directly under `src/` are not guarded. Set `CLAUDE_SKIP_TEST_FIRST=1` to bypass it.

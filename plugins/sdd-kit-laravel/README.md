@@ -3,7 +3,7 @@
 
 Laravel add-on: laravel-backend-dev agent, Laravel, Pest, Passport, DTO, service-repository, event-driven and migration skills, path-scoped rules, the contract-sync template and the Laravel stack manifest.
 
-- Version: 4.0.1
+- Version: 4.0.2
 - Keywords: laravel, php, pest
 
 ## Install
@@ -16,4 +16,4 @@ Laravel add-on: laravel-backend-dev agent, Laravel, Pest, Passport, DTO, service
 ## Learn more
 
 - [Interactive guide](https://stasmarkov.github.io/sdd-kit/)
-- [Worked example: Hireboard](https://github.com/stasmarkov/sdd-kit/blob/v4.0.1/docs/examples/job-board/README.md)
+- [Worked example: Hireboard](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/examples/job-board/README.md)

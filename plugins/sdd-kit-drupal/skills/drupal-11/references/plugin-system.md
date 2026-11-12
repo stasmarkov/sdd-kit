@@ -227,7 +227,6 @@ declare(strict_types=1);
 
 namespace Drupal\my_module\Plugin\QueueWorker;
 
-use Drupal\Core\Annotation\QueueWorker;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Queue\Attribute\QueueWorker as QueueWorkerAttribute;
 use Drupal\Core\Queue\QueueWorkerBase;
@@ -365,14 +364,14 @@ final class StripeGateway implements PaymentGatewayInterface {
 ## Best Practices
 
 ### Do's
-- Use PHP attributes instead of annotations (Drupal 11)
+- Use PHP attributes instead of annotations (annotations are deprecated since Drupal 10.2)
 - Implement `ContainerFactoryPluginInterface` for DI
 - Keep plugin logic minimal — delegate to services
 - Define `defaultConfiguration()` for configurable plugins
 - Use `final` on plugin classes
 
 ### Don'ts
-- Don't use `@Annotation` syntax (deprecated in Drupal 11)
+- Don't use `@Annotation` syntax (deprecated since Drupal 10.2)
 - Don't inject the full container — inject specific services
 - Don't put business logic directly in plugins
 - Don't forget cache tags on block plugin output
