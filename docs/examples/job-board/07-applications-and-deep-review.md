@@ -13,8 +13,8 @@ and merges both repos in order.
 Reference pages, so this chapter doesn't repeat them:
 
 - [USAGE-EXAMPLES.md, section 1 "Feature from a ticket"](../../reference/usage-examples.md#1-feature-from-a-ticket) and [section 9 "Review before merge"](../../reference/usage-examples.md#9-review-before-merge)
-- [`/sdd` route reference: ship-feature](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/sdd/references/ship-feature.md): args, phases, outputs, done-when
-- [`deep-review` skill](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/deep-review/SKILL.md) and its [report template](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/deep-review/references/adversarial-review.md#report-template)
+- [`/sdd` route reference: ship-feature](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/sdd/references/ship-feature.md): args, phases, outputs, done-when
+- [`deep-review` skill](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/deep-review/SKILL.md) and its [report template](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/deep-review/references/adversarial-review.md#report-template)
 
 | | |
 |---|---|
@@ -149,7 +149,10 @@ drive the browser.
 ```text
 Detect      laravel → api (git, clean, feature/HIRE-6-job-applications)
             nextjs  → web (git, clean, feature/HIRE-6-job-applications)
-Spec        loaded spec-HIRE-6-job-applications: 5 pending tasks; status approved → in-progress
+Spec        loaded spec-HIRE-6-job-applications: 5 pending tasks
+Prepare     backend stays on "feature/HIRE-6-job-applications"
+            frontend stays on "feature/HIRE-6-job-applications"
+            spec-HIRE-6-job-applications status approved → in-progress
 Build       1 schema doc + migration + model + factory                 laravel-backend-dev  ✓
             2 submit endpoint + rules + tests (5 tests red → green)     laravel-backend-dev  ✓
             3 candidate/employer lists + policy + tests                 laravel-backend-dev  ✓
@@ -159,7 +162,8 @@ Gates       api  pint ✓  phpstan ✓  php artisan test ✓
             web  lint ✓  tsc ✓  npm test ✓  npm run build ✓ (routes added)
 Converge    round 1: every AC and MNC has a test or manual step; no gap tasks appended
 Visual      /jobs/[id]/apply, /applications, /employer/applications at 375/768/1280: no issues
-Review      4 dimensions → 3 candidate findings → 0 survived the 3-vote refutation panel
+Review      4 dimensions → 3 candidate findings → 0 confirmed (two verifier votes each, refuted)
+Fix         stopped (clean) after 0 round(s); fixed none; remaining none
 Acceptance  journey re-walked at http://localhost:3000:
               new candidate without profile → apply → "Create your candidate profile before
                 you apply." banner, link to /profile ✓
@@ -521,7 +525,7 @@ In the `api/` session:
 ```
 
 For `web/`, the diff has to come from the web repo's git, so run it there. Headless works the
-same way as in CI ([standard-review reference](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/deep-review/references/standard-review.md#ci-integration)):
+same way as in CI ([standard-review reference](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/deep-review/references/standard-review.md#ci-integration)):
 
 ```bash
 cd ~/work/hireboard/web
@@ -593,7 +597,7 @@ is merged and its CI is green, merge the web PR.
 
 > **`/deep-review` complements ship-feature's Review phase. It does not replace it.**
 > ship-feature's panel reviews the build *with* the spec: four dimensions, and each finding has
-> to survive a three-vote refutation. That makes it good at "does this match what we agreed?".
+> to survive two refutation votes (a third breaks a tie). That makes it good at "does this match what we agreed?".
 > `/deep-review` at the adversarial depth deliberately works *without* the spec or the prompt,
 > so it catches what everyone who read the spec agreed not to look at. Here, everyone who read
 > "even under a race" assumed the AC-4 test proved it. Use both for anything that touches auth,

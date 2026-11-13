@@ -118,7 +118,7 @@ Launched: qa-and-docs — runs in the background; watch with /workflows
 Done when: grader passes the coverage and phantom-link gates; a human reviews before publishing
 ```
 
-The phases, the args table and the done-definition for this route are in [references/qa-and-docs.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/sdd/references/qa-and-docs.md). [USAGE-EXAMPLES §4](../../reference/usage-examples.md#4-qa-plan-and-docs-for-shipped-code) shows the same route with other kinds of scope.
+The phases, the args table and the done-definition for this route are in [references/qa-and-docs.md](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/sdd/references/qa-and-docs.md). [USAGE-EXAMPLES §4](../../reference/usage-examples.md#4-qa-plan-and-docs-for-shipped-code) shows the same route with other kinds of scope.
 
 ## Step 3 — What the phases do
 

@@ -1,6 +1,6 @@
 {
   "name": "sdd-kit-ops",
-  "version": "4.0.2",
+  "version": "4.1.0",
   "description": "Operations add-on: deploy, rollback, feature flags, health checks, incident response, and ops analysis agents.",
   "displayName": "SDD Kit ops",
   "author": {

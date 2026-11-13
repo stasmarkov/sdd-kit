@@ -1,6 +1,6 @@
 ---
 name: sdd
-description: The single front door for spec-driven work. Classifies a ticket or request (bug / feature / decision / shipped code / new project / trivial), confirms the route with the user, collects every input the background workflow needs, and launches exactly one fixed pipeline — features always go spec → human approval → ship-feature. Use when the user starts work on a ticket (e.g. PROJ-123), describes a bug, feature, or technology choice to build, or asks to "use a workflow" / "run a workflow" for a task.
+description: Use when starting work on a ticket (PROJ-123), a bug, a feature or a tech choice, or when asked to run a workflow. Picks the route and launches that workflow.
 argument-hint: "<ticket-id | description>"
 allowed-tools: Workflow, Skill, AskUserQuestion, Read, Grep, Glob, Bash
 license: Apache-2.0
@@ -69,7 +69,7 @@ Before any `Workflow` call, run `node ../stack-trust/scripts/trust-store.mjs --h
 
 **Branch check** (before a `fix-bug` or `ship-feature` launch, including from 4b): run `git branch --show-current` in each repo of the change. A repo is on a base branch when HEAD is detached or the branch is `open-pr.base` from the project `AGENTS.md`, the default from `git symbolic-ref --short refs/remotes/origin/HEAD` without its `origin/` prefix, `main`, `master`, `develop` or `release/*`. If any repo is, add `git switch -c <fix|feature>/<KEY>-<slug>` (`fix/` for a bug; no `<KEY>-` without a ticket; the same name in every repo) to the confirmation below, and run it before the `Workflow` call when the user agrees. This is part of the confirmation, not another question round. If the user keeps the base branch, say that fix-bug creates a `fix/` branch itself before its checkpoint commit and that ship-feature commits on the current branch.
 
-Then show the exact call and note that it runs many agents in the background. Launch only after the user agrees.
+Then show the exact call and note that it runs many agents in the background. Launch only after the user agrees, by the [workflow name rule](#workflow-names).
 
 | Route | Required inputs | Launch | Output | Done when |
 |---|---|---|---|---|
@@ -82,6 +82,10 @@ Then show the exact call and note that it runs many agents in the background. La
 | `new app` | idea, stack, repo paths, product brief (see 4c) | `Workflow({ name: "greenfield-build", args: { idea, stack, repos, url, brief } })` | scaffold + CI + one vertical slice + handoff docs, next slices appended to `backlog.md` | slice passes gates and acceptance |
 
 When there is a ticket, start the free-text input (`bug`, `question`, `idea`, or the spec request) with the key, e.g. `"PROJ-123: refund button returns 500 for top-ups"`, so it appears in every report.
+
+### Workflow names
+
+Every `Workflow` call in this skill, its references and the docs uses the plugin name `<name>`. When the call fails with "not found" (a file-copy install registers the bare name), retry once with the bare `<name>` and the same `args`. Do not try to guess the install mode first: a skill cannot see the mode Detect reports, and the retry costs at most one failed call. Any other error is not a reason to retry. When the bare name is not found either, the workflow is not installed (see Rules).
 
 ### 4a — Feature: write the spec (interactive)
 

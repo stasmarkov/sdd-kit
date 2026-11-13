@@ -9,7 +9,7 @@ For the hook API itself (events, matchers, exit codes, stdin/stdout JSON, async 
 
 ## Lifecycle hooks
 
-[`hooks/hooks.json`](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/hooks/hooks.json) is the source of truth. If this table disagrees with that file, trust the file. All command hooks need `jq`.
+[`hooks/hooks.json`](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/hooks/hooks.json) is the source of truth. If this table disagrees with that file, trust the file. All command hooks need `jq`.
 
 | Script | Event (matcher) | Blocks? | Purpose | Tune/disable |
 |--------|-----------------|---------|---------|--------------|
@@ -26,6 +26,7 @@ For the hook API itself (events, matchers, exit codes, stdin/stdout JSON, async 
 | `session-end.sh` | SessionEnd, async | No | Writes a session summary (branch, uncommitted changes, recent commits) to `.ai/session/<timestamp>.md` and deletes summaries older than 30 days | Remove the entry |
 | `notify.sh` | Notification | No | Shows a desktop notification | See [Notifications](#notifications) |
 | *(prompt)* | Stop | Yes | Before Claude stops, checks that completed tasks have passing tests, no uncommitted changes are left unexplained, and session state is saved mid-spec | See [Stop and SubagentStop checks](#stop-and-subagentstop-checks) |
+| `lesson-nudge.sh` | Stop | No | Records a candidate lesson in `.ai/session/lessons.jsonl` and suggests `/learn`. See [Candidate lessons](#candidate-lessons) | Remove the entry |
 | *(prompt)* | SubagentStop | Yes | Checks that the subagent finished its task, and flags errors or incomplete results for a retry | Remove the entry |
 
 Stack add-ons add their own hooks; see [Add-on hooks](#add-on-hooks).
@@ -50,7 +51,7 @@ To turn off every hook temporarily, set `"disableAllHooks": true` in `settings.j
 
 In file-copy mode, `src/scripts/install-hooks.sh` merges the hooks into your existing `settings.json`. It needs `jq`, backs up the file first, and keeps your permissions and your own hooks. Re-running the installer replaces the kit's hooks instead of duplicating them. That also restores any kit hook you deleted, so use the env-var opt-outs above for hooks you want to keep off. Installer behavior is covered in [INSTALLATION.md](../docs/INSTALLATION.md).
 
-**Plugin mode.** The plugin's `hooks/hooks.json` is global. It applies to the whole session, subagents included, and you can't edit it per project. Use the env-var opt-outs or `disableAllHooks` instead. For what does and doesn't apply in plugin mode, see [plugin-mode.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/reference/plugin-mode.md).
+**Plugin mode.** The plugin's `hooks/hooks.json` is global. It applies to the whole session, subagents included, and you can't edit it per project. Use the env-var opt-outs or `disableAllHooks` instead. For what does and doesn't apply in plugin mode, see [plugin-mode.md](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/reference/plugin-mode.md).
 
 **Drift rule.** `src/settings/settings.template.json` must contain exactly the hooks in `hooks/hooks.json`, differing only in the script path prefix. `./verify.sh` fails the build if they drift. When you add or change a hook, edit both files.
 
@@ -71,7 +72,7 @@ Each script filters by file type itself, so an add-on script exits 0 for files t
 
 ## Stack hint
 
-`stack-hint.sh` reads the generated `workflows/lib/stacks.json` (`markers`, which are globs relative to the project root that match files or directories). When a first-party stack's marker matches and neither its add-on nor a preset including it is enabled (`enabledPlugins` in the user, project or local settings) or staged (`.claude/stacks/<add-on>.json` in the project or under the config directory), it prints one line naming the stack, the `/plugin install` command and `install.sh --stack=<add-on>`. The project is then recorded as the SHA-256 of `pwd -P` in `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/sdd-kit/stack-hint-shown`, and later sessions stay silent. It always exits 0. Set `SDD_KIT_NO_STACK_HINT=1` to turn it off.
+`stack-hint.sh` reads the generated `workflows/lib/stacks.json` (`markers`, which are globs relative to the project root that match files or directories). When a first-party stack's marker matches and neither its add-on nor a preset including it is enabled (`enabledPlugins` in the user, project or local settings) or staged (`.claude/stacks/<add-on>.json` in the project or under the config directory), it prints one line naming the stack, the `/plugin install` command and `install.sh --stack=<add-on>`. When no marker matches at the root, each subdirectory one level down (except `vendor`, `node_modules` and dot directories) is tested for the markers and for the stack's manifest `packages` in the package files they name, so a site kept in `site/` gets the same hint. The project is then recorded as the SHA-256 of `pwd -P` in `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/sdd-kit/stack-hint-shown`, and later sessions stay silent. It always exits 0. Set `SDD_KIT_NO_STACK_HINT=1` to turn it off.
 
 ## Trust store guard
 
@@ -92,7 +93,7 @@ Reading the store stays allowed. Detect reads it with the Read tool on its liter
 
 The shell check is best-effort hardening. It does match the store name and paths without regard to case, reads the command with quotes and backslashes removed (so `--appro""ve` is still `--approve`), treats a glob that matches the store file name as naming it, and treats a shell command starting with `apply_patch` as a patch. It never blocks a read-only tool. Anything beyond that is a known limit, not a defect to chase: a stronger control needs the trust script itself to refuse, which this kit does not do.
 
-**Threat model (OD-17).** A stack manifest that is neither first-party nor approved by `/stack-trust` (hash-matched) never supplies a command, path, URL or other value that reaches a shell, a gate plan or an agent prompt as an instruction. The workflows also check every value Detect and the scaffold report against a strict pattern (paths, `devUrl`, `packageManager`, gate and script names, prose) before quoting it, and drop and log the rest. Skills verify the trust script against a hash shipped in the kit, never one stored in the project. The trust store lives in the home directory the OS user database records, so neither `$HOME` nor `CLAUDE_CONFIG_DIR` (both of which a project setting can change) can point it into a repository. A config directory that resolves inside the project (the current directory, its git toplevel, `CLAUDE_PROJECT_DIR`, or any ancestor of the current directory that holds `.git`) is refused as well: the user stacks and plugin list there count as unreadable, and `trust-store.mjs` writes no settings there. Out of scope: running workflows on a repository you do not trust. Agents read repository files and have Bash, so hostile repository content can steer them regardless of `/stack-trust`, which controls manifests, not repository content. Full rules: [stack-manifest.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/reference/stack-manifest.md#agent-and-trust).
+**Threat model (OD-17).** A stack manifest that is neither first-party nor approved by `/stack-trust` (hash-matched) never supplies a command, path, URL or other value that reaches a shell, a gate plan or an agent prompt as an instruction. The workflows also check every value Detect and the scaffold report against a strict pattern (paths, `devUrl`, `packageManager`, gate and script names, prose) before quoting it, and drop and log the rest. Skills verify the trust script against a hash shipped in the kit, never one stored in the project. The trust store lives in the home directory the OS user database records, so neither `$HOME` nor `CLAUDE_CONFIG_DIR` (both of which a project setting can change) can point it into a repository. A config directory that resolves inside the project (the current directory, its git toplevel, `CLAUDE_PROJECT_DIR`, or any ancestor of the current directory that holds `.git`) is refused as well: the user stacks and plugin list there count as unreadable, and `trust-store.mjs` writes no settings there. Out of scope: running workflows on a repository you do not trust. Agents read repository files and have Bash, so hostile repository content can steer them regardless of `/stack-trust`, which controls manifests, not repository content. Full rules: [stack-manifest.md](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/reference/stack-manifest.md#agent-and-trust).
 
 What keeps an untrusted manifest's commands from running is the review step: an approval records the manifest's hash, and any edit to the manifest makes it untrusted again. Review the diff of `trusted-stacks.json` (or run `trust-store.mjs --list`) if an approval you did not give shows up.
 
@@ -118,9 +119,22 @@ The hook reads each command segment (split at `;`, `&&`, `||`, `|` and newlines)
 
 Both are `prompt` hooks: a model reviews the context and either allows the stop or blocks it with a reason. A Stop check that keeps blocking would loop forever, so the prompt includes an escape hatch: *"If this is a re-check after a previous stop attempt, allow stopping."* After one round of verification, Claude can always stop. Keep that sentence if you edit the prompt.
 
+## Candidate lessons
+
+`lesson-nudge.sh` reads the last 200 transcript lines when Claude stops and records a pending line in `.ai/session/lessons.jsonl` (`{at, session, signal, excerpt, status}`) for each of these signals:
+
+| Signal | Fires when | `excerpt` |
+|--------|-----------|-----------|
+| `workflow verdict <V>` | One tool result holds both `"recommendation": "<V>"`, with `<V>` FIX-FIRST, BLOCKED or NOT-RESOLVED, and a `"reportPath"` under `.ai/reports/` ending in `.md`. Any workflow whose result has both fields counts (ship-feature, fix-bug) | `<V> <reportPath>` |
+| `review verdict <V>` | One assistant message holds CHANGES_REQUIRED or BLOCKED and a `.ai/reviews/REVIEW-<name>.md` path, as the `/deep-review` summary does | `<V> <path>` |
+| `user correction` | A typed user message reads as a correction ("no, ...", "you forgot ...", "don't use ...") | The correction, up to 200 characters |
+| `fix-bug Prevention item` | A fix-bug result asks to run `/learn` with its Prevention item | Empty |
+
+A verdict counts only with its report in the same entry, so skill and doc text that mention a verdict word (skill text sits in user entries, which are not searched for verdicts) and a verdict without a saved report record nothing. Verdicts are deduped per session per excerpt: two runs with different reports give two lessons, and the same report seen at a later stop gives none. Corrections and Prevention items are recorded once per session. The hook never blocks and never edits project files; `/learn` reads the pending lines, marks them captured or dismissed, and offers to drop empty-excerpt lines left by older versions.
+
 ## Agent-scoped hooks
 
-Don't put guardrails in agent frontmatter (`hooks:`, `permissionMode:`). Plugin mode ignores those fields without warning, so a guard defined there is off for plugin users. Put guards in the global hooks above, or restrict the agent's `tools`. Details are in [plugin-mode.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/reference/plugin-mode.md).
+Don't put guardrails in agent frontmatter (`hooks:`, `permissionMode:`). Plugin mode ignores those fields without warning, so a guard defined there is off for plugin users. Put guards in the global hooks above, or restrict the agent's `tools`. Details are in [plugin-mode.md](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/reference/plugin-mode.md).
 
 ## Operational scripts
 

@@ -2,8 +2,8 @@
 /**
  * Deterministic spec lint.
  *
- * Reads a spec folder (spec-lite.md, tasks.md, optionally manual-test.md) and reports
- * structural problems. It uses only node: built-ins and makes no network or model call.
+ * Reads a spec folder (spec-lite.md, tasks.md, optionally tasks-archive.md and manual-test.md)
+ * and reports structural problems. It uses only node: built-ins and makes no network or model call.
  *
  * Usage: node spec-lint.mjs [--warn] [--verified] [--root <dir>] <spec-dir> [<spec-dir> ...]
  *        node spec-lint.mjs --gates <spec-dir> [<spec-dir> ...]
@@ -16,12 +16,14 @@
  * --verified  also checks every Traceability "Verified by" item against the repo root.
  * --warn      reports every finding as a warning and exits 0.
  * --root      repo root for --verified (default: nearest ancestor holding .git, else cwd).
- * --gates     gate check instead of lint. A gate is a task whose title text after `N. ` starts
- *             with `Gate:` (case-sensitive); only the owner checks it, and the first unchecked gate
- *             blocks every task after it. Prints `build: <id>. <title>` for each unchecked non-gate
- *             task before that gate (every unchecked task when there is none), then
- *             `awaiting owner: <title>` for the gate and exits 3; with no unchecked gate it ends
- *             with `gates: clear` and exits 0. An unchecked gate is also a lint warning.
+ * --gates     gate check instead of lint; reads tasks.md only. A task's kind comes from its title
+ *             text after `N. `: `Gate:` is an owner gate, `Manual:` a manual step, anything else
+ *             code (case-sensitive). Only the owner checks a gate, and the first unchecked gate
+ *             blocks every task after it. Prints, in file order, `build: <id>. <title>` for each
+ *             unchecked code task and `manual: <id>. <title>` for each unchecked Manual task before
+ *             that gate (every unchecked task when there is none), then `awaiting owner: <title>`
+ *             for the gate and exits 3; with no unchecked gate it ends with `gates: clear` and
+ *             exits 0. A Manual task never blocks. An unchecked gate is also a lint warning.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -151,23 +153,50 @@ function splitRow(line) {
 const TASK_LINE = /^- \[([ xX])\]\s+(\d+)\.\s+(.*)$/;
 
 /**
+ * Kind of a task from its title text after `N. ` (case-sensitive prefix, no markup).
+ * @param {string} title task title
+ * @returns {'gate'|'manual'|'code'}
+ * @example taskKind('Manual: check the invoice PDF') // 'manual'
+ */
+export function taskKind(title) {
+  if (title.startsWith('Gate:')) return 'gate';
+  if (title.startsWith('Manual:')) return 'manual';
+  return 'code';
+}
+
+/**
+ * Top-level task lines of a tasks file outside HTML comments.
+ * @param {string} text file contents
+ * @returns {{line: number, checked: boolean, id: number, title: string}[]} line is 1-based
+ */
+export function taskLines(text) {
+  const tasks = [];
+  stripComments(text).split('\n').forEach((l, i) => {
+    const m = TASK_LINE.exec(l.replace(/\r$/, ''));
+    if (m) tasks.push({ line: i + 1, checked: m[1] !== ' ', id: Number(m[2]), title: m[3].trim() });
+  });
+  return tasks;
+}
+
+/**
  * Splits the unchecked tasks of a tasks.md at the first unchecked gate task.
  * @param {string} tasksText contents of tasks.md
- * @returns {{build: {line: number, id: number, title: string}[], gate: ({line: number, id: number, title: string}|null)}}
- *   build = unchecked non-gate tasks before the gate, in file order; gate = the first unchecked gate, or null
- * @example gatePlan('- [ ] 1. A\n- [ ] 2. Gate: owner signs off\n- [ ] 3. B') // build [1], gate 2
+ * @returns {{build: {line: number, id: number, title: string}[], manual: {line: number, id: number, title: string}[], gate: ({line: number, id: number, title: string}|null)}}
+ *   build = unchecked code tasks before the gate, manual = unchecked Manual tasks before it, both in
+ *   file order; gate = the first unchecked gate, or null
+ * @example gatePlan('- [ ] 1. A\n- [ ] 2. Manual: B\n- [ ] 3. Gate: owner signs off\n- [ ] 4. C') // build [1], manual [2], gate 3
  */
 export function gatePlan(tasksText) {
   const build = [];
-  const lines = stripComments(tasksText).split('\n');
-  for (let i = 0; i < lines.length; i++) {
-    const m = TASK_LINE.exec(lines[i].replace(/\r$/, ''));
-    if (!m || m[1] !== ' ') continue;
-    const task = { line: i + 1, id: Number(m[2]), title: m[3].trim() };
-    if (task.title.startsWith('Gate:')) return { build, gate: task };
-    build.push(task);
+  const manual = [];
+  for (const t of taskLines(tasksText)) {
+    if (t.checked) continue;
+    const task = { line: t.line, id: t.id, title: t.title };
+    const kind = taskKind(task.title);
+    if (kind === 'gate') return { build, manual, gate: task };
+    (kind === 'manual' ? manual : build).push(task);
   }
-  return { build, gate: null };
+  return { build, manual, gate: null };
 }
 
 /** Parses the Traceability table of tasks.md into rows: {line, id, verified}. Returns null when absent. */
@@ -216,6 +245,7 @@ export function lintSpec(dir, opts = {}) {
   const findings = [];
   const specFile = path.join(dir, 'spec-lite.md');
   const tasksFile = path.join(dir, 'tasks.md');
+  const archiveFile = path.join(dir, 'tasks-archive.md');
   const add = (file, line, severity, problem, fix) => findings.push({ file, line, severity, problem, fix });
 
   if (!fs.existsSync(specFile)) {
@@ -318,7 +348,7 @@ export function lintSpec(dir, opts = {}) {
 
     tasks.forEach((start) => {
       const m = TASK_LINE.exec(tLines[start]);
-      if (m && m[1] === ' ' && m[3].startsWith('Gate:')) {
+      if (m && m[1] === ' ' && taskKind(m[3]) === 'gate') {
         add(tasksFile, start + 1, 'warning', `unchecked gate task "${m[3].trim()}"`,
           'the owner checks a gate task; no task after it runs until then');
       }
@@ -376,6 +406,31 @@ export function lintSpec(dir, opts = {}) {
     }
   }
 
+  // Task ids: unique within tasks.md and across tasks-archive.md; archived tasks are all checked
+  const archive = fs.existsSync(archiveFile) ? taskLines(fs.readFileSync(archiveFile, 'utf8')) : [];
+  const seen = new Map();
+  for (const t of archive) {
+    if (!t.checked) {
+      add(archiveFile, t.line, 'error', `archived task ${t.id} is unchecked`, 'move it back to tasks.md');
+    }
+    if (seen.has(t.id)) {
+      add(archiveFile, t.line, 'error', `task id ${t.id} appears twice in tasks-archive.md (line ${seen.get(t.id).line})`,
+        'give each task its own id; ids stay reserved once used');
+    } else {
+      seen.set(t.id, { file: 'tasks-archive.md', line: t.line });
+    }
+  }
+  for (const t of tasksText === null ? [] : taskLines(tasksText)) {
+    const first = seen.get(t.id);
+    if (first) {
+      const where = first.file === 'tasks.md' ? 'appears twice in tasks.md' : `is also used in ${first.file}`;
+      add(tasksFile, t.line, 'error', `task id ${t.id} ${where} (line ${first.line})`,
+        'renumber this task above the highest id in tasks.md and tasks-archive.md');
+    } else {
+      seen.set(t.id, { file: 'tasks.md', line: t.line });
+    }
+  }
+
   return findings;
 }
 
@@ -416,7 +471,9 @@ export function main(argv) {
       const tasksFile = path.join(d, 'tasks.md');
       if (!fs.existsSync(tasksFile)) return usage(`no tasks.md in ${d}; pass the spec folder that holds it`);
       const plan = gatePlan(fs.readFileSync(tasksFile, 'utf8'));
-      for (const t of plan.build) process.stdout.write(`build: ${t.id}. ${t.title}\n`);
+      const open = [...plan.build.map((t) => ({ ...t, label: 'build' })), ...plan.manual.map((t) => ({ ...t, label: 'manual' }))];
+      open.sort((a, b) => a.line - b.line);
+      for (const t of open) process.stdout.write(`${t.label}: ${t.id}. ${t.title}\n`);
       if (plan.gate) {
         blocked = true;
         process.stdout.write(`awaiting owner: ${plan.gate.title}\n`);

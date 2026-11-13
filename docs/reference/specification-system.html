@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../index.html">SDD Kit</a>
-    <span class="badge">v4.0.2</span>
+    <span class="badge">v4.1.0</span>
   </div>
   <nav class="site-nav" aria-label="Site">
     <ul>
@@ -35,7 +35,32 @@
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main" tabindex="-1">
+<main id="content" class="doc-main has-toc" tabindex="-1">
+  <nav class="page-toc" aria-label="On this page"><details open><summary>On this page</summary>
+    <ol>
+      <li><a href="#principles">Principles</a></li>
+      <li><a href="#directory-layout">Directory layout</a></li>
+      <li><a href="#sizing-proportionality">Sizing (proportionality)</a></li>
+      <li><a href="#spec-ids-and-folder-names">Spec IDs and folder names</a></li>
+      <li><a href="#spec-litemd">spec-lite.md</a></li>
+      <li><a href="#tasksmd">tasks.md</a></li>
+      <li><a href="#lifecycle">Lifecycle</a></li>
+      <li><a href="#execution">Execution</a></li>
+      <li><a href="#spec-lint">Spec lint</a></li>
+    </ol>
+  </details></nav>
+<script>
+  (function () {
+    var d = document.querySelector('.page-toc details'), s = d.querySelector('summary');
+    var narrow = window.matchMedia('(max-width: 767.98px)'), wide = window.matchMedia('(min-width: 1100px)');
+    function sync() { d.open = !narrow.matches; s.tabIndex = wide.matches ? -1 : 0; }
+    function listen(q) { if (q.addEventListener) q.addEventListener('change', sync); else q.addListener(sync); }
+    listen(narrow);
+    listen(wide);
+    d.addEventListener('toggle', function () { if (wide.matches && !d.open) d.open = true; });
+    sync();
+  })();
+</script>
   <article class="doc-body">
 <h2 id="specification-system">Specification System</h2>
 <p>How specs are named, structured, approved, and executed. The authoring skill is <code>write-spec</code>; its templates (<code>references/spec-lite.template.md</code>, <code>references/tasks.template.md</code>) are the source of truth for file contents.</p>
@@ -90,7 +115,7 @@ stacks: [&lt;stack-key&gt;, &lt;stack-key&gt;]</code></pre>
 <p>Sections, in order: <strong>Summary · Context · Scope (in/out) · Must NOT change · Acceptance criteria · Quality attributes (optional, M/L) · Boundaries (Always / Ask first / Never) · Technical context · Decisions (optional) · Open questions · Dependencies</strong>.</p>
 <ul><li><strong>Acceptance criteria</strong> — <code>AC-n</code>, written in EARS (<code>WHEN &lt;trigger&gt; THE SYSTEM SHALL &lt;response&gt;</code>) or Given/When/Then; one observable outcome each.</li><li><strong>Must NOT change</strong> — <code>MNC-n</code>, existing behavior that must stay identical. Mandatory for bugs and improvements, and the primary contract of a <code>refactor</code> spec (characterization tests are written first); fix-bug and ship-feature re-check these in Acceptance.</li><li><strong>Quality attributes</strong> — <code>NFR-n</code> for authorization per role, a p95 latency budget, a WCAG level, personal-data handling; each traced to a test like an AC.</li><li><strong>Boundaries</strong> — what the implementer may do freely, must ask about, and must never do.</li><li><strong>Open questions</strong> — written by the clarity gate; each must be answered or accepted before approval.</li></ul>
 <h3 id="tasksmd">tasks.md</h3>
-<ul><li>Task lines <code>- [ ] N. Title (stack)</code> with a <code>Covers: AC-1, MNC-2</code> line and a final <code>**Verify**:</code> subitem. Tools find the next task by the first unchecked <code>- [ ] N.</code>.</li><li>A <strong>Traceability</strong> table: one row per AC and MNC → <code>Verified by</code> (test <code>file::name</code> or <code>manual-test.md#step-N</code>), kind, task.</li><li><strong>Verification gates</strong> — only the tooling detected in the project.</li><li>Gap tasks added by ship-feature&#39;s Converge phase continue the numbering under <code>## Phase: Gaps (converge round N)</code>. They go at the end of tasks.md, or directly above the first unchecked gate when there is one; a gap that lands below that gate stops the round unbuilt.</li><li>A <strong>gate</strong> is a task whose title text after <code>N. </code> starts with <code>Gate:</code> (case-sensitive). Only the owner checks it, and no task at or after the first unchecked gate runs. <code>spec-lint --gates &lt;spec&gt;</code> prints <code>build: &lt;N&gt;. &lt;title&gt;</code> for each unchecked task before that gate, then <code>awaiting owner: &lt;title&gt;</code> and exits 3; with no unchecked gate it ends with <code>gates: clear</code> and exits 0. execute-task builds only the <code>build:</code> tasks, ship-feature applies the same rule to the tasks.md text, and both stop with <code>awaiting owner: &lt;title&gt;</code> when nothing before the gate is open, and stop without building when the check cannot run.</li></ul>
+<ul><li>Task lines <code>- [ ] N. Title (stack)</code> with a <code>Covers: AC-1, MNC-2</code> line and a final <code>**Verify**:</code> subitem. Tools find the next task by the first unchecked <code>- [ ] N.</code> code task (see Task kinds below).</li><li>A <strong>Traceability</strong> table: one row per AC and MNC → <code>Verified by</code> (test <code>file::name</code> or <code>manual-test.md#step-N</code>), kind, task.</li><li><strong>Verification gates</strong> — only the tooling detected in the project.</li><li>Gap tasks added by ship-feature&#39;s Converge phase continue the numbering under <code>## Phase: Gaps (converge round N)</code>. They go at the end of tasks.md, or directly above the first unchecked gate when there is one; a gap that lands below that gate stops the round unbuilt.</li><li><strong>Task kinds.</strong> A task&#39;s kind comes from its title text right after <code>N. </code>: <code>Gate:</code> makes it an owner gate, <code>Manual:</code> a manual step, and anything else (no prefix) a code task. The prefix is case-sensitive and plain text, with no bold or backticks (<code>- [ ] 4. Manual: check the invoice PDF in Acrobat</code>).</li><li>A <strong>gate</strong> (<code>Gate:</code>) is checked only by the owner, and no task at or after the first unchecked gate runs.</li><li>A <strong>Manual</strong> task (<code>Manual:</code>) is a step a person performs. No tool builds or checks it; it goes to the manual test plan (<code>manual-test.md</code>), and the owner checks it after the steps pass. It never blocks: code tasks after it are still built, and the spec stays short of <code>done</code> while one is open.</li><li><code>spec-lint --gates &lt;spec&gt;</code> reads tasks.md only. It prints, in file order, <code>build: &lt;N&gt;. &lt;title&gt;</code> for each unchecked code task and <code>manual: &lt;N&gt;. &lt;title&gt;</code> for each unchecked Manual task before the first unchecked gate, then <code>awaiting owner: &lt;title&gt;</code> and exits 3; with no unchecked gate it ends with <code>gates: clear</code> and exits 0. execute-task builds only the <code>build:</code> tasks, ship-feature applies the same rule to the task lines, and both stop with <code>awaiting owner: &lt;title&gt;</code> when nothing before the gate is open, and stop without building when the check cannot run.</li><li><strong>tasks-archive.md</strong> (optional, next to tasks.md) holds finished tasks moved out of a long tasks.md. It uses the same task-line format and may keep headings and subitems, but every top-level task line in it must be checked; an unchecked one is a spec-lint error (<code>archived task N is unchecked. Fix: move it back to tasks.md</code>). Archived ids stay reserved.</li><li><strong>Unique ids.</strong> A top-level task id (<code>N</code> in <code>- [ ] N.</code>) appears once within tasks.md and once across tasks.md and tasks-archive.md together; a repeat is a spec-lint error. New tasks, including converge gaps, take the next id above the highest in both files. Subtask ids (<code>1.1</code>) are not checked.</li></ul>
 <h3 id="lifecycle">Lifecycle</h3>
 <pre><code>/write-spec ──► draft ──(clarity gate empty + human approves in /sdd)──► approved
                                    sets approved_by, approved_at
@@ -115,7 +140,7 @@ approved ──(ship-feature or /execute-task starts)──► in-progress ─�
   </article>
 </main>
 <footer class="site-footer">
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/reference/specification-system.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/reference/specification-system.md">View the Markdown source</a></p>
 </footer>
 <script>
   (function () {

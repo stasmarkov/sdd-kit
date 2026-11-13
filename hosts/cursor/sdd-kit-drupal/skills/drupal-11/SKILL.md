@@ -5,6 +5,7 @@ allowed-tools: Read, Grep, Glob, Edit, Write, Bash
 paths:
   - "**/*.module"
   - "web/modules/**"
+  - "docroot/modules/**"
   - "**/*.php"
 ---
 
@@ -348,10 +349,10 @@ Use the `@group` annotation: PHPUnit 9.6 on Drupal 10.3 ignores the `#[Group]` a
 
 ## Gate setup
 
-The workflow gates run only when the project has what they need; a missing piece is reported as a skip, never a failure. In a DDEV project the gates run as `ddev exec <command>` and need the project running (`ddev start`). Inside DDEV, also run Composer and Drush as `ddev composer` and `ddev drush`, because the host may have no PHP (see the `ddev` skill).
+The workflow gates run only when the project has what they need; a missing piece is reported as a skip, never a failure. A skip names only the requirements that are missing. Custom code lives in `<docroot>/modules/custom`, where `<docroot>` is `docroot` in `.ddev/config.yaml`, else `extra.drupal-scaffold.locations.web-root` in `composer.json`. The default PHPCS and PHPUnit gates have a `web/` and a `docroot/` variant, chosen by where Drupal core is (`web/core/lib/Drupal.php` or `docroot/core/lib/Drupal.php`), so a stray `web/modules/custom` folder does not switch off the `docroot/` gates; when `web` links to `docroot`, only the `web/` variant runs. Other web roots (`public_html`, `html`) get no default PHPCS or PHPUnit gate: add a `phpcs.xml.dist` and a `phpunit.xml.dist` at the repo root, so the project-ruleset and project-config gates run. In a DDEV project the gates run as `ddev exec <command>` and need the project running (`ddev start`). Inside DDEV, also run Composer and Drush as `ddev composer` and `ddev drush`, because the host may have no PHP (see the `ddev` skill).
 
 1. Allow the Composer plugins before the require, in `composer.json` under `config.allow-plugins`: `dealerdirect/phpcodesniffer-composer-installer` and `phpstan/extension-installer`.
-2. `composer require --dev drupal/core-dev` and `drush/drush` (in DDEV: `ddev composer require --dev ...`). This brings coder, PHPStan with phpstan-drupal, and PHPUnit.
+2. `composer require --dev drupal/core-dev` and `drush/drush` (in DDEV: `ddev composer require --dev ...`). This brings coder, PHPStan with phpstan-drupal, and PHPUnit. On a Drupal 10 site, pin core-dev to the installed core: `composer require --dev "drupal/core-dev:^<core major>.<minor>" -W` (for example `^10.5`).
 3. Add a `phpstan.neon` at the repo root. Do not set `drupal_root`; phpstan-drupal finds it.
 4. Optional: a root `phpunit.xml` for project-specific test settings.
 5. For Kernel and Functional tests, set the environment once and restart: `ddev config --web-environment-add="SIMPLETEST_DB=mysql://db:db@db/db,SIMPLETEST_BASE_URL=http://web"`, then `ddev restart`.
@@ -359,11 +360,13 @@ The workflow gates run only when the project has what they need; a missing piece
 | Gate | Skip text | Setup that clears it |
 |------|-----------|----------------------|
 | PHPCS | `skipped — <ruleset file> present` | Intended: the project ruleset gate runs instead |
-| PHPCS | `not run (requires vendor/drupal/coder; vendor/squizlabs/php_codesniffer/CodeSniffer.conf; web/modules/custom)` | Steps 1 and 2, and create `web/modules/custom` |
+| PHPCS, PHPCS (docroot) | `not run (requires <missing entries>)`, from vendor/drupal/coder; vendor/squizlabs/php_codesniffer/CodeSniffer.conf; `<docroot>/modules/custom` | Steps 1 and 2 for the vendor entries. A missing `<docroot>/modules/custom` of the other layout is expected: that variant does not apply |
+| PHPCS (docroot) | `skipped — web/core/lib/Drupal.php present` | Intended: Drupal core is under `web/` (or `web` links to `docroot/`), so the `web/` variant runs |
 | PHPCS (project ruleset) | `not run (requires one of phpcs.xml, phpcs.xml.dist, .phpcs.xml, .phpcs.xml.dist; vendor/bin/phpcs)` | Add a ruleset file, or ignore: the default PHPCS gate covers the project |
 | PHPStan | `not run (requires one of phpstan.neon, phpstan.neon.dist, phpstan.dist.neon; vendor/bin/phpstan)` | Steps 2 and 3 |
 | PHPUnit | `skipped — <config file> present` | Intended: the project config gate runs instead |
-| PHPUnit | `not run (requires vendor/bin/phpunit; web/core/phpunit.xml.dist; web/modules/custom)` | Step 2, and create `web/modules/custom` |
+| PHPUnit, PHPUnit (docroot) | `not run (requires <missing entries>)`, from vendor/bin/phpunit; `<docroot>/core/phpunit.xml.dist`; `<docroot>/modules/custom` | Step 2 for vendor/bin/phpunit. Missing paths of the other layout are expected: that variant does not apply |
+| PHPUnit (docroot) | `skipped — web/core/lib/Drupal.php present` | Intended: the `web/` variant runs |
 | PHPUnit (project config) | `not run (requires one of phpunit.xml, phpunit.xml.dist; vendor/bin/phpunit)` | Step 4, or ignore: the default PHPUnit gate covers the project |
 | any | `not run (ddev not running)` | `ddev start`, then re-run |
 

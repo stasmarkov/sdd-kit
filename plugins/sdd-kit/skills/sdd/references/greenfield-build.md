@@ -16,8 +16,10 @@ From an empty target to one shippable vertical slice. Later features go through 
 
 No `product-brief.md` yet? Offer `/product-brief` first (SKILL.md Step 4c). Ask before launching: stack, single vs split repos, the first slice, hard constraints (auth, data store, hosting). Have the user approve the architecture direction.
 
+Launch with the plugin name and fall back to the bare name on "not found" ([workflow name rule](../SKILL.md#workflow-names)).
+
 ```
-Workflow({ name: "greenfield-build", args: { idea: "SL-01: …", stack: "<stack-key>", repos: { backend: "./api", frontend: "./web" }, url: "http://localhost:3000", brief: "product-brief.md" } })
+Workflow({ name: "sdd-kit:greenfield-build", args: { idea: "SL-01: …", stack: "<stack-key>", repos: { backend: "./api", frontend: "./web" }, url: "http://localhost:3000", brief: "product-brief.md" } })
 ```
 
 ## Phases

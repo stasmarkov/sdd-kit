@@ -282,7 +282,17 @@ done
 - `.claude/agents/<agent>.md` or `.claude/agents/<addon>/<agent>.md` (the layout `install.sh` writes for add-on agents) next to an enabled plugin that ships `<agent>` → WARN: "`<file>` shadows the plugin agent `<plugin>:<agent>`. Fix: delete `<file>`."
 - A kit hook script (for example `block-dangerous.sh`, or an add-on lint or test-first script such as `laravel-lint.sh`) wired both by an enabled plugin's `hooks/hooks.json` and in `.claude/settings.json` → one WARN listing all such scripts: "the hooks would run twice, and the plugin skills load a second time next to the file-copy skills. Fix: set `enabledPlugins` to false for the preset and each of its dependencies in `.claude/settings.json` (keep the file-copy install), or delete the entries naming these scripts from `.claude/settings.json` and the file-copy kit files."
 
-#### Check 13: Built-in Diagnostics
+#### Check 13: Node Version
+
+The gate planner (`trust-store.mjs`, which `/lint`, `/run-tests` and `verification-gates` run through `stack-trust/scripts/launch.cjs`) needs Node 18 or later. Run `node --version` and report:
+
+- Major 18 or later → `[PASS] Node: v<x> (18+ required)`.
+- Below 18 → `[FAIL] Node: v<x> (18+ required): not run (Node 18+ required, found v<x>). Fix: put Node 18+ first on PATH`. Every gate would be reported not run.
+- `node: command not found` or exit 127 → `[FAIL] Node: node not found on PATH. Fix: install Node 18+`.
+
+Check the `node` first on PATH, the one the skills call; a newer node elsewhere (nvm, a version manager shim that is not active) does not count.
+
+#### Check 14: Built-in Diagnostics
 
 Always end with a SKIP-style note recommending the Claude Code built-ins, which check what this skill cannot see from files alone:
 
@@ -307,6 +317,7 @@ Framework Health Check (project, v<version>)
 [PASS] Add-ons: no stack add-ons installed (--stack=<key> or /plugin install sdd-kit-laravel-nextjs@sdd-kit)
 [WARN] Golden Triangle: docs/context/ not found
 [PASS] Hooks wired and firing (block-dangerous exit=2)
+[PASS] Node: v22.4.1 (18+ required)
 [WARN] Settings: unknown key "autoReview" in .claude/settings.json (no effect)
 [WARN] Permissions: 143 allow rules in settings.local.json — run /fewer-permission-prompts
 [WARN] Memory: contradictory instructions
@@ -314,7 +325,7 @@ Framework Health Check (project, v<version>)
          ~/.claude/projects/.../memory/testing.md:3 "Always run tests via <wrapper command>"
 [SKIP] Also run /skill-doctor and /doctor prompt-audit
 
-Result: 6 passed, 6 warnings, 0 failures
+Result: 7 passed, 6 warnings, 0 failures
 ```
 
 In plugin mode the header names the plugin root, and the checks that only apply to file-copy installs are skipped:
@@ -331,9 +342,10 @@ Install: ~/.claude/plugins/cache/<marketplace>/sdd-kit/<version>
 [PASS] Path integrity
 [WARN] Golden Triangle: docs/context/ not found
 [SKIP] Hooks: loaded from the plugin's hooks/hooks.json — run /hooks to see them
+[FAIL] Node: v11.15.0 (18+ required): not run (Node 18+ required, found v11.15.0). Fix: put Node 18+ first on PATH
 [SKIP] Also run /skill-doctor and /doctor prompt-audit
 
-Result: 5 passed, 1 warning, 0 failures
+Result: 5 passed, 1 warning, 1 failure
 ```
 
 With `--fix`, also list what was fixed:

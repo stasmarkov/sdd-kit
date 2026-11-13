@@ -114,7 +114,7 @@
       "devUrlHosts": [
         "ddev.site"
       ],
-      "detect": "composer.json requiring drupal/core (often web/index.php)",
+      "detect": "composer.json requiring drupal/core (often web/index.php or docroot/index.php)",
       "agent": {
         "name": "drupal-backend-dev",
         "plugin": "sdd-kit-drupal"
@@ -141,6 +141,23 @@
             "phpcs.xml.dist",
             ".phpcs.xml",
             ".phpcs.xml.dist"
+          ]
+        },
+        {
+          "name": "PHPCS (docroot)",
+          "command": "./vendor/bin/phpcs --standard=Drupal,DrupalPractice --extensions=php,module,inc,install,test,profile,theme,info,yml docroot/modules/custom",
+          "kind": "lint",
+          "requires": [
+            "vendor/drupal/coder",
+            "vendor/squizlabs/php_codesniffer/CodeSniffer.conf",
+            "docroot/modules/custom"
+          ],
+          "unless": [
+            "phpcs.xml",
+            "phpcs.xml.dist",
+            ".phpcs.xml",
+            ".phpcs.xml.dist",
+            "web/core/lib/Drupal.php"
           ]
         },
         {
@@ -185,6 +202,21 @@
           ]
         },
         {
+          "name": "PHPUnit (docroot)",
+          "command": "./vendor/bin/phpunit -c docroot/core --fail-on-empty-test-suite docroot/modules/custom",
+          "kind": "test",
+          "requires": [
+            "vendor/bin/phpunit",
+            "docroot/core/phpunit.xml.dist",
+            "docroot/modules/custom"
+          ],
+          "unless": [
+            "phpunit.xml",
+            "phpunit.xml.dist",
+            "web/core/lib/Drupal.php"
+          ]
+        },
+        {
           "name": "PHPUnit (project config)",
           "command": "./vendor/bin/phpunit --fail-on-empty-test-suite",
           "kind": "test",
@@ -206,6 +238,8 @@
       "sourceDirs": [
         "web/modules/custom/",
         "web/themes/custom/",
+        "docroot/modules/custom/",
+        "docroot/themes/custom/",
         "modules/"
       ],
       "acceptance": "exercise the routes/controllers over HTTP",
@@ -215,7 +249,11 @@
         "requiresRunning": {
           "command": "ddev describe -j",
           "jsonField": "raw.status",
-          "equals": "running"
+          "equals": "running",
+          "devUrlFields": [
+            "raw.primary_url",
+            "raw.urls"
+          ]
         },
         "workdir": {
           "flag": "--dir",
@@ -397,7 +435,7 @@
         "next.config.*"
       ],
       "notes": "`next build` and `next dev` share .next/ in Next.js 15, so a build gate can break the dev server that later phases browse; buildGateGuard tells the gate agent to check it.\nNext.js 16 (the lowest major satisfying the package.json `next` range): proxy.ts replaces middleware.ts, `next lint` is removed so the lint script must call the ESLint CLI and no gate calls `next lint`, Turbopack is the `next build` default, Node 20.9+. See the nextjs-15 skill, references/nextjs-16.md.",
-      "buildGateGuard": "Build gate and the dev server: `next build` writes the same .next/ directory a running `next dev` serves from, and later phases browse {devUrl}. Before the build, note whether {devUrl} responds (curl -s -o /dev/null -w '%{http_code}'). If next.config reads distDir from an environment variable, point the build at a separate directory (e.g. .next-gate) and delete it afterwards. Otherwise, after the build, curl {devUrl} again; if it responded before and does not now, restart the dev server in the background with the repo's dev script, wait until it responds, and say so in the Build gate's details.",
+      "buildGateGuard": "Build gate and the dev server: `next build` writes the same .next/ directory a running `next dev` serves from, and later phases browse {devUrl}. Before the build, note whether {devUrl} responds (curl -s -o /dev/null -w '%{http_code}' '{devUrl}', with the URL in single quotes). If next.config reads distDir from an environment variable, point the build at a separate directory (e.g. .next-gate) and delete it afterwards. Otherwise, after the build, run curl -s -o /dev/null '{devUrl}' again; if it responded before and does not now, restart the dev server in the background with the repo's dev script, wait until it responds, and say so in the Build gate's details.",
       "contractSync": {
         "consumer": true
       }
@@ -565,6 +603,22 @@
       "sdd-kit-nextjs",
       "sdd-kit-devenv"
     ]
+  },
+  "packageFiles": {
+    "composer": {
+      "file": "composer.json",
+      "keys": [
+        "require",
+        "require-dev"
+      ]
+    },
+    "npm": {
+      "file": "package.json",
+      "keys": [
+        "dependencies",
+        "devDependencies"
+      ]
+    }
   },
   "trustStores": {
     "claude": ".claude/sdd-kit/trusted-stacks.json",

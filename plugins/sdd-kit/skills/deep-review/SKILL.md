@@ -1,6 +1,6 @@
 ---
 name: deep-review
-description: Review finished code and return a blocking verdict (APPROVED / CHANGES_REQUIRED / BLOCKED). Three depths - adversarial (default; skeptical reviewer on a different model tier that ignores the original prompt), standard (structured checklist review of a branch or PR with focus modes and JSON output for CI), and quick (critical-only pass). Delegates to adversarial-reviewer and security-auditor. Use when a task, spec, branch, or set of files is complete and needs review before merge or deploy, or when asked for a code review, PR review, or security-focused review.
+description: Use for a code or PR review before merge. Reviews finished code adversarially and returns APPROVED, CHANGES_REQUIRED or BLOCKED.
 argument-hint: "[--depth=quick|standard|adversarial] [--task=ID | --spec=ID | --files=path | --staged | --branch=name --base=main] [--focus=security|performance|architecture|testing] [--format=markdown|json] [--critical-only] [--auto-fix]"
 allowed-tools: Agent, Read, Write, Edit, Bash, Grep, Glob
 model: opus
@@ -205,10 +205,10 @@ Print a short summary: depth, verdict, counts by severity, the top three finding
 Offer a deeper audit after the report, outside its format: when `--focus=security` is set, or the security-auditor returned a finding with its own severity critical or high, print exactly one line, never with `--format=json` (its output must stay parseable):
 
 ```
-Offer (not started): Workflow({ name: 'security-audit', args: { scope: <the reviewed scope>, profile: 'quick', repo: '<the reviewed repo>' } })
+Offer (not started): Workflow({ name: 'sdd-kit:security-audit', args: { scope: <the reviewed scope>, profile: 'quick', repo: '<the reviewed repo>' } })
 ```
 
-`<the reviewed scope>` is `{ gitRange: '<base>...HEAD' }` when Phase 1 reviewed a branch or PR diff, and otherwise `{ paths: [...] }` with the Phase 1 files that still exist (at most 200; past that, the common parent directories). `<the reviewed repo>` is the repository path the review ran in, relative to the current directory (`.` for the current one), so a polyrepo audit targets the same repo. This skill only prints the line; it does not launch it.
+`<the reviewed scope>` is `{ gitRange: '<base>...HEAD' }` when Phase 1 reviewed a branch or PR diff, and otherwise `{ paths: [...] }` with the Phase 1 files that still exist (at most 200; past that, the common parent directories). `<the reviewed repo>` is the repository path the review ran in, relative to the current directory (`.` for the current one), so a polyrepo audit targets the same repo. This skill only prints the line; it does not launch it. Whoever launches it retries with the bare `security-audit` on "not found" ([workflow name rule](../sdd/SKILL.md#workflow-names)).
 
 ---
 

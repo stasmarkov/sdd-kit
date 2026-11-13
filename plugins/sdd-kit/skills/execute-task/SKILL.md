@@ -101,13 +101,15 @@ Also read `type` from the frontmatter: `refactor` changes Step 5 (characterizati
 
 ### Step 3: Parse tasks.md
 
-Check the gates first: run `node ${CLAUDE_SKILL_DIR}/../write-spec/scripts/spec-lint.mjs --gates <spec-folder>`. A gate is a task whose title after `N. ` starts with `Gate:`; only the owner checks it, and the first unchecked gate blocks every task after it. If the command still shows the literal `${CLAUDE_SKILL_DIR}`, never run it (no Bash command may hold a variable in braces); run the first copy that exists instead: `.claude/skills/write-spec/scripts/spec-lint.mjs` (project install), then `<config>/skills/write-spec/scripts/spec-lint.mjs` with the user config directory written out (`--user` install).
+Check the gates first: run `node ${CLAUDE_SKILL_DIR}/../write-spec/scripts/spec-lint.mjs --gates <spec-folder>`. A gate is a task whose title after `N. ` starts with `Gate:`; only the owner checks it, and the first unchecked gate blocks every task after it. A task whose title starts with `Manual:` is a manual step: it never blocks and is never built here. If the command still shows the literal `${CLAUDE_SKILL_DIR}`, never run it (no Bash command may hold a variable in braces); run the first copy that exists instead: `.claude/skills/write-spec/scripts/spec-lint.mjs` (project install), then `<config>/skills/write-spec/scripts/spec-lint.mjs` with the user config directory written out (`--user` install).
 
 Trust only this output, one line each:
-- `build: <N>. <title>` for each unchecked task before the first unchecked gate,
+- `build: <N>. <title>` for each unchecked code task and `manual: <N>. <title>` for each unchecked Manual task before the first unchecked gate, in file order,
 - then `awaiting owner: <gate title>` and exit 3, or `gates: clear` and exit 0.
 
-The next task is the first `build:` line, never a gate; exit 0 with no `build:` line means no task remains. `--task=N`, `--continue` and `--auto-continue` select only from the `build:` lines too: when task N (or the task in the session state) is not one of them, refuse it and report `not buildable: task <N>`, adding `awaiting owner: <gate title>` when it is the gate or a task after it. On exit 3 with no `build:` line, stop before any task and report `awaiting owner: <gate title>`; with `--auto-continue`, stop after the last `build:` task the same way. Fail closed: when no copy exists, the exit code is anything other than 0 or 3, or the output has any other line, stop and report `gate check unavailable: <reason>` without building a task. Never check a gate yourself.
+Skip every `manual:` task: do not build or check it, and point the user to the spec's `manual-test.md` for those ids (the owner checks them once the steps pass). `--task=N` on a Manual task is refused with `not buildable: task <N> (Manual: see manual-test.md)`.
+
+The next task is the first `build:` line, never a gate; exit 0 with no `build:` line means no code task remains (open `manual:` tasks stay for the owner). `--task=N`, `--continue` and `--auto-continue` select only from the `build:` lines too: when task N (or the task in the session state) is not one of them, refuse it and report `not buildable: task <N>`, adding `awaiting owner: <gate title>` when it is the gate or a task after it. On exit 3 with no `build:` line, stop before any task and report `awaiting owner: <gate title>`; with `--auto-continue`, stop after the last `build:` task the same way. Fail closed: when no copy exists, the exit code is anything other than 0 or 3, or the output has any other line, stop and report `gate check unavailable: <reason>` without building a task. Never check a gate yourself.
 
 ### Step 4: Resolve Repos & Load Context
 
@@ -161,7 +163,7 @@ Save verification report to `.ai/verification/<spec-folder>/task-{n}-{timestamp}
 ### Step 8: Continue or Pause
 
 ```
-No remaining tasks → every Traceability row verified? gates green? → set status: done (and the backlog slice to shipped, below) → "ALL TASKS COMPLETE" → Next: /deep-review --spec=<spec-folder>, then /open-pr --spec=<spec-folder>
+No remaining tasks → every Traceability row verified? gates green? any `manual:` task still open? → list those ids and the manual-test.md steps, and leave status as is; otherwise set status: done (and the backlog slice to shipped, below) → "ALL TASKS COMPLETE" → Next: /deep-review --spec=<spec-folder>, then /open-pr --spec=<spec-folder>
 --auto-continue    → Execute next task; stop on the first failed gate
 Default            → Pause, show next task info
 ```

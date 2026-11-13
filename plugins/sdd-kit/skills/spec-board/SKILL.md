@@ -1,6 +1,6 @@
 ---
 name: spec-board
-description: Visual Kanban board of the specs under .ai/specs - columns by status (draft, approved, in-progress, done) plus a Backlog column of product-brief slices from backlog.md that have no spec yet, task progress, open-question and approval warnings, filters and search, and a detail drawer with the rendered spec, task checklist with AC traceability, the other spec files, and execute-task resume hints. Runs as a live local server (127.0.0.1, auto-refresh) or writes one self-contained offline HTML file; supports polyrepo (api/.ai/specs web/.ai/specs) and legacy numbered specs. Use when the user wants to see, browse, share, or review the board of their specs, or asks what is awaiting approval or in flight. For where-was-I and next-task questions use progress.
+description: Use to see, browse or share the specs as a Kanban board by status with task progress, as a live local page or one offline HTML file.
 argument-hint: "[dirs...] [--serve [--port 4477] | --out spec-board.html | --json]"
 allowed-tools: Bash, Read
 license: Apache-2.0

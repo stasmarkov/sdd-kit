@@ -1,6 +1,6 @@
 ---
 name: progress
-description: Where-was-I dashboard over .ai/specs - per-spec task completion from tasks.md, status and priority from spec-lite frontmatter, the execute-task resume point from session state, recent git activity, and a next-task recommendation. --health adds a one-screen project snapshot (git state plus per-repo gate, security and dependency status) by delegating to /lint, /run-tests and /security-scan. Use when resuming work and asking "where was I?" or "what should I work on next?", or for a quick project health check.
+description: Use when resuming work and asking where was I or what next. Shows per-spec task progress and the next task; --health adds a health snapshot.
 argument-hint: "[--spec=<folder|ticket>] [--next] [--health] [--export=markdown|json]"
 allowed-tools: Read, Grep, Glob, Bash
 metadata:

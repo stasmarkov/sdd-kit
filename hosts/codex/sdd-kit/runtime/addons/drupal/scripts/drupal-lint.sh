@@ -12,6 +12,10 @@
 # reports raw.status "running"; otherwise host php; otherwise nothing. It never
 # starts DDEV.
 #
+# Both searches stop at the project boundary: CLAUDE_PROJECT_DIR when the file is
+# inside it, else the file's git top level, else the hook does nothing. A phpcs or a
+# DDEV project in a folder above the boundary belongs to someone else and never runs.
+#
 # Reports only counts read from the JSON report, so a missing standard, a setup
 # error or any ddev failure stays silent instead of reading as style violations.
 # Always exits 0 (async hooks cannot block).
@@ -37,10 +41,26 @@ case "$FILE" in
     *) exit 0 ;;
 esac
 
-# The repo root is the nearest directory above the file that has vendor/bin/phpcs.
-ROOT=$(dirname "$FILE")
+# Physical paths, so the boundary test cannot be dodged through .. or a symlink.
+FILE_DIR=$(cd -P "$(dirname "$FILE")" 2>/dev/null && pwd) || exit 0
+FILE="$FILE_DIR/$(basename "$FILE")"
+BOUNDARY=""
+if [[ -n "${CLAUDE_PROJECT_DIR:-}" ]]; then
+    PROJECT=$(cd -P "$CLAUDE_PROJECT_DIR" 2>/dev/null && pwd)
+    if [[ -n "$PROJECT" && ( "$PROJECT" == / || "$FILE" == "$PROJECT"/* ) ]]; then
+        BOUNDARY="$PROJECT"
+    fi
+fi
+if [[ -z "$BOUNDARY" ]] && command -v git >/dev/null 2>&1; then
+    BOUNDARY=$(git -C "$FILE_DIR" rev-parse --show-toplevel 2>/dev/null)
+    [[ -n "$BOUNDARY" ]] && BOUNDARY=$(cd -P "$BOUNDARY" 2>/dev/null && pwd)
+fi
+[[ -n "$BOUNDARY" ]] || exit 0
+
+# The repo root is the nearest directory above the file, up to the boundary, that has vendor/bin/phpcs.
+ROOT="$FILE_DIR"
 until [[ -e "$ROOT/vendor/bin/phpcs" ]]; do
-    [[ "$ROOT" == / ]] && exit 0
+    [[ "$ROOT" == "$BOUNDARY" || "$ROOT" == / ]] && exit 0
     ROOT=$(dirname "$ROOT")
 done
 REL="${FILE#"$ROOT"/}"
@@ -54,10 +74,10 @@ else
     exit 0
 fi
 
-# The DDEV project root is the repo or the nearest directory above it with .ddev/config.yaml.
+# The DDEV project root is the repo or the nearest directory above it, up to the boundary, with .ddev/config.yaml.
 RUNNER=()
 DDEV_ROOT="$ROOT"
-until [[ -f "$DDEV_ROOT/.ddev/config.yaml" || "$DDEV_ROOT" == / ]]; do
+until [[ -f "$DDEV_ROOT/.ddev/config.yaml" || "$DDEV_ROOT" == "$BOUNDARY" || "$DDEV_ROOT" == / ]]; do
     DDEV_ROOT=$(dirname "$DDEV_ROOT")
 done
 if [[ -f "$DDEV_ROOT/.ddev/config.yaml" ]] && command -v ddev >/dev/null 2>&1; then

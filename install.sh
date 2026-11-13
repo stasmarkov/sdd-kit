@@ -486,31 +486,65 @@ detect_installed() {
 # First package listed under packages.$2 (composer or npm) in stack manifest $1 that project
 # file $3 declares in one of the dependency objects named by $4.. Prints "<file>: <package>".
 package_match() {
-    local manifest="$1" manager="$2" file="$3"; shift 3
+    local manifest="$1" manager="$2" file="$3" pkg; shift 3
     [[ -f "$file" ]] || return 0
-    jq -r --arg m "$manager" --slurpfile p "$file" '
+    pkg=$(jq -r --arg m "$manager" --slurpfile p "$file" '
         ($p[0] | objects | [.[$ARGS.positional[]] | objects | keys[]]) as $have
         | [(if type == "array" then . else [.] end)[] | (.packages[$m] // [])[] | select(. as $n | $have | index($n))][0]
-        // empty' --args "$@" <"$manifest" 2>/dev/null | sed "1s|^|$file: |;1q" || true
+        // empty' --args "$@" <"$manifest" 2>/dev/null | head -n 1) || true
+    # printf, not sed: a directory name may hold & or |, which a sed replacement would rewrite.
+    [[ -z "$pkg" ]] || printf '%s: %s' "$file" "$pkg"
+}
+
+# First match of stack manifest $1 in directory prefix $2 ('' for the current directory, or
+# "<dir>/"): the path a marker glob matches, else "<file>: <package>" from that directory's
+# composer.json or package.json.
+stack_match() {
+    local manifest="$1" dir="$2" marker from=""
+    while IFS= read -r marker; do
+        [[ -n "$marker" ]] || continue
+        from=$(compgen -G "$dir$marker" 2>/dev/null | head -n 1) || true
+        [[ -z "$from" ]] || break
+    done < <(jq -r '(if type == "array" then . else [.] end)[] | (.markers // [])[]' "$manifest")
+    [[ -n "$from" ]] || from=$(package_match "$manifest" composer "${dir}composer.json" require require-dev)
+    [[ -n "$from" ]] || from=$(package_match "$manifest" npm "${dir}package.json" dependencies devDependencies)
+    printf '%s' "$from"
 }
 
 # Stack add-ons this project looks like: a manifest marker glob matches in the current directory,
-# or composer.json / package.json there requires one of the manifest's packages. Only the current
-# directory is read, so a project nested below it is not seen. Sets DETECTED_STACKS (add-on names)
-# and DETECTED_FROM ("<add-on> (<matched path or file: package>)", comma separated).
+# or composer.json / package.json there requires one of the manifest's packages. When nothing
+# matches there, the same tests run in each subdirectory one level down (vendor, node_modules and
+# dot directories skipped), and each add-on reports its first match in byte order, so a site kept
+# in site/ is found. Sets DETECTED_STACKS (add-on names) and DETECTED_FROM ("<add-on> (<matched
+# path or file: package>)", comma separated).
 detect_project_stacks() {
-    local addon manifest marker from
+    local addon from
     DETECTED_STACKS=""; DETECTED_FROM=""
     for addon in $STACK_ADDONS; do
-        manifest="$(addon_dir "$addon")/stack.json"
+        from=$(stack_match "$(addon_dir "$addon")/stack.json" "")
+        [[ -n "$from" ]] || continue
+        add_words DETECTED_STACKS "$addon"
+        DETECTED_FROM+="${DETECTED_FROM:+, }$addon ($from)"
+    done
+    [[ -n "$DETECTED_STACKS" ]] || detect_nested_stacks
+}
+
+# The one-level-down pass of detect_project_stacks.
+detect_nested_stacks() {
+    local LC_ALL=C addon sub from
+    local -a subs=()
+    for sub in */; do
+        [[ -d "$sub" ]] || continue
+        case "$sub" in vendor/ | node_modules/) continue ;; esac
+        subs+=("$sub")
+    done
+    [[ ${#subs[@]} -gt 0 ]] || return 0
+    for addon in $STACK_ADDONS; do
         from=""
-        while IFS= read -r marker; do
-            [[ -n "$marker" ]] || continue
-            from=$(compgen -G "$marker" 2>/dev/null | head -n 1) || true
+        for sub in "${subs[@]}"; do
+            from=$(stack_match "$(addon_dir "$addon")/stack.json" "$sub")
             [[ -z "$from" ]] || break
-        done < <(jq -r '(if type == "array" then . else [.] end)[] | (.markers // [])[]' "$manifest")
-        [[ -n "$from" ]] || from=$(package_match "$manifest" composer composer.json require require-dev)
-        [[ -n "$from" ]] || from=$(package_match "$manifest" npm package.json dependencies devDependencies)
+        done
         [[ -n "$from" ]] || continue
         add_words DETECTED_STACKS "$addon"
         DETECTED_FROM+="${DETECTED_FROM:+, }$addon ($from)"

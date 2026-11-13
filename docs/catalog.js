@@ -108,7 +108,7 @@ window.CATALOG = {
       "ships": "core",
       "category": "quality",
       "invoke": "both",
-      "description": "Review finished code and return a blocking verdict (APPROVED / CHANGES_REQUIRED / BLOCKED). Three depths - adversarial (default; skeptical reviewer on a different model tier that ignores the original prompt), standard (structured checklist review of a branch or PR with focus modes and JSON output for CI), and quick (critical-only pass). Delegates to adversarial-reviewer and security-auditor. Use when a task, spec, branch, or set of files is complete and needs review before merge or deploy, or when asked for a code review, PR review, or security-focused review.",
+      "description": "Use for a code or PR review before merge. Reviews finished code adversarially and returns APPROVED, CHANGES_REQUIRED or BLOCKED.",
       "hosts": {
         "codex": {
           "invoke": "$deep-review",
@@ -193,7 +193,7 @@ window.CATALOG = {
       "ships": "core",
       "category": "execution",
       "invoke": "both",
-      "description": "Get a red CI run or a broken local build back to green without weakening any gate. Reads the failing job from GitHub Actions, GitLab CI or Bitbucket Pipelines, or local output, maps the step to its stack gate (format, lint, types, tests, build, e2e, install and lockfile, contract sync, audit), reproduces it locally with the lockfile's package manager, applies the minimal fix (workflow YAML and container builds go through devops-engineer), then re-runs that gate and the full gate set. Never pushes; suppressions, skips, baselines, lowered thresholds, and removed steps need explicit user confirmation. Use when CI is red, a PR check fails, the build broke, a dependency install fails, or a ship-feature / greenfield-build report lists a gate that stayed red. Stack-specific causes come from the stack add-on. A test that fails because behavior is wrong goes to /sdd (bug route).",
+      "description": "Use when CI is red, a PR check fails, or a build or install broke. Reproduces the failing gate and makes the minimal fix without weakening any gate.",
       "hosts": {
         "codex": {
           "invoke": "$fix-ci",
@@ -363,7 +363,7 @@ window.CATALOG = {
       "ships": "core",
       "category": "upstream",
       "invoke": "both",
-      "description": "Turn an idea, or a pile of \"what if\" / \"users say\" input, into a product brief (problem, users and roles, MVP scope, non-goals, numbered draft business rules BR-01…, success metrics, open questions) and a dependency-ordered backlog of vertical slices, each sized XS/S/M/L, citing its BR ids, and ending in a ready /sdd invocation. Use when starting a new product or app and no product-brief.md exists yet, when /sdd's new-app route has no brief, when the user asks \"what should we build first?\", to revise a brief (--revise), or to fold raw feedback, feature requests, and ideas into an existing backlog (--intake). Writes planning docs only, never code.",
+      "description": "Use when starting a new product with no product-brief.md, asking what to build first, or folding feedback into the backlog (--intake). Writes the brief, draft business rules and a sliced backlog.",
       "hosts": {
         "codex": {
           "invoke": "$product-brief",
@@ -380,7 +380,7 @@ window.CATALOG = {
       "ships": "core",
       "category": "workflow",
       "invoke": "both",
-      "description": "Where-was-I dashboard over .ai/specs - per-spec task completion from tasks.md, status and priority from spec-lite frontmatter, the execute-task resume point from session state, recent git activity, and a next-task recommendation. --health adds a one-screen project snapshot (git state plus per-repo gate, security and dependency status) by delegating to /lint, /run-tests and /security-scan. Use when resuming work and asking \"where was I?\" or \"what should I work on next?\", or for a quick project health check.",
+      "description": "Use when resuming work and asking where was I or what next. Shows per-spec task progress and the next task; --health adds a health snapshot.",
       "hosts": {
         "codex": {
           "invoke": "$progress",
@@ -431,7 +431,7 @@ window.CATALOG = {
       "ships": "core",
       "category": "workflow",
       "invoke": "both",
-      "description": "The single front door for spec-driven work. Classifies a ticket or request (bug / feature / decision / shipped code / new project / trivial), confirms the route with the user, collects every input the background workflow needs, and launches exactly one fixed pipeline — features always go spec → human approval → ship-feature. Use when the user starts work on a ticket (e.g. PROJ-123), describes a bug, feature, or technology choice to build, or asks to \"use a workflow\" / \"run a workflow\" for a task.",
+      "description": "Use when starting work on a ticket (PROJ-123), a bug, a feature or a tech choice, or when asked to run a workflow. Picks the route and launches that workflow.",
       "hosts": {
         "codex": {
           "invoke": "$sdd",
@@ -465,7 +465,7 @@ window.CATALOG = {
       "ships": "core",
       "category": "quality",
       "invoke": "both",
-      "description": "Run security checks — dependency vulnerability audits (the manifest's audit commands), code scans for SQL injection, XSS, CSRF gaps, hardcoded secrets, auth bypasses, and server-side handlers that skip authorization, plus an OWASP Top 10 checklist — and report findings by severity with fixes. --dependencies is the kit's one read-only dependency audit (advisories plus outdated and unused packages) that /progress --health, /changelog --release and /upgrade-deps --audit-only rely on. Use when preparing a release, after adding dependencies or auth-related code, or for a periodic security review. Upgrading packages is /upgrade-deps.",
+      "description": "Use for a security check before a release or after new dependencies or auth code. Audits dependencies, scans for injection, XSS, secrets and missing authorization.",
       "hosts": {
         "codex": {
           "invoke": "$security-scan",
@@ -516,7 +516,7 @@ window.CATALOG = {
       "ships": "core",
       "category": "workflow",
       "invoke": "both",
-      "description": "Visual Kanban board of the specs under .ai/specs - columns by status (draft, approved, in-progress, done) plus a Backlog column of product-brief slices from backlog.md that have no spec yet, task progress, open-question and approval warnings, filters and search, and a detail drawer with the rendered spec, task checklist with AC traceability, the other spec files, and execute-task resume hints. Runs as a live local server (127.0.0.1, auto-refresh) or writes one self-contained offline HTML file; supports polyrepo (api/.ai/specs web/.ai/specs) and legacy numbered specs. Use when the user wants to see, browse, share, or review the board of their specs, or asks what is awaiting approval or in flight. For where-was-I and next-task questions use progress.",
+      "description": "Use to see, browse or share the specs as a Kanban board by status with task progress, as a live local page or one offline HTML file.",
       "hosts": {
         "codex": {
           "invoke": "$spec-board",
@@ -601,7 +601,7 @@ window.CATALOG = {
       "ships": "core",
       "category": "workflow",
       "invoke": "both",
-      "description": "Generate documentation from code (business rules, API contracts, architecture overview), import external docs into the context paths CLAUDE.md loads (--import), or audit docs and code against the project's conventions and report drift (--audit) - always with lowercase filenames and file:line citations. Use when a project needs docs derived from the actual code, when business rules or architecture notes from a wiki, PDF or ticket should become project context, or to check whether docs and code still follow CLAUDE.md, AGENTS.md and .claude/rules. For a traceable QA plan plus docs for shipped features, use /qa-and-docs instead.",
+      "description": "Use to document business rules, APIs or architecture from the code, import external docs (--import), or audit docs against conventions (--audit).",
       "hosts": {
         "codex": {
           "invoke": "$write-docs",
@@ -618,7 +618,7 @@ window.CATALOG = {
       "ships": "core",
       "category": "upstream",
       "invoke": "both",
-      "description": "Turn a ticket or request into a right-sized, execution-ready spec under .ai/specs/ — sizes the work first (XS gets no spec), investigates the codebase, asks clarifying questions, writes spec-lite.md + tasks.md with EARS/Given-When-Then acceptance criteria, a Must-NOT-change list, boundaries, and AC-to-test traceability, then runs a fresh-context clarity gate. Use when work needs planning before implementation, when /sdd routes a feature here, or to revise an existing spec. --background runs the create-spec research workflow instead.",
+      "description": "Use to plan a feature or change before coding, or to revise a spec. Writes spec-lite.md and tasks.md with acceptance criteria; XS work gets no spec.",
       "hosts": {
         "codex": {
           "invoke": "$write-spec",
@@ -1333,7 +1333,7 @@ window.CATALOG = {
       "category": "execution",
       "model": "sonnet",
       "effort": "medium",
-      "description": "Drupal 10/11 backend implementer for custom modules, services, plugins, entities, forms, routes and configuration. Use PROACTIVELY for any work in web/modules/custom, hook and event subscriber code, config schema and exports, and Drush-driven checks. Follows Drupal coding standards and runs the project's PHPCS, PHPStan and PHPUnit gates through DDEV when present.",
+      "description": "Drupal 10/11 backend implementer for custom modules, services, plugins, entities, forms, routes and configuration. Use PROACTIVELY for any work in <docroot>/modules/custom (web/ or docroot/), hook and event subscriber code, config schema and exports, and Drush-driven checks. Follows Drupal coding standards and runs the project's PHPCS, PHPStan and PHPUnit gates through DDEV when present.",
       "hosts": {
         "codex": {
           "invoke": "$sdd-runtime",
@@ -1686,6 +1686,10 @@ window.CATALOG = {
           "detail": "Decompose into ordered tasks and persist to .ai/specs"
         },
         {
+          "title": "Prepare",
+          "detail": "Leave a protected branch for a feature branch per repo and mark an approved spec in progress"
+        },
+        {
           "title": "Build",
           "detail": "Implement each task with the right specialist, tick progress"
         },
@@ -1703,7 +1707,11 @@ window.CATALOG = {
         },
         {
           "title": "Review",
-          "detail": "Adversarial panel: dimensions x 3-vote verify"
+          "detail": "Adversarial panel: dimensions x 2-vote verify"
+        },
+        {
+          "title": "Fix",
+          "detail": "Fix confirmed findings, re-run gates, re-verify the fixed ones (max 2 rounds)"
         },
         {
           "title": "Acceptance",

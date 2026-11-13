@@ -3,7 +3,7 @@
 
 Next.js add-on: nextjs-frontend-dev agent, Next.js, TypeScript and Tailwind skills, path-scoped rules and the Next.js and Nuxt stack manifests.
 
-- Version: 4.0.2
+- Version: 4.1.0
 - Keywords: nextjs, react, typescript, tailwind
 
 ## Install
@@ -16,4 +16,4 @@ Next.js add-on: nextjs-frontend-dev agent, Next.js, TypeScript and Tailwind skil
 ## Learn more
 
 - [Interactive guide](https://stasmarkov.github.io/sdd-kit/)
-- [Worked example: Hireboard](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/examples/job-board/README.md)
+- [Worked example: Hireboard](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/examples/job-board/README.md)

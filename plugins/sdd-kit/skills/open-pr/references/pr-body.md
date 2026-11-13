@@ -71,6 +71,7 @@ A pinned link keeps pointing at the reviewed code after later pushes. In the tem
 - Counterpart references are plain `<repo directory name> PR` text (for example `api PR`), never `owner/repo#N`, because no PR exists yet.
 - On a non-GitHub origin, write repo-relative file paths in place of `$BLOB` links.
 - On a GitHub origin, fill `$BLOB` as `https://<host>/<owner>/<repo>/blob/<HEAD sha>` from the parsed remote, with no gh call.
+- Bitbucket links a PR to its Jira issue when the key is in the branch name or the PR title, and the title above already ends with it. When neither carries the key, or the tracker is not linked to the host, post the link with `/open-pr --link <PR URL>` once the PR exists.
 
 ## Polyrepo
 

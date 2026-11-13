@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../../../../index.html">SDD Kit</a>
-    <span class="badge">v4.0.2</span>
+    <span class="badge">v4.1.0</span>
   </div>
   <nav class="site-nav" aria-label="Site">
     <ul>
@@ -35,7 +35,34 @@
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main" tabindex="-1">
+<main id="content" class="doc-main has-toc" tabindex="-1">
+  <nav class="page-toc" aria-label="On this page"><details open><summary>On this page</summary>
+    <ol>
+      <li><a href="#project-facts">Project facts</a></li>
+      <li><a href="#always-load">Always load</a></li>
+      <li><a href="#task-routing">Task routing</a></li>
+      <li><a href="#invariants">Invariants</a></li>
+      <li><a href="#gotchas">Gotchas</a></li>
+      <li><a href="#change-impact-map">Change-impact map</a></li>
+      <li><a href="#environment-drift">Environment drift</a></li>
+      <li><a href="#trust-hierarchy">Trust hierarchy</a></li>
+      <li><a href="#how-to-start-work">How to start work</a></li>
+      <li><a href="#review-settings">Review settings</a></li>
+      <li><a href="#area-rules">Area rules</a></li>
+    </ol>
+  </details></nav>
+<script>
+  (function () {
+    var d = document.querySelector('.page-toc details'), s = d.querySelector('summary');
+    var narrow = window.matchMedia('(max-width: 767.98px)'), wide = window.matchMedia('(min-width: 1100px)');
+    function sync() { d.open = !narrow.matches; s.tabIndex = wide.matches ? -1 : 0; }
+    function listen(q) { if (q.addEventListener) q.addEventListener('change', sync); else q.addListener(sync); }
+    listen(narrow);
+    listen(wide);
+    d.addEventListener('toggle', function () { if (wide.matches && !d.open) d.open = true; });
+    sync();
+  })();
+</script>
   <article class="doc-body">
 <h2 id="hireboard-api">Hireboard API</h2>
 <p>@AGENTS.md</p>
@@ -95,7 +122,7 @@ is level 5, so the review matches the project gate.</p>
   </article>
 </main>
 <footer class="site-footer">
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/examples/job-board/artifacts/api/CLAUDE.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/examples/job-board/artifacts/api/CLAUDE.md">View the Markdown source</a></p>
 </footer>
 <script>
   (function () {

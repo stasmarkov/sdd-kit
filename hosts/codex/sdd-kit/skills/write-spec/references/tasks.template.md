@@ -7,7 +7,7 @@ Copy everything below the line into `.ai/specs/<spec-folder>/tasks.md`.
 ```markdown
 # Refund guard for top-up orders — Tasks
 
-**Spec**: spec-PROJ-123-refund-guard | **Size**: M | **Tasks**: 3
+**Spec**: spec-PROJ-123-refund-guard | **Size**: M | **Tasks**: 4
 
 ## Phase 1: Backend
 
@@ -29,6 +29,10 @@ Copy everything below the line into `.ai/specs/<spec-folder>/tasks.md`.
   - [ ] 3.1 ...
   - [ ] 3.2 **Verify**: ...
 
+- [ ] 4. Manual: refund a top-up order in the staging admin and check the audit entry
+  - Covers: MNC-2
+  - [ ] 4.1 **Verify**: manual-test.md step 4 passes
+
 ## Traceability
 
 Every acceptance criterion (AC), must-not-change item (MNC), and quality attribute (NFR) from spec-lite.md has exactly one row. "Verified by" names a test (file::name) or a manual-test step (`manual-test.md#step-N`). Update the cell with the real test name when the task lands.
@@ -38,7 +42,7 @@ Every acceptance criterion (AC), must-not-change item (MNC), and quality attribu
 | AC-1 | top-up refund rejected with 422 | `tests/refund-test::rejects top-up refunds` | test | 1, 3 |
 | AC-2 | admin override is audited | `tests/refund-override-test::audits override` | test | 2 |
 | MNC-1 | card refunds still need approval | `tests/refund-test::card refund needs approval` | test | 1 |
-| MNC-2 | order response shape unchanged | `manual-test.md#step-4` | manual | — |
+| MNC-2 | order response shape unchanged | `manual-test.md#step-4` | manual | 4 |
 | NFR-1 | every role except customer/admin gets 403 | `tests/refund-policy-test::other roles get 403` | test | 2 |
 
 ## Verification gates
@@ -56,7 +60,8 @@ Run the project's detected gates after every task (see the `verification-gates` 
 ## Rules
 
 - Task line format `- [ ] N. Title (stack)` — tools parse `- [ ] N.` to find the next task; keep it.
+- Task kinds, owner gates, `tasks-archive.md` and unique ids follow the [spec format](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/reference/specification-system.md#tasksmd): a title starting `Gate:` is an owner gate, `Manual:` a manual step no tool builds, anything else a code task. Ids never repeat across tasks.md and tasks-archive.md.
 - Each task lists `Covers:` with the AC/MNC/NFR ids it satisfies. A task covering nothing is either scaffolding (say so) or out of scope.
 - Refactor specs (`type: refactor`): task 1 is the characterization task. Its tests are written against the current code and must pass (GREEN) before any code moves; there is no RED step. Later tasks cover MNC ids and keep those tests green.
-- Gap tasks appended later (by the ship-feature Converge phase or a reviewer) continue the numbering and go under a final `## Phase N: Gaps` heading.
+- Gap tasks appended later (by the ship-feature Converge phase or a reviewer) continue the numbering above the highest id in tasks.md and tasks-archive.md and go under a final `## Phase N: Gaps` heading.
 - List the gate commands that actually exist in the project — never paste one stack's commands into a repo of another stack.

@@ -4,9 +4,23 @@ set -euo pipefail
 # Drupal Module Scaffolding Script
 # Usage: ./scaffold-module.sh <module_name> [module_path]
 # Example: ./scaffold-module.sh my_custom_module web/modules/custom
+#
+# Without a module_path, run it from the project root: the module goes into
+# <docroot>/modules/custom, where <docroot> is the folder that holds Drupal core
+# (web/core/lib/Drupal.php or docroot/core/lib/Drupal.php).
 
 MODULE_NAME="${1:?Usage: scaffold-module.sh <module_name> [module_path]}"
-MODULE_PATH="${2:-web/modules/custom}"
+
+if [ -n "${2:-}" ]; then
+  MODULE_PATH="$2"
+elif [ -f web/core/lib/Drupal.php ]; then
+  MODULE_PATH="web/modules/custom"
+elif [ -f docroot/core/lib/Drupal.php ]; then
+  MODULE_PATH="docroot/modules/custom"
+else
+  echo "Error: no Drupal core in web/ or docroot/ under $(pwd). Fix: run this from the project root after composer install, or pass the module path, e.g. scaffold-module.sh ${MODULE_NAME} <docroot>/modules/custom" >&2
+  exit 1
+fi
 
 MODULE_DIR="${MODULE_PATH}/${MODULE_NAME}"
 

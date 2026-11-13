@@ -26,6 +26,7 @@ Install commands are in [INSTALLATION.md](installation.md#codex); first-session 
 - **Cursor after-tool output.** Cursor has no PostToolUse event for shell, web or MCP output, so the injection scan does not run there.
 - **PreCompact.** Cursor has no pre-compaction event, so the checkpoint hook (`pre-compact-save.sh`) does not run there.
 - **SubagentStop and Notification.** Cursor has neither event, so hooks registered on them are listed in the registration plan and not installed.
+- **Skill list size.** Codex lists the name and description of every skill that allows implicit invocation at session start, and shortens descriptions once that list passes its limit. The package build estimates the list (name, description and 4 characters per skill) and warns above 8,000 characters; the core package stays at or under 7,500. Each installed add-on adds its own skills to the same list, so a project with several add-ons can pass the limit; skills marked `disable-model-invocation` are not listed.
 - **Rules.** Codex has no rules directory; the rules a stack needs are folded into the job packets and the instruction file.
 - **Cloud and IDE surfaces.** Codex plugins are not available in the IDE extension, and Cursor cloud agents skip session and user-level hooks.
 - **Windows.** Not supported for Codex or Cursor.

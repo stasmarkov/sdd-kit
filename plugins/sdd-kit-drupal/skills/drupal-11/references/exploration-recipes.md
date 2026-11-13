@@ -1,6 +1,6 @@
 # Exploration recipes: Drupal
 
-Glob and Grep patterns the `code-explorer` agent uses in a Drupal repo. Custom code lives under the manifest's source directories (`web/modules/custom/`, `web/themes/custom/`, `modules/`); search there first and treat `web/core/` and `web/modules/contrib/` as read-only reference. Every finding cites `file:line`.
+Glob and Grep patterns the `code-explorer` agent uses in a Drupal repo. Custom code lives under the manifest's source directories (`web/modules/custom/`, `web/themes/custom/`, `docroot/modules/custom/`, `docroot/themes/custom/`, `modules/`); search there first and treat `<docroot>/core/` and `<docroot>/modules/contrib/` as read-only reference. Every finding cites `file:line`.
 
 ## Backend
 

@@ -13,6 +13,8 @@ Reproduce → root-cause → failing regression test → minimal fix → gates �
 | `url` | Dev-server URL for the acceptance trace. |
 | `models` | Per-run tier override. |
 
+Launch with the plugin name and fall back to the bare name on "not found" ([workflow name rule](../SKILL.md#workflow-names)).
+
 ```
 Workflow({ name: "fix-bug", args: { bug: "PROJ-123: …", ticket: "PROJ-123", mustNotChange: ["…"], repos: { backend: "../api", frontend: "../web" }, url: "http://localhost:3000" } })
 ```
@@ -21,9 +23,12 @@ Workflow({ name: "fix-bug", args: { bug: "PROJ-123: …", ticket: "PROJ-123", mu
 
 ```
 Detect          stack(s) + repo layout
-Reproduce       run the failing path, capture the actual failure → cannot reproduce = NEEDS-INFO, stop
+Reproduce       test-writer runs the failing path with the planned (wrapped) test commands, capture the actual
+                failure; a scratch test is deleted, nothing committed, no non-test file changed (files left
+                behind are logged); no test command: read the code and call what it can reach
+                cannot reproduce = NEEDS-INFO, stop
                 slowness: the repro is a measured baseline + target (p95, query count, LCP)
-RootCause       file:line + mechanism + Must-NOT-change list; 3-vote adversarial verify
+RootCause       file:line + mechanism + Must-NOT-change list; 2 adversarial votes, a tie-break only on a split
 RegressionTest  failing test (red for the right reason) + green guard test per MNC item; committed as
                 test(<area>): ... on a fix/<KEY>-<slug> branch it creates when HEAD is a base branch
                 (/sdd offers the branch in its launch confirmation)

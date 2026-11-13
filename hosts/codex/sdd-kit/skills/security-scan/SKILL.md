@@ -1,6 +1,6 @@
 ---
 name: security-scan
-description: Run security checks — dependency vulnerability audits (the manifest's audit commands), code scans for SQL injection, XSS, CSRF gaps, hardcoded secrets, auth bypasses, and server-side handlers that skip authorization, plus an OWASP Top 10 checklist — and report findings by severity with fixes. --dependencies is the kit's one read-only dependency audit (advisories plus outdated and unused packages) that /progress --health, /changelog --release and /upgrade-deps --audit-only rely on. Use when preparing a release, after adding dependencies or auth-related code, or for a periodic security review. Upgrading packages is /upgrade-deps.
+description: Use for a security check before a release or after new dependencies or auth code. Audits dependencies, scans for injection, XSS, secrets and missing authorization.
 argument-hint: "--full | --quick | --dependencies | --code | --owasp"
 allowed-tools: Bash, Read, Grep, Glob
 metadata:

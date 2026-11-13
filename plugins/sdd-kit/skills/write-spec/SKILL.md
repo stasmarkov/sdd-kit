@@ -1,6 +1,6 @@
 ---
 name: write-spec
-description: Turn a ticket or request into a right-sized, execution-ready spec under .ai/specs/ — sizes the work first (XS gets no spec), investigates the codebase, asks clarifying questions, writes spec-lite.md + tasks.md with EARS/Given-When-Then acceptance criteria, a Must-NOT-change list, boundaries, and AC-to-test traceability, then runs a fresh-context clarity gate. Use when work needs planning before implementation, when /sdd routes a feature here, or to revise an existing spec. --background runs the create-spec research workflow instead.
+description: Use to plan a feature or change before coding, or to revise a spec. Writes spec-lite.md and tasks.md with acceptance criteria; XS work gets no spec.
 argument-hint: "[description] | --ticket=PROJ-123 | --type=feature|bug|improvement|refactor | --priority=P0-P3 | --spec=<ref> (revise) | --background"
 allowed-tools: Agent, Workflow, Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion
 metadata:
@@ -125,6 +125,7 @@ Non-negotiables:
 - **Rollout** (optional; required for L, migrations, and public API contract changes): the flag name or "none", the deploy order (backend before frontend, expand/contract for breaking changes), and the rollback path. With the ops add-on installed, name and document the flag with its `feature-flag` skill.
 - **Boundaries**: Always / Ask first / Never.
 - **Traceability** table in `tasks.md`: every AC, MNC and NFR maps to a test or a manual-test step, and every task lists `Covers:`.
+- **Task kinds** in `tasks.md`: prefix an owner sign-off with `Gate:` and a step a person performs with `Manual:`; leave code tasks unprefixed. Top-level ids are unique across `tasks.md` and `tasks-archive.md`. Rules: [spec format](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/reference/specification-system.md#tasksmd).
 - Verification gates list only tooling that exists in the project.
 
 ## Step 6 — Clarity gate
@@ -157,10 +158,10 @@ Next:   /sdd spec-PROJ-123-refund-guard   (approve → ship-feature)
 
 ## Background mode (`--background`)
 
-Runs the `create-spec` workflow: Detect → Classify (size) → Research (codebase per repo ∥ sourced web ∥ docs) → Synthesize → Document → Clarify. Prefer it for L-size or unfamiliar areas; it cannot ask questions mid-run, so do Steps 1–3 here first and pass the answers in (Step 2 skips the Golden Triangle read in this case; the workflow reads it).
+Runs the `create-spec` workflow: Detect → Classify (size) → Research (codebase per repo ∥ sourced web ∥ docs) → Synthesize → Document → Clarify. Prefer it for L-size or unfamiliar areas; it cannot ask questions mid-run, so do Steps 1–3 here first and pass the answers in (Step 2 skips the Golden Triangle read in this case; the workflow reads it). Call it by its plugin name and retry with the bare `create-spec` on "not found" ([workflow name rule](../sdd/SKILL.md#workflow-names)).
 
 ```
-Workflow({ name: "create-spec", args: { description: "<refined request>", ticket: "PROJ-123", type: "feature", priority: "P1", answers: { … }, repos: { backend: "../api", frontend: "../web" } } })
+Workflow({ name: "sdd-kit:create-spec", args: { description: "<refined request>", ticket: "PROJ-123", type: "feature", priority: "P1", answers: { … }, repos: { backend: "../api", frontend: "../web" } } })
 ```
 
 It returns `{ specId, specFolder, size, files, taskCount, openQuestions, ready }` (or `{ size: "XS", recommendation }` with no spec). Present the folder, any `business-rules.md` items flagged for human validation, and the open questions — resolve those with the user as in Step 6 before handing to `/sdd` for approval. Model tiers: `docs/effort-guidelines.md` in the framework repo.

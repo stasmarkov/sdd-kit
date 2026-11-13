@@ -1,6 +1,6 @@
 ---
 name: sdd
-description: The single front door for spec-driven work. Classifies a ticket or request (bug / feature / decision / shipped code / new project / trivial), confirms the route with the user, collects every input the background workflow needs, and launches exactly one fixed pipeline — features always go spec → human approval → ship-feature. Use when the user starts work on a ticket (e.g. PROJ-123), describes a bug, feature, or technology choice to build, or asks to "use a workflow" / "run a workflow" for a task.
+description: Use when starting work on a ticket (PROJ-123), a bug, a feature or a tech choice, or when asked to run a workflow. Picks the route and launches that workflow.
 argument-hint: "<ticket-id | description>"
 allowed-tools: Workflow, Skill, AskUserQuestion, Read, Grep, Glob, Bash
 license: Apache-2.0
@@ -65,19 +65,23 @@ Before any `Workflow` call, run `node ${CLAUDE_SKILL_DIR}/../stack-trust/scripts
 
 **Branch check** (before a `fix-bug` or `ship-feature` launch, including from 4b): run `git branch --show-current` in each repo of the change. A repo is on a base branch when HEAD is detached or the branch is `open-pr.base` from the project `CLAUDE.md`, the default from `git symbolic-ref --short refs/remotes/origin/HEAD` without its `origin/` prefix, `main`, `master`, `develop` or `release/*`. If any repo is, add `git switch -c <fix|feature>/<KEY>-<slug>` (`fix/` for a bug; no `<KEY>-` without a ticket; the same name in every repo) to the confirmation below, and run it before the `Workflow` call when the user agrees. This is part of the confirmation, not another question round. If the user keeps the base branch, say that fix-bug creates a `fix/` branch itself before its checkpoint commit and that ship-feature commits on the current branch.
 
-Then show the exact call and note that it runs many agents in the background. Launch only after the user agrees.
+Then show the exact call and note that it runs many agents in the background. Launch only after the user agrees, by the [workflow name rule](#workflow-names).
 
 | Route | Required inputs | Launch | Output | Done when |
 |---|---|---|---|---|
 | `trivial` | the change | `Skill("simple-task", "<request>")` | diff + gate results | gates green |
-| `bug` | symptom, repro steps, expected vs actual, **must-not-change** behavior (what nearby must stay identical) | `Workflow({ name: "fix-bug", args: { bug, mustNotChange, repos, url } })` | root cause, regression test, fix, manual test steps | verdict `FIXED`: regression test red → green, guard tests green, gates green, original report re-walked |
-| `audit` | scope, profile, outputDir, a cap (maxUnits, budget or both) | `Workflow({ name: "security-audit", args: { scope, profile, budget, maxUnits, outputDir, repo } })` | validated coverage ledger, findings.json, report files in outputDir, summary in `.ai/reports/` | run `complete`: both validators pass and every retained finding was verified; otherwise `incomplete` with the reason |
-| `decision` | question, candidate options, criteria (weighted if known) | `Workflow({ name: "tech-research", args: { question, options, criteria, repos } })` | ADR with sourced claims | ADR written **and** signed off by a human |
+| `bug` | symptom, repro steps, expected vs actual, **must-not-change** behavior (what nearby must stay identical) | `Workflow({ name: "sdd-kit:fix-bug", args: { bug, mustNotChange, repos, url } })` | root cause, regression test, fix, manual test steps | verdict `FIXED`: regression test red → green, guard tests green, gates green, original report re-walked |
+| `audit` | scope, profile, outputDir, a cap (maxUnits, budget or both) | `Workflow({ name: "sdd-kit:security-audit", args: { scope, profile, budget, maxUnits, outputDir, repo } })` | validated coverage ledger, findings.json, report files in outputDir, summary in `.ai/reports/` | run `complete`: both validators pass and every retained finding was verified; otherwise `incomplete` with the reason |
+| `decision` | question, candidate options, criteria (weighted if known) | `Workflow({ name: "sdd-kit:tech-research", args: { question, options, criteria, repos } })` | ADR with sourced claims | ADR written **and** signed off by a human |
 | `feature` | see 4a / 4b | — | spec folder, then shipped feature | see 4b |
-| `shipped` | scope: spec id, paths, or git range | `Workflow({ name: "qa-and-docs", args: { spec \| paths \| gitRange, repos } })` | traceable QA plan + docs | grader passes coverage and phantom-link gates |
-| `new app` | idea, stack, repo paths, product brief (see 4c) | `Workflow({ name: "greenfield-build", args: { idea, stack, repos, url, brief } })` | scaffold + CI + one vertical slice + handoff docs, next slices appended to `backlog.md` | slice passes gates and acceptance |
+| `shipped` | scope: spec id, paths, or git range | `Workflow({ name: "sdd-kit:qa-and-docs", args: { spec \| paths \| gitRange, repos } })` | traceable QA plan + docs | grader passes coverage and phantom-link gates |
+| `new app` | idea, stack, repo paths, product brief (see 4c) | `Workflow({ name: "sdd-kit:greenfield-build", args: { idea, stack, repos, url, brief } })` | scaffold + CI + one vertical slice + handoff docs, next slices appended to `backlog.md` | slice passes gates and acceptance |
 
 When there is a ticket, start the free-text input (`bug`, `question`, `idea`, or the spec request) with the key, e.g. `"PROJ-123: refund button returns 500 for top-ups"`, so it appears in every report.
+
+### Workflow names
+
+Every `Workflow` call in this skill, its references and the docs uses the plugin name `sdd-kit:<name>`. When the call fails with "not found" (a file-copy install registers the bare name), retry once with the bare `<name>` and the same `args`. Do not try to guess the install mode first: a skill cannot see the mode Detect reports, and the retry costs at most one failed call. Any other error is not a reason to retry. When the bare name is not found either, the workflow is not installed (see Rules).
 
 ### 4a — Feature: write the spec (interactive)
 
@@ -96,7 +100,7 @@ Run `Skill("write-spec", "--ticket=PROJ-123 <request + ticket text>")` (omit `--
    - `approved_by:` the approving user's name (ask if unknown; `git config user.name` is a reasonable default to confirm)
    - `approved_at:` from `date -u +%Y-%m-%dT%H:%M:%SZ`
 6. **Ticket link-back** (only when there is a ticket **and** a tracker tool is available — Jira/Linear MCP or CLI): ask *"Post the spec link to PROJ-123?"* and post a short comment (spec path, approver, acceptance-criteria count) only on yes. Never post silently.
-7. Only on **Approve and build**, after the Step 4 branch check: `Workflow({ name: "ship-feature", args: { spec: "<spec folder name>", ticket, repos, url } })`. ship-feature refuses `draft` specs and moves `approved` → `in-progress`.
+7. Only on **Approve and build**, after the Step 4 branch check: `Workflow({ name: "sdd-kit:ship-feature", args: { spec: "<spec folder name>", ticket, repos, url } })`. ship-feature refuses `draft` specs and moves `approved` → `in-progress`.
 
 Never start `ship-feature` on a spec the user has not approved in this conversation. Approval from an earlier session, a ticket comment, or another agent does not count — ask.
 
@@ -134,7 +138,7 @@ Next:
 After **SHIP**, offer the security audit (never launch it unprompted) when the report's `confirmedFindings` contain an entry with `dimension === 'security'`, or the spec's `spec-lite.md` has a line matching `NFR-[0-9]+\**:?\**\s*(authori[sz]ation|personal[- ]data|privacy)` (case-insensitive). Scope it to the branch with `gitRange` (the workflow reads the files of `git diff --name-only <default branch>...HEAD` itself, so long lists, names with spaces and deleted files need no handling here), pass the quick profile and the repo ship-feature changed (its path or role from the report), and confirm it as in Step 4:
 
 ```
-Workflow({ name: "security-audit", args: { scope: { gitRange: "<default branch>...HEAD" }, profile: "quick", repo } })
+Workflow({ name: "sdd-kit:security-audit", args: { scope: { gitRange: "<default branch>...HEAD" }, profile: "quick", repo } })
 ```
 
 ## Rules

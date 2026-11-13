@@ -40,7 +40,7 @@ claude
 ```
 
 There is no tracker connected, so `/sdd` cannot fetch HIRE-4 and asks for the text
-([sdd SKILL.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/sdd/SKILL.md), Step 1):
+([sdd SKILL.md](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/sdd/SKILL.md), Step 1):
 
 ```text
 > /sdd HIRE-4
@@ -75,7 +75,7 @@ Chapter 04 covers this friction. In Step 4 below the folder-creation loop runs i
 ## Step 1 — Size first
 
 `write-spec` classifies type and size before it reads any code
-([write-spec Step 1](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/write-spec/SKILL.md)). The size decides how much
+([write-spec Step 1](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/write-spec/SKILL.md)). The size decides how much
 markdown the spec gets:
 
 ```text
@@ -96,7 +96,7 @@ markdown the spec gets:
 > **Kit friction F6: two repos do not make it L.** The L row of the sizing table lists
 > "multi-repo". Read literally, every api + web feature in this workspace would be L. The
 > write-spec template's own example settles it: its M spec has `stacks: [laravel, nextjs]`
-> ([spec-lite.template.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/write-spec/references/spec-lite.template.md)).
+> ([spec-lite.template.md](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/write-spec/references/spec-lite.template.md)).
 > An api + web feature is the normal M shape. The other L signal is "new business rules", and it
 > doesn't apply either. BR-40 to BR-43 (one review per company, pending until moderated, only
 > approved reviews public, the average rule) were written and validated with Maya Chen in
@@ -169,7 +169,7 @@ Both answers end up in AC-1 and AC-4.
 ## Step 4 — Create the folder atomically
 
 The spec id is `spec-<TICKET>-<slug>`, and the folder is created with `mkdir` **without** `-p`
-in a loop ([write-spec Step 4](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/write-spec/SKILL.md)). Here it runs
+in a loop ([write-spec Step 4](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/write-spec/SKILL.md)). Here it runs
 inside `api/`:
 
 ```bash
@@ -470,7 +470,7 @@ registry entries for `laravel` and `nextjs`, plus `npm run build` because the sp
 The author of a spec is the worst person to judge whether it is clear. `write-spec` spawns a
 **new** general-purpose agent and gives it nothing but the folder path. It gets no conversation
 summary and no ticket text
-([write-spec Step 6](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/write-spec/SKILL.md)):
+([write-spec Step 6](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/write-spec/SKILL.md)):
 
 ```text
 Agent (general-purpose, fresh context):
@@ -580,7 +580,7 @@ see the rule text, so restate the essentials in the criterion, as AC-6 and AC-7 
 ## Step 7 — Hand off, then approve in /sdd
 
 `write-spec` ends with its hand-off block
-([write-spec Step 7](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/write-spec/SKILL.md)):
+([write-spec Step 7](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/write-spec/SKILL.md)):
 
 ```text
 Spec:   api/.ai/specs/spec-HIRE-4-company-reviews/   (size M, status draft)
@@ -595,7 +595,7 @@ Next:   /sdd spec-HIRE-4-company-reviews   (approve → ship-feature)
 phase rewrites it from the shipped code.
 
 Control returns to `/sdd` at Step 4b
-([sdd SKILL.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/sdd/SKILL.md)). It first checks Open questions: all
+([sdd SKILL.md](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/sdd/SKILL.md)). It first checks Open questions: all
 six are checked, so approval can be asked for. It summarizes in plain language and asks:
 
 ```text
@@ -673,7 +673,7 @@ Done when: gates green, converge finds no gaps, review APPROVED, acceptance re-w
 ## Step 8 — ship-feature builds it
 
 The phases are described in the
-[ship-feature reference](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/sdd/references/ship-feature.md). In spec
+[ship-feature reference](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/sdd/references/ship-feature.md). In spec
 mode, Investigate and Spec-writing are skipped: the spec *is* the investigation. This is the run
 as `/workflows` shows it (simulated, abridged):
 
@@ -681,7 +681,8 @@ as `/workflows` shows it (simulated, abridged):
   Detect       api (laravel, tracked, feature/HIRE-4-company-reviews)
                web (nextjs, tracked, feature/HIRE-4-company-reviews)
   Spec         loaded spec-HIRE-4-company-reviews: 7 pending tasks, 11 AC, 3 MNC
-               status approved → in-progress
+  Prepare      backend and frontend stay on "feature/HIRE-4-company-reviews"
+               spec-HIRE-4-company-reviews status approved → in-progress
   Build        task 1 (laravel-backend-dev)  schema doc, migration, ReviewStatus, CompanyReview,
                                              Company::reviews(), CompanyReviewFactory ✓
                task 2 (laravel-backend-dev)  6 tests red → green; submit + mine ✓
@@ -697,6 +698,7 @@ as `/workflows` shows it (simulated, abridged):
   Visual       /companies/acme-robotics/reviews and /admin/reviews at 375/768/1440:
                form labels, error states, contrast OK
   Review       4 dimensions → 3 candidate findings → 0 confirmed (see below)
+  Fix          stopped (clean) after 0 round(s); fixed none; remaining none
   Acceptance   journey + 11 AC + 3 MNC → RESOLVED (see below)
   Docs         api/docs/api/api-contracts.md (error codes table)
   TestPlan     api/.ai/specs/spec-HIRE-4-company-reviews/manual-test.md (10 steps);
@@ -738,9 +740,10 @@ comes from.
 ### Review: a finding the panel refutes
 
 Four reviewers (correctness, security, performance, design) read the diff on the deep tier. Every
-finding then goes to a panel of three verifiers on the standard tier. Each verifier tries to
-refute the finding through one lens: correctness, reproducibility or severity. A finding is
-confirmed only if at least two of the three say it is real. One correctness finding shows why
+finding then goes to two verifiers on the standard tier, one per lens: correctness and
+reproducibility. Each tries to refute it. When they disagree, or one returns nothing, a third
+verifier weighs the severity and breaks the tie. A finding is confirmed only when two votes say
+it is real. One correctness finding shows why
 the panel exists:
 
 ```text
@@ -754,8 +757,7 @@ the panel exists:
   verify:reproducibility real=false ListCompanyReviewsTest "reports the average of approved
                                     ratings only" seeds a pending 1 and a rejected 1 next to
                                     4,4,4,5 and asserts 4.3; it passes.
-  verify:severity       real=false  even if true, it would be caught by the existing test.
-  → refuted (0/3) — dismissed
+  → refuted (0/2, no tie-break needed) — dismissed
 ```
 
 The reviewer read the service and stopped one layer too early. The verifiers opened the

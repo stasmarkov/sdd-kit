@@ -14,8 +14,10 @@ Coverage-led security audit of a scope: reconnaissance, a validated coverage led
 | `repo` | Target repo path or role when several repos are detected. |
 | `models` | Per-run tier override. |
 
+Launch with the plugin name and fall back to the bare name on "not found" ([workflow name rule](../SKILL.md#workflow-names)).
+
 ```
-Workflow({ name: "security-audit", args: { scope: { paths: ["app/Payments"] }, profile: "standard", maxUnits: 12, outputDir: ".ai/security-audit/", repo: "api" } })
+Workflow({ name: "sdd-kit:security-audit", args: { scope: { paths: ["app/Payments"] }, profile: "standard", maxUnits: 12, outputDir: ".ai/security-audit/", repo: "api" } })
 ```
 
 ## Phases

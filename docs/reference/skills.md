@@ -12,12 +12,12 @@ Start spec-driven work with `/sdd`. "Manual only" skills have side effects and n
 | `architecture-patterns` | core | auto only | Implement Clean Architecture, Hexagonal Architecture, and DDD patterns. Use when designing new modules or refactoring for maintainability. |
 | `changelog` | core | `/changelog` (manual only) | Generate a changelog from git history by parsing conventional commits and grouping them into Keep a Changelog sections, optionally… |
 | `ci-cd` | core | `/ci-cd` | CI/CD pipelines for GitHub Actions, GitLab CI and Bitbucket Pipelines, built from the stack's gate commands. Use for testing, deployment… |
-| `deep-review` | core | `/deep-review` | Review finished code and return a blocking verdict (APPROVED / CHANGES_REQUIRED / BLOCKED). Three depths - adversarial (default; skeptical… |
+| `deep-review` | core | `/deep-review` | Use for a code or PR review before merge. Reviews finished code adversarially and returns APPROVED, CHANGES_REQUIRED or BLOCKED. |
 | `design-api` | core | `/design-api` | Design RESTful API architecture: resources, endpoints, request/response contracts, error format, and optional OpenAPI output, producing an… |
 | `design-schema` | core | `/design-schema` | Design a database schema - entities, columns and types, relationships, indexes, naming, and migration strategy - and write it as… |
 | `error-handling-patterns` | core | auto only | Robust error handling with typed exceptions, Result types, and graceful degradation. Use when designing error flows or improving resilience. |
 | `execute-task` | core | `/execute-task` | Execute an approved spec's tasks one at a time with TDD, verification gates, AC-to-test traceability, and session state for cross-session… |
-| `fix-ci` | core | `/fix-ci` | Get a red CI run or a broken local build back to green without weakening any gate. Reads the failing job from GitHub Actions, GitLab CI or… |
+| `fix-ci` | core | `/fix-ci` | Use when CI is red, a PR check fails, or a build or install broke. Reproduces the failing gate and makes the minimal fix without weakening… |
 | `framework-doctor` | core | `/framework-doctor` (manual only) | Diagnose a framework installation and report PASS / WARN / FAIL per check - directory layout, flat skill discovery, agents, manifest drift… |
 | `generate` | core | `/generate` | Generate code scaffolding that follows project conventions - controllers, services, data objects, repositories, models, CRUD and API… |
 | `grade` | core | `/grade` | Grade a target artifact against a domain rubric using the outcomes-grader subagent. Returns PASS / CHANGES_REQUIRED / BLOCKED with… |
@@ -27,22 +27,22 @@ Start spec-driven work with `/sdd`. "Manual only" skills have side effects and n
 | `new-stack` | core | `/new-stack` (manual only) | Scaffold a new stack add-on (manifest, agent, conventions skill, lint hook) from the kit template, or stage a project-local stack. Use… |
 | `observability` | core | `/observability` | Observability for web applications - structured logging, error tracking, metrics, and OpenTelemetry tracing. Use when adding… |
 | `open-pr` | core | `/open-pr` (manual only) | Open spec-traced pull requests once a feature or fix is approved — one PR per changed repo, backend first, cross-linked. Checks the… |
-| `product-brief` | core | `/product-brief` | Turn an idea, or a pile of "what if" / "users say" input, into a product brief (problem, users and roles, MVP scope, non-goals, numbered… |
-| `progress` | core | `/progress` | Where-was-I dashboard over .ai/specs - per-spec task completion from tasks.md, status and priority from spec-lite frontmatter, the… |
+| `product-brief` | core | `/product-brief` | Use when starting a new product with no product-brief.md, asking what to build first, or folding feedback into the backlog (--intake).… |
+| `progress` | core | `/progress` | Use when resuming work and asking where was I or what next. Shows per-spec task progress and the next task; --health adds a health snapshot. |
 | `run-tests` | core | `/run-tests` | Run the test suites of the detected stack - the test gates from the stack manifest, with filtering by name or module, coverage and… |
 | `schema-first` | core | auto only | Document schemas before migrations. Use when designing databases or planning data models. |
-| `sdd` | core | `/sdd` | The single front door for spec-driven work. Classifies a ticket or request (bug / feature / decision / shipped code / new project /… |
+| `sdd` | core | `/sdd` | Use when starting work on a ticket (PROJ-123), a bug, a feature or a tech choice, or when asked to run a workflow. Picks the route and… |
 | `security-audit` | core | auto only | Security guidance and vulnerability review for codebases, APIs, services, CLIs and libraries. Use for security questions, focused reviews… |
-| `security-scan` | core | `/security-scan` | Run security checks — dependency vulnerability audits (the manifest's audit commands), code scans for SQL injection, XSS, CSRF gaps,… |
+| `security-scan` | core | `/security-scan` | Use for a security check before a release or after new dependencies or auth code. Audits dependencies, scans for injection, XSS, secrets… |
 | `simple-task` | core | `/simple-task` | Execute a small-to-medium task (bug fix, small feature, refactor, safe symbol rename, or research-only question) in a single context… |
 | `source-verification` | core | auto only | Rules for verifying claims against the actual code before stating or changing anything — read referenced files, cite file:line, never… |
-| `spec-board` | core | `/spec-board` | Visual Kanban board of the specs under .ai/specs - columns by status (draft, approved, in-progress, done) plus a Backlog column of… |
+| `spec-board` | core | `/spec-board` | Use to see, browse or share the specs as a Kanban board by status with task progress, as a live local page or one offline HTML file. |
 | `stack-trust` | core | `/stack-trust` (manual only) | Review and approve overlay stack manifests (project .claude/stacks, user stacks directory, third-party plugin stack.json) before their… |
 | `sync-obsidian` | core | `/sync-obsidian` (manual only) | Sync human-verified project knowledge - specs, review output, a spec-board status note, and architecture/context docs - into an Obsidian… |
 | `upgrade-deps` | core | `/upgrade-deps` (manual only) | Audit and upgrade dependencies (any package manager the stack uses) safely — report outdated/vulnerable packages, bump in tiers (patch →… |
 | `verification-gates` | core | auto only | Standard post-implementation quality gates (format, lint, types, tests, coverage, build, browser journeys, accessibility, contract sync)… |
-| `write-docs` | core | `/write-docs` | Generate documentation from code (business rules, API contracts, architecture overview), import external docs into the context paths… |
-| `write-spec` | core | `/write-spec` | Turn a ticket or request into a right-sized, execution-ready spec under .ai/specs/ — sizes the work first (XS gets no spec), investigates… |
+| `write-docs` | core | `/write-docs` | Use to document business rules, APIs or architecture from the code, import external docs (--import), or audit docs against conventions… |
+| `write-spec` | core | `/write-spec` | Use to plan a feature or change before coding, or to revise a spec. Writes spec-lite.md and tasks.md with acceptance criteria; XS work… |
 | `design-ui` | design plugin | `/design-ui` | Design UI/UX for a feature: user flows, component hierarchy, state management, data fetching, and accessibility, producing a UI design… |
 | `ddev` | devenv plugin | `/ddev` | DDEV local development environment for PHP and Node.js projects (Drupal, Laravel, Next.js and others). Use for container management,… |
 | `docker` | devenv plugin | `/docker` | Docker for Laravel + Next.js. Use for Dockerfiles, compose setup, and container configuration. |

@@ -171,7 +171,7 @@ INTERNAL='{"totals":{"errors":1,"warnings":0,"fixable":0},"files":{"x.php":{"err
 # Runs drupal-lint.sh from an unrelated cwd; sets CODE and OUT.
 lint() {
     : > "$LOG"
-    OUT=$(cd "$TMP" && payload "$1" | env -i PATH="$TOOLS" CALL_LOG="$LOG" PHPCS_OUT="${PHPCS_OUT-$REPORT}" PHPCS_CODE="${PHPCS_CODE:-1}" \
+    OUT=$(cd "$TMP" && payload "$1" | env -i PATH="$TOOLS" HOME="$TMP" CALL_LOG="$LOG" PHPCS_OUT="${PHPCS_OUT-$REPORT}" PHPCS_CODE="${PHPCS_CODE:-1}" \
         DDEV_STATUS="${DDEV_STATUS:-running}" CLAUDE_PROJECT_DIR="${2:-$TMP}" "$TOOLS/bash" "$SCRIPTS/drupal-lint.sh" 2>&1)
     CODE=$?
 }
@@ -243,6 +243,40 @@ lint_site "$N/drupal"
 lint "$N/drupal/web/modules/custom/shop/src/Cart.php"
 check "a repo below the DDEV root runs with --dir /var/www/html/<repo dir>" \
     '[[ "$(head -1 "$LOG")" == "ddev $N/drupal | exec --dir /var/www/html/drupal ./vendor/bin/phpcs "* && "$OUT" == *"2 error(s)"* ]]' "$(cat "$LOG")"
+
+# An ancestor's phpcs or DDEV project is outside the project boundary and never runs.
+O="$TMP/outer"
+lint_site "$O"
+mkdir -p "$O/.ddev"; touch "$O/.ddev/config.yaml"
+mkdir -p "$O/proj/web/modules/custom/shop/src"
+printf '<?php\n' > "$O/proj/web/modules/custom/shop/src/Cart.php"
+stub_php
+lint "$O/proj/web/modules/custom/shop/src/Cart.php" "$O/proj"
+check "a phpcs above CLAUDE_PROJECT_DIR is never run" '[[ $CODE -eq 0 && -z "$OUT" && ! -s "$LOG" ]]' "$OUT / $(cat "$LOG")"
+lint "$O/proj/../proj/web/modules/custom/shop/src/Cart.php" "$O/proj"
+check "a .. in the file path does not widen the boundary" '[[ $CODE -eq 0 && -z "$OUT" && ! -s "$LOG" ]]' "$OUT / $(cat "$LOG")"
+
+lint_site "$O/proj"
+lint "$O/proj/web/modules/custom/shop/src/Cart.php" "$O/proj"
+check "a DDEV project above CLAUDE_PROJECT_DIR is not used: host phpcs runs in the project" \
+    '[[ "$OUT" == *"2 error(s)"* && "$(cat "$LOG")" == "phpcs $O/proj | "* ]]' "$(cat "$LOG")"
+
+rm -rf "$O/proj/vendor"
+lint "$O/proj/web/modules/custom/shop/src/Cart.php" "$TMP/elsewhere"
+check "a file outside CLAUDE_PROJECT_DIR with no git top level runs nothing" '[[ $CODE -eq 0 && -z "$OUT" && ! -s "$LOG" ]]' "$OUT / $(cat "$LOG")"
+
+if command -v git >/dev/null 2>&1; then
+    ln -s "$(command -v git)" "$TOOLS/git"
+    git init -q "$O/proj"
+    check "git finds the top level in the hook's environment" \
+        '[[ "$(env -i PATH="$TOOLS" HOME="$TMP" git -C "$O/proj/web" rev-parse --show-toplevel 2>&1)" == "$O/proj" ]]'
+    lint "$O/proj/web/modules/custom/shop/src/Cart.php" "$TMP/elsewhere"
+    check "outside CLAUDE_PROJECT_DIR the walk stops at the git top level" '[[ $CODE -eq 0 && -z "$OUT" && ! -s "$LOG" ]]' "$OUT / $(cat "$LOG")"
+    lint_site "$O/proj"
+    lint "$O/proj/web/modules/custom/shop/src/Cart.php" "$TMP/elsewhere"
+    check "a phpcs at the git top level runs" '[[ "$OUT" == *"2 error(s)"* && "$(cat "$LOG")" == "phpcs $O/proj | "* ]]' "$(cat "$LOG")"
+    rm -f "$TOOLS/git"
+fi
 
 if [[ $FAILS -gt 0 ]]; then
     printf '%d failure(s)\n' "$FAILS"

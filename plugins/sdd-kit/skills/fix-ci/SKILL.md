@@ -1,6 +1,6 @@
 ---
 name: fix-ci
-description: Get a red CI run or a broken local build back to green without weakening any gate. Reads the failing job from GitHub Actions, GitLab CI or Bitbucket Pipelines, or local output, maps the step to its stack gate (format, lint, types, tests, build, e2e, install and lockfile, contract sync, audit), reproduces it locally with the lockfile's package manager, applies the minimal fix (workflow YAML and container builds go through devops-engineer), then re-runs that gate and the full gate set. Never pushes; suppressions, skips, baselines, lowered thresholds, and removed steps need explicit user confirmation. Use when CI is red, a PR check fails, the build broke, a dependency install fails, or a ship-feature / greenfield-build report lists a gate that stayed red. Stack-specific causes come from the stack add-on. A test that fails because behavior is wrong goes to /sdd (bug route).
+description: Use when CI is red, a PR check fails, or a build or install broke. Reproduces the failing gate and makes the minimal fix without weakening any gate.
 argument-hint: "<PR number> | --run=<run-id | run or pipeline URL> | local [\"<failing command>\"]"
 allowed-tools: Agent, Read, Edit, Bash, Grep, Glob, AskUserQuestion
 license: Apache-2.0

@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../../../../../../../index.html">SDD Kit</a>
-    <span class="badge">v4.0.2</span>
+    <span class="badge">v4.1.0</span>
   </div>
   <nav class="site-nav" aria-label="Site">
     <ul>
@@ -35,7 +35,30 @@
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main" tabindex="-1">
+<main id="content" class="doc-main has-toc" tabindex="-1">
+  <nav class="page-toc" aria-label="On this page"><details open><summary>On this page</summary>
+    <ol>
+      <li><a href="#preconditions">Preconditions</a></li>
+      <li><a href="#step-1--guests-can-still-read-the-job-applying-asks-them-to-sign-in-mnc-2">Step 1 — Guests can still read the job, applying asks them to sign in (MNC-2)</a></li>
+      <li><a href="#step-2--a-candidate-without-a-profile-is-sent-to-create-one-ac-2-ac-8">Step 2 — A candidate without a profile is sent to create one (AC-2, AC-8)</a></li>
+      <li><a href="#step-3--with-a-profile-the-application-goes-through-ac-1-ac-8">Step 3 — With a profile, the application goes through (AC-1, AC-8)</a></li>
+      <li><a href="#step-4--a-second-application-to-the-same-job-is-refused-ac-4">Step 4 — A second application to the same job is refused (AC-4)</a></li>
+      <li><a href="#step-5--the-employer-sees-the-applicant-and-only-their-own-applicants-ac-7">Step 5 — The employer sees the applicant, and only their own applicants (AC-7)</a></li>
+      <li><a href="#rollback">Rollback</a></li>
+    </ol>
+  </details></nav>
+<script>
+  (function () {
+    var d = document.querySelector('.page-toc details'), s = d.querySelector('summary');
+    var narrow = window.matchMedia('(max-width: 767.98px)'), wide = window.matchMedia('(min-width: 1100px)');
+    function sync() { d.open = !narrow.matches; s.tabIndex = wide.matches ? -1 : 0; }
+    function listen(q) { if (q.addEventListener) q.addEventListener('change', sync); else q.addListener(sync); }
+    listen(narrow);
+    listen(wide);
+    d.addEventListener('toggle', function () { if (wide.matches && !d.open) d.open = true; });
+    sync();
+  })();
+</script>
   <article class="doc-body">
 <h2 id="manual-test-plan-job-applications-hire-6">Manual test plan: job applications (HIRE-6)</h2>
 <p>Spec: <code>spec-HIRE-6-job-applications</code>. Run against a freshly seeded local database. Steps 1-5
@@ -85,7 +108,7 @@ merge commits in <code>web</code> and then <code>api</code>, and run <code>php a
   </article>
 </main>
 <footer class="site-footer">
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/examples/job-board/artifacts/api/.ai/specs/spec-HIRE-6-job-applications/manual-test.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/examples/job-board/artifacts/api/.ai/specs/spec-HIRE-6-job-applications/manual-test.md">View the Markdown source</a></p>
 </footer>
 <script>
   (function () {

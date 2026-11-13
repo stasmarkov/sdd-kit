@@ -4,7 +4,7 @@ What to type for each kind of work in SDD Kit, and what you get back.
 
 See the routes used on one project in the [Hireboard worked example](../examples/job-board/README.md).
 
-Start with `/sdd` unless you already know you want a specific skill. It classifies the request, confirms the route with you, collects every input up front, and launches one fixed pipeline. The route tree itself is in the [README](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/README.md); this page shows each route in practice.
+Start with `/sdd` unless you already know you want a specific skill. It classifies the request, confirms the route with you, collects every input up front, and launches one fixed pipeline. The route tree itself is in the [README](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/README.md); this page shows each route in practice.
 
 Skill names below are bare (`/sdd`, `/write-spec`). In plugin mode they are namespaced: `/sdd-kit:sdd`, `/sdd-kit-ops:deploy`. The full lists are in [skill index](skills.md) and [agent index](agents.md).
 
@@ -45,14 +45,16 @@ Skill names below are bare (`/sdd`, `/write-spec`). In plugin mode they are name
 - `/write-spec` sizes the work (XS gets no spec and goes to `/simple-task`), investigates, asks clarifying questions, and writes a `status: draft` spec. A fresh-context clarity gate records hidden assumptions as open questions.
 - You resolve open questions, then choose **Approve and build**, **Approve only**, **Request changes**, or **Stop here**. Approval writes `approved_by` and `approved_at` into the spec frontmatter.
 - On **Approve and build**, `ship-feature` runs in the background against the approved spec:
-  `Detect → Investigate → Spec → Build → Gates → Converge → Visual → Review → Acceptance → Docs → TestPlan → Report`
-- Converge audits code against the spec and rebuilds gaps (two rounds at most). Visual checks the UI at desktop and mobile widths with the built-in Playwright MCP server (headless) when you gave a dev URL, falls back to Claude in Chrome, and reports "not run" when no browser is available. Review is an adversarial panel with 3-vote verification.
+  `Detect → Investigate → Spec → Prepare → Build → Gates → Converge → Visual → Review → Fix → Acceptance → Docs → TestPlan → Report`
+- Prepare leaves a protected branch (`main`, `master`, `develop`, `release/*`, the `origin/HEAD` target or a detached HEAD) for `feature/<KEY>-<slug>` in each repo and marks the spec in progress. `Manual:` tasks go to the manual test plan, and an open `Gate:` task stops the run until its owner ticks it.
+- Converge audits code against the spec and rebuilds gaps (two rounds at most). Visual checks the UI at desktop and mobile widths with the built-in Playwright MCP server (headless) when you gave a dev URL, falls back to Claude in Chrome, and reports "not run" when no browser is available. Review is an adversarial panel: each finding gets two verifier votes and a tie-break only when they split, and a design finding needs a named convention and a file and line.
+- Fix sends the confirmed critical and major findings (and trivial minor ones) to the stack's specialist, re-runs the gates on the changed files and re-verifies the fixed findings, for two rounds at most. The report records the stop reason, the ids fixed and those remaining, and a per-phase cost table (agents per phase, and tokens when the run has a token budget).
 
 **You get:**
 
 - `.ai/specs/spec-PROJ-123-<slug>/` with `spec-lite.md`, `tasks.md` (ticked), and `manual-test.md` for a human to walk through.
 - Code and tests in your repo(s), updated docs, and a ship report.
-- Verdict: `SHIP` (every task built, gates green, no gaps left, no critical findings, acceptance resolved) or `FIX-FIRST` / `BLOCKED` with the blockers listed.
+- Verdict: `SHIP` (every code task built, gates green, the converge audit returned with no gaps left, no critical or major finding left after Fix, acceptance resolved; an acceptance pass that returns nothing after a build is not resolved) or `FIX-FIRST` / `BLOCKED` with the blockers listed. The workflow computes the verdict from these facts and returns it as `recommendation`.
 
 Watch the spec's status with `/spec-board` (or `npx github:stasmarkov/sdd-kit spec-board --serve` without Claude Code).
 
@@ -154,7 +156,7 @@ Verdict:
 
 **You get:** a scaffold with CI, one working slice, and handoff docs: `getting-started.md`, `architecture.md` (a lightweight ADR), and `manual-test.md`. The slice is marked `shipped` in `backlog.md` and the next slices are added to it. Verdict: `SHIP-SLICE`, `FIX-FIRST`, or `BLOCKED` (target was not empty). Build later slices with their `Run:` line (scenario 1). Feedback from a demo or sprint review goes back into the backlog with `/product-brief --intake "<notes>"`.
 
-Supported stacks come from the registry in [src/workflows/lib/stacks.js](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/workflows/lib/stacks.js).
+Supported stacks come from the registry in [src/workflows/lib/stacks.js](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/workflows/lib/stacks.js).
 
 ## 6. Small change
 
@@ -293,7 +295,7 @@ Supported stacks come from the registry in [src/workflows/lib/stacks.js](https:/
 **Deep audit:** say "audit the security of `app/Payments`" to `/sdd`, or call the workflow directly:
 
 ```js
-Workflow({ name: "security-audit", args: { scope: { paths: ["app/Payments"] }, profile: "standard", maxUnits: 12, outputDir: ".ai/security-audit/" } })
+Workflow({ name: "sdd-kit:security-audit", args: { scope: { paths: ["app/Payments"] }, profile: "standard", maxUnits: 12, outputDir: ".ai/security-audit/" } })
 ```
 
 The run writes a validated coverage ledger, `findings.json` and report files to `outputDir`, plus a summary in `.ai/reports/`. It changes no target code. Its `next` section hands confirmed findings to `/sdd bug` (one defect) or `/write-spec` (a larger fix). On Codex, run it from a `workspace-write` session with network access off (`codex --sandbox workspace-write`), never `read-only`.
@@ -306,7 +308,7 @@ The run writes a validated coverage ledger, `findings.json` and report files to 
 
 ```js
 Workflow({
-  name: "ship-feature",
+  name: "sdd-kit:ship-feature",
   args: {
     feature: "PROJ-123: customers can cancel an order until it ships",
     repos: { backend: "be", frontend: "fe" },
@@ -323,7 +325,7 @@ With several frontends, pass `repos` as an array with a distinct `url` per front
 
 ```js
 Workflow({
-  name: "ship-feature",
+  name: "sdd-kit:ship-feature",
   args: {
     feature: "PROJ-123: customers can cancel an order until it ships",
     repos: [
@@ -343,7 +345,7 @@ Layout, the parent-folder `CLAUDE.md`, contract rules, and merge order: [multi-r
 
 **When:** you want a full adversarially validated review of an existing codebase without sitting in a session.
 
-The pipeline runs `claude -p` from a plain terminal (not from inside Claude Code). Setup, configuration, and phases: [scripts/review/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/scripts/review/README.md).
+The pipeline runs `claude -p` from a plain terminal (not from inside Claude Code). Setup, configuration, and phases: [scripts/review/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/scripts/review/README.md).
 
 ## 13. Add-ons: ops and design
 
@@ -422,7 +424,7 @@ There are three ways to start a background workflow:
 
 1. **`/sdd`** (preferred). It confirms the route, collects inputs, and never builds an unapproved spec.
 2. **Plain English containing the word "workflow"**, e.g. "run the fix-bug workflow for the refund 500". Claude only launches a background workflow when you explicitly opt in like this.
-3. **A direct call**, `Workflow({ name, args })`. Each workflow is also runnable as a skill: `/ship-feature`, `/fix-bug`, `/qa-and-docs`, `/tech-research`, `/greenfield-build`, `/create-spec`, `/security-audit` (the audit workflow opens in guidance mode on hosts where it is also a skill).
+3. **A direct call**, `Workflow({ name: "sdd-kit:<name>", args })`. A file-copy install registers the bare name, so when the call fails with "not found", retry with the bare `<name>` ([workflow name rule](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/sdd/SKILL.md#workflow-names)). Each workflow is also runnable as a skill: `/ship-feature`, `/fix-bug`, `/qa-and-docs`, `/tech-research`, `/greenfield-build`, `/create-spec`, `/security-audit` (the audit workflow opens in guidance mode on hosts where it is also a skill).
 
 Watch running workflows with `/workflows`.
 
@@ -439,26 +441,26 @@ The tool contract, run state and resume rules are in [workflow-bridge.md](workfl
 
 ```js
 // Build an approved spec. ship-feature refuses draft specs.
-Workflow({ name: "ship-feature", args: { spec: "PROJ-123" } })
+Workflow({ name: "sdd-kit:ship-feature", args: { spec: "PROJ-123" } })
 
 // A bare string is a feature DESCRIPTION: ship-feature writes its own spec first.
-Workflow({ name: "ship-feature", args: "PROJ-123: customers can cancel an order until it ships" })
+Workflow({ name: "sdd-kit:ship-feature", args: "PROJ-123: customers can cancel an order until it ships" })
 
-Workflow({ name: "fix-bug", args: {
+Workflow({ name: "sdd-kit:fix-bug", args: {
   bug: "PROJ-456: refund button returns 500 for top-up orders",
   mustNotChange: ["Refunds for card orders still go through the gateway"],
   url: "http://localhost:8000"
 } })
 
-Workflow({ name: "tech-research", args: {
+Workflow({ name: "sdd-kit:tech-research", args: {
   question: "Redis queues or SQS for order events?",
   options: ["Redis", "SQS"],
   criteria: ["ops cost", "local dev parity"]
 } })
 
-Workflow({ name: "qa-and-docs", args: { gitRange: "v1.4.0..v1.5.0" } })
-Workflow({ name: "greenfield-build", args: { idea: "Studio room booking", stack: "<stack-key>", repos: { backend: "api", frontend: "web" } } })
-Workflow({ name: "create-spec", args: { description: "Order cancellation", ticket: "PROJ-123" } })
+Workflow({ name: "sdd-kit:qa-and-docs", args: { gitRange: "v1.4.0..v1.5.0" } })
+Workflow({ name: "sdd-kit:greenfield-build", args: { idea: "Studio room booking", stack: "<stack-key>", repos: { backend: "api", frontend: "web" } } })
+Workflow({ name: "sdd-kit:create-spec", args: { description: "Order cancellation", ticket: "PROJ-123" } })
 ```
 
 To build an existing spec, pass `{ spec: "<ref>" }` (folder name, ticket key, timestamp id, or legacy number). There is no `--spec` flag for workflows; `/ship-feature --spec=...` would be read as a feature description.

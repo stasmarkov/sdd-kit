@@ -642,6 +642,97 @@
   }
   hostListeners.push(function () { renderInstall(); });
 
+  /* ---------- Add tools ---------- */
+  var T = window.GUIDE_THIRD_PARTY;
+  function fillTemplate(text, vars) {
+    return text.replace(/\{(\w+)\}/g, function (m, k) { return vars[k]; });
+  }
+  /**
+   * What the "Add tools" section shows for the active host, as plain data. Claude Code gets the plugin
+   * entries, the MCP list and the claude commands; other hosts get the script lines with their own skills
+   * folder, the skill how-to and a pointer to the hosts page for MCP servers.
+   */
+  function addToolsView() {
+    var A = G.addTools;
+    var claude = host === HOSTS.default;
+    var t = T.hosts[host] || T.hosts[HOSTS.default];
+    var label = hostInfo().label || t.label;
+    var picks = {
+      heading: A.picks.heading,
+      fileCopy: claude ? A.picks.fileCopy : null,
+      script: t.script,
+      userNote: claude ? fillTemplate(A.picks.userNote, { userDir: t.userSkillsDir, dir: t.skillsDir }) : null,
+      skills: T.skills,
+      plugins: claude ? T.plugins : [],
+      pluginFallback: claude ? T.pluginFallback : null,
+      manual: T.manual
+    };
+    var mcp = claude
+      ? { heading: A.mcp.heading, servers: T.servers, hostLine: null }
+      : { heading: A.mcp.heading, servers: [], hostLine: fillTemplate(A.mcp.hostLine, { host: label }), href: A.mcp.host.href, hrefLabel: A.mcp.host.label };
+    var howTos = [];
+    if (claude) howTos.push({ title: A.other.plugin, commands: t.pluginHowTo });
+    howTos.push({ title: A.other.skill, commands: [t.skillHowTo] });
+    if (claude) howTos.push({ title: A.other.server, commands: [t.mcpHowTo] });
+    return { picks: picks, mcp: mcp, other: { heading: A.other.heading, howTos: howTos, privileges: A.other.privileges, links: A.other.links } };
+  }
+  function toolMeta(parts) {
+    return h('p', { class: 'note' }, parts.filter(Boolean).map(function (p, i) { return [i ? ' · ' : '', p]; }));
+  }
+  /** High risk gets a marked label with a warning sign and text, so it does not rely on colour alone. */
+  function riskLabel(risk) {
+    if (risk !== 'high') return risk + ' risk';
+    return h('span', { class: 'risk-high' }, h('span', { 'aria-hidden': 'true' }, '\u26a0 '), risk + ' risk');
+  }
+  function renderAddTools() {
+    if (!T) { dropSection('add-tools'); return; }
+    var A = G.addTools;
+    var v = addToolsView();
+    var root = body('add-tools');
+    var pk = v.picks;
+    var skills = h('ul', { class: 'tools' }, pk.skills.map(function (s) {
+      return h('li', h('b', s.name), ' ', s.purpose,
+        toolMeta([s.license, riskLabel(s.risk), s.ref + (s.tag ? ' (' + s.tag + ')' : '')]),
+        plain(s.href, 'Source', 'inline'));
+    }));
+    var picks = [h('h3', pk.heading), para(A.picks.intro, 'note')];
+    if (pk.fileCopy) picks.push(labeled(A.picks.fileCopyLabel, pk.fileCopy));
+    picks.push(labeled(A.picks.scriptLabel, pk.script));
+    if (pk.userNote) picks.push(para(pk.userNote, 'note'));
+    picks.push(h('h4', A.picks.skillsHeading), skills);
+    if (pk.plugins.length) {
+      picks.push(h('h4', A.picks.pluginsHeading), h('ul', { class: 'tools' }, pk.plugins.map(function (p) {
+        return h('li', h('b', p.name), ' ', p.purpose,
+          toolMeta([p.marketplace, p.version && fillTemplate(A.versionLabel, { version: p.version }), p.addon && fillTemplate(A.addonLabel, { addon: p.addon })]),
+          p.commands.map(function (c) { return codeBlock(c); }));
+      })), h('p', { class: 'note' }, pk.pluginFallback.text + ' ', h('code', pk.pluginFallback.command)));
+    }
+    if (pk.manual.length) {
+      picks.push(h('h4', A.picks.manualHeading), para(A.picks.manualNote, 'note'), h('ul', { class: 'tools' }, pk.manual.map(function (m) {
+        return h('li', h('b', m.name), ' ', m.purpose,
+          toolMeta([plain(m.href, 'Source', 'inline'), plain(m.review.href, A.picks.reviewLabel, 'inline')]));
+      })));
+    }
+    var mcp = [h('h3', v.mcp.heading)];
+    if (v.mcp.hostLine) mcp.push(h('p', v.mcp.hostLine + ' ', plain(v.mcp.href, v.mcp.hrefLabel, 'inline')));
+    else {
+      mcp.push(para(A.mcp.intro, 'note'), h('ul', { class: 'tools' }, v.mcp.servers.map(function (s) {
+        return h('li', h('b', s.name), ' ', s.addon && fillTemplate(A.addonLabel, { addon: s.addon }),
+          toolMeta([A.mcp.whenLabel + ': ' + s.when, A.mcp.requiresLabel + ': ' + s.requires, s.needs && A.mcp.needsLabel + ': ' + s.needs.join(', ')]),
+          codeBlock(s.command, 'install command for ' + s.name));
+      })));
+    }
+    var other = [h('h3', v.other.heading), para(A.other.intro, 'note')];
+    v.other.howTos.forEach(function (x) {
+      other.push(h('div', { class: 'labeled' }, h('span', { class: 'code-label' }, x.title), x.commands.map(function (c) { return codeBlock(c); })));
+    });
+    other.push(para(v.other.privileges));
+    other.push(h('p', { class: 'note' }, v.other.links.map(function (l, i) { return [i ? ' · ' : '', plain(l.href, l.label, 'inline')]; })));
+    fill(root, [picks, mcp, other]);
+    if (rendered.indexOf('add-tools') === -1) done('add-tools');
+  }
+  hostListeners.push(function () { if (T) renderAddTools(); });
+
   /* ---------- Quickstart ---------- */
   var qsDone = [];
   try { qsDone = JSON.parse(localStorage.getItem(QS_KEY) || '[]') || []; } catch (e) { qsDone = []; }
@@ -1663,6 +1754,7 @@
 
   renderHero();
   renderInstall();
+  renderAddTools();
   renderQuickstart();
   renderPicker();
   renderMap();
@@ -1685,6 +1777,7 @@
     setHost: setHost,
     installModes: function () { return installModesFor().map(function (m) { return { id: m[0], steps: m[1].steps }; }); },
     installFlags: installFlags,
+    addTools: addToolsView,
     quickstart: quickstartFor,
     catalogHost: catalogHost,
     plan: plan,

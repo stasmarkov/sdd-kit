@@ -1,6 +1,6 @@
 ---
 name: write-docs
-description: Generate documentation from code (business rules, API contracts, architecture overview), import external docs into the context paths AGENTS.md loads (--import), or audit docs and code against the project's conventions and report drift (--audit) - always with lowercase filenames and file:line citations. Use when a project needs docs derived from the actual code, when business rules or architecture notes from a wiki, PDF or ticket should become project context, or to check whether docs and code still follow AGENTS.md, AGENTS.md and .codex/rules. For a traceable QA plan plus docs for shipped features, use /qa-and-docs instead.
+description: Use to document business rules, APIs or architecture from the code, import external docs (--import), or audit docs against conventions (--audit).
 argument-hint: "[--type=business|api|architecture|all] [--source=path] [--output=path] | --import <file|url> [--as=business|architecture|api] | --audit [--source=path|url]"
 allowed-tools: Agent, Skill, Read, Write, Edit, Bash, Grep, Glob, WebFetch, AskUserQuestion
 effort: medium

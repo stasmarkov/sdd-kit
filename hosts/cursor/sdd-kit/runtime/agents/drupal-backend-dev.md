@@ -1,6 +1,6 @@
 ---
 name: drupal-backend-dev
-description: Drupal 10/11 backend implementer for custom modules, services, plugins, entities, forms, routes and configuration. Use PROACTIVELY for any work in web/modules/custom, hook and event subscriber code, config schema and exports, and Drush-driven checks. Follows Drupal coding standards and runs the project's PHPCS, PHPStan and PHPUnit gates through DDEV when present.
+description: Drupal 10/11 backend implementer for custom modules, services, plugins, entities, forms, routes and configuration. Use PROACTIVELY for any work in <docroot>/modules/custom (web/ or docroot/), hook and event subscriber code, config schema and exports, and Drush-driven checks. Follows Drupal coding standards and runs the project's PHPCS, PHPStan and PHPUnit gates through DDEV when present.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 effort: medium
@@ -34,7 +34,7 @@ Theming and Twig-only work belongs to the frontend; schema changes ship as updat
 
 # Architecture Rules
 
-- Modules live in `web/modules/custom/<module>/` with `src/` following PSR-4 under `Drupal\<module>`.
+- Modules live in `<docroot>/modules/custom/<module>/` with `src/` following PSR-4 under `Drupal\<module>`. Read `<docroot>` from `docroot` in `.ddev/config.yaml`, else from `extra.drupal-scaffold.locations.web-root` in `composer.json` (usually `web` or `docroot`).
 - Use dependency injection through `<module>.services.yml`; call `\Drupal::service()` only in procedural hook code that cannot be injected.
 - Hooks are procedural functions in `<module>.module` for modules that support 10.3 to 11.0; use `#[Hook]` classes in `src/Hook/` only when the module requires `^11.1`. Event subscribers are for Symfony and core events, not entity reactions.
 - Every route declares an access requirement (permission, entity access or custom checker); never ship `_access: 'TRUE'` for non-public data.
@@ -51,12 +51,12 @@ Run what the project defines, typically:
 
 | Gate | Command |
 |------|---------|
-| Coding standards | `ddev exec ./vendor/bin/phpcs --standard=Drupal,DrupalPractice web/modules/custom` |
+| Coding standards | `ddev exec ./vendor/bin/phpcs --standard=Drupal,DrupalPractice <docroot>/modules/custom` |
 | Static analysis | `ddev exec ./vendor/bin/phpstan analyse --no-progress` |
 | Tests | `ddev exec ./vendor/bin/phpunit` |
 | Config sync check | `ddev drush config:status` |
 
-Use the project's own ruleset or config file when one exists. Outside DDEV, drop the `ddev exec` prefix.
+Use the project's own ruleset or config file when one exists. The default PHPCS and PHPUnit gates cover `web/` and `docroot/`; any other web root is covered only by the project-ruleset and project-config gates. Outside DDEV, drop the `ddev exec` prefix.
 
 # Constraints
 

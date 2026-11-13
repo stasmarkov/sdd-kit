@@ -488,6 +488,7 @@ button.chip { cursor: pointer; }
 .doc-body { line-height: var(--leading-prose); overflow-wrap: break-word; }
 .doc-body h1, .doc-body h2, .doc-body h3, .doc-body h4 { line-height: var(--leading-heading); scroll-margin-top: calc(var(--header-h) + var(--space-3)); }
 .doc-body h1 { font-size: var(--text-xl); margin: 0 0 var(--space-5); }
+.doc-body > :first-child { margin-top: 0; }
 .doc-body h2 { font-size: var(--text-lg); margin: var(--space-7) 0 var(--space-3); padding-bottom: var(--space-2); border-bottom: 1px solid var(--border); }
 .doc-body h3 { font-size: var(--text-md); margin: var(--space-6) 0 var(--space-2); }
 .doc-body h4, .doc-body h5, .doc-body h6 { font-size: var(--text-base); margin: var(--space-5) 0 var(--space-2); }
@@ -565,4 +566,32 @@ button.chip { cursor: pointer; }
   .site-header .site-nav { order: 3; flex-basis: 100%; }
   .site-header .site-nav ul { gap: var(--space-4); }
   .site-header .site-nav a { display: inline-flex; align-items: center; min-height: 32px; }
+}
+
+.tools { list-style: none; margin: var(--space-3) 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
+.tools li { padding: var(--space-2) var(--space-3); border: 1px solid var(--border); border-radius: var(--radius); }
+.tools .note { margin: var(--space-1) 0; }
+.tools .code { margin-top: var(--space-2); }
+#add-tools h4 { margin: var(--space-4) 0 var(--space-2); font-size: var(--text-sm); color: var(--muted); }
+#add-tools .labeled { max-width: var(--prose-w); margin: var(--space-3) 0 var(--space-4); }
+#add-tools .labeled .code + .code { margin-top: var(--space-1); }
+/* Commands scroll sideways instead of wrapping at hyphens, so a narrow screen never splits a flag. */
+#add-tools .code code { flex: 1 1 auto; min-width: 0; overflow-x: auto; white-space: pre; }
+.risk-high { padding: 0 var(--space-1); border: 1px solid var(--line-warn); border-radius: 4px; background: var(--tint-warn); color: var(--ink); font-weight: 600; }
+
+/* "On this page" menu on rendered Markdown pages: collapsible list above the article (closed by default
+   below 768px, see PAGE_TOC_SCRIPT in tools/gen-dist-site.mjs), sidebar from 1100px */
+.page-toc { margin: 0 0 var(--space-5); padding: var(--space-3) var(--space-4); border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: var(--text-sm); }
+.page-toc summary { cursor: pointer; font-weight: 600; }
+.page-toc ol { margin: var(--space-2) 0 0; padding-left: var(--space-5); }
+.page-toc li + li { margin-top: var(--space-1); }
+@media (min-width: 1100px) {
+  .doc-main.has-toc { display: grid; grid-template-columns: var(--toc-w) minmax(0, calc(var(--prose-w) + 2 * var(--space-5))); gap: var(--space-6); width: max-content; max-width: 100%; }
+  .doc-main.has-toc .page-toc { position: sticky; top: calc(var(--header-h) + var(--space-3)); align-self: start; max-height: calc(100vh - var(--header-h) - 2 * var(--space-3)); overflow-y: auto; margin: 0; padding: 0; border: 0; background: none; }
+  .doc-main.has-toc .page-toc summary {
+    display: block; margin: 0 0 var(--space-3); list-style: none; pointer-events: none;
+    font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+  }
+  .doc-main.has-toc .page-toc summary::-webkit-details-marker { display: none; }
+  .doc-main.has-toc .page-toc ol { margin: 0; list-style: none; padding-left: 0; }
 }

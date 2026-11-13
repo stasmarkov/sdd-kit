@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../../index.html">SDD Kit</a>
-    <span class="badge">v4.0.2</span>
+    <span class="badge">v4.1.0</span>
   </div>
   <nav class="site-nav" aria-label="Site">
     <ul>
@@ -35,7 +35,29 @@
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main" tabindex="-1">
+<main id="content" class="doc-main has-toc" tabindex="-1">
+  <nav class="page-toc" aria-label="On this page"><details open><summary>On this page</summary>
+    <ol>
+      <li><a href="#step-1--hire-7-the-spec-sizes-itself-s">Step 1 — HIRE-7: the spec sizes itself S</a></li>
+      <li><a href="#step-2--approve-and-build-with-ship-feature">Step 2 — Approve and build with ship-feature</a></li>
+      <li><a href="#step-3--the-code">Step 3 — The code</a></li>
+      <li><a href="#step-4--hire-8-trivial-no-spec">Step 4 — HIRE-8: trivial, no spec</a></li>
+      <li><a href="#step-5--choosing-the-size">Step 5 — Choosing the size</a></li>
+      <li><a href="#what-you-have-now">What you have now</a></li>
+    </ol>
+  </details></nav>
+<script>
+  (function () {
+    var d = document.querySelector('.page-toc details'), s = d.querySelector('summary');
+    var narrow = window.matchMedia('(max-width: 767.98px)'), wide = window.matchMedia('(min-width: 1100px)');
+    function sync() { d.open = !narrow.matches; s.tabIndex = wide.matches ? -1 : 0; }
+    function listen(q) { if (q.addEventListener) q.addEventListener('change', sync); else q.addListener(sync); }
+    listen(narrow);
+    listen(wide);
+    d.addEventListener('toggle', function () { if (wide.matches && !d.open) d.open = true; });
+    sync();
+  })();
+</script>
   <article class="doc-body">
 <h2 id="08--proportionality-an-s-spec-for-the-careers-page-hire-7-and-a-no-spec-trivial-change-hire-8">08 — Proportionality: an S spec for the careers page (HIRE-7) and a no-spec trivial change (HIRE-8)</h2>
 <p>Chapters 04 to 07 ran M specs: schema changes, several layers, both repos. Most tickets are
@@ -80,7 +102,7 @@ the spec belongs in <code>web/</code>, since the change starts and ends there. N
   Skill(&quot;write-spec&quot;, &quot;--ticket=HIRE-7 Public careers page per company at /companies/&lt;slug&gt;
   listing its open jobs and rating, linked from job detail. Spec folder goes in web/.ai/specs/&quot;)</code></pre>
 <p><code>write-spec</code> sizes the work before investigating
-(<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/write-spec/SKILL.md" target="_blank" rel="noopener noreferrer">write-spec Step 1</a>). Its investigation is
+(<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/write-spec/SKILL.md" target="_blank" rel="noopener noreferrer">write-spec Step 1</a>). Its investigation is
 what makes the size small. Everything the page needs is already shipped:</p>
 <pre><code class="language-text">  (simulated, abridged)
   Investigate
@@ -212,18 +234,21 @@ the resolver looks in <code>./.ai/specs</code>. Chapter 04 shows the same patter
 as read-only context: they confirm that <code>?company=</code> and <code>meta.average_rating</code> exist and that
 nothing in <code>api/</code> moved.</li></ul>
 <p>The phases are the same as for an M spec
-(<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/sdd/references/ship-feature.md" target="_blank" rel="noopener noreferrer">ship-feature reference</a>). They
+(<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/sdd/references/ship-feature.md" target="_blank" rel="noopener noreferrer">ship-feature reference</a>). They
 are just shorter:</p>
 <pre><code class="language-text">  (simulated, abridged — /workflows)
   Detect       api (laravel, tracked), web (nextjs, tracked, branch feature/HIRE-7-company-careers-page)
-  Spec         loaded spec-HIRE-7-company-careers-page: 2 pending tasks; approved → in-progress
+  Spec         loaded spec-HIRE-7-company-careers-page: 2 pending tasks
+  Prepare      frontend stays on &quot;feature/HIRE-7-company-careers-page&quot;
+               spec-HIRE-7-company-careers-page status approved → in-progress
   Build        task 1 (nextjs-frontend-dev) app/companies/[slug]/page.tsx ✓
                task 2 (nextjs-frontend-dev) rating summary; app/jobs/[id]/page.tsx company link ✓
   Gates        web: npm run lint ✓  npx tsc --noEmit ✓  npm test ✓ (3 passed)
                api: pint --test ✓  phpstan ✓  php artisan test ✓  (no changes)
   Converge     round 1: AC-1..AC-3 and MNC-1..MNC-2 covered — no gaps
   Visual       /companies/acme-robotics at 375/768/1280: layout, contrast OK
-  Review       4 dimensions, 1 candidate finding → refuted 3/3 (see below)
+  Review       4 dimensions, 1 candidate finding → refuted 2/2 (see below)
+  Fix          stopped (clean) after 0 round(s); fixed none; remaining none
   Acceptance   job detail → company name → /companies/acme-robotics ✓
                /companies/no-such-company → not-found page (HTTP 200, streamed after the skeleton) ✓
                MNC-1: `git -C api diff --stat main` → (empty) ✓
@@ -237,7 +262,7 @@ page:</p>
 <pre><code class="language-text">  (simulated)
   Candidate: &quot;Promise.all rejects when listCompanyReviews throws for an unknown slug, so AC-2
   would show the error boundary instead of not-found.&quot;
-  Refuted 3/3: loadReviewSummary() catches ApiError with status 404 and returns null;
+  Refuted 2/2: loadReviewSummary() catches ApiError with status 404 and returns null;
   getCompany() returns null on 404; notFound() runs before any render, and a malformed slug is stopped by SLUG_PATTERN first. Verified against
   app/companies/[slug]/page.tsx:34-60 and manual-test.md#step-2.</code></pre>
 <p>TestPlan writes <a href="artifacts/web/.ai/specs/spec-HIRE-7-company-careers-page/manual-test.html">manual-test.md</a>.
@@ -246,8 +271,8 @@ Step 6 covers MNC-1, and it is the same check Acceptance ran:</p>
 git -C api diff --stat main
 # both print nothing</code></pre>
 <p>Two honest notes about running ship-feature on an S spec:</p>
-<ul><li><strong>It is still the full pipeline.</strong> An S spec skips nothing: Converge, Visual, a 3-vote review
-panel and Acceptance all run. For a two-task web change that is a lot of background agents.
+<ul><li><strong>It is still the full pipeline.</strong> An S spec skips nothing: Converge, Visual, the review
+panel with its verifier votes, Fix and Acceptance all run. For a two-task web change that is a lot of background agents.
 Two cheaper options from earlier chapters work just as well here: &quot;Approve only&quot; followed by
 a session started inside <code>web/</code> (<code>cd web &amp;&amp; CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1 claude --add-dir ../api</code>)
 running <code>/execute-task --spec=HIRE-7</code> (chapter 06), or building the two tasks yourself. Alex picks ship-feature because Acceptance gives him a browser re-walk
@@ -342,7 +367,7 @@ environment: Vitest covers <code>lib/**/*.test.ts</code> in a node environment, 
 presentational. The cost is real. <code>formatSalary</code> has three branches of pure logic that nothing
 tests. Moving it to <code>lib/format-salary.ts</code> with a Vitest case would be the stricter alternative;
 chapter 10&#39;s QA plan lists the missing coverage.</p>
-<p>The <code>trivial</code> signal in <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/sdd/SKILL.md" target="_blank" rel="noopener noreferrer">/sdd Step 2</a> is &quot;≤ ~5 files,
+<p>The <code>trivial</code> signal in <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/sdd/SKILL.md" target="_blank" rel="noopener noreferrer">/sdd Step 2</a> is &quot;≤ ~5 files,
 no design choice, no behavior contract at risk&quot;. This is the same line <code>write-spec</code> draws as
 <strong>XS</strong>: &quot;≤ ~3 files, one obvious change … <strong>No spec.</strong> Recommend <code>/simple-task</code>&quot;. Had Alex
 routed it as a feature, <code>write-spec</code> would have sized it XS and sent it back to this route.
@@ -433,7 +458,7 @@ on lint, tsc and vitest, plus <code>npm run build</code> for the new route.</li>
   </article>
 </main>
 <footer class="site-footer">
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/examples/job-board/08-careers-page-s-spec-and-trivial-change.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/examples/job-board/08-careers-page-s-spec-and-trivial-change.md">View the Markdown source</a></p>
 </footer>
 <script>
   (function () {

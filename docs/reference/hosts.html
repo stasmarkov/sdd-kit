@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../index.html">SDD Kit</a>
-    <span class="badge">v4.0.2</span>
+    <span class="badge">v4.1.0</span>
   </div>
   <nav class="site-nav" aria-label="Site">
     <ul>
@@ -35,7 +35,27 @@
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main" tabindex="-1">
+<main id="content" class="doc-main has-toc" tabindex="-1">
+  <nav class="page-toc" aria-label="On this page"><details open><summary>On this page</summary>
+    <ol>
+      <li><a href="#capabilities">Capabilities</a></li>
+      <li><a href="#parity-limits">Parity limits</a></li>
+      <li><a href="#migrating-from-claude-code">Migrating from Claude Code</a></li>
+      <li><a href="#sources">Sources</a></li>
+    </ol>
+  </details></nav>
+<script>
+  (function () {
+    var d = document.querySelector('.page-toc details'), s = d.querySelector('summary');
+    var narrow = window.matchMedia('(max-width: 767.98px)'), wide = window.matchMedia('(min-width: 1100px)');
+    function sync() { d.open = !narrow.matches; s.tabIndex = wide.matches ? -1 : 0; }
+    function listen(q) { if (q.addEventListener) q.addEventListener('change', sync); else q.addListener(sync); }
+    listen(narrow);
+    listen(wide);
+    d.addEventListener('toggle', function () { if (wide.matches && !d.open) d.open = true; });
+    sync();
+  })();
+</script>
   <article class="doc-body">
 <h2 id="hosts-claude-code-codex-and-cursor">Hosts: Claude Code, Codex and Cursor</h2>
 <p>SDD Kit 4.0 runs on three coding-agent hosts. Claude Code is the reference host and is unchanged. Codex and Cursor are an <strong>unverified preview</strong>: the adapters are built and covered by automated tests, but no real Codex or Cursor session has been recorded yet. They move to &quot;supported&quot; in a 4.0.x release once that evidence exists.</p>
@@ -43,7 +63,7 @@
 <h3 id="capabilities">Capabilities</h3>
 <div class="table-wrap"><table><thead><tr><th></th><th>Claude Code</th><th>Codex</th><th>Cursor</th></tr></thead><tbody><tr><td>Status</td><td>Supported</td><td>Unverified preview</td><td>Unverified preview</td></tr><tr><td>Install</td><td>Plugin mode or file-copy</td><td>Plugin marketplace or <code>install.sh --host codex</code></td><td><code>install.sh --host cursor</code>; team marketplace through the dashboard</td></tr><tr><td>Skill invocation</td><td><code>/sdd</code> (<code>/sdd-kit:sdd</code> in plugin mode)</td><td><code>$sdd</code></td><td><code>/sdd</code></td></tr><tr><td>Instruction file</td><td><code>CLAUDE.md</code> (imports <code>AGENTS.md</code>)</td><td><code>AGENTS.md</code></td><td><code>AGENTS.md</code> and <code>.cursor/rules/*.mdc</code></td></tr><tr><td>Skills directory</td><td><code>.claude/skills</code></td><td><code>.agents/skills</code></td><td><code>.cursor/skills</code></td></tr><tr><td>Agents</td><td><code>.claude/agents/*.md</code></td><td><code>.codex/agents/*.toml</code> (file copy only)</td><td><code>.cursor/agents/*.md</code></td></tr><tr><td>Background workflows</td><td>Native <code>Workflow</code> tool</td><td>Bridge MCP server, jobs run by Codex subagents</td><td>Bridge MCP server, jobs run by Cursor subagents</td></tr><tr><td>Hooks</td><td><code>hooks.json</code> or <code>settings.json</code></td><td><code>.codex/hooks.json</code>, trusted through <code>/hooks</code></td><td><code>.cursor/hooks.json</code>, <code>failClosed</code> on the guard before shell commands and file writes</td></tr></tbody></table></div>
 <h3 id="parity-limits">Parity limits</h3>
-<ul><li><strong>No token budget.</strong> The bridge reports a budget of 0, so workflow branches that depend on remaining budget never trigger.</li><li><strong>Subagent nesting.</strong> Cursor does not let a subagent start further subagents, so every bridge job is started by the parent session. Codex subagents inherit the parent&#39;s sandbox and approvals.</li><li><strong>Read-only roles.</strong> Cursor maps a read-only job to a read-only subagent; Codex cannot enforce it and treats it as an instruction.</li><li><strong>Prompt-type hooks.</strong> The Stop and SubagentStop prompt hooks are Claude-only. Command hooks are registered under each host&#39;s own event names; a hook whose event a host lacks is listed in the registration plan instead of dropped silently.</li><li><strong>Cursor after-tool output.</strong> Cursor has no PostToolUse event for shell, web or MCP output, so the injection scan does not run there.</li><li><strong>PreCompact.</strong> Cursor has no pre-compaction event, so the checkpoint hook (<code>pre-compact-save.sh</code>) does not run there.</li><li><strong>SubagentStop and Notification.</strong> Cursor has neither event, so hooks registered on them are listed in the registration plan and not installed.</li><li><strong>Rules.</strong> Codex has no rules directory; the rules a stack needs are folded into the job packets and the instruction file.</li><li><strong>Cloud and IDE surfaces.</strong> Codex plugins are not available in the IDE extension, and Cursor cloud agents skip session and user-level hooks.</li><li><strong>Windows.</strong> Not supported for Codex or Cursor.</li><li><strong>Double loading.</strong> Cursor can also load a Claude install through its Third-Party Imports setting; the installer warns when it finds one.</li></ul>
+<ul><li><strong>No token budget.</strong> The bridge reports a budget of 0, so workflow branches that depend on remaining budget never trigger.</li><li><strong>Subagent nesting.</strong> Cursor does not let a subagent start further subagents, so every bridge job is started by the parent session. Codex subagents inherit the parent&#39;s sandbox and approvals.</li><li><strong>Read-only roles.</strong> Cursor maps a read-only job to a read-only subagent; Codex cannot enforce it and treats it as an instruction.</li><li><strong>Prompt-type hooks.</strong> The Stop and SubagentStop prompt hooks are Claude-only. Command hooks are registered under each host&#39;s own event names; a hook whose event a host lacks is listed in the registration plan instead of dropped silently.</li><li><strong>Cursor after-tool output.</strong> Cursor has no PostToolUse event for shell, web or MCP output, so the injection scan does not run there.</li><li><strong>PreCompact.</strong> Cursor has no pre-compaction event, so the checkpoint hook (<code>pre-compact-save.sh</code>) does not run there.</li><li><strong>SubagentStop and Notification.</strong> Cursor has neither event, so hooks registered on them are listed in the registration plan and not installed.</li><li><strong>Skill list size.</strong> Codex lists the name and description of every skill that allows implicit invocation at session start, and shortens descriptions once that list passes its limit. The package build estimates the list (name, description and 4 characters per skill) and warns above 8,000 characters; the core package stays at or under 7,500. Each installed add-on adds its own skills to the same list, so a project with several add-ons can pass the limit; skills marked <code>disable-model-invocation</code> are not listed.</li><li><strong>Rules.</strong> Codex has no rules directory; the rules a stack needs are folded into the job packets and the instruction file.</li><li><strong>Cloud and IDE surfaces.</strong> Codex plugins are not available in the IDE extension, and Cursor cloud agents skip session and user-level hooks.</li><li><strong>Windows.</strong> Not supported for Codex or Cursor.</li><li><strong>Double loading.</strong> Cursor can also load a Claude install through its Third-Party Imports setting; the installer warns when it finds one.</li></ul>
 <h3 id="migrating-from-claude-code">Migrating from Claude Code</h3>
 <p>The workflows, skills, specs and <code>.ai/</code> artifacts are shared, so a spec written under Claude Code is executed unchanged on another host.</p>
 <ol><li>Keep <code>CLAUDE.md</code> as is. Its content already lives in <code>AGENTS.md</code> through the <code>@AGENTS.md</code> import, which Codex and Cursor read directly.</li><li>Install the kit for the new host next to the Claude install; the host layouts do not overlap.</li><li>Re-approve project stack manifests on the new host with <code>/stack-trust</code> (trust stores are per host).</li><li>Codex and Cursor can import a Claude setup themselves; do not combine that import with the kit install, or skills load twice.</li></ol>
@@ -54,7 +74,7 @@
   </article>
 </main>
 <footer class="site-footer">
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/reference/hosts.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/reference/hosts.md">View the Markdown source</a></p>
 </footer>
 <script>
   (function () {

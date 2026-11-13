@@ -178,7 +178,7 @@ SQLite is enough for most Kernel tests and needs no database server. Set the var
 <phpunit> -c <docroot>/core --filter testCountsOpenOrders <docroot>/modules/custom/my_module
 
 # One runner option, in a DDEV project
-ddev exec ./vendor/bin/phpunit -c web/core web/modules/custom/my_module
+ddev exec ./vendor/bin/phpunit -c <docroot>/core <docroot>/modules/custom/my_module
 ```
 
 `<phpunit>` is usually `./vendor/bin/phpunit` and `<docroot>` is `web` or `docroot`. The workflow PHPUnit gate and `/run-tests` run the same command for every custom module.

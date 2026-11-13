@@ -1,6 +1,6 @@
 ---
 name: product-brief
-description: Turn an idea, or a pile of "what if" / "users say" input, into a product brief (problem, users and roles, MVP scope, non-goals, numbered draft business rules BR-01…, success metrics, open questions) and a dependency-ordered backlog of vertical slices, each sized XS/S/M/L, citing its BR ids, and ending in a ready /sdd invocation. Use when starting a new product or app and no product-brief.md exists yet, when /sdd's new-app route has no brief, when the user asks "what should we build first?", to revise a brief (--revise), or to fold raw feedback, feature requests, and ideas into an existing backlog (--intake). Writes planning docs only, never code.
+description: Use when starting a new product with no product-brief.md, asking what to build first, or folding feedback into the backlog (--intake). Writes the brief, draft business rules and a sliced backlog.
 argument-hint: "<idea> | --revise [path] | --intake <text | file>"
 allowed-tools: Agent, Read, Write, Edit, Grep, Glob, AskUserQuestion
 license: Apache-2.0

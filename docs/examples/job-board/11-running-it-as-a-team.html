@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../../index.html">SDD Kit</a>
-    <span class="badge">v4.0.2</span>
+    <span class="badge">v4.1.0</span>
   </div>
   <nav class="site-nav" aria-label="Site">
     <ul>
@@ -35,12 +35,36 @@
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main" tabindex="-1">
+<main id="content" class="doc-main has-toc" tabindex="-1">
+  <nav class="page-toc" aria-label="On this page"><details open><summary>On this page</summary>
+    <ol>
+      <li><a href="#1-make-the-contract-a-sensor">1. Make the contract a sensor</a></li>
+      <li><a href="#2-routines-report-only-drift-checks">2. Routines: report-only drift checks</a></li>
+      <li><a href="#3-a-hireboard-routing-eval">3. A Hireboard routing eval</a></li>
+      <li><a href="#4-pin-the-kit-for-everyone">4. Pin the kit for everyone</a></li>
+      <li><a href="#5-team-rhythm">5. Team rhythm</a></li>
+      <li><a href="#6-exercise-hire-11-employers-publish-and-close-job-postings">6. Exercise: HIRE-11 &quot;Employers publish and close job postings&quot;</a></li>
+      <li><a href="#what-you-have-now">What you have now</a></li>
+      <li><a href="#where-to-go-next">Where to go next</a></li>
+    </ol>
+  </details></nav>
+<script>
+  (function () {
+    var d = document.querySelector('.page-toc details'), s = d.querySelector('summary');
+    var narrow = window.matchMedia('(max-width: 767.98px)'), wide = window.matchMedia('(min-width: 1100px)');
+    function sync() { d.open = !narrow.matches; s.tabIndex = wide.matches ? -1 : 0; }
+    function listen(q) { if (q.addEventListener) q.addEventListener('change', sync); else q.addListener(sync); }
+    listen(narrow);
+    listen(wide);
+    d.addEventListener('toggle', function () { if (wide.matches && !d.open) d.open = true; });
+    sync();
+  })();
+</script>
   <article class="doc-body">
 <h2 id="11--running-hireboard-as-a-team-contract-sync-routines-evals-pinned-versions">11 — Running Hireboard as a team: contract-sync, routines, evals, pinned versions</h2>
 <p>By the end of <a href="10-qa-and-docs-browse-journey.html">chapter 10</a>, Alex Rivera had shipped Hireboard on his own: one greenfield slice, an ADR, five specs, a trivial change, a bug fix and a QA plan. Two more developers join on Monday, 2026-11-09. This chapter turns what Alex did by habit into checks and conventions that hold when he isn&#39;t watching:</p>
 <ol><li>The api/web contract becomes a check that fails CI.</li><li>Drift checks run on a schedule and only report.</li><li>A Hireboard-flavored eval guards <code>/sdd</code> routing.</li><li>Everyone runs the same pinned kit version, and Cursor or Codex users get the same gates.</li><li>A short team rhythm, then the next ticket (HIRE-11) as an exercise.</li></ol>
-<p>This chapter links to the existing docs instead of repeating them: <a href="../../reference/multi-repo.html">multi-repo.md</a>, evals.md, <a href="../../reference/team-marketplace.html">team-marketplace.md</a>, <a href="../../reference/usage-examples.html#14-recurring-checks-with-routines">USAGE-EXAMPLES.md section 14</a> and the <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit-laravel/templates/contract-sync/README.md" target="_blank" rel="noopener noreferrer">contract-sync README</a>.</p>
+<p>This chapter links to the existing docs instead of repeating them: <a href="../../reference/multi-repo.html">multi-repo.md</a>, evals.md, <a href="../../reference/team-marketplace.html">team-marketplace.md</a>, <a href="../../reference/usage-examples.html#14-recurring-checks-with-routines">USAGE-EXAMPLES.md section 14</a> and the <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit-laravel/templates/contract-sync/README.md" target="_blank" rel="noopener noreferrer">contract-sync README</a>.</p>
 <blockquote><p>Artifacts for this chapter: <code>artifacts/api/.github/workflows/export-routes.yml</code>, <code>artifacts/web/.github/workflows/contract-sync.yml</code> and <code>artifacts/kit-fork/evals/hireboard-routing/</code> (<code>case.yaml</code>, <code>prompt.md</code>, <code>graders/routes-correct.md</code>).</p></blockquote>
 <hr>
 <h3 id="1-make-the-contract-a-sensor">1. Make the contract a sensor</h3>
@@ -109,7 +133,7 @@ exit 1</code></pre>
 <p>Create the <code>BACKEND_REPO_TOKEN</code> secret in <code>hireboard/web</code>. Use a fine-grained token with read access to <strong>Actions</strong> on <code>hireboard/api</code>, because the default <code>GITHUB_TOKEN</code> cannot read another repo&#39;s artifacts.</p>
 <p>Two choices are deliberate:</p>
 <ul><li><strong>No <code>--strict</code> yet.</strong> The README advises starting with warnings allowed. Today there are no unused routes. HIRE-11 will add employer posting endpoints, and while its api PR is merged but its web PR is still open, those routes show up as <code>unused-by-frontend</code> warnings. That is the expected state between the two merges, and it should not block anyone. Turn on <code>--strict</code> (or <code>CONTRACT_SYNC_STRICT=1</code>) once the team trusts the check.</li><li><strong>The check reads api <code>main</code>, not the api PR.</strong> This is what makes &quot;api merged first&quot; enforceable. A web PR that calls an endpoint the api has not merged yet fails with <code>missing-in-backend</code> until the api PR lands.</li></ul>
-<p>Optional, but the agent benefits: the README&#39;s <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit-laravel/templates/contract-sync/README.md#as-a-claude-code-hook" target="_blank" rel="noopener noreferrer">PostToolUse hook</a> runs the checker whenever Claude edits <code>routes/*.php</code> or <code>endpoints.ts</code>, so drift surfaces in the same turn. The same section describes a lighter pre-push variant (<code>node scripts/contract-sync.mjs || exit 1</code>). Hireboard adds the pre-push hook in <code>web/</code> only. In the workspace, the hook would need a fresh <code>route-list.json</code> on every edit, and the README recommends <code>routesFile</code> in that case.</p>
+<p>Optional, but the agent benefits: the README&#39;s <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit-laravel/templates/contract-sync/README.md#as-a-claude-code-hook" target="_blank" rel="noopener noreferrer">PostToolUse hook</a> runs the checker whenever Claude edits <code>routes/*.php</code> or <code>endpoints.ts</code>, so drift surfaces in the same turn. The same section describes a lighter pre-push variant (<code>node scripts/contract-sync.mjs || exit 1</code>). Hireboard adds the pre-push hook in <code>web/</code> only. In the workspace, the hook would need a fresh <code>route-list.json</code> on every edit, and the README recommends <code>routesFile</code> in that case.</p>
 <hr>
 <h3 id="2-routines-report-only-drift-checks">2. Routines: report-only drift checks</h3>
 <p>CI only checks pull requests. If someone renames a route on api <code>main</code> while no web PR is open, nothing goes red. Routines cover the gap. They are Claude Code cloud agents on a cron, created with <code>/schedule</code>. <a href="../../reference/usage-examples.html#14-recurring-checks-with-routines">USAGE-EXAMPLES.md section 14</a> gives generic prompts, and these are tailored to Hireboard. Give each routine access to both <code>hireboard/api</code> and <code>hireboard/web</code> when <code>/schedule</code> asks for repositories.</p>
@@ -167,13 +191,13 @@ Report: evals/results/2026-11-09T09-14-03/report.html</code></pre>
         &quot;source&quot;: &quot;git-subdir&quot;,
         &quot;url&quot;: &quot;stasmarkov/sdd-kit&quot;,
         &quot;path&quot;: &quot;plugins/sdd-kit&quot;,
-        &quot;ref&quot;: &quot;v4.0.2&quot;,
-        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.0.2&gt;&quot;
+        &quot;ref&quot;: &quot;v4.1.0&quot;,
+        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.1.0&gt;&quot;
       }
     }
   ]
 }</code></pre>
-<p>Get the sha with <code>git ls-remote https://github.com/stasmarkov/sdd-kit refs/tags/v4.0.2</code> (use the <code>^{}</code> line for an annotated tag), and validate with <code>claude plugin validate ./claude-marketplace</code>. The catalog points at upstream rather than the fork, because the fork&#39;s only difference is the eval case. Add the stack add-ons the same way (next paragraph). Hireboard has no on-call rotation, so it does not need <code>sdd-kit-ops</code>.</p>
+<p>Get the sha with <code>git ls-remote https://github.com/stasmarkov/sdd-kit refs/tags/v4.1.0</code> (use the <code>^{}</code> line for an annotated tag), and validate with <code>claude plugin validate ./claude-marketplace</code>. The catalog points at upstream rather than the fork, because the fork&#39;s only difference is the eval case. Add the stack add-ons the same way (next paragraph). Hireboard has no on-call rotation, so it does not need <code>sdd-kit-ops</code>.</p>
 <p>Commit the same <code>.claude/settings.json</code> to <strong>both</strong> <code>api/</code> and <code>web/</code> (section 2 of the doc):</p>
 <pre><code class="language-json">{
   &quot;extraKnownMarketplaces&quot;: {
@@ -210,7 +234,7 @@ git -C web ls-files AGENTS.md CLAUDE.md .claude/settings.json</code></pre>
   </article>
 </main>
 <footer class="site-footer">
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/examples/job-board/11-running-it-as-a-team.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/examples/job-board/11-running-it-as-a-team.md">View the Markdown source</a></p>
 </footer>
 <script>
   (function () {

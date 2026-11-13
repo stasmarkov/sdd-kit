@@ -13,6 +13,8 @@ Traceable QA plan + user/dev docs for code that already exists, graded against t
 
 Plus `repos` and `models` as in the other routes.
 
+Launch with the plugin name and fall back to the bare name on "not found" ([workflow name rule](../SKILL.md#workflow-names)).
+
 ```
 Workflow({ name: "qa-and-docs", args: { spec: "spec-PROJ-123-refund-guard" } })
 Workflow({ name: "qa-and-docs", args: { gitRange: "HEAD~20..HEAD" } })

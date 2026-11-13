@@ -20,7 +20,7 @@ export const meta = {
 // `stack` enum, the specialist-agent map, the Detect-phase catalog and the
 // debug scan all derive from STACKS. A project never gets a
 // specialist for a stack it does not use, because the agent is looked up per detected stack.
-const STACK_SCHEMA = {"oneOf":[{"type":"object","required":["name","order","role","detect","agent","conventions","gates","debugPatterns","acceptance"],"additionalProperties":false,"properties":{"$schema":{"type":"string"},"name":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"},"order":{"type":"integer"},"role":{"type":"string","enum":["backend","frontend","fullstack","mobile"]},"detect":{"type":"string"},"agent":{"type":"object","required":["name"],"additionalProperties":false,"properties":{"name":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"},"plugin":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"}}},"conventions":{"type":"array","items":{"type":"string"}},"gates":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"},"skipWhenScaffolded":{"type":"boolean","enum":[true]},"kind":{"type":"string","enum":["format","lint","types","test","e2e","build","other"]},"unless":{"type":"array","items":{"type":"string"}},"requires":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"}}]}}]},"lintFix":{"type":"object","required":["flag","fallback"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-[A-Za-z0-9=_-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}},"scriptFallback":{"type":"object","required":["dependency","manifest","minMajor","contains","fallback"],"additionalProperties":false,"properties":{"dependency":{"type":"string","pattern":"^[A-Za-z0-9@_./-]+$"},"manifest":{"type":"string","pattern":"^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$"},"minMajor":{"type":"integer"},"contains":{"type":"string","pattern":"^[A-Za-z0-9 _./:=-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}}}}},"debugPatterns":{"type":"array","items":{"type":"string"}},"acceptance":{"type":"string"},"notes":{"type":"string"},"devUrl":{"type":"string"},"visual":{"type":"string"},"buildGateGuard":{"type":"string"},"execWrapper":{"type":"object","required":["when","command"],"additionalProperties":false,"properties":{"when":{"type":"string","pattern":"^[A-Za-z0-9._][A-Za-z0-9._/-]*$"},"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"requiresRunning":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},{"type":"object","required":["command","jsonField","equals"],"additionalProperties":false,"properties":{"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"jsonField":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"},"equals":{"type":"string","pattern":"^[A-Za-z0-9._-]+$"}}}]},"workdir":{"type":"object","required":["flag","root"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-{1,2}[A-Za-z][A-Za-z0-9-]*$"},"root":{"type":"string","pattern":"^(/(?!\\.{1,2}(/|$))[A-Za-z0-9._-]+)+$"}}}}},"contractSync":{"type":"object","additionalProperties":false,"properties":{"routeListCommand":{"type":"string"},"consumer":{"type":"boolean","enum":[true]},"template":{"type":"string"}}},"skills":{"type":"object","additionalProperties":false,"properties":{"conventions":{"type":"array","items":{"type":"string"}},"testing":{"type":"array","items":{"type":"string"}},"scaffold":{"type":"array","items":{"type":"string"}}}},"packageManagers":{"type":"array","items":{"type":"object","required":["name","lockfiles","run"],"additionalProperties":false,"properties":{"name":{"type":"string"},"lockfiles":{"type":"array","items":{"type":"string"}},"run":{"type":"string"},"exec":{"type":"string"}}}},"scaffold":{"type":"object","additionalProperties":false,"properties":{"command":{"type":"string"},"tooling":{"type":"array","items":{"type":"string"}}}},"ci":{"type":"object","additionalProperties":false,"properties":{"services":{"type":"array","items":{"type":"string"}},"setup":{"type":"array","items":{"type":"string"}}}},"e2e":{"type":"object","required":["configGlob","run","convention"],"additionalProperties":false,"properties":{"configGlob":{"type":"string"},"run":{"type":"string"},"convention":{"type":"string"},"seed":{"type":"string"},"file":{"type":"string"}}},"migrations":{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string"},"run":{"type":"string"},"fresh":{"type":"string"}}},"audit":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"}}}},"markers":{"type":"array","items":{"type":"string"}},"packages":{"type":"object","additionalProperties":false,"properties":{"composer":{"type":"array","items":{"type":"string"}},"npm":{"type":"array","items":{"type":"string"}}}},"e2eBackend":{"type":"object","required":["convention"],"additionalProperties":false,"properties":{"convention":{"type":"string"},"seed":{"type":"string"}}},"sourceDirs":{"type":"array","items":{"type":"string"}},"gateTemplates":{"type":"array","items":{"type":"object","required":["evidence","command"],"additionalProperties":false,"properties":{"evidence":{"type":"string"},"command":{"type":"string","pattern":"\\{script\\}"}}}},"devUrlHosts":{"type":"array","items":{"type":"string","pattern":"^[a-z0-9-]+(\\.[a-z0-9-]+)+$"}},"extends":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"}}},{"type":"array","items":{"type":"object","required":["name","order","role","detect","agent","conventions","gates","debugPatterns","acceptance"],"additionalProperties":false,"properties":{"$schema":{"type":"string"},"name":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"},"order":{"type":"integer"},"role":{"type":"string","enum":["backend","frontend","fullstack","mobile"]},"detect":{"type":"string"},"agent":{"type":"object","required":["name"],"additionalProperties":false,"properties":{"name":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"},"plugin":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"}}},"conventions":{"type":"array","items":{"type":"string"}},"gates":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"},"skipWhenScaffolded":{"type":"boolean","enum":[true]},"kind":{"type":"string","enum":["format","lint","types","test","e2e","build","other"]},"unless":{"type":"array","items":{"type":"string"}},"requires":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"}}]}}]},"lintFix":{"type":"object","required":["flag","fallback"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-[A-Za-z0-9=_-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}},"scriptFallback":{"type":"object","required":["dependency","manifest","minMajor","contains","fallback"],"additionalProperties":false,"properties":{"dependency":{"type":"string","pattern":"^[A-Za-z0-9@_./-]+$"},"manifest":{"type":"string","pattern":"^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$"},"minMajor":{"type":"integer"},"contains":{"type":"string","pattern":"^[A-Za-z0-9 _./:=-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}}}}},"debugPatterns":{"type":"array","items":{"type":"string"}},"acceptance":{"type":"string"},"notes":{"type":"string"},"devUrl":{"type":"string"},"visual":{"type":"string"},"buildGateGuard":{"type":"string"},"execWrapper":{"type":"object","required":["when","command"],"additionalProperties":false,"properties":{"when":{"type":"string","pattern":"^[A-Za-z0-9._][A-Za-z0-9._/-]*$"},"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"requiresRunning":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},{"type":"object","required":["command","jsonField","equals"],"additionalProperties":false,"properties":{"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"jsonField":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"},"equals":{"type":"string","pattern":"^[A-Za-z0-9._-]+$"}}}]},"workdir":{"type":"object","required":["flag","root"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-{1,2}[A-Za-z][A-Za-z0-9-]*$"},"root":{"type":"string","pattern":"^(/(?!\\.{1,2}(/|$))[A-Za-z0-9._-]+)+$"}}}}},"contractSync":{"type":"object","additionalProperties":false,"properties":{"routeListCommand":{"type":"string"},"consumer":{"type":"boolean","enum":[true]},"template":{"type":"string"}}},"skills":{"type":"object","additionalProperties":false,"properties":{"conventions":{"type":"array","items":{"type":"string"}},"testing":{"type":"array","items":{"type":"string"}},"scaffold":{"type":"array","items":{"type":"string"}}}},"packageManagers":{"type":"array","items":{"type":"object","required":["name","lockfiles","run"],"additionalProperties":false,"properties":{"name":{"type":"string"},"lockfiles":{"type":"array","items":{"type":"string"}},"run":{"type":"string"},"exec":{"type":"string"}}}},"scaffold":{"type":"object","additionalProperties":false,"properties":{"command":{"type":"string"},"tooling":{"type":"array","items":{"type":"string"}}}},"ci":{"type":"object","additionalProperties":false,"properties":{"services":{"type":"array","items":{"type":"string"}},"setup":{"type":"array","items":{"type":"string"}}}},"e2e":{"type":"object","required":["configGlob","run","convention"],"additionalProperties":false,"properties":{"configGlob":{"type":"string"},"run":{"type":"string"},"convention":{"type":"string"},"seed":{"type":"string"},"file":{"type":"string"}}},"migrations":{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string"},"run":{"type":"string"},"fresh":{"type":"string"}}},"audit":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"}}}},"markers":{"type":"array","items":{"type":"string"}},"packages":{"type":"object","additionalProperties":false,"properties":{"composer":{"type":"array","items":{"type":"string"}},"npm":{"type":"array","items":{"type":"string"}}}},"e2eBackend":{"type":"object","required":["convention"],"additionalProperties":false,"properties":{"convention":{"type":"string"},"seed":{"type":"string"}}},"sourceDirs":{"type":"array","items":{"type":"string"}},"gateTemplates":{"type":"array","items":{"type":"object","required":["evidence","command"],"additionalProperties":false,"properties":{"evidence":{"type":"string"},"command":{"type":"string","pattern":"\\{script\\}"}}}},"devUrlHosts":{"type":"array","items":{"type":"string","pattern":"^[a-z0-9-]+(\\.[a-z0-9-]+)+$"}},"extends":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"}}}}]}
+const STACK_SCHEMA = {"oneOf":[{"type":"object","required":["name","order","role","detect","agent","conventions","gates","debugPatterns","acceptance"],"additionalProperties":false,"properties":{"$schema":{"type":"string"},"name":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"},"order":{"type":"integer"},"role":{"type":"string","enum":["backend","frontend","fullstack","mobile"]},"detect":{"type":"string"},"agent":{"type":"object","required":["name"],"additionalProperties":false,"properties":{"name":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"},"plugin":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"}}},"conventions":{"type":"array","items":{"type":"string"}},"gates":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"},"skipWhenScaffolded":{"type":"boolean","enum":[true]},"kind":{"type":"string","enum":["format","lint","types","test","e2e","build","other"]},"unless":{"type":"array","items":{"type":"string"}},"requires":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"}}]}}]},"lintFix":{"type":"object","required":["flag","fallback"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-[A-Za-z0-9=_-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}},"scriptFallback":{"type":"object","required":["dependency","manifest","minMajor","contains","fallback"],"additionalProperties":false,"properties":{"dependency":{"type":"string","pattern":"^[A-Za-z0-9@_./-]+$"},"manifest":{"type":"string","pattern":"^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$"},"minMajor":{"type":"integer"},"contains":{"type":"string","pattern":"^[A-Za-z0-9 _./:=-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}}}}},"debugPatterns":{"type":"array","items":{"type":"string"}},"acceptance":{"type":"string"},"notes":{"type":"string"},"devUrl":{"type":"string"},"visual":{"type":"string"},"buildGateGuard":{"type":"string"},"execWrapper":{"type":"object","required":["when","command"],"additionalProperties":false,"properties":{"when":{"type":"string","pattern":"^[A-Za-z0-9._][A-Za-z0-9._/-]*$"},"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"requiresRunning":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},{"type":"object","required":["command","jsonField","equals"],"additionalProperties":false,"properties":{"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"jsonField":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"},"equals":{"type":"string","pattern":"^[A-Za-z0-9._-]+$"},"devUrlFields":{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"}}}}]},"workdir":{"type":"object","required":["flag","root"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-{1,2}[A-Za-z][A-Za-z0-9-]*$"},"root":{"type":"string","pattern":"^(/(?!\\.{1,2}(/|$))[A-Za-z0-9._-]+)+$"}}}}},"contractSync":{"type":"object","additionalProperties":false,"properties":{"routeListCommand":{"type":"string"},"consumer":{"type":"boolean","enum":[true]},"template":{"type":"string"}}},"skills":{"type":"object","additionalProperties":false,"properties":{"conventions":{"type":"array","items":{"type":"string"}},"testing":{"type":"array","items":{"type":"string"}},"scaffold":{"type":"array","items":{"type":"string"}}}},"packageManagers":{"type":"array","items":{"type":"object","required":["name","lockfiles","run"],"additionalProperties":false,"properties":{"name":{"type":"string"},"lockfiles":{"type":"array","items":{"type":"string"}},"run":{"type":"string"},"exec":{"type":"string"}}}},"scaffold":{"type":"object","additionalProperties":false,"properties":{"command":{"type":"string"},"tooling":{"type":"array","items":{"type":"string"}}}},"ci":{"type":"object","additionalProperties":false,"properties":{"services":{"type":"array","items":{"type":"string"}},"setup":{"type":"array","items":{"type":"string"}}}},"e2e":{"type":"object","required":["configGlob","run","convention"],"additionalProperties":false,"properties":{"configGlob":{"type":"string"},"run":{"type":"string"},"convention":{"type":"string"},"seed":{"type":"string"},"file":{"type":"string"}}},"migrations":{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string"},"run":{"type":"string"},"fresh":{"type":"string"}}},"audit":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"}}}},"markers":{"type":"array","items":{"type":"string"}},"packages":{"type":"object","additionalProperties":false,"properties":{"composer":{"type":"array","items":{"type":"string"}},"npm":{"type":"array","items":{"type":"string"}}}},"e2eBackend":{"type":"object","required":["convention"],"additionalProperties":false,"properties":{"convention":{"type":"string"},"seed":{"type":"string"}}},"sourceDirs":{"type":"array","items":{"type":"string"}},"gateTemplates":{"type":"array","items":{"type":"object","required":["evidence","command"],"additionalProperties":false,"properties":{"evidence":{"type":"string"},"command":{"type":"string","pattern":"\\{script\\}"}}}},"devUrlHosts":{"type":"array","items":{"type":"string","pattern":"^[a-z0-9-]+(\\.[a-z0-9-]+)+$"}},"extends":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"}}},{"type":"array","items":{"type":"object","required":["name","order","role","detect","agent","conventions","gates","debugPatterns","acceptance"],"additionalProperties":false,"properties":{"$schema":{"type":"string"},"name":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"},"order":{"type":"integer"},"role":{"type":"string","enum":["backend","frontend","fullstack","mobile"]},"detect":{"type":"string"},"agent":{"type":"object","required":["name"],"additionalProperties":false,"properties":{"name":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"},"plugin":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"}}},"conventions":{"type":"array","items":{"type":"string"}},"gates":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"},"skipWhenScaffolded":{"type":"boolean","enum":[true]},"kind":{"type":"string","enum":["format","lint","types","test","e2e","build","other"]},"unless":{"type":"array","items":{"type":"string"}},"requires":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"}}]}}]},"lintFix":{"type":"object","required":["flag","fallback"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-[A-Za-z0-9=_-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}},"scriptFallback":{"type":"object","required":["dependency","manifest","minMajor","contains","fallback"],"additionalProperties":false,"properties":{"dependency":{"type":"string","pattern":"^[A-Za-z0-9@_./-]+$"},"manifest":{"type":"string","pattern":"^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$"},"minMajor":{"type":"integer"},"contains":{"type":"string","pattern":"^[A-Za-z0-9 _./:=-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}}}}},"debugPatterns":{"type":"array","items":{"type":"string"}},"acceptance":{"type":"string"},"notes":{"type":"string"},"devUrl":{"type":"string"},"visual":{"type":"string"},"buildGateGuard":{"type":"string"},"execWrapper":{"type":"object","required":["when","command"],"additionalProperties":false,"properties":{"when":{"type":"string","pattern":"^[A-Za-z0-9._][A-Za-z0-9._/-]*$"},"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"requiresRunning":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},{"type":"object","required":["command","jsonField","equals"],"additionalProperties":false,"properties":{"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"jsonField":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"},"equals":{"type":"string","pattern":"^[A-Za-z0-9._-]+$"},"devUrlFields":{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"}}}}]},"workdir":{"type":"object","required":["flag","root"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-{1,2}[A-Za-z][A-Za-z0-9-]*$"},"root":{"type":"string","pattern":"^(/(?!\\.{1,2}(/|$))[A-Za-z0-9._-]+)+$"}}}}},"contractSync":{"type":"object","additionalProperties":false,"properties":{"routeListCommand":{"type":"string"},"consumer":{"type":"boolean","enum":[true]},"template":{"type":"string"}}},"skills":{"type":"object","additionalProperties":false,"properties":{"conventions":{"type":"array","items":{"type":"string"}},"testing":{"type":"array","items":{"type":"string"}},"scaffold":{"type":"array","items":{"type":"string"}}}},"packageManagers":{"type":"array","items":{"type":"object","required":["name","lockfiles","run"],"additionalProperties":false,"properties":{"name":{"type":"string"},"lockfiles":{"type":"array","items":{"type":"string"}},"run":{"type":"string"},"exec":{"type":"string"}}}},"scaffold":{"type":"object","additionalProperties":false,"properties":{"command":{"type":"string"},"tooling":{"type":"array","items":{"type":"string"}}}},"ci":{"type":"object","additionalProperties":false,"properties":{"services":{"type":"array","items":{"type":"string"}},"setup":{"type":"array","items":{"type":"string"}}}},"e2e":{"type":"object","required":["configGlob","run","convention"],"additionalProperties":false,"properties":{"configGlob":{"type":"string"},"run":{"type":"string"},"convention":{"type":"string"},"seed":{"type":"string"},"file":{"type":"string"}}},"migrations":{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string"},"run":{"type":"string"},"fresh":{"type":"string"}}},"audit":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"}}}},"markers":{"type":"array","items":{"type":"string"}},"packages":{"type":"object","additionalProperties":false,"properties":{"composer":{"type":"array","items":{"type":"string"}},"npm":{"type":"array","items":{"type":"string"}}}},"e2eBackend":{"type":"object","required":["convention"],"additionalProperties":false,"properties":{"convention":{"type":"string"},"seed":{"type":"string"}}},"sourceDirs":{"type":"array","items":{"type":"string"}},"gateTemplates":{"type":"array","items":{"type":"object","required":["evidence","command"],"additionalProperties":false,"properties":{"evidence":{"type":"string"},"command":{"type":"string","pattern":"\\{script\\}"}}}},"devUrlHosts":{"type":"array","items":{"type":"string","pattern":"^[a-z0-9-]+(\\.[a-z0-9-]+)+$"}},"extends":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"}}}}]}
 const STACK_LIMITS = { maxString: 500, maxItems: 32, maxEntries: 8, maxRawLength: 65536 }
 const STACKS = {
   laravel: {
@@ -38,14 +38,16 @@ const STACKS = {
   },
   drupal: {
     role: 'backend',
-    detect: 'composer.json requiring drupal/core (often web/index.php)',
+    detect: 'composer.json requiring drupal/core (often web/index.php or docroot/index.php)',
     agent: 'drupal-backend-dev',
     conventions: ['module structure', 'services + dependency injection', 'plugins', 'hooks', 'config schema'],
     gates: [
       { name: 'PHPCS', command: './vendor/bin/phpcs --standard=Drupal,DrupalPractice --extensions=php,module,inc,install,test,profile,theme,info,yml web/modules/custom' },
+      { name: 'PHPCS (docroot)', command: './vendor/bin/phpcs --standard=Drupal,DrupalPractice --extensions=php,module,inc,install,test,profile,theme,info,yml docroot/modules/custom' },
       { name: 'PHPCS (project ruleset)', command: './vendor/bin/phpcs' },
       { name: 'PHPStan', command: './vendor/bin/phpstan analyse --no-progress' },
       { name: 'PHPUnit', command: './vendor/bin/phpunit -c web/core --fail-on-empty-test-suite web/modules/custom' },
+      { name: 'PHPUnit (docroot)', command: './vendor/bin/phpunit -c docroot/core --fail-on-empty-test-suite docroot/modules/custom' },
       { name: 'PHPUnit (project config)', command: './vendor/bin/phpunit --fail-on-empty-test-suite' },
     ],
     debugPatterns: ['dd(', 'dump(', 'kint(', 'var_dump('],
@@ -125,12 +127,17 @@ const STACK_TRAITS = {
     execWrapper: {
       when: '.ddev/config.yaml',
       command: 'ddev exec',
-      requiresRunning: { command: 'ddev describe -j', jsonField: 'raw.status', equals: 'running' },
+      requiresRunning: {
+        command: 'ddev describe -j',
+        jsonField: 'raw.status',
+        equals: 'running',
+        devUrlFields: ['raw.primary_url', 'raw.urls'],
+      },
       workdir: { flag: '--dir', root: '/var/www/html' },
     },
   },
   nextjs: {
-    buildGateGuard: 'Build gate and the dev server: `next build` writes the same .next/ directory a running `next dev` serves from, and later phases browse {devUrl}. Before the build, note whether {devUrl} responds (curl -s -o /dev/null -w \'%{http_code}\'). If next.config reads distDir from an environment variable, point the build at a separate directory (e.g. .next-gate) and delete it afterwards. Otherwise, after the build, curl {devUrl} again; if it responded before and does not now, restart the dev server in the background with the repo\'s dev script, wait until it responds, and say so in the Build gate\'s details.',
+    buildGateGuard: 'Build gate and the dev server: `next build` writes the same .next/ directory a running `next dev` serves from, and later phases browse {devUrl}. Before the build, note whether {devUrl} responds (curl -s -o /dev/null -w \'%{http_code}\' \'{devUrl}\', with the URL in single quotes). If next.config reads distDir from an environment variable, point the build at a separate directory (e.g. .next-gate) and delete it afterwards. Otherwise, after the build, run curl -s -o /dev/null \'{devUrl}\' again; if it responded before and does not now, restart the dev server in the background with the repo\'s dev script, wait until it responds, and say so in the Build gate\'s details.',
     contractConsumer: true,
     scaffoldSkipGates: ['tests'],
   },
@@ -177,6 +184,11 @@ const STACK_EXTRAS = {
         unless: ['phpcs.xml', 'phpcs.xml.dist', '.phpcs.xml', '.phpcs.xml.dist'],
         requires: ['vendor/drupal/coder', 'vendor/squizlabs/php_codesniffer/CodeSniffer.conf', 'web/modules/custom'],
       },
+      'PHPCS (docroot)': {
+        kind: 'lint',
+        unless: ['phpcs.xml', 'phpcs.xml.dist', '.phpcs.xml', '.phpcs.xml.dist', 'web/core/lib/Drupal.php'],
+        requires: ['vendor/drupal/coder', 'vendor/squizlabs/php_codesniffer/CodeSniffer.conf', 'docroot/modules/custom'],
+      },
       'PHPCS (project ruleset)': {
         kind: 'lint',
         requires: [
@@ -196,6 +208,11 @@ const STACK_EXTRAS = {
         unless: ['phpunit.xml', 'phpunit.xml.dist'],
         requires: ['vendor/bin/phpunit', 'web/core/phpunit.xml.dist', 'web/modules/custom'],
       },
+      'PHPUnit (docroot)': {
+        kind: 'test',
+        unless: ['phpunit.xml', 'phpunit.xml.dist', 'web/core/lib/Drupal.php'],
+        requires: ['vendor/bin/phpunit', 'docroot/core/phpunit.xml.dist', 'docroot/modules/custom'],
+      },
       'PHPUnit (project config)': {
         kind: 'test',
         requires: [
@@ -207,7 +224,7 @@ const STACK_EXTRAS = {
     skills: { conventions: ['drupal-11'] },
     markers: ['core/lib/Drupal.php', 'web/core/lib/Drupal.php', 'docroot/core/lib/Drupal.php'],
     packages: { composer: ['drupal/core', 'drupal/core-recommended'] },
-    sourceDirs: ['web/modules/custom/', 'web/themes/custom/', 'modules/'],
+    sourceDirs: ['web/modules/custom/', 'web/themes/custom/', 'docroot/modules/custom/', 'docroot/themes/custom/', 'modules/'],
   },
   nextjs: {
     gates: {
@@ -310,17 +327,17 @@ const FIRST_PARTY_PLUGINS = [
   'sdd-kit-drupal', 'sdd-kit-ios', 'sdd-kit-laravel', 'sdd-kit-nextjs',
 ]
 const FIRST_PARTY_HASHES = {
-  drupal: 'e4a37e0b7323832f8543a4a97bd579842924a297aa89949f311b501223703f7b',
+  drupal: 'f24249d79bc168f22609330abe015771d6066d413057c0f2a22e251acac31eed',
   ios: '9da615defa84b98b3c85cbb8041df8e4885249d750a5dfcdf3e2148a5d48ebb4',
   laravel: 'cbfa94fddbb6574cd56e67113e947398b288a81caacaca420cb25d864eebb3f2',
-  nextjs: '2d04238ba00012c041b94186a6f8284b50a64f2dc0748f941c1c755d51798428',
+  nextjs: 'ba420bc2f4053d58c9fa8dd82bbbf36836e3811cb599ffa2926ec21c1232b476',
   nuxt: '05cc03e90cd8df462339fec8b168f8f167f5a3438b5a5ef55c4e40ab31f6ab24',
 }
 const FIRST_PARTY_FILE_HASHES = {
-  drupal: 'e4a37e0b7323832f8543a4a97bd579842924a297aa89949f311b501223703f7b',
+  drupal: 'f24249d79bc168f22609330abe015771d6066d413057c0f2a22e251acac31eed',
   ios: '9da615defa84b98b3c85cbb8041df8e4885249d750a5dfcdf3e2148a5d48ebb4',
   laravel: 'cbfa94fddbb6574cd56e67113e947398b288a81caacaca420cb25d864eebb3f2',
-  nextjs: 'b790c60abe6c9be788705cab1bf179d5dea009009934b2881f6f079ec4b811da',
+  nextjs: 'cdc5364db9510ad7f02446986ab01dbaa66a1e8b33fd5cb2aa0e45b3ef4f2796',
 }
 const DEV_URL_HOSTS = [
   'ddev.site',
@@ -485,16 +502,37 @@ function runningCheckText(check) {
   return `\`${check.command}\` (passes when it exits 0 and a JSON line of its output has ${check.jsonField} equal to ${check.equals})`
 }
 
-// The skip text of a gate whose requires is unmet. A string names the missing file; a list names the whole requirement.
-function requiresSkipText(requires) {
+/**
+ * The skip text of a gate whose requires is unmet. A string names the missing file. A list names its unmet
+ * entries when they are known, and the whole requirement when they are not.
+ * @param {string|Array<string|string[]>} requires the gate's declared requires
+ * @param {Array<string|string[]>} [missing] the unmet entries, as declared; entries the list does not declare are ignored
+ * @returns {string}
+ * @example requiresSkipText(['bin/tool', ['a.conf', 'b.conf'], 'src/app'], ['src/app']) // 'not run (requires src/app)'
+ */
+function requiresSkipText(requires, missing) {
   if (typeof requires === 'string') return `not run (${requires.split('/').pop()} not installed)`
-  return `not run (requires ${requires.map((e) => (Array.isArray(e) ? `one of ${e.join(', ')}` : e)).join('; ')})`
+  const unmet = Array.isArray(missing) ? requires.filter((e) => missing.some((m) => sameRequiresEntry(e, m))) : []
+  return `not run (requires ${(unmet.length ? unmet : requires).map((e) => (Array.isArray(e) ? `one of ${e.join(', ')}` : e)).join('; ')})`
+}
+
+// Whether two requires entries are the same: equal paths, or one-of lists holding the same paths in any order.
+function sameRequiresEntry(a, b) {
+  if (typeof a === 'string' || typeof b === 'string') return a === b
+  if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false
+  return a.every((p) => b.includes(p))
 }
 
 // The requirement as Detect reads it: "needs <path>", or "needs <a> and one of <b>, <c>" for the list form.
 function requiresDetectText(requires) {
   if (typeof requires === 'string') return `needs ${requires}`
   return `needs ${requires.map((e) => (Array.isArray(e) ? `one of ${e.join(', ')}` : e)).join(' and ')}`
+}
+
+// The devUrlFields of an execWrapper's running check; [] for a string check or none.
+function devUrlFieldsOf(wrapper) {
+  const check = wrapper && wrapper.requiresRunning
+  return check && typeof check === 'object' && Array.isArray(check.devUrlFields) ? check.devUrlFields : []
 }
 
 // Stack keys whose execWrapper declares workdir: their marker may sit in a directory above the repo.
@@ -509,7 +547,11 @@ function execWrapperDetectLine() {
     return `${k}: marker ${w.when}${w.requiresRunning ? `, running check ${runningCheckText(w.requiresRunning)}` : ''}`
   })
   if (!rules.length) return ''
-  const line = ` EXEC WRAPPER — for a repo whose stack manifest declares execWrapper (${rules.join('; ')}; a discovered manifest names its own), set execWrapper {present} to whether the marker file exists in that repo and, when present and the manifest declares a running check, {running} to whether that check passes (run it in that repo); omit running for a wrapper without a running check.`
+  const hostRules = Object.keys(STACK_TRAITS).filter((k) => devUrlFieldsOf(STACK_TRAITS[k].execWrapper).length).map((k) => `${k}: ${devUrlFieldsOf(STACK_TRAITS[k].execWrapper).join(', ')}`)
+  const hosts = hostRules.length
+    ? ` For a manifest whose running check declares devUrlFields (${hostRules.join('; ')}; a discovered manifest names its own), when the check passes set reportedDevHosts to the hostname of every URL at those dotted paths of the same JSON output (a field holds a URL or a list of URLs; the hostname only, without scheme, port or path); omit reportedDevHosts otherwise.`
+    : ''
+  const line = ` EXEC WRAPPER — for a repo whose stack manifest declares execWrapper (${rules.join('; ')}; a discovered manifest names its own), set execWrapper {present} to whether the marker file exists in that repo and, when present and the manifest declares a running check, {running} to whether that check passes (run it in that repo); omit running for a wrapper without a running check.${hosts}`
   const nested = workdirStacks()
   if (!nested.length) return line
   return `${line} For a manifest whose execWrapper declares workdir (${nested.join(', ')}; a discovered manifest declares its own), the marker also counts as present when it is in an ancestor directory of the repo: check each ancestor, nearest first, up to the filesystem root, only with the Glob tool on the literal absolute path <ancestor>/<marker>, never reading the file, and set {dir} to the repo's path relative to the directory that holds the marker ("." when the marker is in the repo itself, plain relative path characters only); omit dir for any other wrapper.`
@@ -687,11 +729,13 @@ function e2eGlobsLine() {
 
 // Browser URL: the url argument, else the frontend repo's devUrl, else any repo's devUrl, else ''.
 // A repo's own devUrl (from Detect) wins over its manifest's default. Detect's value is used only when it
-// passes DEV_URL_PATTERN, and a manifest's default only when the manifest is first-party or trusted.
+// passes isDevUrl, and a manifest's default only when the manifest is first-party or trusted. The url argument
+// may also use a host reported by the repo it serves: the first frontend repo, else the first repo.
 function resolveDevUrl(hint, repos) {
-  const given = runUrlHint(hint)
-  if (given) return given
   const list = repos || []
+  const served = list.find((r) => isFrontendRepo(r)) || list[0]
+  const given = runUrlHint(hint, served && served.reportedDevHosts)
+  if (given) return given
   const front = list.find((r) => isFrontendRepo(r) && repoDevUrl(r))
   const any = front || list.find((r) => repoDevUrl(r))
   return any ? repoDevUrl(any) : ''
@@ -699,10 +743,11 @@ function resolveDevUrl(hint, repos) {
 
 let urlHintLogged = false
 
-// The run-level url argument when it passes DEV_URL_PATTERN; otherwise null, with one log line per run.
-function runUrlHint(hint) {
+// The run-level url argument when it passes isDevUrl for the hosts of the repo it serves; otherwise null, with
+// one log line per run.
+function runUrlHint(hint, repoHosts) {
   if (!hint) return null
-  if (isDevUrl(hint)) return hint
+  if (isDevUrl(hint, repoHosts)) return hint
   if (!urlHintLogged) {
     urlHintLogged = true
     log(`url argument is not a local dev URL — ignored. Fix: pass an http(s) URL on ${DEV_URL_HOST_TEXT}`)
@@ -710,12 +755,13 @@ function runUrlHint(hint) {
   return null
 }
 
-// A repo's own dev URL: Detect's value when it passes DEV_URL_PATTERN, else its first-party or trusted manifest's
-// default when that passes too. An approved manifest is still text the user wrote, so its devUrl is never trusted
-// to point the browser phases at a host outside the dev-URL rule.
+// A repo's own dev URL: Detect's value when it passes isDevUrl with the repo's reported hosts, else its
+// first-party or trusted manifest's default when that passes too. An approved manifest is still text the user
+// wrote, so its devUrl is never trusted to point the browser phases at a host outside the dev-URL rule.
 function repoDevUrl(r) {
   const manifestUrl = (hasOwn(STACKS, r.stack) && !isUntrustedStack(r.stack) && !r.declinedStack && STACKS[r.stack].devUrl) || ''
-  return (isDevUrl(r.devUrl) ? r.devUrl : '') || (isDevUrl(manifestUrl) ? manifestUrl : '')
+  const hosts = r.reportedDevHosts
+  return (isDevUrl(r.devUrl, hosts) ? r.devUrl : '') || (isDevUrl(manifestUrl, hosts) ? manifestUrl : '')
 }
 
 /**
@@ -750,11 +796,11 @@ function normalizeRepoHints(hints) {
 function frontendTargets(repos, entries, hint) {
   const same = (a, b) => String(a).replace(/^\.\//, '').replace(/\/+$/, '') === String(b).replace(/^\.\//, '').replace(/\/+$/, '')
   const fronts = (repos || []).filter(isFrontendRepo)
-  const given = runUrlHint(hint)
+  const given = runUrlHint(hint, fronts.length === 1 ? fronts[0].reportedDevHosts : undefined)
   const targets = []
   for (const repo of fronts) {
     const entry = (entries || []).find((e) => same(e.path, repo.path))
-    if (entry && entry.url !== undefined && !isDevUrl(entry.url)) {
+    if (entry && entry.url !== undefined && !isDevUrl(entry.url, repo.reportedDevHosts)) {
       return { targets, error: `The url for ${repo.path} is not a local development URL. Fix: pass http://localhost:<port> (or another local host) as that entry's url.` }
     }
     targets.push({ repo, url: (entry && entry.url) || (fronts.length === 1 && given) || repoDevUrl(repo) })
@@ -932,22 +978,78 @@ const addAgentHint = (name) => (HOST === 'claude'
 const HOST_TRUST_STORE_DIR = HOSTS[HOST].trustStoreDir.replace('<OS home>', '<home>')
 const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')
 // Plugin installs namespace agents ("sdd-kit:code-explorer", "<plugin>:<agent>");
-// file-copy installs use bare names. Workflows cannot tell which mode they run
-// in, so candidates are tried in order and the default agent is the last resort:
-//   - a core agent (CORE_AGENTS): "sdd-kit:<name>", then the bare name;
-//   - a stack specialist (AGENT_INFO): the bare name, then "<plugin>:<name>" only when its manifest sets agent.plugin;
+// file-copy installs use bare names. Detect reports which one this run sees as
+// discovery.mode (resolveDetect records it), and the candidates follow it so a pure
+// install resolves every agent on the first try. The default agent is the last resort:
+//   - a core agent (CORE_AGENTS): "sdd-kit:<name>" and the bare name;
+//   - a stack specialist (AGENT_INFO): the bare name and "<plugin>:<name>", the latter only when its manifest sets agent.plugin;
 //   - general-purpose is never resolved.
+// "plugin" puts the namespaced form first, "file-copy" the bare name. "mixed", "unknown",
+// "none" and every call made before Detect returns keep the default order: the namespaced
+// form first for a core agent, the bare name first for a specialist.
 // A candidate fails only when agent() throws (unknown agent type). A null result is the agent's own
 // outcome (skipped, or ended without output) and is returned, so a resolved prompt never runs twice.
-// The form that resolved, or null for the default agent, is remembered per agent name for the run,
-// so later calls go straight to it and the fallback is logged once.
+// The resolution (the form that worked, or null for the default agent) is kept per agent name for the
+// run, so later calls go straight to the resolved form and the fallback is logged once. A form that
+// worked is known only when its whole agent run returns, so calls that start together do not wait for
+// it: each tries the candidates itself, skipping the forms an earlier call saw rejected.
 const resolvedAgents = new Map()
+const rejectedAgentTypes = new Set()
+let discoveryMode = null
 
-function agentCandidates(name) {
-  if (CORE_AGENTS.includes(name)) return { candidates: [`sdd-kit:${name}`, name], hint: 'reinstall sdd-kit (core agent missing)' }
+/**
+ * Agent counts and token totals per phase for the run report.
+ * phases[name] = { agents, tokens }: agents counts runAgent calls made with opts.phase = name
+ * ('unphased' when absent); tokens is the budget spent while the phase was the current
+ * costSnapshot phase, or null when the run has no budget. probesFailed counts candidate
+ * names agent() rejected while resolving an agent type.
+ */
+const RUN_COST = { phases: {}, probesFailed: 0 }
+let costMark = null
+
+function costPhase(name) {
+  if (!hasOwn(RUN_COST.phases, name)) RUN_COST.phases[name] = { agents: 0, tokens: null }
+  return RUN_COST.phases[name]
+}
+
+const runBudget = () => (typeof budget !== 'undefined' && budget && budget.total > 0 ? budget : null)
+
+/**
+ * Closes the current cost phase and opens `name`. Call it right after each main-line phase()
+ * call, with the same title. The budget spent since the previous snapshot is added to the
+ * previous phase, so a phase that repeats (a fix loop) accumulates. With no budget
+ * (budget.total 0, as on the bridge) tokens stay null and the report prints "tokens: n/a".
+ * @param {string} name the phase being entered
+ * @returns {void}
+ * @example
+ * phase('Build'); costSnapshot('Build')
+ */
+function costSnapshot(name) {
+  const b = runBudget()
+  const remaining = b ? b.remaining() : null
+  if (costMark && b && costMark.remaining !== null) {
+    const entry = costPhase(costMark.phase)
+    entry.tokens = (entry.tokens || 0) + Math.max(0, costMark.remaining - remaining)
+  }
+  costPhase(name)
+  costMark = { phase: name, remaining }
+}
+
+/**
+ * Candidate agent types for `name`, in the order runAgent tries them.
+ * @param {string} name agent name without a plugin prefix
+ * @param {string|null} [mode] Detect's discovery.mode; null (before Detect) keeps the default order
+ * @returns {{ candidates: string[], hint: string }} hint: what to install or add when none resolves
+ */
+function agentCandidates(name, mode = discoveryMode) {
+  if (CORE_AGENTS.includes(name)) {
+    const candidates = mode === 'file-copy' ? [name, `sdd-kit:${name}`] : [`sdd-kit:${name}`, name]
+    return { candidates, hint: 'reinstall sdd-kit (core agent missing)' }
+  }
   if (hasOwn(AGENT_INFO, name)) {
     const info = AGENT_INFO[name]
-    const candidates = info.plugin ? [name, `${info.plugin}:${name}`] : [name]
+    const namespaced = info.plugin ? [`${info.plugin}:${name}`] : []
+    const candidates = mode === 'plugin' ? [...namespaced, name] : [name, ...namespaced]
     const stacks = info.stacks.join(', ')
     const hint = info.plugin
       ? `install ${info.plugin} for ${stacks}`
@@ -957,7 +1059,15 @@ function agentCandidates(name) {
   return { candidates: [name], hint: addAgentHint(name) }
 }
 
+/**
+ * Runs `prompt` through agent() with the agent type resolved for this install, adds the
+ * browser guide to browser phases, and counts the call under opts.phase in RUN_COST.
+ * @param {string} prompt
+ * @param {object} [opts] agent() options; agentType is a bare agent name
+ * @returns {Promise<*>} the agent's result
+ */
 async function runAgent(prompt, opts) {
+  costPhase((opts && opts.phase) || 'unphased').agents += 1
   if (opts && BROWSER_PHASES.has(opts.phase)) prompt = `${prompt}\n\n${browserGuideFor()}`
   if (!opts || !opts.agentType || opts.agentType === 'general-purpose') return agent(prompt, opts)
   const name = opts.agentType
@@ -968,18 +1078,23 @@ async function runAgent(prompt, opts) {
   }
   const { candidates, hint } = agentCandidates(name)
   for (const candidate of candidates) {
+    if (rejectedAgentTypes.has(candidate)) continue
     let result
     try {
       result = await agent(prompt, { ...opts, agentType: candidate })
     } catch (e) {
       // Unknown agent type in this install mode; try the next form.
+      rejectedAgentTypes.add(candidate)
+      RUN_COST.probesFailed += 1
       continue
     }
-    resolvedAgents.set(name, candidate)
+    if (!resolvedAgents.has(name)) resolvedAgents.set(name, candidate)
     return result
   }
-  resolvedAgents.set(name, null)
-  log(`Specialist ${name} not available (tried: ${candidates.join(', ')}); ${hint}. Falling back to general-purpose.`)
+  if (!resolvedAgents.has(name)) {
+    resolvedAgents.set(name, null)
+    log(`Specialist ${name} not available (tried: ${candidates.join(', ')}); ${hint}. Falling back to general-purpose.`)
+  }
   return agent(prompt, rest)
 }
 
@@ -1638,6 +1753,15 @@ const REPO_UNLESS_SCHEMA = {
   items: { type: 'object', required: ['gate', 'glob'], properties: { gate: { type: 'string' }, glob: { type: 'string' } } },
 }
 const GATE_NAMES_SCHEMA = { type: 'array', items: { type: 'string' } }
+// Per repo: the unmet entries of each gate whose requires list is unmet, each entry as the manifest writes it.
+const MISSING_REQUIRES_SCHEMA = {
+  type: 'array',
+  items: {
+    type: 'object',
+    required: ['gate', 'entries'],
+    properties: { gate: { type: 'string' }, entries: { type: 'array', items: { anyOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }] } } },
+  },
+}
 const EXEC_WRAPPER_FACT_SCHEMA = { type: 'object', required: ['present'], properties: { present: { type: 'boolean' }, running: { type: 'boolean' }, dir: { type: 'string' } } }
 /**
  * The per-repo answers the Detect prompt asks for (stackDiscoveryPrompt), spread into the repo item of
@@ -1650,12 +1774,16 @@ const REPO_DETECT_SCHEMA = {
   // Exec wrapper of the stack manifest: present = its marker file exists here, running = its running check succeeded,
   // dir = this repo's path relative to the marker's directory, for a wrapper with workdir.
   execWrapper: EXEC_WRAPPER_FACT_SCHEMA,
+  // Hostnames of the URLs at the manifest's devUrlFields in the running check's output, when that check passed.
+  reportedDevHosts: GATE_NAMES_SCHEMA,
   // Gates whose `requires` file is absent in this repo.
   missingTools: GATE_NAMES_SCHEMA,
+  // For each such gate with a requires list: the entries that are unmet.
+  missingRequires: MISSING_REQUIRES_SCHEMA,
   // Per trusted extending manifest (keyed by its name): the facts above answered for that manifest's own fields.
   overlayFacts: {
     type: 'object',
-    additionalProperties: { type: 'object', properties: { execWrapper: EXEC_WRAPPER_FACT_SCHEMA, missingTools: GATE_NAMES_SCHEMA, unlessMatched: REPO_UNLESS_SCHEMA } },
+    additionalProperties: { type: 'object', properties: { execWrapper: EXEC_WRAPPER_FACT_SCHEMA, reportedDevHosts: GATE_NAMES_SCHEMA, missingTools: GATE_NAMES_SCHEMA, missingRequires: MISSING_REQUIRES_SCHEMA, unlessMatched: REPO_UNLESS_SCHEMA } },
   },
   // Gates whose project script contains the `lintFix` flag.
   mutatingGates: GATE_NAMES_SCHEMA,
@@ -1687,7 +1815,7 @@ function stackDiscoveryPrompt() {
   const hashRule = firstParty
     ? ` For a first-party location inside the project, hash the file first with \`${MANIFEST_HASH_COMMAND} <file>\`; when the hash equals the one listed for that add-on, return {source, sha256} and no raw. Expected hashes: ${firstParty}. A first-party location outside the project, or one whose hash differs or cannot be computed, returns raw like any other manifest.`
     : ''
-  return `STACK MANIFESTS — follow your stack discovery recipe and also return: stackManifests (one item per manifest you found: source as project:${HOST_STACKS_DIR}/<file>, user:${HOST_USER_STACKS_DIR}/<file> or plugin:<name>@<marketplace> (plugin:<name>@inline for a --plugin-dir plugin), raw = the file text, unmodified.${hashRule}), trustStore (the verbatim text of ${HOST_TRUST_STORE_DIR}/trusted-stacks.json, where <home> is the home directory your recipe reads from the OS user database, never $HOME or CLAUDE_CONFIG_DIR; null or omitted when the file is absent; null or omitted plus "trustStore unreadable" in discovery.errors when <home> cannot be resolved or the Read is refused or fails), and discovery {mode, method, errors}. Outside the project use only the Read and Glob tools, on literal absolute paths under the <config> directory and the ${HOST_TRUST_STORE_DIR} directory your recipe resolves: never cat, ls or find there, and no Bash command with a variable in braces.${workdirOutsideRule()} A refused read goes into discovery.errors ("trustStore unreadable", "user stacks unreadable", "plugin list unreadable") and is never treated as trusted. A repo that matches no catalog stack but matches a manifest's detect text takes that manifest's name as stack. For each repo and each gate of its stack that lists unless globs, add {gate, glob} to unlessMatched for every glob that matches a file or directory in that repo (${UNLESS_GLOB_RULE}). TRUST — run a discovered manifest's own commands (its running check, and test -e through its exec wrapper) only when its canonical sha256, computed with \`${MANIFEST_HASH_COMMAND} <file>\`, appears in the trustStore text you read; for any other manifest report only host-side reads (marker presence and unless matches). OVERLAY FACTS — for each such trusted manifest that declares extends: <key>, add to every repo of stack <key> an overlayFacts.<manifest name> object {execWrapper, missingTools, unlessMatched}, answered for that manifest's own fields.${execWrapperDetectLine()}${gateGuardDetectLine()}
+  return `STACK MANIFESTS — follow your stack discovery recipe and also return: stackManifests (one item per manifest you found: source as project:${HOST_STACKS_DIR}/<file>, user:${HOST_USER_STACKS_DIR}/<file> or plugin:<name>@<marketplace> (plugin:<name>@inline for a --plugin-dir plugin), raw = the file text, unmodified.${hashRule}), trustStore (the verbatim text of ${HOST_TRUST_STORE_DIR}/trusted-stacks.json, where <home> is the home directory your recipe reads from the OS user database, never $HOME or CLAUDE_CONFIG_DIR; null or omitted when the file is absent; null or omitted plus "trustStore unreadable" in discovery.errors when <home> cannot be resolved or the Read is refused or fails), and discovery {mode, method, errors}. Outside the project use only the Read and Glob tools, on literal absolute paths under the <config> directory and the ${HOST_TRUST_STORE_DIR} directory your recipe resolves: never cat, ls or find there, and no Bash command with a variable in braces.${workdirOutsideRule()} A refused read goes into discovery.errors ("trustStore unreadable", "user stacks unreadable", "plugin list unreadable") and is never treated as trusted. A repo that matches no catalog stack but matches a manifest's detect text takes that manifest's name as stack. For each repo and each gate of its stack that lists unless globs, add {gate, glob} to unlessMatched for every glob that matches a file or directory in that repo (${UNLESS_GLOB_RULE}). TRUST — run a discovered manifest's own commands (its running check, and test -e through its exec wrapper) only when its canonical sha256, computed with \`${MANIFEST_HASH_COMMAND} <file>\`, appears in the trustStore text you read; for any other manifest report only host-side reads (marker presence and unless matches). OVERLAY FACTS — for each such trusted manifest that declares extends: <key>, add to every repo of stack <key> an overlayFacts.<manifest name> object {execWrapper, reportedDevHosts, missingTools, unlessMatched}, answered for that manifest's own fields.${execWrapperDetectLine()}${gateGuardDetectLine()}
 
 ${REPO_PATH_RULE}`
 }
@@ -1695,13 +1823,25 @@ ${REPO_PATH_RULE}`
 // Local development hosts only: localhost, the loopback addresses, and *.localhost, *.test and every first-party
 // devUrlHosts suffix. A suffix needs at least one label before it; labels may use any case, suffixes are lower case.
 const DEV_URL_SUFFIXES = ['localhost', 'test', ...DEV_URL_HOSTS]
+// Port, plain path and a query string. The query set holds no space, quote, backtick, $, ;, &, <, > or #, so a
+// dev URL cannot break out of the quoted text of a prompt or chain a second command when an agent pastes it
+// into a shell line.
+const DEV_URL_TAIL = '(?::\\d{1,5})?(?:\\/[A-Za-z0-9._~/-]*)?(?:\\?[A-Za-z0-9._~=%/-]*)?$'
 const DEV_URL_PATTERN = new RegExp(
-  `^https?:\\/\\/(?:localhost|127\\.0\\.0\\.1|\\[::1\\]|(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)+(?:${DEV_URL_SUFFIXES.map(escapeRegex).join('|')}))(?::\\d{1,5})?(?:\\/[A-Za-z0-9._~/-]*)?$`
+  `^https?:\\/\\/(?:localhost|127\\.0\\.0\\.1|\\[::1\\]|(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)+(?:${DEV_URL_SUFFIXES.map(escapeRegex).join('|')}))${DEV_URL_TAIL}`
 )
+// A hostname a repo's running check reported through its manifest's devUrlFields: two or more DNS labels.
+const REPORTED_HOST_PATTERN = /^(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?$/
+// A dev URL on such a host; group 1 is the hostname, matched against the repo's reported hosts.
+const REPORTED_HOST_URL_PATTERN = new RegExp(`^https?:\\/\\/(${REPORTED_HOST_PATTERN.source.slice(1, -1)})${DEV_URL_TAIL}`)
+// Private and reserved top-level names (RFC 2606, RFC 6761, RFC 6762 appendix G, RFC 8375, ICANN .internal).
+// A reported host widens the dev-URL rule only when it ends in one of them or in a dev URL suffix; any other host,
+// such as an extra FQDN on a public or country-code TLD (staging.example.com, shop.co.uk) or an IP address, is dropped.
+const PRIVATE_TLDS = ['internal', 'local', 'lan', 'home.arpa', 'localhost', 'test', 'example', 'invalid', 'intranet', 'private', 'corp', 'home']
 // The same host set as prose, for prompts, logs and Fix text.
 const DEV_URL_HOST_TEXT = `localhost, 127.0.0.1, [::1] or a ${DEV_URL_SUFFIXES.map((h) => `*.${h}`).join(', ').replace(/, ([^,]*)$/, ' or $1')} host`
 // How Detect reports repo paths and dev URLs so that resolveDetect keeps them (isRepoPath, isDevUrl).
-const REPO_PATH_RULE = `REPO PATHS — report each repo's path relative to the current directory ("." for the current directory itself), using only letters, digits, ".", "_", "/" and "-", with no ".." segment and no leading "-". A repo outside the current directory is reported only when the caller hinted its root, and then with that hint verbatim. Any other path drops the repo. devUrl must be an http(s) URL on ${DEV_URL_HOST_TEXT} (optional port and plain path); any other devUrl is dropped.`
+const REPO_PATH_RULE = `REPO PATHS — report each repo's path relative to the current directory ("." for the current directory itself), using only letters, digits, ".", "_", "/" and "-", with no ".." segment and no leading "-". A repo outside the current directory is reported only when the caller hinted its root, and then with that hint verbatim. Any other path drops the repo. devUrl must be an http(s) URL on ${DEV_URL_HOST_TEXT}, or on a host in that repo's reportedDevHosts (optional port, plain path and query string); any other devUrl is dropped.`
 
 /**
  * Runs the Detect agent call, turning a throw into a failure message instead of ending the workflow.
@@ -1741,6 +1881,7 @@ function resolveDetect(project, opts) {
     discovery.method = 'none'
     discovery.errors = [`Detect failed: ${failure}`]
   }
+  discoveryMode = discovery.mode
   const roots = callerRoots(o.roots)
   let list = (data && Array.isArray(data[listKey]) ? data[listKey] : []).filter((r) => {
     if (r && typeof r === 'object' && isRepoPath(r.path, roots)) return true
@@ -1802,15 +1943,71 @@ function isRepoPath(p, roots) {
   return !p.startsWith('/') && !p.split('/').includes('..')
 }
 
+/**
+ * The tracker key a workflow may put into a branch name, a folder or file name, or shell text: an uppercase
+ * Jira-style key (PROJ-123) of at most 64 characters, so it holds no shell metacharacter or path separator
+ * and stays a valid ref name. Anything else gives ''.
+ * @param {unknown} value the ticket the caller passed or the run read
+ * @returns {string} the key, or '' when it is not a safe key
+ * @example ticketKey('PROJ-123') // 'PROJ-123'
+ * @example ticketKey('proj-123') // ''
+ * @example ticketKey('PROJ-1; rm -rf ~') // ''
+ */
+function ticketKey(value) {
+  return typeof value === 'string' && value.length <= 64 && /^[A-Z][A-Z0-9_]+-\d+$/.test(value) ? value : ''
+}
+
 // The repo roots a caller passed (args.repos as an object or array of paths), limited to the path characters.
 function callerRoots(hints) {
   const values = (Array.isArray(hints) ? hints : hints && typeof hints === 'object' ? Object.values(hints) : []).map((v) => (v && typeof v === 'object' ? v.path : v))
   return new Set(values.filter((v) => typeof v === 'string' && REPO_PATH_PATTERN.test(v) && !v.startsWith('-')))
 }
 
-// Whether a dev server URL may be quoted: http(s) on a local development host, with an optional port and plain path.
-function isDevUrl(url) {
-  return typeof url === 'string' && url.length <= 200 && DEV_URL_PATTERN.test(url)
+/**
+ * Whether a dev server URL may be quoted: http(s) on a local development host, or on exactly one of the hosts the
+ * repo's own running check reported (reportedHostsFor), with an optional port, plain path and query string.
+ * @param {unknown} url the URL
+ * @param {string[]} [repoHosts] the reportedDevHosts of the repo the URL is for, lower case
+ * @returns {boolean}
+ * @example isDevUrl('https://shop.test/user/login?destination=/node') // true
+ * @example isDevUrl('https://shop.internal', ['shop.internal']) // true
+ * @example isDevUrl('https://other.internal', ['shop.internal']) // false
+ */
+function isDevUrl(url, repoHosts) {
+  if (typeof url !== 'string' || url.length > 200) return false
+  if (DEV_URL_PATTERN.test(url)) return true
+  const m = Array.isArray(repoHosts) && repoHosts.length ? REPORTED_HOST_URL_PATTERN.exec(url) : null
+  return !!m && repoHosts.includes(m[1].toLowerCase())
+}
+
+/**
+ * The hosts a repo's running check reported through its manifest's execWrapper.requiresRunning.devUrlFields,
+ * kept only when the manifest is first-party or trusted, declares the field, and the check passed. A host must
+ * have two or more DNS labels and end in a PRIVATE_TLDS name or a dev URL suffix; the rest are dropped and logged.
+ * @param {object} r the reported repo
+ * @param {string} stack its resolved stack key
+ * @param {boolean} declined whether the stack comes from a manifest this run does not use
+ * @returns {string[]} lower-case hostnames, at most MAX_TEXT_ITEMS
+ * @example reportedHostsFor({ path: '.', execWrapper: { present: true, running: true }, reportedDevHosts: ['Site.internal', 'staging.example.com'] }, 'acme', false) // ['site.internal'] when acme's running check declares devUrlFields
+ */
+function reportedHostsFor(r, stack, declined) {
+  const declared = devUrlFieldsOf(traitsFor(stack).execWrapper).length > 0
+  const ran = r.execWrapper && typeof r.execWrapper === 'object' && r.execWrapper.present === true && r.execWrapper.running === true
+  if (!Array.isArray(r.reportedDevHosts) || declined || isUntrustedStack(stack) || !declared || !ran) return []
+  const where = r.path || '.'
+  const hosts = []
+  const publicHosts = []
+  let invalid = 0
+  const isPrivate = (h) => [...PRIVATE_TLDS, ...DEV_URL_SUFFIXES].some((tld) => h.endsWith(`.${tld}`))
+  for (const h of r.reportedDevHosts) {
+    if (typeof h !== 'string' || h.length > 253 || !REPORTED_HOST_PATTERN.test(h)) invalid++
+    else if (!isPrivate(h.toLowerCase())) publicHosts.push(h)
+    else if (!hosts.includes(h.toLowerCase())) hosts.push(h.toLowerCase())
+  }
+  if (publicHosts.length) log(`Reported dev hosts dropped for ${where}: ${publicHosts.slice(0, 5).join(', ')} are not on a private development TLD (${PRIVATE_TLDS.join(', ')}). Fix: open that site by a host on one of them or ${DEV_URL_HOST_TEXT}`)
+  if (invalid) log(`Reported dev hosts dropped for ${where}: ${invalid} value(s) are not hostnames.`)
+  if (hosts.length > MAX_TEXT_ITEMS) log(`Reported dev hosts for ${where}: ${hosts.length - MAX_TEXT_ITEMS} beyond the first ${MAX_TEXT_ITEMS} dropped.`)
+  return hosts.slice(0, MAX_TEXT_ITEMS)
 }
 
 /**
@@ -1847,6 +2044,21 @@ function declaredGateNames(stack, names, field) {
   return (Array.isArray(names) ? names : []).filter((n) => typeof n === 'string' && hasOwn(gates, n) && gates[n][field] !== undefined)
 }
 
+// The reported unmet requires entries, kept only for gates with a requires list and only for entries that list declares, in its order.
+function declaredMissingRequires(stack, reported) {
+  const gates = extrasFor(stack).gates || {}
+  const seen = new Set()
+  const out = []
+  for (const m of Array.isArray(reported) ? reported : []) {
+    if (!m || typeof m.gate !== 'string' || !hasOwn(gates, m.gate) || !Array.isArray(gates[m.gate].requires) || seen.has(m.gate) || !Array.isArray(m.entries)) continue
+    const entries = gates[m.gate].requires.filter((e) => m.entries.some((r) => sameRequiresEntry(e, r)))
+    if (!entries.length) continue
+    seen.add(m.gate)
+    out.push({ gate: m.gate, entries })
+  }
+  return out
+}
+
 /**
  * The gates of the effective registry that declare a guard field, as "<stack> gate <name> (<detail>)".
  * @param {string} field requires, lintFix or scriptFallback
@@ -1874,7 +2086,7 @@ function wrapperProbeRule() {
 // The BINARY CHECK sentence for the list form of requires; '' while no manifest uses it.
 function binaryCheckListRules() {
   const lists = Object.keys(STACK_EXTRAS).some((k) => Object.values(STACK_EXTRAS[k].gates || {}).some((g) => Array.isArray(g.requires)))
-  return lists ? ' A requires list is unmet when any entry is unmet; an entry that is a list of paths is met when at least one of its paths exists.' : ''
+  return lists ? ' A requires list is unmet when any entry is unmet; an entry that is a list of paths is met when at least one of its paths exists. For a gate with an unmet requires list, also add {gate, entries} to missingRequires, where entries are its unmet entries exactly as the manifest writes them.' : ''
 }
 
 /**
@@ -1967,13 +2179,16 @@ function cleanRepoFields(r, stack, declined) {
       }
     }
   }
-  if (isDevUrl(r.devUrl)) out.devUrl = r.devUrl
+  const hosts = reportedHostsFor(r, stack, declined)
+  if (hosts.length) out.reportedDevHosts = hosts
+  if (isDevUrl(r.devUrl, hosts)) out.devUrl = r.devUrl
   else if (r.devUrl !== undefined && r.devUrl !== '') log(`devUrl dropped for ${where}: ${JSON.stringify(String(r.devUrl).slice(0, 80))} is not an http(s) URL on ${DEV_URL_HOST_TEXT}.`)
   const ownStack = !declined && !isUntrustedStack(stack)
   if (hasOwn(r, 'conventions')) out.conventions = ownStack ? safeTexts(r.conventions, `Conventions for ${where}`) : []
   if (hasOwn(r, 'warnings')) out.warnings = safeTexts(r.warnings, `Warnings for ${where}`)
   if (hasOwn(r, 'unlessMatched')) out.unlessMatched = declaredUnless(stack, r.unlessMatched)
   if (hasOwn(r, 'missingTools')) out.missingTools = declaredGateNames(stack, r.missingTools, 'requires')
+  if (hasOwn(r, 'missingRequires')) out.missingRequires = declaredMissingRequires(stack, r.missingRequires)
   if (hasOwn(r, 'mutatingGates')) out.mutatingGates = declaredGateNames(stack, r.mutatingGates, 'lintFix')
   if (hasOwn(r, 'dependencyMajors')) out.dependencyMajors = declaredMajors(stack, r.dependencyMajors)
   if (hasOwn(r, 'legacyScriptGates')) out.legacyScriptGates = declaredGateNames(stack, r.legacyScriptGates, 'scriptFallback')
@@ -1996,15 +2211,22 @@ function applyExtends(r) {
   const { overlayFacts, ...rest } = r
   const out = { ...rest, stack: key }
   if (facts) {
-    for (const f of ['missingTools', 'unlessMatched']) {
+    for (const f of ['missingTools', 'missingRequires', 'unlessMatched']) {
       if (hasOwn(facts, f)) out[f] = facts[f]
       else delete out[f]
     }
   }
   // The wrapper fact: the overlay's own when reported; else not running for a wrapper the overlay declares, and
   // the first-party fact for one it inherits. Dropping it would run the gates unwrapped on the host.
-  if (facts && hasOwn(facts, 'execWrapper')) out.execWrapper = facts.execWrapper
-  else if (OVERLAY_META[key].declared.includes('execWrapper')) out.execWrapper = { present: true, running: false }
+  // The reported dev hosts come from the same running check, so they follow the wrapper fact.
+  if (facts && hasOwn(facts, 'execWrapper')) {
+    out.execWrapper = facts.execWrapper
+    if (hasOwn(facts, 'reportedDevHosts')) out.reportedDevHosts = facts.reportedDevHosts
+    else delete out.reportedDevHosts
+  } else if (OVERLAY_META[key].declared.includes('execWrapper')) {
+    out.execWrapper = { present: true, running: false }
+    delete out.reportedDevHosts
+  }
   return out
 }
 
@@ -2222,7 +2444,10 @@ function gatePlanFor(repo) {
     if (hit) fixed.push({ name: g.name, status: 'skip', details: `skipped — ${hit.glob} present` })
     else if (wrapper && wrapper.notRunning) fixed.push({ name: g.name, status: 'skip', details: `not run (${wrapper.command.split(' ')[0]} not running)` })
     else if (wrapper && wrapper.unplaced) fixed.push({ name: g.name, status: 'unreachable', details: `not run (${wrapper.command} cannot be pointed at the repo, whose path from the wrapper's marker directory holds characters a gate command does not carry). Fix: run the gate by hand from the repo's directory inside the container, or rename the directory to letters, digits, . _ - and /` })
-    else if ((repo.missingTools || []).includes(g.name) && guards[g.name] && guards[g.name].requires !== undefined) fixed.push({ name: g.name, status: 'skip', details: requiresSkipText(guards[g.name].requires) })
+    else if ((repo.missingTools || []).includes(g.name) && guards[g.name] && guards[g.name].requires !== undefined) {
+      const unmet = (repo.missingRequires || []).find((m) => m && m.gate === g.name)
+      fixed.push({ name: g.name, status: 'skip', details: requiresSkipText(guards[g.name].requires, unmet && unmet.entries) })
+    }
     else {
       const fix = (repo.mutatingGates || []).includes(g.name) && guards[g.name] && guards[g.name].lintFix
       const legacy = (repo.legacyScriptGates || []).includes(g.name) && guards[g.name] && guards[g.name].scriptFallback
@@ -2287,8 +2512,10 @@ const repoHints = (isObj && args.repos) || null
 const devUrlHint = (isObj && args.url) || null
 // Existing behavior the caller says must remain identical (the bugfix spec's "Must NOT change").
 const callerMustNotChange = (isObj && Array.isArray(args.mustNotChange) && args.mustNotChange) || []
-// Tracker key (PROJ-130), used to name the saved report.
-const ticket = (isObj && typeof args.ticket === 'string' && args.ticket) || ((String(bug).match(/^([A-Z][A-Z0-9]+-\d+)\b/) || [])[1]) || ''
+// Tracker key (PROJ-130). It names the fix/ branch and the saved report, so only a safe tracker key is kept.
+const ticketArg = (isObj && args.ticket) || ((String(bug).match(/^([A-Z][A-Z0-9]+-\d+)\b/) || [])[1]) || ''
+const ticket = ticketKey(ticketArg)
+if (ticketArg && !ticket) log(`Ticket ${JSON.stringify(String(ticketArg).slice(0, 40))} ignored: it is not an uppercase tracker key. Fix: pass the key alone, for example { ticket: "PROJ-123" }`)
 
 if (!bug) {
   log('Provide a bug description (string) or { bug, repos, url }.')
@@ -2343,6 +2570,8 @@ const REPRO_SCHEMA = {
     evidence: { type: 'string' },
     entryPoints: { type: 'array', items: { type: 'string' } },
     triedButCouldNotReproduce: { type: 'string' },
+    // Files the agent created or changed and did not remove; Reproduce is meant to leave none.
+    filesLeft: { type: 'array', items: { type: 'string' } },
     // Slowness reports: the repro is a measurement, and the fix has a target to hit.
     performance: {
       type: 'object',
@@ -2429,6 +2658,8 @@ const GATES_SCHEMA = {
           name: { type: 'string' },
           status: { type: 'string', enum: ['pass', 'fail', 'skip', 'unreachable'] },
           details: { type: 'string' },
+          // Repo-relative files with a violation, reported for a failing lint or format gate.
+          files: { type: 'array', items: { type: 'string' } },
         },
       },
     },
@@ -2545,27 +2776,84 @@ function gateInstructionsFor(repo) {
 Gates to run (run each; if its tool is genuinely absent mark "skip"; if the tool exists but cannot run mark "unreachable", NEVER "pass"):
 ${cmds || noGatesLine(repo)}
 - Debug scan: grep for stray ${debugScanFor(repo.stack)} in ${sourceDirsFor(repo.stack)} (exclude tests) -> fail if found.${buildGateGuardFor(repo, gateDevUrlFor(repo, frontends.targets, devUrl || 'the dev server URL'))}
-Report each gate as pass/fail/skip/unreachable with failing output in details. Set allPassed=true only if every gate is pass or skip. Set repo="${repo.path}". Do not fix anything here.`
+Report each gate as pass/fail/skip/unreachable with failing output in details. For a failing lint or format gate, list in files every repo-relative file it reports a violation in. Set allPassed=true only if every gate is pass or skip. Set repo="${repo.path}". Do not fix anything here.`
+}
+
+/** A reported file path without a leading "./". */
+const normalFile = (f) => String(f || '').trim().replace(/^(\.\/)+/, '')
+
+/** Whether two reported paths name the same file; one may carry a longer prefix (an absolute or container path). */
+function sameFile(a, b) {
+  return a === b || a.endsWith(`/${b}`) || b.endsWith(`/${a}`)
+}
+
+// Lint and format violations can sit in files the run never touched; types, test, build and e2e failures can
+// come from a change in another file, so they always block.
+const SCOPED_GATE_KINDS = ['lint', 'format']
+
+/**
+ * Passes a failing lint or format gate whose reported files all lie outside the run's changed files.
+ * The kind comes from the stack manifest by gate name; a gate without files, of another kind or of an
+ * unknown kind stays as reported, so the check fails closed.
+ * @param {{ allPassed: boolean, gates?: object[] }|null} result  one repo's gate result
+ * @param {string} stack  the repo's stack
+ * @param {string[]} changed  the repo's changed files, repo-relative
+ * @returns {object|null}  the result, with allPassed recomputed when a gate was passed
+ */
+function scopeLintFailures(result, stack, changed) {
+  if (!result || !Array.isArray(result.gates)) return result
+  const kinds = extrasFor(stack).gates || {}
+  const inRun = (changed || []).map(normalFile).filter(Boolean)
+  let passed = 0
+  const gates = result.gates.map((g) => {
+    const kind = g && hasOwn(kinds, g.name) ? kinds[g.name].kind : null
+    if (!g || g.status !== 'fail' || !SCOPED_GATE_KINDS.includes(kind)) return g
+    const files = Array.from(new Set((Array.isArray(g.files) ? g.files : []).map(normalFile).filter(Boolean)))
+    if (!files.length || files.some((f) => inRun.some((c) => sameFile(f, c)))) return g
+    passed++
+    return { ...g, status: 'pass', details: `pre-existing violations only: ${files.length} file(s) this run did not change (not in scope)` }
+  })
+  if (!passed) return result
+  return { ...result, gates, allPassed: gates.every((g) => g && (g.status === 'pass' || g.status === 'skip')) }
+}
+
+/**
+ * The test commands a repo's gate plan would run now, already wrapped for its container: gates of kind
+ * "test" in the stack manifest, and gate-template scripts named test (test, test:unit, test-api), which
+ * carry no kind. Skipped, declined and untrusted gates are left out.
+ * @param {object} repo  a detected repo
+ * @returns {string[]}  the commands, run from the repo's directory
+ */
+function testCommandsFor(repo) {
+  const kinds = extrasFor(repo.stack).gates || {}
+  const isTest = (g) => (g.script ? /^test([:-]|$)/.test(g.script) : hasOwn(kinds, g.name) && kinds[g.name].kind === 'test')
+  return gatePlanFor(repo).run.filter(isTest).map((g) => g.command)
 }
 
 // --- Reproduce ----------------------------------------------------------
 phase('Reproduce')
+const reproTestLines = repos.flatMap((r) => testCommandsFor(r).map((c) => `- ${r.role} (${r.path}): ${c}`))
 const repro = await runAgent(
   `Establish the failing behavior for this bug BEFORE any fix is attempted. cd into the relevant repo. Do not speculate — actually run it.
 Bug: ${bug}
 Repos: ${JSON.stringify(repos.map((r) => ({ role: r.role, stack: r.stack, path: r.path })))}
+${reproTestLines.length ? `Test commands (run each from its repo's directory):\n${reproTestLines.join('\n')}` : 'No test command is planned for these repos: reproduce by reading the code and calling what you can reach, and write no test.'}
 
 1. Derive the exact reproduction steps (request, route, command, UI action, input data).
-2. Run them — execute the failing code path via the test runner, the stack's console or REPL, curl, or the dev server. Capture the ACTUAL failure verbatim (stack trace, wrong output, 404, exception).
+2. Run them — execute the failing code path via ${reproTestLines.length ? 'the test commands above, ' : ''}the stack's console or REPL, curl, or the dev server. Capture the ACTUAL failure verbatim (stack trace, wrong output, 404, exception).
 3. State the expected behavior.
 4. Record the entryPoints (exact URLs/routes/commands the bug is triggered from) for the later acceptance trace.
 5. If the report is about slowness (slow, timeout, latency, "takes N seconds", memory), the reproduction IS a measurement. Measure a baseline on the affected entry point (p50/p95 over repeated requests or a short load run, query count per request, page LCP for a frontend page), record the exact command, and set the target from the report or the project's budget (otherwise propose one and say so). Put metric, baseline, target and command in performance. reproduced=true only with a measured baseline; "it felt slow" is not a reproduction.
-If you genuinely cannot reproduce it, set reproduced=false and explain what you tried in triedButCouldNotReproduce — do NOT proceed to guess a fix.`,
-  { phase: 'Reproduce', schema: REPRO_SCHEMA, agentType: 'code-explorer', ...MODELS.reproduce }
+If you genuinely cannot reproduce it, set reproduced=false and explain what you tried in triedButCouldNotReproduce — do NOT proceed to guess a fix.
+
+You only establish the failure; a later step writes and commits the regression test. ${reproTestLines.length ? 'You may write a scratch test to confirm the bug and run it with the commands above; delete it before you return. ' : ''}Commit nothing, change no non-test file and leave no scratch file. List in filesLeft every file you created or changed that is still there (empty when you left none).`,
+  { phase: 'Reproduce', schema: REPRO_SCHEMA, agentType: 'test-writer', ...MODELS.reproduce }
 )
 const reproduced = !!(repro && repro.reproduced)
 const entryPoints = (repro && repro.entryPoints) || []
 const perf = repro && repro.performance && repro.performance.baseline ? repro.performance : null
+const filesLeft = ((repro && Array.isArray(repro.filesLeft) && repro.filesLeft) || []).filter((f) => typeof f === 'string' && f.trim())
+if (filesLeft.length) log(`Reproduce left files: ${filesLeft.join(', ')}`)
 log(`Reproduce: ${reproduced ? 'reproduced' : 'NOT reproduced'}${repro && repro.observedFailure ? ` — ${String(repro.observedFailure).slice(0, 80)}` : ''}${perf ? ` (baseline ${perf.baseline}, target ${perf.target || 'unset'})` : ''}`)
 
 if (!reproduced) {
@@ -2593,29 +2881,43 @@ The reporter already listed: ${JSON.stringify(callerMustNotChange)} — keep tho
   { phase: 'RootCause', schema: ROOTCAUSE_SCHEMA, agentType: 'code-explorer', ...MODELS.rootcause }
 )
 
-// Adversarially verify the hypothesis before writing any code (refute-by-default).
-const rcVotes = (rootCause
-  ? (await parallel(
-      ['correctness', 'evidence', 'completeness'].map((lens) => () =>
-        runAgent(
-          `A root-cause hypothesis for this bug: mechanism "${rootCause.mechanism}" at ${(rootCause.locations || []).map((l) => `${l.file}${l.line ? ':' + l.line : ''}`).join(', ')}.
+// Adversarially verify the hypothesis before writing any code (refute-by-default): two votes, and a
+// tie-break only when they split or one did not return. The lens line goes last so the votes share a prefix.
+const RC_LENSES = {
+  correctness: 'does the cited code really behave the way the mechanism claims?',
+  reproducibility: 'can you trace the reproduction steps through the cited code to the observed failure?',
+  'tie-break': 'this vote breaks a tie: weigh the evidence both ways and decide whether this mechanism really causes the observed failure',
+}
+const rcVote = (lens) =>
+  runAgent(
+    `A root-cause hypothesis for this bug: mechanism "${rootCause.mechanism}" at ${(rootCause.locations || []).map((l) => `${l.file}${l.line ? ':' + l.line : ''}`).join(', ')}.
 Bug: ${bug}. Observed: ${repro.observedFailure || ''}.
-Judge through the ${lens} lens against the ACTUAL code. Try to REFUTE it — would this really produce the observed failure? default real=false if you cannot confirm it from the code.`,
-          { label: `verify:rootcause`, phase: 'RootCause', schema: VERDICT_SCHEMA, ...MODELS.verify }
-        )
-      )
-    )).filter(Boolean)
-  : [])
-const rcYes = rcVotes.filter((v) => v.real).length
-const rcConfirmed = !!(rootCause && rootCause.confirmed) && rcVotes.length > 0 && rcYes >= Math.ceil(rcVotes.length / 2)
+Judge it against the ACTUAL code. Try to REFUTE it — would this really produce the observed failure? default real=false if you cannot confirm it from the code.
+Lens: ${lens} — ${RC_LENSES[lens]}`,
+    { label: 'verify:rootcause', phase: 'RootCause', schema: VERDICT_SCHEMA, ...MODELS.verify }
+  )
+async function verifyRootCause() {
+  const votes = (await parallel([() => rcVote('correctness'), () => rcVote('reproducibility')])).filter(Boolean)
+  if (!votes.length) {
+    log(`verify:rootcause unavailable for "${String(rootCause.mechanism || '').slice(0, 80)}"`)
+    return votes
+  }
+  if (votes.length === 1 || votes[0].real !== votes[1].real) {
+    const tie = await rcVote('tie-break')
+    if (tie) votes.push(tie)
+  }
+  return votes
+}
+const rcVotes = rootCause ? await verifyRootCause() : []
+const rcYes = rcVotes.filter((v) => v.real === true).length
+const rcConfirmed = !!(rootCause && rootCause.confirmed) && rcYes >= 2
 log(`RootCause: ${rcConfirmed ? 'confirmed' : 'UNCONFIRMED'} (${rcYes}/${rcVotes.length} votes) — ${rootCause ? String(rootCause.mechanism).slice(0, 80) : 'none'}`)
 
 const mustNotChange = Array.from(new Set([...callerMustNotChange, ...((rootCause && rootCause.mustNotChange) || [])]))
 if (mustNotChange.length) log(`Must NOT change: ${mustNotChange.length} behavior(s) guarded`)
 
 const fixRepo = ((rootCause && rootCause.locations) || []).map((l) => repos.find((r) => r.path === l.repo)).find(Boolean) || primaryRepo
-// The key goes into a branch name the agent types into git, so only a Jira-style key is used.
-const branchKey = /^[A-Z][A-Z0-9_]+-\d+$/.test(ticket) ? ticket : ''
+const branchKey = ticket
 
 // --- RegressionTest -----------------------------------------------------
 phase('RegressionTest')
@@ -2662,13 +2964,15 @@ Change only what is needed to address the cause. You are FORBIDDEN from editing 
   { label: 'fix', phase: 'Fix', schema: BUILD_SCHEMA, agentType: agentForStack(fixRepo.stack), ...MODELS.fix }
 )
 const changedFiles = Array.from(new Set([...(regressionFiles), ...((fix && fix.changedFiles) || [])]))
+// Gate fixes are confined to the files this run changed, all in the fix repo; spec files do not count.
+const changedIn = (repo) => (repo === fixRepo ? Array.from(new Set(changedFiles.map(normalFile).filter((f) => f && !/(^|\/)\.ai\/specs\//.test(f)))) : [])
 const fixApplied = !!(fix && fix.completed)
 log(`Fix: ${fixApplied ? 'regression test green' : 'NOT green'} — ${changedFiles.length} file(s) touched`)
 
 // --- Gates --------------------------------------------------------------
 phase('Gates')
 async function runGates() {
-  const results = (await parallel(repos.map((r) => () => runRepoGates(r, gateInstructionsFor, { label: `gates:${r.role}`, phase: 'Gates', schema: GATES_SCHEMA, ...MODELS.gatesFix })))).filter(Boolean)
+  const results = (await parallel(repos.map((r) => async () => scopeLintFailures(await runRepoGates(r, gateInstructionsFor, { label: `gates:${r.role}`, phase: 'Gates', schema: GATES_SCHEMA, ...MODELS.gatesFix }), r.stack, changedIn(r))))).filter(Boolean)
   const allGates = results.flatMap((g) => (g.gates || []).map((x) => ({ ...x, repo: g.repo })))
   return { results, allGates, allPassed: results.length > 0 && results.every((g) => g.allPassed) }
 }
@@ -2684,13 +2988,18 @@ while (!gates.allPassed && fixRounds < 3) {
     log(`Gates failing but budget low (${Math.round(budget.remaining() / 1000)}k left) — stopping fix loop.`)
     break
   }
+  const byRepo = repos.filter((r) => failing.some((f) => f.repo === r.path))
+  const targets = byRepo.length ? byRepo : repos
+  targets.filter((r) => !changedIn(r).length).forEach((r) => log(`Gates: ${r.path} failures are pre-existing (this run changed no file there) — not fixed`))
+  const scoped = targets.filter((r) => changedIn(r).length)
+  if (!scoped.length) break
   fixRounds++
   log(`Gates round ${fixRounds}: fixing ${failing.length} failing gate(s)`)
-  const byRepo = repos.filter((r) => failing.some((f) => f.repo === r.path))
   await parallel(
-    (byRepo.length ? byRepo : repos).map((r) => () =>
+    scoped.map((r) => () =>
       runAgent(
         `Quality gates are failing in the ${r.role} repo (${r.stack}) at "${r.path}". cd there. Fix the underlying code (not the gate config, not the regression or guard tests); do not suppress errors or weaken assertions.
+Edit only these files: ${changedIn(r).join(', ')}. Report a violation in any other file as "pre-existing (not in scope)" and leave it. Never edit the Must-NOT-change guard tests.
 Failures:
 ${failing.filter((f) => !f.repo || f.repo === r.path).map((g) => `- ${g.name}: ${g.details || ''}`).join('\n')}`,
         { label: `gates:fix${fixRounds}:${r.role}`, phase: 'Gates', agentType: agentForStack(r.stack), ...MODELS.gatesFix }

@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../index.html">SDD Kit</a>
-    <span class="badge">v4.0.2</span>
+    <span class="badge">v4.1.0</span>
   </div>
   <nav class="site-nav" aria-label="Site">
     <ul>
@@ -35,7 +35,28 @@
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main" tabindex="-1">
+<main id="content" class="doc-main has-toc" tabindex="-1">
+  <nav class="page-toc" aria-label="On this page"><details open><summary>On this page</summary>
+    <ol>
+      <li><a href="#1-create-the-marketplace-repo">1. Create the marketplace repo</a></li>
+      <li><a href="#2-enable-plugins-per-project">2. Enable plugins per project</a></li>
+      <li><a href="#3-enforce-with-managed-settings-organization-rollout">3. Enforce with managed settings (organization rollout)</a></li>
+      <li><a href="#4-update-and-pinning-policy">4. Update and pinning policy</a></li>
+      <li><a href="#verify-the-rollout">Verify the rollout</a></li>
+    </ol>
+  </details></nav>
+<script>
+  (function () {
+    var d = document.querySelector('.page-toc details'), s = d.querySelector('summary');
+    var narrow = window.matchMedia('(max-width: 767.98px)'), wide = window.matchMedia('(min-width: 1100px)');
+    function sync() { d.open = !narrow.matches; s.tabIndex = wide.matches ? -1 : 0; }
+    function listen(q) { if (q.addEventListener) q.addEventListener('change', sync); else q.addListener(sync); }
+    listen(narrow);
+    listen(wide);
+    d.addEventListener('toggle', function () { if (wide.matches && !d.open) d.open = true; });
+    sync();
+  })();
+</script>
   <article class="doc-body">
 <h2 id="team-marketplace">Team marketplace</h2>
 <p>How a team or organization rolls this framework out through its own plugin marketplace: one catalog repo you control, the core plugin plus the add-ons you approve, each pinned to a reviewed version, enabled per project, and optionally enforced with managed settings.</p>
@@ -62,8 +83,8 @@
         &quot;source&quot;: &quot;git-subdir&quot;,
         &quot;url&quot;: &quot;stasmarkov/sdd-kit&quot;,
         &quot;path&quot;: &quot;plugins/sdd-kit-laravel-nextjs&quot;,
-        &quot;ref&quot;: &quot;v4.0.2&quot;,
-        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.0.2&gt;&quot;
+        &quot;ref&quot;: &quot;v4.1.0&quot;,
+        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.1.0&gt;&quot;
       }
     },
     {
@@ -73,8 +94,8 @@
         &quot;source&quot;: &quot;git-subdir&quot;,
         &quot;url&quot;: &quot;stasmarkov/sdd-kit&quot;,
         &quot;path&quot;: &quot;plugins/sdd-kit&quot;,
-        &quot;ref&quot;: &quot;v4.0.2&quot;,
-        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.0.2&gt;&quot;
+        &quot;ref&quot;: &quot;v4.1.0&quot;,
+        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.1.0&gt;&quot;
       }
     },
     {
@@ -84,8 +105,8 @@
         &quot;source&quot;: &quot;git-subdir&quot;,
         &quot;url&quot;: &quot;stasmarkov/sdd-kit&quot;,
         &quot;path&quot;: &quot;plugins/sdd-kit-laravel&quot;,
-        &quot;ref&quot;: &quot;v4.0.2&quot;,
-        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.0.2&gt;&quot;
+        &quot;ref&quot;: &quot;v4.1.0&quot;,
+        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.1.0&gt;&quot;
       }
     },
     {
@@ -95,8 +116,8 @@
         &quot;source&quot;: &quot;git-subdir&quot;,
         &quot;url&quot;: &quot;stasmarkov/sdd-kit&quot;,
         &quot;path&quot;: &quot;plugins/sdd-kit-nextjs&quot;,
-        &quot;ref&quot;: &quot;v4.0.2&quot;,
-        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.0.2&gt;&quot;
+        &quot;ref&quot;: &quot;v4.1.0&quot;,
+        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.1.0&gt;&quot;
       }
     },
     {
@@ -106,8 +127,8 @@
         &quot;source&quot;: &quot;git-subdir&quot;,
         &quot;url&quot;: &quot;stasmarkov/sdd-kit&quot;,
         &quot;path&quot;: &quot;plugins/sdd-kit-devenv&quot;,
-        &quot;ref&quot;: &quot;v4.0.2&quot;,
-        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.0.2&gt;&quot;
+        &quot;ref&quot;: &quot;v4.1.0&quot;,
+        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.1.0&gt;&quot;
       }
     },
     {
@@ -117,8 +138,8 @@
         &quot;source&quot;: &quot;git-subdir&quot;,
         &quot;url&quot;: &quot;stasmarkov/sdd-kit&quot;,
         &quot;path&quot;: &quot;plugins/sdd-kit-ops&quot;,
-        &quot;ref&quot;: &quot;v4.0.2&quot;,
-        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.0.2&gt;&quot;
+        &quot;ref&quot;: &quot;v4.1.0&quot;,
+        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.1.0&gt;&quot;
       }
     },
     {
@@ -129,14 +150,14 @@
         &quot;source&quot;: &quot;git-subdir&quot;,
         &quot;url&quot;: &quot;stasmarkov/sdd-kit&quot;,
         &quot;path&quot;: &quot;plugins/sdd-kit-design&quot;,
-        &quot;ref&quot;: &quot;v4.0.2&quot;,
-        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.0.2&gt;&quot;
+        &quot;ref&quot;: &quot;v4.1.0&quot;,
+        &quot;sha&quot;: &quot;&lt;40-char commit sha of v4.1.0&gt;&quot;
       }
     }
   ]
 }</code></pre>
 <p>Notes:</p>
-<ul><li>Keep each entry&#39;s <code>name</code> identical to the <code>name</code> in that plugin&#39;s own <code>.claude-plugin/plugin.json</code>; the entry name is the install id (<code>&lt;name&gt;@your-org-claude</code>) and the key written to <code>enabledPlugins</code>.</li><li>Get the commit for a tag with <code>git ls-remote https://github.com/stasmarkov/sdd-kit refs/tags/v4.0.2</code> (use the <code>^{}</code> line for annotated tags).</li><li>If you fork the framework, point <code>repo</code> / <code>url</code> at your fork. A fork is the right choice when you carry local changes; otherwise reference upstream.</li><li>Stack add-ons are separate entries (<code>plugins/sdd-kit-laravel</code>, <code>plugins/sdd-kit-nextjs</code>, <code>plugins/sdd-kit-devenv</code>) that the preset resolves from your catalog. The preset <code>sdd-kit-laravel-nextjs</code> (<code>plugins/sdd-kit-laravel-nextjs</code>) is the first entry above: it only declares dependencies on the core and those three add-ons, so list all of them in your catalog too, pinned like the preset.</li><li>List only the add-ons you approve. <code>ios</code> and <code>drupal</code> can be added the same way (<code>path: plugins/sdd-kit-ios</code>, <code>plugins/sdd-kit-drupal</code>).</li><li><code>defaultEnabled: false</code> makes an add-on opt-in even after install.</li></ul>
+<ul><li>Keep each entry&#39;s <code>name</code> identical to the <code>name</code> in that plugin&#39;s own <code>.claude-plugin/plugin.json</code>; the entry name is the install id (<code>&lt;name&gt;@your-org-claude</code>) and the key written to <code>enabledPlugins</code>.</li><li>Get the commit for a tag with <code>git ls-remote https://github.com/stasmarkov/sdd-kit refs/tags/v4.1.0</code> (use the <code>^{}</code> line for annotated tags).</li><li>If you fork the framework, point <code>repo</code> / <code>url</code> at your fork. A fork is the right choice when you carry local changes; otherwise reference upstream.</li><li>Stack add-ons are separate entries (<code>plugins/sdd-kit-laravel</code>, <code>plugins/sdd-kit-nextjs</code>, <code>plugins/sdd-kit-devenv</code>) that the preset resolves from your catalog. The preset <code>sdd-kit-laravel-nextjs</code> (<code>plugins/sdd-kit-laravel-nextjs</code>) is the first entry above: it only declares dependencies on the core and those three add-ons, so list all of them in your catalog too, pinned like the preset.</li><li>List only the add-ons you approve. <code>ios</code> and <code>drupal</code> can be added the same way (<code>path: plugins/sdd-kit-ios</code>, <code>plugins/sdd-kit-drupal</code>).</li><li><code>defaultEnabled: false</code> makes an add-on opt-in even after install.</li></ul>
 <p>Validate before pushing:</p>
 <pre><code class="language-bash">claude plugin validate ./claude-marketplace</code></pre>
 <p>Then test the full loop on your machine:</p>
@@ -197,7 +218,7 @@ claude plugin details sdd-kit-laravel-nextjs</code></pre>
   </article>
 </main>
 <footer class="site-footer">
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/reference/team-marketplace.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/reference/team-marketplace.md">View the Markdown source</a></p>
 </footer>
 <script>
   (function () {

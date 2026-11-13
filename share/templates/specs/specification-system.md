@@ -105,12 +105,17 @@ Sections, in order: **Summary · Context · Scope (in/out) · Must NOT change ·
 
 ## tasks.md
 
-- Task lines `- [ ] N. Title (stack)` with a `Covers: AC-1, MNC-2` line and a final `**Verify**:` subitem. Tools find the next task by the first unchecked `- [ ] N.`.
+- Task lines `- [ ] N. Title (stack)` with a `Covers: AC-1, MNC-2` line and a final `**Verify**:` subitem. Tools find the next task by the first unchecked `- [ ] N.` code task (see Task kinds below).
 - A **Traceability** table: one row per AC and MNC → `Verified by` (test `file::name` or `manual-test.md#step-N`), kind, task.
 - **Verification gates** — only the tooling detected in the project.
 - Gap tasks added by ship-feature's Converge phase continue the numbering under `## Phase: Gaps (converge round N)`. They go at the end of tasks.md, or directly above the first unchecked gate when there is one; a gap that lands below that gate stops the round unbuilt.
 
-- A **gate** is a task whose title text after `N. ` starts with `Gate:` (case-sensitive). Only the owner checks it, and no task at or after the first unchecked gate runs. `spec-lint --gates <spec>` prints `build: <N>. <title>` for each unchecked task before that gate, then `awaiting owner: <title>` and exits 3; with no unchecked gate it ends with `gates: clear` and exits 0. execute-task builds only the `build:` tasks, ship-feature applies the same rule to the tasks.md text, and both stop with `awaiting owner: <title>` when nothing before the gate is open, and stop without building when the check cannot run.
+- **Task kinds.** A task's kind comes from its title text right after `N. `: `Gate:` makes it an owner gate, `Manual:` a manual step, and anything else (no prefix) a code task. The prefix is case-sensitive and plain text, with no bold or backticks (`- [ ] 4. Manual: check the invoice PDF in Acrobat`).
+- A **gate** (`Gate:`) is checked only by the owner, and no task at or after the first unchecked gate runs.
+- A **Manual** task (`Manual:`) is a step a person performs. No tool builds or checks it; it goes to the manual test plan (`manual-test.md`), and the owner checks it after the steps pass. It never blocks: code tasks after it are still built, and the spec stays short of `done` while one is open.
+- `spec-lint --gates <spec>` reads tasks.md only. It prints, in file order, `build: <N>. <title>` for each unchecked code task and `manual: <N>. <title>` for each unchecked Manual task before the first unchecked gate, then `awaiting owner: <title>` and exits 3; with no unchecked gate it ends with `gates: clear` and exits 0. execute-task builds only the `build:` tasks, ship-feature applies the same rule to the task lines, and both stop with `awaiting owner: <title>` when nothing before the gate is open, and stop without building when the check cannot run.
+- **tasks-archive.md** (optional, next to tasks.md) holds finished tasks moved out of a long tasks.md. It uses the same task-line format and may keep headings and subitems, but every top-level task line in it must be checked; an unchecked one is a spec-lint error (`archived task N is unchecked. Fix: move it back to tasks.md`). Archived ids stay reserved.
+- **Unique ids.** A top-level task id (`N` in `- [ ] N.`) appears once within tasks.md and once across tasks.md and tasks-archive.md together; a repeat is a spec-lint error. New tasks, including converge gaps, take the next id above the highest in both files. Subtask ids (`1.1`) are not checked.
 
 ## Lifecycle
 

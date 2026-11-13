@@ -7,8 +7,8 @@ So far every change has started from a spec. This one starts from a defect, and 
 Reference pages, so this chapter doesn't repeat them:
 
 - [USAGE-EXAMPLES.md, section 2 "Bug"](../../reference/usage-examples.md#2-bug): the general flow
-- [`/sdd` route reference: fix-bug](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/sdd/references/fix-bug.md): args, phases, outputs, done-when
-- [`src/workflows/fix-bug.js`](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/workflows/fix-bug.js): the workflow source
+- [`/sdd` route reference: fix-bug](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/sdd/references/fix-bug.md): args, phases, outputs, done-when
+- [`src/workflows/fix-bug.js`](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/workflows/fix-bug.js): the workflow source
 
 | | |
 |---|---|
@@ -178,7 +178,7 @@ entryPoints: GET /api/v1/jobs/{id}, http://localhost:3000/jobs/{id}
 
 The response's own `"status": "closed"` field is the clearest evidence. The API knows the posting is closed and serves it anyway.
 
-### RootCause (3-vote adversarial verify)
+### RootCause (two-vote adversarial verify)
 
 ```text
 mechanism: JobPostingService::findOpen() resolves the posting through
@@ -194,11 +194,11 @@ fixApproach: add a status-filtered findOpenById() to the interface and repositor
   employer listing loads closed postings too (BR-33).
 mustNotChange (added): "Draft postings stay hidden from search"
 
-RootCause: confirmed (3/3 votes)
+RootCause: confirmed (2/2 votes)
 Must NOT change: 5 behavior(s) guarded
 ```
 
-Three verifier agents, one per lens (correctness, evidence, completeness), are told to **refute** the hypothesis against the actual code. Each defaults to "not real" unless the code proves it. A majority confirms the hypothesis, and here all three did. The completeness voter also checked the obvious alternative culprit: `SearchJobPostingsController` uses `searchOpen()`, which does filter by status, so search was never affected.
+Two verifier agents, one per lens (correctness and reproducibility), are told to **refute** the hypothesis against the actual code. Each defaults to "not real" unless the code proves it. Two yes votes confirm the hypothesis, and here both said yes; a third, tie-break vote runs only when they disagree or one returns nothing. The reproducibility voter also checked the obvious alternative culprit: `SearchJobPostingsController` uses `searchOpen()`, which does filter by status, so search was never affected.
 
 Notice the extra must-not-change item. RootCause adds anything it finds on the same code path that you didn't list. The workflow merges your list and its additions and de-duplicates them. That gives five guarded behaviors:
 
@@ -346,7 +346,7 @@ HIRE-9 — closed and draft job postings were served by GET /api/v1/jobs/{id}.
 ## Root cause
 JobPostingService::findOpen (app/Services/JobPostingService.php) used the unfiltered
 JobPostingRepositoryInterface::findById (app/Repositories/JobPostingRepository.php).
-Confirmed by 3/3 verify votes.
+Confirmed by 2/2 verify votes.
 
 ## Regression test
 tests/Feature/Jobs/ClosedJobPostingVisibilityTest.php — 2 regression tests red → green,
@@ -412,7 +412,7 @@ The diff is small and fully covered by guards, so the CI gates plus the report a
 
 - HIRE-9 fixed in `api/` only: `findOpen()` resolves through a status-filtered `findOpenById()`, while `findById()` still serves the applications code.
 - A committed [`ClosedJobPostingVisibilityTest`](artifacts/api/tests/Feature/Jobs/ClosedJobPostingVisibilityTest.php) with two regression tests and one guard per must-not-change behavior, plus MNC-5 pinned by the existing search test.
-- A `FIXED` report with a root cause at file:line confirmed 3/3, gate results per repo, a re-walk of the original report, and a manual test plan that covers the original case and every MNC item.
+- A `FIXED` report with a root cause at file:line confirmed 2/2, gate results per repo, a re-walk of the original report, and a manual test plan that covers the original case and every MNC item.
 - No spec, by design: for a bug, the pipeline's report and tests are the record.
 
 Next: [10 — Shipped code: a traceable QA plan and docs for the public browse journey (HIRE-10)](10-qa-and-docs-browse-journey.md)

@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../../index.html">SDD Kit</a>
-    <span class="badge">v4.0.2</span>
+    <span class="badge">v4.1.0</span>
   </div>
   <nav class="site-nav" aria-label="Site">
     <ul>
@@ -35,7 +35,31 @@
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main" tabindex="-1">
+<main id="content" class="doc-main has-toc" tabindex="-1">
+  <nav class="page-toc" aria-label="On this page"><details open><summary>On this page</summary>
+    <ol>
+      <li><a href="#step-1-create-the-workspace-and-only-the-workspace">Step 1: Create the workspace, and only the workspace</a></li>
+      <li><a href="#step-2-install-the-kit-in-plugin-mode-recommended-here">Step 2: Install the kit in plugin mode (recommended here)</a></li>
+      <li><a href="#step-3-file-copy-alternative">Step 3: File-copy alternative</a></li>
+      <li><a href="#step-4-write-the-workspace-claudemd">Step 4: Write the workspace CLAUDE.md</a></li>
+      <li><a href="#step-5-write-product-briefmd">Step 5: Write product-brief.md</a></li>
+      <li><a href="#step-6-check-the-install-and-the-loaded-context">Step 6: Check the install and the loaded context</a></li>
+      <li><a href="#step-7-checklist">Step 7: Checklist</a></li>
+      <li><a href="#what-you-have-now">What you have now</a></li>
+    </ol>
+  </details></nav>
+<script>
+  (function () {
+    var d = document.querySelector('.page-toc details'), s = d.querySelector('summary');
+    var narrow = window.matchMedia('(max-width: 767.98px)'), wide = window.matchMedia('(min-width: 1100px)');
+    function sync() { d.open = !narrow.matches; s.tabIndex = wide.matches ? -1 : 0; }
+    function listen(q) { if (q.addEventListener) q.addEventListener('change', sync); else q.addListener(sync); }
+    listen(narrow);
+    listen(wide);
+    d.addEventListener('toggle', function () { if (wide.matches && !d.open) d.open = true; });
+    sync();
+  })();
+</script>
   <article class="doc-body">
 <h2 id="01--workspace-and-kit-install">01 — Workspace and kit install</h2>
 <p><strong>Date in the story:</strong> 2026-10-19, morning. <strong>Who:</strong> Alex Rivera (developer). <strong>Route:</strong> none yet. This chapter is setup.</p>
@@ -111,7 +135,7 @@ single-repo template when none exists, and it never overwrites an existing one.<
 cp ~/tools/sdd-kit/share/templates/multi-repo/CLAUDE.md CLAUDE.md   # Step 4 first
 ~/tools/sdd-kit/install.sh --project --stack=laravel,nextjs --dry-run</code></pre>
 <p>Simulated output (abridged):</p>
-<pre><code>SDD Kit v4.0.2
+<pre><code>SDD Kit v4.1.0
 Target: /Users/alex/work/hireboard/.claude (project, full)
   added:   ...  (skills, agents, workflows, scripts, templates, settings.json)
   updated: 0
@@ -243,7 +267,7 @@ for you. Type it:</p>
 <pre><code>/sdd-kit:framework-doctor        # plugin mode
 /framework-doctor                # file-copy mode</code></pre>
 <p>Simulated output, plugin mode (abridged):</p>
-<pre><code>Framework Health Check (plugin, v4.0.2)
+<pre><code>Framework Health Check (plugin, v4.1.0)
 =======================================
 [WARN] Golden Triangle: docs/context/ not found
 [SKIP] Manifest integrity: plugin mode
@@ -283,7 +307,7 @@ the kit&#39;s first design rule.</p>
   </article>
 </main>
 <footer class="site-footer">
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/examples/job-board/01-workspace-and-install.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/examples/job-board/01-workspace-and-install.md">View the Markdown source</a></p>
 </footer>
 <script>
   (function () {

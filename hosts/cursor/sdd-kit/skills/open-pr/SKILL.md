@@ -1,7 +1,7 @@
 ---
 name: open-pr
 description: 'Open spec-traced pull requests once a feature or fix is approved — one PR per changed repo, backend first, cross-linked. Checks the preconditions (spec in-progress or done, gates green, deep-review APPROVED when a report exists), builds each PR body from the spec (summary, every acceptance criterion mapped to its test, Must-NOT-change guards, manual test plan, ADR link, counterpart PR), uses a conventional-commit title, and shows the exact push and gh pr create commands before running them. Use when a spec or bug fix is built and reviewed and the user wants to open its PRs (/open-pr --spec=PROJ-123), when a ship-feature or fix-bug report ends with "Next: /open-pr", or when a polyrepo change needs linked backend and frontend PRs. Pushes branches and creates PRs, so it is user-invoked only.'
-argument-hint: "[--spec=<folder | number | ticket key | timestamp id>] [--report=<.ai/reports/ship-… or fix-… path>] [--repos=backend:<path>,frontend:<path>] [--base=<branch>] [--render|--dry-run] [--draft] [--reviewer=<login>] [--label=<name>]"
+argument-hint: "[--spec=<folder | number | ticket key | timestamp id>] [--report=<.ai/reports/ship-… or fix-… path>] [--repos=backend:<path>,frontend:<path>] [--base=<branch>] [--render|--dry-run] [--draft] [--reviewer=<login>] [--label=<name>] [--link <PR URL>]"
 allowed-tools: Bash, Read, Grep, Glob, AskUserQuestion
 disable-model-invocation: true
 license: Apache-2.0
@@ -36,6 +36,7 @@ A PR is the last place a reviewer sees the contract before it merges. `/open-pr`
 /open-pr --spec=PROJ-123 --repos=backend:api,frontend:web
 /open-pr --report=.ai/reports/fix-PROJ-130-20261019-1412.md  # bug fixed by fix-bug (no spec)
 /open-pr --spec=PROJ-123 --draft --reviewer=jdoe
+/open-pr --link https://bitbucket.org/acme/api/pull-requests/42   # post an existing PR's link to its ticket
 ```
 
 | Argument | Default | Meaning |
@@ -47,6 +48,7 @@ A PR is the last place a reviewer sees the contract before it merges. `/open-pr`
 | `--render`, `--dry-run` | off | Render mode: write the bodies and print the push line and the host's next step; no gh call, no commit, no push. Switches on by itself when the origin is not GitHub or gh is unavailable (see *Origin host*) |
 | `--draft` | off | Open as draft (offered automatically when the spec is not complete) |
 | `--reviewer`, `--label` | config | Passed through to `gh pr create`; repeatable |
+| `--link <PR URL>` | off | Link mode: post `Pull request: <PR URL>` to the ticket after confirmation. Nothing else runs (see *Link mode*) |
 
 ## Step 1 — Resolve the input
 
@@ -144,6 +146,22 @@ Render mode runs Step 1, every Step 2 row except `Existing PR`, and Step 3 witho
 
 It writes one body file per repo with the `mktemp` names from Step 3, then prints per repo: the title, the body file path, any pending commit command, the push line (the plain `git push -u origin <branch>` unless the host row names its own), and the host's next step from the *Origin host* table. It makes no gh call, no commit and no push, asks no Step 4 question, and skips Step 5. Counterpart references are plain text (`references/pr-body.md`, *Links*).
 
+## Link mode
+
+`/open-pr --link <PR URL>` posts an existing PR's link to its ticket and does nothing else: no preconditions, no body, no commit, no push. Bitbucket links a PR to its Jira issue by itself when the key is in the branch name or the PR title, so on Bitbucket `--link` is the fallback for a PR that carries no key, or for a tracker the host does not link.
+
+1. **URL.** It must match `^https://[A-Za-z0-9.-]+(:[0-9]+)?(/[A-Za-z0-9._~%-]+)*/(pull|pull-requests|merge_requests)/[0-9]+/?$` (GitHub, Bitbucket, GitLab; only letters, digits and `._~%-` between the slashes, so a quote, `$`, a backtick or a space never reaches a shell command). Anything else stops with `not a pull request URL: <url>. Fix: pass the PR's https URL`.
+2. **Key.** The Step 1 rules: with `--spec`, the spec's `ticket` wins; otherwise the key from the current branch. No key: ask the user for it. With no answer, print the comment with `<KEY>` in place of the key, plus the paste steps, and stop.
+3. **Path.** The first that is available, in this order:
+   1. An MCP tool with a comment-on-issue capability: Atlassian's `addCommentToJiraIssue`, or a tracker's equivalent (Linear included).
+   2. The `jira` CLI, when `command -v jira` finds it.
+   3. Print only.
+4. **Existing comment.** Read the ticket's comments through the same path: the MCP server's issue read, or `jira issue view <KEY> --comments 50 --plain`. When the PR URL is in them, report `PR link already on <KEY>` and stop; nothing is posted. When the read fails, the confirmation says `could not check for an existing comment`.
+5. **Confirm.** Show the key and its source (spec ticket or branch name), the path, and the exact comment. Ask with `AskUserQuestion`: **Post** / **Cancel**. Nothing posts before an explicit yes in this conversation.
+6. **Post.** The comment is exactly `Pull request: <PR URL>`, with no other text and no attribution, sent through the MCP tool or as `jira issue comment add <KEY> 'Pull request: <PR URL>'` (single quotes, so the shell expands nothing in it). A failed post is reported with the tool's message, followed by the comment and the paste steps.
+
+On the print-only path there is nothing to check or confirm: it prints `Pull request: <PR URL>` for `<KEY>` and the paste steps (open `<KEY>` in the tracker, add a comment, paste the line). Link mode never writes to the code host: no push, no PR comment or edit, no Bitbucket or GitHub API call.
+
 ## Step 4 — Confirm the exact commands
 
 Show, per repo in run order: the preflight table result, the title, the rendered body (or the path to view it), and every command that changes state — commits, `git push`, `gh pr create`, `gh pr comment`, `gh pr edit`. Example for a polyrepo feature:
@@ -182,14 +200,14 @@ Merge order: api #41 first (additive), then web #88
 Warnings:    AC-3 has no automated test (manual step 4)
 ```
 
-When a tracker CLI (`jira`, `linear`) is available and the spec has a ticket, ask whether to post the PR links to the ticket; post only on yes.
+When a tracker CLI (`jira`, `linear`) is available and the spec has a ticket, ask whether to post the PR links to the ticket; post only on yes. Later, `/open-pr --link <PR URL>` posts one link on its own (*Link mode*).
 
 ## Rules
 
 - One PR per changed repo; never a PR for a repo with no changes. Same branch name across repos.
 - Never force-push, rebase, merge, enable auto-merge, or use `--admin`. Merging stays a human decision.
 - No tool attribution in titles, bodies, comments, or commits: no "Generated with" lines, no `Co-Authored-By` trailers for an assistant.
-- Never post to a PR or tracker without the Step 4 confirmation.
+- Never post to a PR or tracker without the Step 4 confirmation, or in link mode its own.
 - Only claim what a file shows. A missing test, gate result, or review is reported as missing.
 
 ## Configuration

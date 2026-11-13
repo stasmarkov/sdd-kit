@@ -248,6 +248,15 @@
                     "equals": {
                       "type": "string",
                       "pattern": "^[A-Za-z0-9._-]+$"
+                    },
+                    "devUrlFields": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"
+                      },
+                      "description": "Dotted paths in the running check's JSON output that hold the environment's URLs (a URL or a list of URLs). When the check passes, the hostnames there count as dev URL hosts for that repo only, except those whose last label is a public TLD. Only with the object form; for example [\"raw.primary_url\", \"raw.urls\"]."
                     }
                   }
                 }
@@ -769,6 +778,15 @@
                       "equals": {
                         "type": "string",
                         "pattern": "^[A-Za-z0-9._-]+$"
+                      },
+                      "devUrlFields": {
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"
+                        },
+                        "description": "Dotted paths in the running check's JSON output that hold the environment's URLs (a URL or a list of URLs). When the check passes, the hostnames there count as dev URL hosts for that repo only, except those whose last label is a public TLD. Only with the object form; for example [\"raw.primary_url\", \"raw.urls\"]."
                       }
                     }
                   }

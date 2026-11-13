@@ -139,7 +139,7 @@ Lead Orchestrator (1)
 4. **Use checkpointing** for tasks exceeding 100K tokens
 5. **Filter tool outputs** before returning to context
 
-The `token-budget` hook enforces part of this: it always blocks `find` from the filesystem root, and once context usage (hinted via `CLAUDE_CONTEXT_USAGE`) reaches `CLAUDE_BUDGET_THRESHOLD` (default 75%) it also blocks unbounded reads of huge files, unscoped repo-wide greps, open-ended globs, and dumping full logs. See the [hooks reference](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/share/hooks/README.md).
+The `token-budget` hook enforces part of this: it always blocks `find` from the filesystem root, and once context usage (hinted via `CLAUDE_CONTEXT_USAGE`) reaches `CLAUDE_BUDGET_THRESHOLD` (default 75%) it also blocks unbounded reads of huge files, unscoped repo-wide greps, open-ended globs, and dumping full logs. See the [hooks reference](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/share/hooks/README.md).
 
 ---
 
@@ -211,6 +211,19 @@ Multi-agent systems use approximately **15x more tokens** than single-agent chat
 | Parallel Agents | Independent exploration | 3-5x |
 | Full Swarm | Complex research, major features | 10-20x |
 
+### What a ship-feature run spends
+
+Every ship-feature report ends with a Cost table: the agents each phase started and, when the run has a token budget, the tokens spent while that phase ran (`tokens: n/a` without one, as on the Codex and Cursor bridge). The same numbers are in the result's `cost` field, with the failed agent-name lookups. The phases that cost the most are bounded:
+
+| Phase | Bound |
+|-------|-------|
+| Review | Two verifier votes per finding (`standard` tier), a third only when they split; a minor design finding gets one |
+| Fix | At most 2 rounds, each a stack-agent fix, the gates on the changed files and a re-vote on the fixed findings |
+| Converge | At most 2 audits; round-2 gaps are built once without a third audit |
+| Gates | At most 3 auto-fix attempts per repo, scoped to the files the run changed |
+
+Compare runs by the Cost table, not by wall time alone: a slow run that spent most of its agents in Fix points at the review findings, one that spent them in Gates at the build.
+
 ---
 
 ## Checkpointing Thresholds
@@ -281,6 +294,6 @@ Durable lessons belong in Claude Code auto memory or agent memory (`memory: proj
 - Framework Design Rules - Core principles
 - [Agent index](agents.md) - Available agents
 - [Skill index](skills.md) - Available skills
-- [Hooks reference](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/share/hooks/README.md) - `token-budget`, `pre-compact-save`, and the rest
+- [Hooks reference](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/share/hooks/README.md) - `token-budget`, `pre-compact-save`, and the rest
 
 Source: Anthropic Engineering, "How we built our multi-agent research system".

@@ -370,7 +370,7 @@ function firstGlobMatch(dir, pattern) {
 }
 
 // Project files whose dependency objects hold the package names a manifest's `packages` lists, per manager.
-const PACKAGE_FILES = {
+export const PACKAGE_FILES = {
   composer: { file: 'composer.json', keys: ['require', 'require-dev'] },
   npm: { file: 'package.json', keys: ['dependencies', 'devDependencies'] },
 }
@@ -388,37 +388,81 @@ function declaredPackages(dir, { file, keys }) {
 }
 
 /**
+ * The first match of a stack's manifest entries in `dir`: the path a `markers` glob names, else
+ * '<file>: <package>' when its composer.json / package.json requires a name from `packages`; '' when none.
+ * @param {object[]} entries the stack manifest's entries
+ * @param {string} dir directory to test
+ * @returns {string}
+ */
+function stackMatch(entries, dir) {
+  for (const marker of entries.flatMap((e) => e.markers || [])) {
+    const from = firstGlobMatch(dir, marker)
+    if (from) return from
+  }
+  for (const [manager, spec] of Object.entries(PACKAGE_FILES)) {
+    const declared = declaredPackages(dir, spec)
+    const name = entries.flatMap((e) => e.packages?.[manager] || []).find((p) => declared.includes(p))
+    if (name) return `${spec.file}: ${name}`
+  }
+  return ''
+}
+
+// Subdirectories the nested scan never enters, besides dot directories.
+const NESTED_SKIP = new Set(['vendor', 'node_modules'])
+
+/** The subdirectories of `dir` one level down that the nested scan reads, in byte order. */
+function nestedDirs(dir) {
+  let names
+  try {
+    names = fs.readdirSync(dir)
+  } catch {
+    return []
+  }
+  return names
+    .filter((n) => !n.startsWith('.') && !NESTED_SKIP.has(n))
+    .filter((n) => {
+      try {
+        return fs.statSync(path.join(dir, n)).isDirectory()
+      } catch {
+        return false
+      }
+    })
+    .sort()
+}
+
+/**
  * The stack add-ons a project directory looks like, read from each stack manifest: a `markers` glob matches
- * in `cwd`, or its composer.json / package.json requires a name from `packages`. Only `cwd` itself is read,
- * so a project nested below it is not seen.
+ * in `cwd`, or its composer.json / package.json requires a name from `packages`. When no stack matches in
+ * `cwd` itself, the same tests run in each subdirectory one level down (vendor, node_modules and dot
+ * directories skipped), and each add-on reports its first match in byte order of the subdirectories, so a
+ * site kept in `site/` is found. Root-level results never include a nested match.
  * @param {string} repo checkout holding src/plugins/<addon>/stack.json
  * @param {string} cwd project directory
  * @param {string[]} stacks stack add-on names, in the order to report them
- * @returns {{ addon: string, from: string }[]} from is the path a marker matched or '<file>: <package>'
+ * @returns {{ addon: string, from: string }[]} from is the path a marker matched or '<file>: <package>',
+ *   both relative to `cwd` (for example 'site/composer.json: <vendor>/<package>')
  */
 export function detectStacks(repo, cwd, stacks) {
-  const declared = Object.fromEntries(Object.entries(PACKAGE_FILES).map(([m, spec]) => [m, declaredPackages(cwd, spec)]))
-  const hits = []
+  const manifests = []
   for (const addon of stacks) {
-    let entries
     try {
-      entries = [readJson(path.join(repo, 'src/plugins', addon, 'stack.json'))].flat()
+      manifests.push({ addon, entries: [readJson(path.join(repo, 'src/plugins', addon, 'stack.json'))].flat() })
     } catch {
       continue
     }
-    let from = ''
-    for (const marker of entries.flatMap((e) => e.markers || [])) {
-      from = firstGlobMatch(cwd, marker)
-      if (from) break
-    }
-    for (const manager of Object.keys(PACKAGE_FILES)) {
-      if (from) break
-      const name = entries.flatMap((e) => e.packages?.[manager] || []).find((p) => declared[manager].includes(p))
-      if (name) from = `${PACKAGE_FILES[manager].file}: ${name}`
-    }
-    if (from) hits.push({ addon, from })
   }
-  return hits
+  const hits = manifests.map(({ addon, entries }) => ({ addon, from: stackMatch(entries, cwd) })).filter((h) => h.from)
+  if (hits.length) return hits
+  const subs = nestedDirs(cwd)
+  return manifests
+    .map(({ addon, entries }) => {
+      for (const sub of subs) {
+        const from = stackMatch(entries, path.join(cwd, sub))
+        if (from) return { addon, from: `${sub}/${from}` }
+      }
+      return { addon, from: '' }
+    })
+    .filter((h) => h.from)
 }
 
 /**

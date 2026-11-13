@@ -238,7 +238,7 @@ npx --allow-git=root github:stasmarkov/sdd-kit install --project
 
 Supported npm versions: 11 and 12. npm 10 is not supported.
 
-Add `#v4.0.2` to pin a release (`npx github:stasmarkov/sdd-kit#v4.0.2 install --project`);
+Add `#v4.1.0` to pin a release (`npx github:stasmarkov/sdd-kit#v4.1.0 install --project`);
 without a tag npx fetches the default branch. npx caches the download. The package is not
 published to npm.
 
@@ -250,7 +250,7 @@ published to npm.
 | `--user` | Install into `~/.claude` (all projects). Paths in installed docs are rewritten to `~/.claude/` |
 | `--minimal` | Spec-driven core only, without `/progress`, `/spec-board`, `/investigate`, `/learn` or `/fix-ci` (see below) |
 | `--full` | Everything in core. This is the default |
-| `--stack=LIST` | Stack add-ons to install, comma-separated, or `none` for core only. Default on a fresh `--project` install: the stack the installer detects in the project root, else `laravel,nextjs` (see below); `laravel,nextjs` with `--user`; the installed stacks on an upgrade. Other stacks: `drupal`, `ios`. An add-on that is not a stack (`devenv`, `ops`, `design`) is rejected with a hint to use `--with` |
+| `--stack=LIST` | Stack add-ons to install, comma-separated, or `none` for core only. Default on a fresh `--project` install: the stack the installer detects in the project root (or one level down when the root matches nothing), else `laravel,nextjs` (see below); `laravel,nextjs` with `--user`; the installed stacks on an upgrade. Other stacks: `drupal`, `ios`. An add-on that is not a stack (`devenv`, `ops`, `design`) is rejected with a hint to use `--with` |
 | `--with=LIST` | Add optional add-ons, comma-separated: `devenv`, `ops`, `design`, plus any stack add-on. `--with=none` skips the default `devenv` on a fresh install |
 | `--prune` | On an upgrade, remove installed add-ons that are not selected. Without it, flags and prompt answers only add, and unselected add-ons are kept. Modified files are never deleted, and everything removed is backed up |
 | `--third-party` | Also install the pinned third-party skills from `src/settings/third-party.json` and print the recommended plugin commands. Policy: [third-party.md](third-party.md) |
@@ -270,7 +270,7 @@ Examples:
 
 `--stack` picks the stack add-ons and `--with` picks the optional ones. They are independent.
 
-- **Fresh `--project` install, no `--stack`:** the installer reads each stack manifest's `markers` and `packages` against the project root: `web/core/lib/Drupal.php`, `core/lib/Drupal.php`, `docroot/core/lib/Drupal.php` or a `composer.json` requiring `drupal/core` or `drupal/core-recommended` means `drupal`, and an `*.xcodeproj` or `Package.swift` means `ios`. When it finds a stack other than Laravel or Next.js it installs the stacks it found and prints `Detected <stack> (<file>)`; at the prompt, Enter takes them. Otherwise, including a tree with only `artisan`, `next.config.*` or `nuxt.config.*`, or with no marker at all, `laravel,nextjs` are installed. Detection reads the project root only, so a project nested in a subdirectory needs `--stack`; `--user` installs and upgrades never detect.
+- **Fresh `--project` install, no `--stack`:** the installer reads each stack manifest's `markers` and `packages` against the project root: `web/core/lib/Drupal.php`, `core/lib/Drupal.php`, `docroot/core/lib/Drupal.php` or a `composer.json` requiring `drupal/core` or `drupal/core-recommended` means `drupal`, and an `*.xcodeproj` or `Package.swift` means `ios`. When it finds a stack other than Laravel or Next.js it installs the stacks it found and prints `Detected <stack> (<file>)`; at the prompt, Enter takes them. Otherwise, including a tree with only `artisan`, `next.config.*` or `nuxt.config.*`, or with no marker at all, `laravel,nextjs` are installed. When nothing matches at the root, the same markers and packages are tested in each subdirectory one level down (`vendor`, `node_modules` and dot directories are skipped), so a site kept in `site/` prints `Detected drupal (site/composer.json: drupal/core)`; deeper trees need `--stack`. The Codex and Cursor installers and the session-start stack hint detect the same way. Workflows still run from the repo root, so for a site in a subdirectory pass its folder as the backend repo, for example `repos: { backend: "site" }`; without it the stack gates skip and the run ends FIX-FIRST. `--user` installs and upgrades never detect.
 - **`devenv`:** a fresh full install adds it, with or without `--stack` and whatever `--with` names, so `--with=ops` installs laravel, nextjs, devenv and ops, and `--stack=drupal` installs drupal and devenv. `--stack=none` (core only, plus `--with`), `--minimal` and `--with=none` leave it out. `--with=none` applies to a fresh install only; on an upgrade the installer stops with a hint to use `--prune --with=<list>`.
 - **`--with` given:** the optional add-ons are the list you pass, plus the devenv rule above.
 - **`--stack=none` with a stack add-on in `--with`** is an error.
@@ -482,7 +482,7 @@ Bare names keep working (`/laravel-12`, `/migrate-db`, agent `laravel-backend-de
 
 Re-run the installer (or update the plugin). In file-copy mode every upgrade removes the files 1.x installed that the current kit no longer ships and backs them up first; no flag is needed. It only removes a file whose content matches a copy the kit shipped; a file you edited or replaced is listed as "kept (modified or not from the kit)" and left for you to review. `install.sh --prune` does something else: it also removes installed add-ons that you did not select (see [Flags](#flags)).
 
-The renamed and removed commands, agents and skills are listed in the CHANGELOG 2.0.0 entry, under [Migrating from 1.x](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/CHANGELOG.md#migrating-from-1x). Current lists: [skills](skills.md), [agents](agents.md).
+The renamed and removed commands, agents and skills are listed in the CHANGELOG 2.0.0 entry, under [Migrating from 1.x](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/CHANGELOG.md#migrating-from-1x). Current lists: [skills](skills.md), [agents](agents.md).
 
 If you used a moved agent (iOS, ops or design), add the add-on: `--stack=laravel,nextjs,ios --with=ops,design` or the matching `sdd-kit-*` plugins.
 
@@ -496,7 +496,7 @@ If you used a moved agent (iOS, ops or design), add the add-on: `--stack=laravel
 | `/plugin` → **Errors** tab | Plugin components that failed to load (plugin mode) |
 | `claude plugin validate <path>` | Manifest and frontmatter problems in a plugin directory |
 
-The hooks themselves are documented in [src/hooks/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/share/hooks/README.md).
+The hooks themselves are documented in [src/hooks/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/share/hooks/README.md).
 
 ## Uninstalling
 

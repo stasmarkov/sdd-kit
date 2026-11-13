@@ -6,7 +6,7 @@
   "devUrlHosts": [
     "ddev.site"
   ],
-  "detect": "composer.json requiring drupal/core (often web/index.php)",
+  "detect": "composer.json requiring drupal/core (often web/index.php or docroot/index.php)",
   "agent": {
     "name": "drupal-backend-dev",
     "plugin": "sdd-kit-drupal"
@@ -33,6 +33,23 @@
         "phpcs.xml.dist",
         ".phpcs.xml",
         ".phpcs.xml.dist"
+      ]
+    },
+    {
+      "name": "PHPCS (docroot)",
+      "command": "./vendor/bin/phpcs --standard=Drupal,DrupalPractice --extensions=php,module,inc,install,test,profile,theme,info,yml docroot/modules/custom",
+      "kind": "lint",
+      "requires": [
+        "vendor/drupal/coder",
+        "vendor/squizlabs/php_codesniffer/CodeSniffer.conf",
+        "docroot/modules/custom"
+      ],
+      "unless": [
+        "phpcs.xml",
+        "phpcs.xml.dist",
+        ".phpcs.xml",
+        ".phpcs.xml.dist",
+        "web/core/lib/Drupal.php"
       ]
     },
     {
@@ -77,6 +94,21 @@
       ]
     },
     {
+      "name": "PHPUnit (docroot)",
+      "command": "./vendor/bin/phpunit -c docroot/core --fail-on-empty-test-suite docroot/modules/custom",
+      "kind": "test",
+      "requires": [
+        "vendor/bin/phpunit",
+        "docroot/core/phpunit.xml.dist",
+        "docroot/modules/custom"
+      ],
+      "unless": [
+        "phpunit.xml",
+        "phpunit.xml.dist",
+        "web/core/lib/Drupal.php"
+      ]
+    },
+    {
       "name": "PHPUnit (project config)",
       "command": "./vendor/bin/phpunit --fail-on-empty-test-suite",
       "kind": "test",
@@ -98,6 +130,8 @@
   "sourceDirs": [
     "web/modules/custom/",
     "web/themes/custom/",
+    "docroot/modules/custom/",
+    "docroot/themes/custom/",
     "modules/"
   ],
   "acceptance": "exercise the routes/controllers over HTTP",
@@ -107,7 +141,11 @@
     "requiresRunning": {
       "command": "ddev describe -j",
       "jsonField": "raw.status",
-      "equals": "running"
+      "equals": "running",
+      "devUrlFields": [
+        "raw.primary_url",
+        "raw.urls"
+      ]
     },
     "workdir": {
       "flag": "--dir",

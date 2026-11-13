@@ -1,7 +1,7 @@
 # 00 — Hireboard from scratch: overview and prerequisites
 
 This walkthrough builds a small job board called **Hireboard** from an empty folder to a
-team-ready product. It uses SDD Kit v4.0.2 (the 4.x line) for every step. Each chapter is
+team-ready product. It uses SDD Kit v4.1.0 (the 4.x line) for every step. Each chapter is
 one real ticket, taken through the `/sdd` route the kit picks for it. Read the chapters in order
 to follow the story, or jump to the one that matches the route you are about to use.
 
@@ -59,7 +59,7 @@ chapter 03 as ADR-0001):
 
 ## Route map
 
-`/sdd` is the single front door ([src/skills/sdd/SKILL.md](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/sdd/SKILL.md)).
+`/sdd` is the single front door ([src/skills/sdd/SKILL.md](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/sdd/SKILL.md)).
 It sorts each request into one of the routes, confirms the route with you, collects the inputs,
 and launches exactly one fixed pipeline:
 

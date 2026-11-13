@@ -6,11 +6,13 @@ export const meta = {
     { title: 'Detect', detail: 'Identify stack(s) and repo layout', model: 'sonnet' },
     { title: 'Investigate', detail: 'Deep-read codebase + docs per repo', model: 'opus' },
     { title: 'Spec', detail: 'Decompose into ordered tasks and persist to .ai/specs', model: 'opus' },
+    { title: 'Prepare', detail: 'Leave a protected branch for a feature branch per repo and mark an approved spec in progress', model: 'haiku' },
     { title: 'Build', detail: 'Implement each task with the right specialist, tick progress', model: 'sonnet' },
     { title: 'Gates', detail: 'Run the detected quality tooling per repo, auto-fix until green', model: 'sonnet' },
     { title: 'Converge', detail: 'Audit code vs spec/tasks, append gap tasks, rebuild (max 2 rounds)', model: 'opus' },
     { title: 'Visual', detail: 'Playwright MCP visual tests: theming, UI, UX, responsive, a11y contrast', model: 'opus' },
-    { title: 'Review', detail: 'Adversarial panel: dimensions x 3-vote verify', model: 'opus' },
+    { title: 'Review', detail: 'Adversarial panel: dimensions x 2-vote verify', model: 'opus' },
+    { title: 'Fix', detail: 'Fix confirmed findings, re-run gates, re-verify the fixed ones (max 2 rounds)', model: 'sonnet' },
     { title: 'Acceptance', detail: 'Trace the reported scenario end-to-end; confirm the original problem resolves; write the E2E regression test', model: 'opus' },
     { title: 'Docs', detail: 'Update affected docs to reflect shipped behavior', model: 'opus' },
     { title: 'TestPlan', detail: 'Write copy-paste manual QA steps for a human to verify', model: 'sonnet' },
@@ -24,7 +26,7 @@ export const meta = {
 // `stack` enum, the specialist-agent map, the Detect-phase catalog and the
 // debug scan all derive from STACKS. A project never gets a
 // specialist for a stack it does not use, because the agent is looked up per detected stack.
-const STACK_SCHEMA = {"oneOf":[{"type":"object","required":["name","order","role","detect","agent","conventions","gates","debugPatterns","acceptance"],"additionalProperties":false,"properties":{"$schema":{"type":"string"},"name":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"},"order":{"type":"integer"},"role":{"type":"string","enum":["backend","frontend","fullstack","mobile"]},"detect":{"type":"string"},"agent":{"type":"object","required":["name"],"additionalProperties":false,"properties":{"name":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"},"plugin":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"}}},"conventions":{"type":"array","items":{"type":"string"}},"gates":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"},"skipWhenScaffolded":{"type":"boolean","enum":[true]},"kind":{"type":"string","enum":["format","lint","types","test","e2e","build","other"]},"unless":{"type":"array","items":{"type":"string"}},"requires":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"}}]}}]},"lintFix":{"type":"object","required":["flag","fallback"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-[A-Za-z0-9=_-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}},"scriptFallback":{"type":"object","required":["dependency","manifest","minMajor","contains","fallback"],"additionalProperties":false,"properties":{"dependency":{"type":"string","pattern":"^[A-Za-z0-9@_./-]+$"},"manifest":{"type":"string","pattern":"^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$"},"minMajor":{"type":"integer"},"contains":{"type":"string","pattern":"^[A-Za-z0-9 _./:=-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}}}}},"debugPatterns":{"type":"array","items":{"type":"string"}},"acceptance":{"type":"string"},"notes":{"type":"string"},"devUrl":{"type":"string"},"visual":{"type":"string"},"buildGateGuard":{"type":"string"},"execWrapper":{"type":"object","required":["when","command"],"additionalProperties":false,"properties":{"when":{"type":"string","pattern":"^[A-Za-z0-9._][A-Za-z0-9._/-]*$"},"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"requiresRunning":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},{"type":"object","required":["command","jsonField","equals"],"additionalProperties":false,"properties":{"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"jsonField":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"},"equals":{"type":"string","pattern":"^[A-Za-z0-9._-]+$"}}}]},"workdir":{"type":"object","required":["flag","root"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-{1,2}[A-Za-z][A-Za-z0-9-]*$"},"root":{"type":"string","pattern":"^(/(?!\\.{1,2}(/|$))[A-Za-z0-9._-]+)+$"}}}}},"contractSync":{"type":"object","additionalProperties":false,"properties":{"routeListCommand":{"type":"string"},"consumer":{"type":"boolean","enum":[true]},"template":{"type":"string"}}},"skills":{"type":"object","additionalProperties":false,"properties":{"conventions":{"type":"array","items":{"type":"string"}},"testing":{"type":"array","items":{"type":"string"}},"scaffold":{"type":"array","items":{"type":"string"}}}},"packageManagers":{"type":"array","items":{"type":"object","required":["name","lockfiles","run"],"additionalProperties":false,"properties":{"name":{"type":"string"},"lockfiles":{"type":"array","items":{"type":"string"}},"run":{"type":"string"},"exec":{"type":"string"}}}},"scaffold":{"type":"object","additionalProperties":false,"properties":{"command":{"type":"string"},"tooling":{"type":"array","items":{"type":"string"}}}},"ci":{"type":"object","additionalProperties":false,"properties":{"services":{"type":"array","items":{"type":"string"}},"setup":{"type":"array","items":{"type":"string"}}}},"e2e":{"type":"object","required":["configGlob","run","convention"],"additionalProperties":false,"properties":{"configGlob":{"type":"string"},"run":{"type":"string"},"convention":{"type":"string"},"seed":{"type":"string"},"file":{"type":"string"}}},"migrations":{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string"},"run":{"type":"string"},"fresh":{"type":"string"}}},"audit":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"}}}},"markers":{"type":"array","items":{"type":"string"}},"packages":{"type":"object","additionalProperties":false,"properties":{"composer":{"type":"array","items":{"type":"string"}},"npm":{"type":"array","items":{"type":"string"}}}},"e2eBackend":{"type":"object","required":["convention"],"additionalProperties":false,"properties":{"convention":{"type":"string"},"seed":{"type":"string"}}},"sourceDirs":{"type":"array","items":{"type":"string"}},"gateTemplates":{"type":"array","items":{"type":"object","required":["evidence","command"],"additionalProperties":false,"properties":{"evidence":{"type":"string"},"command":{"type":"string","pattern":"\\{script\\}"}}}},"devUrlHosts":{"type":"array","items":{"type":"string","pattern":"^[a-z0-9-]+(\\.[a-z0-9-]+)+$"}},"extends":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"}}},{"type":"array","items":{"type":"object","required":["name","order","role","detect","agent","conventions","gates","debugPatterns","acceptance"],"additionalProperties":false,"properties":{"$schema":{"type":"string"},"name":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"},"order":{"type":"integer"},"role":{"type":"string","enum":["backend","frontend","fullstack","mobile"]},"detect":{"type":"string"},"agent":{"type":"object","required":["name"],"additionalProperties":false,"properties":{"name":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"},"plugin":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"}}},"conventions":{"type":"array","items":{"type":"string"}},"gates":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"},"skipWhenScaffolded":{"type":"boolean","enum":[true]},"kind":{"type":"string","enum":["format","lint","types","test","e2e","build","other"]},"unless":{"type":"array","items":{"type":"string"}},"requires":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"}}]}}]},"lintFix":{"type":"object","required":["flag","fallback"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-[A-Za-z0-9=_-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}},"scriptFallback":{"type":"object","required":["dependency","manifest","minMajor","contains","fallback"],"additionalProperties":false,"properties":{"dependency":{"type":"string","pattern":"^[A-Za-z0-9@_./-]+$"},"manifest":{"type":"string","pattern":"^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$"},"minMajor":{"type":"integer"},"contains":{"type":"string","pattern":"^[A-Za-z0-9 _./:=-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}}}}},"debugPatterns":{"type":"array","items":{"type":"string"}},"acceptance":{"type":"string"},"notes":{"type":"string"},"devUrl":{"type":"string"},"visual":{"type":"string"},"buildGateGuard":{"type":"string"},"execWrapper":{"type":"object","required":["when","command"],"additionalProperties":false,"properties":{"when":{"type":"string","pattern":"^[A-Za-z0-9._][A-Za-z0-9._/-]*$"},"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"requiresRunning":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},{"type":"object","required":["command","jsonField","equals"],"additionalProperties":false,"properties":{"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"jsonField":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"},"equals":{"type":"string","pattern":"^[A-Za-z0-9._-]+$"}}}]},"workdir":{"type":"object","required":["flag","root"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-{1,2}[A-Za-z][A-Za-z0-9-]*$"},"root":{"type":"string","pattern":"^(/(?!\\.{1,2}(/|$))[A-Za-z0-9._-]+)+$"}}}}},"contractSync":{"type":"object","additionalProperties":false,"properties":{"routeListCommand":{"type":"string"},"consumer":{"type":"boolean","enum":[true]},"template":{"type":"string"}}},"skills":{"type":"object","additionalProperties":false,"properties":{"conventions":{"type":"array","items":{"type":"string"}},"testing":{"type":"array","items":{"type":"string"}},"scaffold":{"type":"array","items":{"type":"string"}}}},"packageManagers":{"type":"array","items":{"type":"object","required":["name","lockfiles","run"],"additionalProperties":false,"properties":{"name":{"type":"string"},"lockfiles":{"type":"array","items":{"type":"string"}},"run":{"type":"string"},"exec":{"type":"string"}}}},"scaffold":{"type":"object","additionalProperties":false,"properties":{"command":{"type":"string"},"tooling":{"type":"array","items":{"type":"string"}}}},"ci":{"type":"object","additionalProperties":false,"properties":{"services":{"type":"array","items":{"type":"string"}},"setup":{"type":"array","items":{"type":"string"}}}},"e2e":{"type":"object","required":["configGlob","run","convention"],"additionalProperties":false,"properties":{"configGlob":{"type":"string"},"run":{"type":"string"},"convention":{"type":"string"},"seed":{"type":"string"},"file":{"type":"string"}}},"migrations":{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string"},"run":{"type":"string"},"fresh":{"type":"string"}}},"audit":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"}}}},"markers":{"type":"array","items":{"type":"string"}},"packages":{"type":"object","additionalProperties":false,"properties":{"composer":{"type":"array","items":{"type":"string"}},"npm":{"type":"array","items":{"type":"string"}}}},"e2eBackend":{"type":"object","required":["convention"],"additionalProperties":false,"properties":{"convention":{"type":"string"},"seed":{"type":"string"}}},"sourceDirs":{"type":"array","items":{"type":"string"}},"gateTemplates":{"type":"array","items":{"type":"object","required":["evidence","command"],"additionalProperties":false,"properties":{"evidence":{"type":"string"},"command":{"type":"string","pattern":"\\{script\\}"}}}},"devUrlHosts":{"type":"array","items":{"type":"string","pattern":"^[a-z0-9-]+(\\.[a-z0-9-]+)+$"}},"extends":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"}}}}]}
+const STACK_SCHEMA = {"oneOf":[{"type":"object","required":["name","order","role","detect","agent","conventions","gates","debugPatterns","acceptance"],"additionalProperties":false,"properties":{"$schema":{"type":"string"},"name":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"},"order":{"type":"integer"},"role":{"type":"string","enum":["backend","frontend","fullstack","mobile"]},"detect":{"type":"string"},"agent":{"type":"object","required":["name"],"additionalProperties":false,"properties":{"name":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"},"plugin":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"}}},"conventions":{"type":"array","items":{"type":"string"}},"gates":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"},"skipWhenScaffolded":{"type":"boolean","enum":[true]},"kind":{"type":"string","enum":["format","lint","types","test","e2e","build","other"]},"unless":{"type":"array","items":{"type":"string"}},"requires":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"}}]}}]},"lintFix":{"type":"object","required":["flag","fallback"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-[A-Za-z0-9=_-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}},"scriptFallback":{"type":"object","required":["dependency","manifest","minMajor","contains","fallback"],"additionalProperties":false,"properties":{"dependency":{"type":"string","pattern":"^[A-Za-z0-9@_./-]+$"},"manifest":{"type":"string","pattern":"^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$"},"minMajor":{"type":"integer"},"contains":{"type":"string","pattern":"^[A-Za-z0-9 _./:=-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}}}}},"debugPatterns":{"type":"array","items":{"type":"string"}},"acceptance":{"type":"string"},"notes":{"type":"string"},"devUrl":{"type":"string"},"visual":{"type":"string"},"buildGateGuard":{"type":"string"},"execWrapper":{"type":"object","required":["when","command"],"additionalProperties":false,"properties":{"when":{"type":"string","pattern":"^[A-Za-z0-9._][A-Za-z0-9._/-]*$"},"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"requiresRunning":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},{"type":"object","required":["command","jsonField","equals"],"additionalProperties":false,"properties":{"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"jsonField":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"},"equals":{"type":"string","pattern":"^[A-Za-z0-9._-]+$"},"devUrlFields":{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"}}}}]},"workdir":{"type":"object","required":["flag","root"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-{1,2}[A-Za-z][A-Za-z0-9-]*$"},"root":{"type":"string","pattern":"^(/(?!\\.{1,2}(/|$))[A-Za-z0-9._-]+)+$"}}}}},"contractSync":{"type":"object","additionalProperties":false,"properties":{"routeListCommand":{"type":"string"},"consumer":{"type":"boolean","enum":[true]},"template":{"type":"string"}}},"skills":{"type":"object","additionalProperties":false,"properties":{"conventions":{"type":"array","items":{"type":"string"}},"testing":{"type":"array","items":{"type":"string"}},"scaffold":{"type":"array","items":{"type":"string"}}}},"packageManagers":{"type":"array","items":{"type":"object","required":["name","lockfiles","run"],"additionalProperties":false,"properties":{"name":{"type":"string"},"lockfiles":{"type":"array","items":{"type":"string"}},"run":{"type":"string"},"exec":{"type":"string"}}}},"scaffold":{"type":"object","additionalProperties":false,"properties":{"command":{"type":"string"},"tooling":{"type":"array","items":{"type":"string"}}}},"ci":{"type":"object","additionalProperties":false,"properties":{"services":{"type":"array","items":{"type":"string"}},"setup":{"type":"array","items":{"type":"string"}}}},"e2e":{"type":"object","required":["configGlob","run","convention"],"additionalProperties":false,"properties":{"configGlob":{"type":"string"},"run":{"type":"string"},"convention":{"type":"string"},"seed":{"type":"string"},"file":{"type":"string"}}},"migrations":{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string"},"run":{"type":"string"},"fresh":{"type":"string"}}},"audit":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"}}}},"markers":{"type":"array","items":{"type":"string"}},"packages":{"type":"object","additionalProperties":false,"properties":{"composer":{"type":"array","items":{"type":"string"}},"npm":{"type":"array","items":{"type":"string"}}}},"e2eBackend":{"type":"object","required":["convention"],"additionalProperties":false,"properties":{"convention":{"type":"string"},"seed":{"type":"string"}}},"sourceDirs":{"type":"array","items":{"type":"string"}},"gateTemplates":{"type":"array","items":{"type":"object","required":["evidence","command"],"additionalProperties":false,"properties":{"evidence":{"type":"string"},"command":{"type":"string","pattern":"\\{script\\}"}}}},"devUrlHosts":{"type":"array","items":{"type":"string","pattern":"^[a-z0-9-]+(\\.[a-z0-9-]+)+$"}},"extends":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"}}},{"type":"array","items":{"type":"object","required":["name","order","role","detect","agent","conventions","gates","debugPatterns","acceptance"],"additionalProperties":false,"properties":{"$schema":{"type":"string"},"name":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"},"order":{"type":"integer"},"role":{"type":"string","enum":["backend","frontend","fullstack","mobile"]},"detect":{"type":"string"},"agent":{"type":"object","required":["name"],"additionalProperties":false,"properties":{"name":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"},"plugin":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"}}},"conventions":{"type":"array","items":{"type":"string"}},"gates":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"},"skipWhenScaffolded":{"type":"boolean","enum":[true]},"kind":{"type":"string","enum":["format","lint","types","test","e2e","build","other"]},"unless":{"type":"array","items":{"type":"string"}},"requires":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"}}]}}]},"lintFix":{"type":"object","required":["flag","fallback"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-[A-Za-z0-9=_-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}},"scriptFallback":{"type":"object","required":["dependency","manifest","minMajor","contains","fallback"],"additionalProperties":false,"properties":{"dependency":{"type":"string","pattern":"^[A-Za-z0-9@_./-]+$"},"manifest":{"type":"string","pattern":"^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$"},"minMajor":{"type":"integer"},"contains":{"type":"string","pattern":"^[A-Za-z0-9 _./:=-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}}}}},"debugPatterns":{"type":"array","items":{"type":"string"}},"acceptance":{"type":"string"},"notes":{"type":"string"},"devUrl":{"type":"string"},"visual":{"type":"string"},"buildGateGuard":{"type":"string"},"execWrapper":{"type":"object","required":["when","command"],"additionalProperties":false,"properties":{"when":{"type":"string","pattern":"^[A-Za-z0-9._][A-Za-z0-9._/-]*$"},"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"requiresRunning":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},{"type":"object","required":["command","jsonField","equals"],"additionalProperties":false,"properties":{"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"jsonField":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"},"equals":{"type":"string","pattern":"^[A-Za-z0-9._-]+$"},"devUrlFields":{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"}}}}]},"workdir":{"type":"object","required":["flag","root"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-{1,2}[A-Za-z][A-Za-z0-9-]*$"},"root":{"type":"string","pattern":"^(/(?!\\.{1,2}(/|$))[A-Za-z0-9._-]+)+$"}}}}},"contractSync":{"type":"object","additionalProperties":false,"properties":{"routeListCommand":{"type":"string"},"consumer":{"type":"boolean","enum":[true]},"template":{"type":"string"}}},"skills":{"type":"object","additionalProperties":false,"properties":{"conventions":{"type":"array","items":{"type":"string"}},"testing":{"type":"array","items":{"type":"string"}},"scaffold":{"type":"array","items":{"type":"string"}}}},"packageManagers":{"type":"array","items":{"type":"object","required":["name","lockfiles","run"],"additionalProperties":false,"properties":{"name":{"type":"string"},"lockfiles":{"type":"array","items":{"type":"string"}},"run":{"type":"string"},"exec":{"type":"string"}}}},"scaffold":{"type":"object","additionalProperties":false,"properties":{"command":{"type":"string"},"tooling":{"type":"array","items":{"type":"string"}}}},"ci":{"type":"object","additionalProperties":false,"properties":{"services":{"type":"array","items":{"type":"string"}},"setup":{"type":"array","items":{"type":"string"}}}},"e2e":{"type":"object","required":["configGlob","run","convention"],"additionalProperties":false,"properties":{"configGlob":{"type":"string"},"run":{"type":"string"},"convention":{"type":"string"},"seed":{"type":"string"},"file":{"type":"string"}}},"migrations":{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string"},"run":{"type":"string"},"fresh":{"type":"string"}}},"audit":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"}}}},"markers":{"type":"array","items":{"type":"string"}},"packages":{"type":"object","additionalProperties":false,"properties":{"composer":{"type":"array","items":{"type":"string"}},"npm":{"type":"array","items":{"type":"string"}}}},"e2eBackend":{"type":"object","required":["convention"],"additionalProperties":false,"properties":{"convention":{"type":"string"},"seed":{"type":"string"}}},"sourceDirs":{"type":"array","items":{"type":"string"}},"gateTemplates":{"type":"array","items":{"type":"object","required":["evidence","command"],"additionalProperties":false,"properties":{"evidence":{"type":"string"},"command":{"type":"string","pattern":"\\{script\\}"}}}},"devUrlHosts":{"type":"array","items":{"type":"string","pattern":"^[a-z0-9-]+(\\.[a-z0-9-]+)+$"}},"extends":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"}}}}]}
 const STACK_LIMITS = { maxString: 500, maxItems: 32, maxEntries: 8, maxRawLength: 65536 }
 const STACKS = {
   laravel: {
@@ -42,14 +44,16 @@ const STACKS = {
   },
   drupal: {
     role: 'backend',
-    detect: 'composer.json requiring drupal/core (often web/index.php)',
+    detect: 'composer.json requiring drupal/core (often web/index.php or docroot/index.php)',
     agent: 'drupal-backend-dev',
     conventions: ['module structure', 'services + dependency injection', 'plugins', 'hooks', 'config schema'],
     gates: [
       { name: 'PHPCS', command: './vendor/bin/phpcs --standard=Drupal,DrupalPractice --extensions=php,module,inc,install,test,profile,theme,info,yml web/modules/custom' },
+      { name: 'PHPCS (docroot)', command: './vendor/bin/phpcs --standard=Drupal,DrupalPractice --extensions=php,module,inc,install,test,profile,theme,info,yml docroot/modules/custom' },
       { name: 'PHPCS (project ruleset)', command: './vendor/bin/phpcs' },
       { name: 'PHPStan', command: './vendor/bin/phpstan analyse --no-progress' },
       { name: 'PHPUnit', command: './vendor/bin/phpunit -c web/core --fail-on-empty-test-suite web/modules/custom' },
+      { name: 'PHPUnit (docroot)', command: './vendor/bin/phpunit -c docroot/core --fail-on-empty-test-suite docroot/modules/custom' },
       { name: 'PHPUnit (project config)', command: './vendor/bin/phpunit --fail-on-empty-test-suite' },
     ],
     debugPatterns: ['dd(', 'dump(', 'kint(', 'var_dump('],
@@ -129,12 +133,17 @@ const STACK_TRAITS = {
     execWrapper: {
       when: '.ddev/config.yaml',
       command: 'ddev exec',
-      requiresRunning: { command: 'ddev describe -j', jsonField: 'raw.status', equals: 'running' },
+      requiresRunning: {
+        command: 'ddev describe -j',
+        jsonField: 'raw.status',
+        equals: 'running',
+        devUrlFields: ['raw.primary_url', 'raw.urls'],
+      },
       workdir: { flag: '--dir', root: '/var/www/html' },
     },
   },
   nextjs: {
-    buildGateGuard: 'Build gate and the dev server: `next build` writes the same .next/ directory a running `next dev` serves from, and later phases browse {devUrl}. Before the build, note whether {devUrl} responds (curl -s -o /dev/null -w \'%{http_code}\'). If next.config reads distDir from an environment variable, point the build at a separate directory (e.g. .next-gate) and delete it afterwards. Otherwise, after the build, curl {devUrl} again; if it responded before and does not now, restart the dev server in the background with the repo\'s dev script, wait until it responds, and say so in the Build gate\'s details.',
+    buildGateGuard: 'Build gate and the dev server: `next build` writes the same .next/ directory a running `next dev` serves from, and later phases browse {devUrl}. Before the build, note whether {devUrl} responds (curl -s -o /dev/null -w \'%{http_code}\' \'{devUrl}\', with the URL in single quotes). If next.config reads distDir from an environment variable, point the build at a separate directory (e.g. .next-gate) and delete it afterwards. Otherwise, after the build, run curl -s -o /dev/null \'{devUrl}\' again; if it responded before and does not now, restart the dev server in the background with the repo\'s dev script, wait until it responds, and say so in the Build gate\'s details.',
     contractConsumer: true,
     scaffoldSkipGates: ['tests'],
   },
@@ -181,6 +190,11 @@ const STACK_EXTRAS = {
         unless: ['phpcs.xml', 'phpcs.xml.dist', '.phpcs.xml', '.phpcs.xml.dist'],
         requires: ['vendor/drupal/coder', 'vendor/squizlabs/php_codesniffer/CodeSniffer.conf', 'web/modules/custom'],
       },
+      'PHPCS (docroot)': {
+        kind: 'lint',
+        unless: ['phpcs.xml', 'phpcs.xml.dist', '.phpcs.xml', '.phpcs.xml.dist', 'web/core/lib/Drupal.php'],
+        requires: ['vendor/drupal/coder', 'vendor/squizlabs/php_codesniffer/CodeSniffer.conf', 'docroot/modules/custom'],
+      },
       'PHPCS (project ruleset)': {
         kind: 'lint',
         requires: [
@@ -200,6 +214,11 @@ const STACK_EXTRAS = {
         unless: ['phpunit.xml', 'phpunit.xml.dist'],
         requires: ['vendor/bin/phpunit', 'web/core/phpunit.xml.dist', 'web/modules/custom'],
       },
+      'PHPUnit (docroot)': {
+        kind: 'test',
+        unless: ['phpunit.xml', 'phpunit.xml.dist', 'web/core/lib/Drupal.php'],
+        requires: ['vendor/bin/phpunit', 'docroot/core/phpunit.xml.dist', 'docroot/modules/custom'],
+      },
       'PHPUnit (project config)': {
         kind: 'test',
         requires: [
@@ -211,7 +230,7 @@ const STACK_EXTRAS = {
     skills: { conventions: ['drupal-11'] },
     markers: ['core/lib/Drupal.php', 'web/core/lib/Drupal.php', 'docroot/core/lib/Drupal.php'],
     packages: { composer: ['drupal/core', 'drupal/core-recommended'] },
-    sourceDirs: ['web/modules/custom/', 'web/themes/custom/', 'modules/'],
+    sourceDirs: ['web/modules/custom/', 'web/themes/custom/', 'docroot/modules/custom/', 'docroot/themes/custom/', 'modules/'],
   },
   nextjs: {
     gates: {
@@ -314,17 +333,17 @@ const FIRST_PARTY_PLUGINS = [
   'sdd-kit-drupal', 'sdd-kit-ios', 'sdd-kit-laravel', 'sdd-kit-nextjs',
 ]
 const FIRST_PARTY_HASHES = {
-  drupal: 'e4a37e0b7323832f8543a4a97bd579842924a297aa89949f311b501223703f7b',
+  drupal: 'f24249d79bc168f22609330abe015771d6066d413057c0f2a22e251acac31eed',
   ios: '9da615defa84b98b3c85cbb8041df8e4885249d750a5dfcdf3e2148a5d48ebb4',
   laravel: 'cbfa94fddbb6574cd56e67113e947398b288a81caacaca420cb25d864eebb3f2',
-  nextjs: '2d04238ba00012c041b94186a6f8284b50a64f2dc0748f941c1c755d51798428',
+  nextjs: 'ba420bc2f4053d58c9fa8dd82bbbf36836e3811cb599ffa2926ec21c1232b476',
   nuxt: '05cc03e90cd8df462339fec8b168f8f167f5a3438b5a5ef55c4e40ab31f6ab24',
 }
 const FIRST_PARTY_FILE_HASHES = {
-  drupal: 'e4a37e0b7323832f8543a4a97bd579842924a297aa89949f311b501223703f7b',
+  drupal: 'f24249d79bc168f22609330abe015771d6066d413057c0f2a22e251acac31eed',
   ios: '9da615defa84b98b3c85cbb8041df8e4885249d750a5dfcdf3e2148a5d48ebb4',
   laravel: 'cbfa94fddbb6574cd56e67113e947398b288a81caacaca420cb25d864eebb3f2',
-  nextjs: 'b790c60abe6c9be788705cab1bf179d5dea009009934b2881f6f079ec4b811da',
+  nextjs: 'cdc5364db9510ad7f02446986ab01dbaa66a1e8b33fd5cb2aa0e45b3ef4f2796',
 }
 const DEV_URL_HOSTS = [
   'ddev.site',
@@ -489,16 +508,37 @@ function runningCheckText(check) {
   return `\`${check.command}\` (passes when it exits 0 and a JSON line of its output has ${check.jsonField} equal to ${check.equals})`
 }
 
-// The skip text of a gate whose requires is unmet. A string names the missing file; a list names the whole requirement.
-function requiresSkipText(requires) {
+/**
+ * The skip text of a gate whose requires is unmet. A string names the missing file. A list names its unmet
+ * entries when they are known, and the whole requirement when they are not.
+ * @param {string|Array<string|string[]>} requires the gate's declared requires
+ * @param {Array<string|string[]>} [missing] the unmet entries, as declared; entries the list does not declare are ignored
+ * @returns {string}
+ * @example requiresSkipText(['bin/tool', ['a.conf', 'b.conf'], 'src/app'], ['src/app']) // 'not run (requires src/app)'
+ */
+function requiresSkipText(requires, missing) {
   if (typeof requires === 'string') return `not run (${requires.split('/').pop()} not installed)`
-  return `not run (requires ${requires.map((e) => (Array.isArray(e) ? `one of ${e.join(', ')}` : e)).join('; ')})`
+  const unmet = Array.isArray(missing) ? requires.filter((e) => missing.some((m) => sameRequiresEntry(e, m))) : []
+  return `not run (requires ${(unmet.length ? unmet : requires).map((e) => (Array.isArray(e) ? `one of ${e.join(', ')}` : e)).join('; ')})`
+}
+
+// Whether two requires entries are the same: equal paths, or one-of lists holding the same paths in any order.
+function sameRequiresEntry(a, b) {
+  if (typeof a === 'string' || typeof b === 'string') return a === b
+  if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false
+  return a.every((p) => b.includes(p))
 }
 
 // The requirement as Detect reads it: "needs <path>", or "needs <a> and one of <b>, <c>" for the list form.
 function requiresDetectText(requires) {
   if (typeof requires === 'string') return `needs ${requires}`
   return `needs ${requires.map((e) => (Array.isArray(e) ? `one of ${e.join(', ')}` : e)).join(' and ')}`
+}
+
+// The devUrlFields of an execWrapper's running check; [] for a string check or none.
+function devUrlFieldsOf(wrapper) {
+  const check = wrapper && wrapper.requiresRunning
+  return check && typeof check === 'object' && Array.isArray(check.devUrlFields) ? check.devUrlFields : []
 }
 
 // Stack keys whose execWrapper declares workdir: their marker may sit in a directory above the repo.
@@ -513,7 +553,11 @@ function execWrapperDetectLine() {
     return `${k}: marker ${w.when}${w.requiresRunning ? `, running check ${runningCheckText(w.requiresRunning)}` : ''}`
   })
   if (!rules.length) return ''
-  const line = ` EXEC WRAPPER — for a repo whose stack manifest declares execWrapper (${rules.join('; ')}; a discovered manifest names its own), set execWrapper {present} to whether the marker file exists in that repo and, when present and the manifest declares a running check, {running} to whether that check passes (run it in that repo); omit running for a wrapper without a running check.`
+  const hostRules = Object.keys(STACK_TRAITS).filter((k) => devUrlFieldsOf(STACK_TRAITS[k].execWrapper).length).map((k) => `${k}: ${devUrlFieldsOf(STACK_TRAITS[k].execWrapper).join(', ')}`)
+  const hosts = hostRules.length
+    ? ` For a manifest whose running check declares devUrlFields (${hostRules.join('; ')}; a discovered manifest names its own), when the check passes set reportedDevHosts to the hostname of every URL at those dotted paths of the same JSON output (a field holds a URL or a list of URLs; the hostname only, without scheme, port or path); omit reportedDevHosts otherwise.`
+    : ''
+  const line = ` EXEC WRAPPER — for a repo whose stack manifest declares execWrapper (${rules.join('; ')}; a discovered manifest names its own), set execWrapper {present} to whether the marker file exists in that repo and, when present and the manifest declares a running check, {running} to whether that check passes (run it in that repo); omit running for a wrapper without a running check.${hosts}`
   const nested = workdirStacks()
   if (!nested.length) return line
   return `${line} For a manifest whose execWrapper declares workdir (${nested.join(', ')}; a discovered manifest declares its own), the marker also counts as present when it is in an ancestor directory of the repo: check each ancestor, nearest first, up to the filesystem root, only with the Glob tool on the literal absolute path <ancestor>/<marker>, never reading the file, and set {dir} to the repo's path relative to the directory that holds the marker ("." when the marker is in the repo itself, plain relative path characters only); omit dir for any other wrapper.`
@@ -691,11 +735,13 @@ function e2eGlobsLine() {
 
 // Browser URL: the url argument, else the frontend repo's devUrl, else any repo's devUrl, else ''.
 // A repo's own devUrl (from Detect) wins over its manifest's default. Detect's value is used only when it
-// passes DEV_URL_PATTERN, and a manifest's default only when the manifest is first-party or trusted.
+// passes isDevUrl, and a manifest's default only when the manifest is first-party or trusted. The url argument
+// may also use a host reported by the repo it serves: the first frontend repo, else the first repo.
 function resolveDevUrl(hint, repos) {
-  const given = runUrlHint(hint)
-  if (given) return given
   const list = repos || []
+  const served = list.find((r) => isFrontendRepo(r)) || list[0]
+  const given = runUrlHint(hint, served && served.reportedDevHosts)
+  if (given) return given
   const front = list.find((r) => isFrontendRepo(r) && repoDevUrl(r))
   const any = front || list.find((r) => repoDevUrl(r))
   return any ? repoDevUrl(any) : ''
@@ -703,10 +749,11 @@ function resolveDevUrl(hint, repos) {
 
 let urlHintLogged = false
 
-// The run-level url argument when it passes DEV_URL_PATTERN; otherwise null, with one log line per run.
-function runUrlHint(hint) {
+// The run-level url argument when it passes isDevUrl for the hosts of the repo it serves; otherwise null, with
+// one log line per run.
+function runUrlHint(hint, repoHosts) {
   if (!hint) return null
-  if (isDevUrl(hint)) return hint
+  if (isDevUrl(hint, repoHosts)) return hint
   if (!urlHintLogged) {
     urlHintLogged = true
     log(`url argument is not a local dev URL — ignored. Fix: pass an http(s) URL on ${DEV_URL_HOST_TEXT}`)
@@ -714,12 +761,13 @@ function runUrlHint(hint) {
   return null
 }
 
-// A repo's own dev URL: Detect's value when it passes DEV_URL_PATTERN, else its first-party or trusted manifest's
-// default when that passes too. An approved manifest is still text the user wrote, so its devUrl is never trusted
-// to point the browser phases at a host outside the dev-URL rule.
+// A repo's own dev URL: Detect's value when it passes isDevUrl with the repo's reported hosts, else its
+// first-party or trusted manifest's default when that passes too. An approved manifest is still text the user
+// wrote, so its devUrl is never trusted to point the browser phases at a host outside the dev-URL rule.
 function repoDevUrl(r) {
   const manifestUrl = (hasOwn(STACKS, r.stack) && !isUntrustedStack(r.stack) && !r.declinedStack && STACKS[r.stack].devUrl) || ''
-  return (isDevUrl(r.devUrl) ? r.devUrl : '') || (isDevUrl(manifestUrl) ? manifestUrl : '')
+  const hosts = r.reportedDevHosts
+  return (isDevUrl(r.devUrl, hosts) ? r.devUrl : '') || (isDevUrl(manifestUrl, hosts) ? manifestUrl : '')
 }
 
 /**
@@ -754,11 +802,11 @@ function normalizeRepoHints(hints) {
 function frontendTargets(repos, entries, hint) {
   const same = (a, b) => String(a).replace(/^\.\//, '').replace(/\/+$/, '') === String(b).replace(/^\.\//, '').replace(/\/+$/, '')
   const fronts = (repos || []).filter(isFrontendRepo)
-  const given = runUrlHint(hint)
+  const given = runUrlHint(hint, fronts.length === 1 ? fronts[0].reportedDevHosts : undefined)
   const targets = []
   for (const repo of fronts) {
     const entry = (entries || []).find((e) => same(e.path, repo.path))
-    if (entry && entry.url !== undefined && !isDevUrl(entry.url)) {
+    if (entry && entry.url !== undefined && !isDevUrl(entry.url, repo.reportedDevHosts)) {
       return { targets, error: `The url for ${repo.path} is not a local development URL. Fix: pass http://localhost:<port> (or another local host) as that entry's url.` }
     }
     targets.push({ repo, url: (entry && entry.url) || (fronts.length === 1 && given) || repoDevUrl(repo) })
@@ -936,22 +984,78 @@ const addAgentHint = (name) => (HOST === 'claude'
 const HOST_TRUST_STORE_DIR = HOSTS[HOST].trustStoreDir.replace('<OS home>', '<home>')
 const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')
 // Plugin installs namespace agents ("sdd-kit:code-explorer", "<plugin>:<agent>");
-// file-copy installs use bare names. Workflows cannot tell which mode they run
-// in, so candidates are tried in order and the default agent is the last resort:
-//   - a core agent (CORE_AGENTS): "sdd-kit:<name>", then the bare name;
-//   - a stack specialist (AGENT_INFO): the bare name, then "<plugin>:<name>" only when its manifest sets agent.plugin;
+// file-copy installs use bare names. Detect reports which one this run sees as
+// discovery.mode (resolveDetect records it), and the candidates follow it so a pure
+// install resolves every agent on the first try. The default agent is the last resort:
+//   - a core agent (CORE_AGENTS): "sdd-kit:<name>" and the bare name;
+//   - a stack specialist (AGENT_INFO): the bare name and "<plugin>:<name>", the latter only when its manifest sets agent.plugin;
 //   - general-purpose is never resolved.
+// "plugin" puts the namespaced form first, "file-copy" the bare name. "mixed", "unknown",
+// "none" and every call made before Detect returns keep the default order: the namespaced
+// form first for a core agent, the bare name first for a specialist.
 // A candidate fails only when agent() throws (unknown agent type). A null result is the agent's own
 // outcome (skipped, or ended without output) and is returned, so a resolved prompt never runs twice.
-// The form that resolved, or null for the default agent, is remembered per agent name for the run,
-// so later calls go straight to it and the fallback is logged once.
+// The resolution (the form that worked, or null for the default agent) is kept per agent name for the
+// run, so later calls go straight to the resolved form and the fallback is logged once. A form that
+// worked is known only when its whole agent run returns, so calls that start together do not wait for
+// it: each tries the candidates itself, skipping the forms an earlier call saw rejected.
 const resolvedAgents = new Map()
+const rejectedAgentTypes = new Set()
+let discoveryMode = null
 
-function agentCandidates(name) {
-  if (CORE_AGENTS.includes(name)) return { candidates: [`sdd-kit:${name}`, name], hint: 'reinstall sdd-kit (core agent missing)' }
+/**
+ * Agent counts and token totals per phase for the run report.
+ * phases[name] = { agents, tokens }: agents counts runAgent calls made with opts.phase = name
+ * ('unphased' when absent); tokens is the budget spent while the phase was the current
+ * costSnapshot phase, or null when the run has no budget. probesFailed counts candidate
+ * names agent() rejected while resolving an agent type.
+ */
+const RUN_COST = { phases: {}, probesFailed: 0 }
+let costMark = null
+
+function costPhase(name) {
+  if (!hasOwn(RUN_COST.phases, name)) RUN_COST.phases[name] = { agents: 0, tokens: null }
+  return RUN_COST.phases[name]
+}
+
+const runBudget = () => (typeof budget !== 'undefined' && budget && budget.total > 0 ? budget : null)
+
+/**
+ * Closes the current cost phase and opens `name`. Call it right after each main-line phase()
+ * call, with the same title. The budget spent since the previous snapshot is added to the
+ * previous phase, so a phase that repeats (a fix loop) accumulates. With no budget
+ * (budget.total 0, as on the bridge) tokens stay null and the report prints "tokens: n/a".
+ * @param {string} name the phase being entered
+ * @returns {void}
+ * @example
+ * phase('Build'); costSnapshot('Build')
+ */
+function costSnapshot(name) {
+  const b = runBudget()
+  const remaining = b ? b.remaining() : null
+  if (costMark && b && costMark.remaining !== null) {
+    const entry = costPhase(costMark.phase)
+    entry.tokens = (entry.tokens || 0) + Math.max(0, costMark.remaining - remaining)
+  }
+  costPhase(name)
+  costMark = { phase: name, remaining }
+}
+
+/**
+ * Candidate agent types for `name`, in the order runAgent tries them.
+ * @param {string} name agent name without a plugin prefix
+ * @param {string|null} [mode] Detect's discovery.mode; null (before Detect) keeps the default order
+ * @returns {{ candidates: string[], hint: string }} hint: what to install or add when none resolves
+ */
+function agentCandidates(name, mode = discoveryMode) {
+  if (CORE_AGENTS.includes(name)) {
+    const candidates = mode === 'file-copy' ? [name, `sdd-kit:${name}`] : [`sdd-kit:${name}`, name]
+    return { candidates, hint: 'reinstall sdd-kit (core agent missing)' }
+  }
   if (hasOwn(AGENT_INFO, name)) {
     const info = AGENT_INFO[name]
-    const candidates = info.plugin ? [name, `${info.plugin}:${name}`] : [name]
+    const namespaced = info.plugin ? [`${info.plugin}:${name}`] : []
+    const candidates = mode === 'plugin' ? [...namespaced, name] : [name, ...namespaced]
     const stacks = info.stacks.join(', ')
     const hint = info.plugin
       ? `install ${info.plugin} for ${stacks}`
@@ -961,7 +1065,15 @@ function agentCandidates(name) {
   return { candidates: [name], hint: addAgentHint(name) }
 }
 
+/**
+ * Runs `prompt` through agent() with the agent type resolved for this install, adds the
+ * browser guide to browser phases, and counts the call under opts.phase in RUN_COST.
+ * @param {string} prompt
+ * @param {object} [opts] agent() options; agentType is a bare agent name
+ * @returns {Promise<*>} the agent's result
+ */
 async function runAgent(prompt, opts) {
+  costPhase((opts && opts.phase) || 'unphased').agents += 1
   if (opts && BROWSER_PHASES.has(opts.phase)) prompt = `${prompt}\n\n${browserGuideFor()}`
   if (!opts || !opts.agentType || opts.agentType === 'general-purpose') return agent(prompt, opts)
   const name = opts.agentType
@@ -972,18 +1084,23 @@ async function runAgent(prompt, opts) {
   }
   const { candidates, hint } = agentCandidates(name)
   for (const candidate of candidates) {
+    if (rejectedAgentTypes.has(candidate)) continue
     let result
     try {
       result = await agent(prompt, { ...opts, agentType: candidate })
     } catch (e) {
       // Unknown agent type in this install mode; try the next form.
+      rejectedAgentTypes.add(candidate)
+      RUN_COST.probesFailed += 1
       continue
     }
-    resolvedAgents.set(name, candidate)
+    if (!resolvedAgents.has(name)) resolvedAgents.set(name, candidate)
     return result
   }
-  resolvedAgents.set(name, null)
-  log(`Specialist ${name} not available (tried: ${candidates.join(', ')}); ${hint}. Falling back to general-purpose.`)
+  if (!resolvedAgents.has(name)) {
+    resolvedAgents.set(name, null)
+    log(`Specialist ${name} not available (tried: ${candidates.join(', ')}); ${hint}. Falling back to general-purpose.`)
+  }
   return agent(prompt, rest)
 }
 
@@ -1642,6 +1759,15 @@ const REPO_UNLESS_SCHEMA = {
   items: { type: 'object', required: ['gate', 'glob'], properties: { gate: { type: 'string' }, glob: { type: 'string' } } },
 }
 const GATE_NAMES_SCHEMA = { type: 'array', items: { type: 'string' } }
+// Per repo: the unmet entries of each gate whose requires list is unmet, each entry as the manifest writes it.
+const MISSING_REQUIRES_SCHEMA = {
+  type: 'array',
+  items: {
+    type: 'object',
+    required: ['gate', 'entries'],
+    properties: { gate: { type: 'string' }, entries: { type: 'array', items: { anyOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }] } } },
+  },
+}
 const EXEC_WRAPPER_FACT_SCHEMA = { type: 'object', required: ['present'], properties: { present: { type: 'boolean' }, running: { type: 'boolean' }, dir: { type: 'string' } } }
 /**
  * The per-repo answers the Detect prompt asks for (stackDiscoveryPrompt), spread into the repo item of
@@ -1654,12 +1780,16 @@ const REPO_DETECT_SCHEMA = {
   // Exec wrapper of the stack manifest: present = its marker file exists here, running = its running check succeeded,
   // dir = this repo's path relative to the marker's directory, for a wrapper with workdir.
   execWrapper: EXEC_WRAPPER_FACT_SCHEMA,
+  // Hostnames of the URLs at the manifest's devUrlFields in the running check's output, when that check passed.
+  reportedDevHosts: GATE_NAMES_SCHEMA,
   // Gates whose `requires` file is absent in this repo.
   missingTools: GATE_NAMES_SCHEMA,
+  // For each such gate with a requires list: the entries that are unmet.
+  missingRequires: MISSING_REQUIRES_SCHEMA,
   // Per trusted extending manifest (keyed by its name): the facts above answered for that manifest's own fields.
   overlayFacts: {
     type: 'object',
-    additionalProperties: { type: 'object', properties: { execWrapper: EXEC_WRAPPER_FACT_SCHEMA, missingTools: GATE_NAMES_SCHEMA, unlessMatched: REPO_UNLESS_SCHEMA } },
+    additionalProperties: { type: 'object', properties: { execWrapper: EXEC_WRAPPER_FACT_SCHEMA, reportedDevHosts: GATE_NAMES_SCHEMA, missingTools: GATE_NAMES_SCHEMA, missingRequires: MISSING_REQUIRES_SCHEMA, unlessMatched: REPO_UNLESS_SCHEMA } },
   },
   // Gates whose project script contains the `lintFix` flag.
   mutatingGates: GATE_NAMES_SCHEMA,
@@ -1691,7 +1821,7 @@ function stackDiscoveryPrompt() {
   const hashRule = firstParty
     ? ` For a first-party location inside the project, hash the file first with \`${MANIFEST_HASH_COMMAND} <file>\`; when the hash equals the one listed for that add-on, return {source, sha256} and no raw. Expected hashes: ${firstParty}. A first-party location outside the project, or one whose hash differs or cannot be computed, returns raw like any other manifest.`
     : ''
-  return `STACK MANIFESTS — follow your stack discovery recipe and also return: stackManifests (one item per manifest you found: source as project:${HOST_STACKS_DIR}/<file>, user:${HOST_USER_STACKS_DIR}/<file> or plugin:<name>@<marketplace> (plugin:<name>@inline for a --plugin-dir plugin), raw = the file text, unmodified.${hashRule}), trustStore (the verbatim text of ${HOST_TRUST_STORE_DIR}/trusted-stacks.json, where <home> is the home directory your recipe reads from the OS user database, never $HOME or CLAUDE_CONFIG_DIR; null or omitted when the file is absent; null or omitted plus "trustStore unreadable" in discovery.errors when <home> cannot be resolved or the Read is refused or fails), and discovery {mode, method, errors}. Outside the project use only the Read and Glob tools, on literal absolute paths under the <config> directory and the ${HOST_TRUST_STORE_DIR} directory your recipe resolves: never cat, ls or find there, and no Bash command with a variable in braces.${workdirOutsideRule()} A refused read goes into discovery.errors ("trustStore unreadable", "user stacks unreadable", "plugin list unreadable") and is never treated as trusted. A repo that matches no catalog stack but matches a manifest's detect text takes that manifest's name as stack. For each repo and each gate of its stack that lists unless globs, add {gate, glob} to unlessMatched for every glob that matches a file or directory in that repo (${UNLESS_GLOB_RULE}). TRUST — run a discovered manifest's own commands (its running check, and test -e through its exec wrapper) only when its canonical sha256, computed with \`${MANIFEST_HASH_COMMAND} <file>\`, appears in the trustStore text you read; for any other manifest report only host-side reads (marker presence and unless matches). OVERLAY FACTS — for each such trusted manifest that declares extends: <key>, add to every repo of stack <key> an overlayFacts.<manifest name> object {execWrapper, missingTools, unlessMatched}, answered for that manifest's own fields.${execWrapperDetectLine()}${gateGuardDetectLine()}
+  return `STACK MANIFESTS — follow your stack discovery recipe and also return: stackManifests (one item per manifest you found: source as project:${HOST_STACKS_DIR}/<file>, user:${HOST_USER_STACKS_DIR}/<file> or plugin:<name>@<marketplace> (plugin:<name>@inline for a --plugin-dir plugin), raw = the file text, unmodified.${hashRule}), trustStore (the verbatim text of ${HOST_TRUST_STORE_DIR}/trusted-stacks.json, where <home> is the home directory your recipe reads from the OS user database, never $HOME or CLAUDE_CONFIG_DIR; null or omitted when the file is absent; null or omitted plus "trustStore unreadable" in discovery.errors when <home> cannot be resolved or the Read is refused or fails), and discovery {mode, method, errors}. Outside the project use only the Read and Glob tools, on literal absolute paths under the <config> directory and the ${HOST_TRUST_STORE_DIR} directory your recipe resolves: never cat, ls or find there, and no Bash command with a variable in braces.${workdirOutsideRule()} A refused read goes into discovery.errors ("trustStore unreadable", "user stacks unreadable", "plugin list unreadable") and is never treated as trusted. A repo that matches no catalog stack but matches a manifest's detect text takes that manifest's name as stack. For each repo and each gate of its stack that lists unless globs, add {gate, glob} to unlessMatched for every glob that matches a file or directory in that repo (${UNLESS_GLOB_RULE}). TRUST — run a discovered manifest's own commands (its running check, and test -e through its exec wrapper) only when its canonical sha256, computed with \`${MANIFEST_HASH_COMMAND} <file>\`, appears in the trustStore text you read; for any other manifest report only host-side reads (marker presence and unless matches). OVERLAY FACTS — for each such trusted manifest that declares extends: <key>, add to every repo of stack <key> an overlayFacts.<manifest name> object {execWrapper, reportedDevHosts, missingTools, unlessMatched}, answered for that manifest's own fields.${execWrapperDetectLine()}${gateGuardDetectLine()}
 
 ${REPO_PATH_RULE}`
 }
@@ -1699,13 +1829,25 @@ ${REPO_PATH_RULE}`
 // Local development hosts only: localhost, the loopback addresses, and *.localhost, *.test and every first-party
 // devUrlHosts suffix. A suffix needs at least one label before it; labels may use any case, suffixes are lower case.
 const DEV_URL_SUFFIXES = ['localhost', 'test', ...DEV_URL_HOSTS]
+// Port, plain path and a query string. The query set holds no space, quote, backtick, $, ;, &, <, > or #, so a
+// dev URL cannot break out of the quoted text of a prompt or chain a second command when an agent pastes it
+// into a shell line.
+const DEV_URL_TAIL = '(?::\\d{1,5})?(?:\\/[A-Za-z0-9._~/-]*)?(?:\\?[A-Za-z0-9._~=%/-]*)?$'
 const DEV_URL_PATTERN = new RegExp(
-  `^https?:\\/\\/(?:localhost|127\\.0\\.0\\.1|\\[::1\\]|(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)+(?:${DEV_URL_SUFFIXES.map(escapeRegex).join('|')}))(?::\\d{1,5})?(?:\\/[A-Za-z0-9._~/-]*)?$`
+  `^https?:\\/\\/(?:localhost|127\\.0\\.0\\.1|\\[::1\\]|(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)+(?:${DEV_URL_SUFFIXES.map(escapeRegex).join('|')}))${DEV_URL_TAIL}`
 )
+// A hostname a repo's running check reported through its manifest's devUrlFields: two or more DNS labels.
+const REPORTED_HOST_PATTERN = /^(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?$/
+// A dev URL on such a host; group 1 is the hostname, matched against the repo's reported hosts.
+const REPORTED_HOST_URL_PATTERN = new RegExp(`^https?:\\/\\/(${REPORTED_HOST_PATTERN.source.slice(1, -1)})${DEV_URL_TAIL}`)
+// Private and reserved top-level names (RFC 2606, RFC 6761, RFC 6762 appendix G, RFC 8375, ICANN .internal).
+// A reported host widens the dev-URL rule only when it ends in one of them or in a dev URL suffix; any other host,
+// such as an extra FQDN on a public or country-code TLD (staging.example.com, shop.co.uk) or an IP address, is dropped.
+const PRIVATE_TLDS = ['internal', 'local', 'lan', 'home.arpa', 'localhost', 'test', 'example', 'invalid', 'intranet', 'private', 'corp', 'home']
 // The same host set as prose, for prompts, logs and Fix text.
 const DEV_URL_HOST_TEXT = `localhost, 127.0.0.1, [::1] or a ${DEV_URL_SUFFIXES.map((h) => `*.${h}`).join(', ').replace(/, ([^,]*)$/, ' or $1')} host`
 // How Detect reports repo paths and dev URLs so that resolveDetect keeps them (isRepoPath, isDevUrl).
-const REPO_PATH_RULE = `REPO PATHS — report each repo's path relative to the current directory ("." for the current directory itself), using only letters, digits, ".", "_", "/" and "-", with no ".." segment and no leading "-". A repo outside the current directory is reported only when the caller hinted its root, and then with that hint verbatim. Any other path drops the repo. devUrl must be an http(s) URL on ${DEV_URL_HOST_TEXT} (optional port and plain path); any other devUrl is dropped.`
+const REPO_PATH_RULE = `REPO PATHS — report each repo's path relative to the current directory ("." for the current directory itself), using only letters, digits, ".", "_", "/" and "-", with no ".." segment and no leading "-". A repo outside the current directory is reported only when the caller hinted its root, and then with that hint verbatim. Any other path drops the repo. devUrl must be an http(s) URL on ${DEV_URL_HOST_TEXT}, or on a host in that repo's reportedDevHosts (optional port, plain path and query string); any other devUrl is dropped.`
 
 /**
  * Runs the Detect agent call, turning a throw into a failure message instead of ending the workflow.
@@ -1745,6 +1887,7 @@ function resolveDetect(project, opts) {
     discovery.method = 'none'
     discovery.errors = [`Detect failed: ${failure}`]
   }
+  discoveryMode = discovery.mode
   const roots = callerRoots(o.roots)
   let list = (data && Array.isArray(data[listKey]) ? data[listKey] : []).filter((r) => {
     if (r && typeof r === 'object' && isRepoPath(r.path, roots)) return true
@@ -1806,15 +1949,71 @@ function isRepoPath(p, roots) {
   return !p.startsWith('/') && !p.split('/').includes('..')
 }
 
+/**
+ * The tracker key a workflow may put into a branch name, a folder or file name, or shell text: an uppercase
+ * Jira-style key (PROJ-123) of at most 64 characters, so it holds no shell metacharacter or path separator
+ * and stays a valid ref name. Anything else gives ''.
+ * @param {unknown} value the ticket the caller passed or the run read
+ * @returns {string} the key, or '' when it is not a safe key
+ * @example ticketKey('PROJ-123') // 'PROJ-123'
+ * @example ticketKey('proj-123') // ''
+ * @example ticketKey('PROJ-1; rm -rf ~') // ''
+ */
+function ticketKey(value) {
+  return typeof value === 'string' && value.length <= 64 && /^[A-Z][A-Z0-9_]+-\d+$/.test(value) ? value : ''
+}
+
 // The repo roots a caller passed (args.repos as an object or array of paths), limited to the path characters.
 function callerRoots(hints) {
   const values = (Array.isArray(hints) ? hints : hints && typeof hints === 'object' ? Object.values(hints) : []).map((v) => (v && typeof v === 'object' ? v.path : v))
   return new Set(values.filter((v) => typeof v === 'string' && REPO_PATH_PATTERN.test(v) && !v.startsWith('-')))
 }
 
-// Whether a dev server URL may be quoted: http(s) on a local development host, with an optional port and plain path.
-function isDevUrl(url) {
-  return typeof url === 'string' && url.length <= 200 && DEV_URL_PATTERN.test(url)
+/**
+ * Whether a dev server URL may be quoted: http(s) on a local development host, or on exactly one of the hosts the
+ * repo's own running check reported (reportedHostsFor), with an optional port, plain path and query string.
+ * @param {unknown} url the URL
+ * @param {string[]} [repoHosts] the reportedDevHosts of the repo the URL is for, lower case
+ * @returns {boolean}
+ * @example isDevUrl('https://shop.test/user/login?destination=/node') // true
+ * @example isDevUrl('https://shop.internal', ['shop.internal']) // true
+ * @example isDevUrl('https://other.internal', ['shop.internal']) // false
+ */
+function isDevUrl(url, repoHosts) {
+  if (typeof url !== 'string' || url.length > 200) return false
+  if (DEV_URL_PATTERN.test(url)) return true
+  const m = Array.isArray(repoHosts) && repoHosts.length ? REPORTED_HOST_URL_PATTERN.exec(url) : null
+  return !!m && repoHosts.includes(m[1].toLowerCase())
+}
+
+/**
+ * The hosts a repo's running check reported through its manifest's execWrapper.requiresRunning.devUrlFields,
+ * kept only when the manifest is first-party or trusted, declares the field, and the check passed. A host must
+ * have two or more DNS labels and end in a PRIVATE_TLDS name or a dev URL suffix; the rest are dropped and logged.
+ * @param {object} r the reported repo
+ * @param {string} stack its resolved stack key
+ * @param {boolean} declined whether the stack comes from a manifest this run does not use
+ * @returns {string[]} lower-case hostnames, at most MAX_TEXT_ITEMS
+ * @example reportedHostsFor({ path: '.', execWrapper: { present: true, running: true }, reportedDevHosts: ['Site.internal', 'staging.example.com'] }, 'acme', false) // ['site.internal'] when acme's running check declares devUrlFields
+ */
+function reportedHostsFor(r, stack, declined) {
+  const declared = devUrlFieldsOf(traitsFor(stack).execWrapper).length > 0
+  const ran = r.execWrapper && typeof r.execWrapper === 'object' && r.execWrapper.present === true && r.execWrapper.running === true
+  if (!Array.isArray(r.reportedDevHosts) || declined || isUntrustedStack(stack) || !declared || !ran) return []
+  const where = r.path || '.'
+  const hosts = []
+  const publicHosts = []
+  let invalid = 0
+  const isPrivate = (h) => [...PRIVATE_TLDS, ...DEV_URL_SUFFIXES].some((tld) => h.endsWith(`.${tld}`))
+  for (const h of r.reportedDevHosts) {
+    if (typeof h !== 'string' || h.length > 253 || !REPORTED_HOST_PATTERN.test(h)) invalid++
+    else if (!isPrivate(h.toLowerCase())) publicHosts.push(h)
+    else if (!hosts.includes(h.toLowerCase())) hosts.push(h.toLowerCase())
+  }
+  if (publicHosts.length) log(`Reported dev hosts dropped for ${where}: ${publicHosts.slice(0, 5).join(', ')} are not on a private development TLD (${PRIVATE_TLDS.join(', ')}). Fix: open that site by a host on one of them or ${DEV_URL_HOST_TEXT}`)
+  if (invalid) log(`Reported dev hosts dropped for ${where}: ${invalid} value(s) are not hostnames.`)
+  if (hosts.length > MAX_TEXT_ITEMS) log(`Reported dev hosts for ${where}: ${hosts.length - MAX_TEXT_ITEMS} beyond the first ${MAX_TEXT_ITEMS} dropped.`)
+  return hosts.slice(0, MAX_TEXT_ITEMS)
 }
 
 /**
@@ -1851,6 +2050,21 @@ function declaredGateNames(stack, names, field) {
   return (Array.isArray(names) ? names : []).filter((n) => typeof n === 'string' && hasOwn(gates, n) && gates[n][field] !== undefined)
 }
 
+// The reported unmet requires entries, kept only for gates with a requires list and only for entries that list declares, in its order.
+function declaredMissingRequires(stack, reported) {
+  const gates = extrasFor(stack).gates || {}
+  const seen = new Set()
+  const out = []
+  for (const m of Array.isArray(reported) ? reported : []) {
+    if (!m || typeof m.gate !== 'string' || !hasOwn(gates, m.gate) || !Array.isArray(gates[m.gate].requires) || seen.has(m.gate) || !Array.isArray(m.entries)) continue
+    const entries = gates[m.gate].requires.filter((e) => m.entries.some((r) => sameRequiresEntry(e, r)))
+    if (!entries.length) continue
+    seen.add(m.gate)
+    out.push({ gate: m.gate, entries })
+  }
+  return out
+}
+
 /**
  * The gates of the effective registry that declare a guard field, as "<stack> gate <name> (<detail>)".
  * @param {string} field requires, lintFix or scriptFallback
@@ -1878,7 +2092,7 @@ function wrapperProbeRule() {
 // The BINARY CHECK sentence for the list form of requires; '' while no manifest uses it.
 function binaryCheckListRules() {
   const lists = Object.keys(STACK_EXTRAS).some((k) => Object.values(STACK_EXTRAS[k].gates || {}).some((g) => Array.isArray(g.requires)))
-  return lists ? ' A requires list is unmet when any entry is unmet; an entry that is a list of paths is met when at least one of its paths exists.' : ''
+  return lists ? ' A requires list is unmet when any entry is unmet; an entry that is a list of paths is met when at least one of its paths exists. For a gate with an unmet requires list, also add {gate, entries} to missingRequires, where entries are its unmet entries exactly as the manifest writes them.' : ''
 }
 
 /**
@@ -1971,13 +2185,16 @@ function cleanRepoFields(r, stack, declined) {
       }
     }
   }
-  if (isDevUrl(r.devUrl)) out.devUrl = r.devUrl
+  const hosts = reportedHostsFor(r, stack, declined)
+  if (hosts.length) out.reportedDevHosts = hosts
+  if (isDevUrl(r.devUrl, hosts)) out.devUrl = r.devUrl
   else if (r.devUrl !== undefined && r.devUrl !== '') log(`devUrl dropped for ${where}: ${JSON.stringify(String(r.devUrl).slice(0, 80))} is not an http(s) URL on ${DEV_URL_HOST_TEXT}.`)
   const ownStack = !declined && !isUntrustedStack(stack)
   if (hasOwn(r, 'conventions')) out.conventions = ownStack ? safeTexts(r.conventions, `Conventions for ${where}`) : []
   if (hasOwn(r, 'warnings')) out.warnings = safeTexts(r.warnings, `Warnings for ${where}`)
   if (hasOwn(r, 'unlessMatched')) out.unlessMatched = declaredUnless(stack, r.unlessMatched)
   if (hasOwn(r, 'missingTools')) out.missingTools = declaredGateNames(stack, r.missingTools, 'requires')
+  if (hasOwn(r, 'missingRequires')) out.missingRequires = declaredMissingRequires(stack, r.missingRequires)
   if (hasOwn(r, 'mutatingGates')) out.mutatingGates = declaredGateNames(stack, r.mutatingGates, 'lintFix')
   if (hasOwn(r, 'dependencyMajors')) out.dependencyMajors = declaredMajors(stack, r.dependencyMajors)
   if (hasOwn(r, 'legacyScriptGates')) out.legacyScriptGates = declaredGateNames(stack, r.legacyScriptGates, 'scriptFallback')
@@ -2000,15 +2217,22 @@ function applyExtends(r) {
   const { overlayFacts, ...rest } = r
   const out = { ...rest, stack: key }
   if (facts) {
-    for (const f of ['missingTools', 'unlessMatched']) {
+    for (const f of ['missingTools', 'missingRequires', 'unlessMatched']) {
       if (hasOwn(facts, f)) out[f] = facts[f]
       else delete out[f]
     }
   }
   // The wrapper fact: the overlay's own when reported; else not running for a wrapper the overlay declares, and
   // the first-party fact for one it inherits. Dropping it would run the gates unwrapped on the host.
-  if (facts && hasOwn(facts, 'execWrapper')) out.execWrapper = facts.execWrapper
-  else if (OVERLAY_META[key].declared.includes('execWrapper')) out.execWrapper = { present: true, running: false }
+  // The reported dev hosts come from the same running check, so they follow the wrapper fact.
+  if (facts && hasOwn(facts, 'execWrapper')) {
+    out.execWrapper = facts.execWrapper
+    if (hasOwn(facts, 'reportedDevHosts')) out.reportedDevHosts = facts.reportedDevHosts
+    else delete out.reportedDevHosts
+  } else if (OVERLAY_META[key].declared.includes('execWrapper')) {
+    out.execWrapper = { present: true, running: false }
+    delete out.reportedDevHosts
+  }
   return out
 }
 
@@ -2226,7 +2450,10 @@ function gatePlanFor(repo) {
     if (hit) fixed.push({ name: g.name, status: 'skip', details: `skipped — ${hit.glob} present` })
     else if (wrapper && wrapper.notRunning) fixed.push({ name: g.name, status: 'skip', details: `not run (${wrapper.command.split(' ')[0]} not running)` })
     else if (wrapper && wrapper.unplaced) fixed.push({ name: g.name, status: 'unreachable', details: `not run (${wrapper.command} cannot be pointed at the repo, whose path from the wrapper's marker directory holds characters a gate command does not carry). Fix: run the gate by hand from the repo's directory inside the container, or rename the directory to letters, digits, . _ - and /` })
-    else if ((repo.missingTools || []).includes(g.name) && guards[g.name] && guards[g.name].requires !== undefined) fixed.push({ name: g.name, status: 'skip', details: requiresSkipText(guards[g.name].requires) })
+    else if ((repo.missingTools || []).includes(g.name) && guards[g.name] && guards[g.name].requires !== undefined) {
+      const unmet = (repo.missingRequires || []).find((m) => m && m.gate === g.name)
+      fixed.push({ name: g.name, status: 'skip', details: requiresSkipText(guards[g.name].requires, unmet && unmet.entries) })
+    }
     else {
       const fix = (repo.mutatingGates || []).includes(g.name) && guards[g.name] && guards[g.name].lintFix
       const legacy = (repo.legacyScriptGates || []).includes(g.name) && guards[g.name] && guards[g.name].scriptFallback
@@ -2275,11 +2502,13 @@ const MODELS = phaseModels({
   detect: 'standard',
   investigate: 'deep',
   spec: 'deep',
+  prepare: 'light',
   build: 'standard',
   gatesFix: 'standard',
   converge: 'deep',
   review: 'deep',
   verify: 'standard',
+  fix: 'standard',
   acceptance: 'deep',
   acceptanceUnchanged: 'standard',
   e2e: 'standard',
@@ -2295,12 +2524,16 @@ const feature = typeof args === 'string' ? args : (isObj && args.feature) || ''
 const specRef = isObj ? args.spec || null : null
 const repoHints = (isObj && args.repos) || null
 const devUrlHint = (isObj && args.url) || null
-const ticket = (isObj && args.ticket) || ((feature.match(/^\s*([A-Z][A-Z0-9]+-\d+)\b/) || [])[1]) || null
+// The key names the spec folder, the feature branch and the report file, so only a safe tracker key is kept.
+const ticketArg = (isObj && args.ticket) || ((feature.match(/^\s*([A-Z][A-Z0-9]+-\d+)\b/) || [])[1]) || null
+const ticket = ticketKey(ticketArg) || null
+if (ticketArg && !ticket) log(`Ticket ${JSON.stringify(String(ticketArg).slice(0, 40))} ignored: it is not an uppercase tracker key. Fix: pass the key alone, for example { ticket: "PROJ-123" }`)
 const allowDraft = !!(isObj && args.allowDraft)
 // Browser acceptance leaves an E2E regression test. Default: on when the frontend
 // stack declares e2e and the repo has its config file (decided after Detect).
 const e2eArg = isObj && typeof args.e2e === 'boolean' ? args.e2e : null
 const CONVERGE_ROUNDS = 2
+const FIX_ROUNDS = 2
 
 if (!feature && !specRef) {
   log('Provide a feature description (string) or { spec: "<id>" } to execute an existing spec.')
@@ -2493,75 +2726,380 @@ const SPEC_FILE_SCHEMA = {
   },
 }
 
-// Spec load also returns tasks.md verbatim so the owner-gate cut is computed here, not by the agent.
+// Spec load returns the task lines, not the file, so the owner-gate cut and the highest id are
+// computed here and the output stays one line per task however long the task bodies are.
 const SPEC_LOAD_SCHEMA = {
   ...SPEC_FILE_SCHEMA,
-  required: [...SPEC_FILE_SCHEMA.required, 'tasksMd'],
-  properties: { ...SPEC_FILE_SCHEMA.properties, tasksMd: { type: 'string' } },
+  required: [...SPEC_FILE_SCHEMA.required, 'found', 'taskLines', 'archiveLines'],
+  properties: {
+    ...SPEC_FILE_SCHEMA.properties,
+    // false when no folder under .ai/specs/ matches the reference.
+    found: { type: 'boolean' },
+    // Top-level "- [ ] N. Title" lines outside HTML comments, verbatim and in file order.
+    taskLines: { type: 'array', items: { type: 'string' } },
+    // The same lines from tasks-archive.md; [] when the spec has no archive.
+    archiveLines: { type: 'array', items: { type: 'string' } },
+    // Frontmatter ticket key, empty when absent; it names the feature branch.
+    ticket: { type: 'string' },
+    // Items under "In scope" and "Out of scope" in spec-lite.md; converge judges gaps against them.
+    inScope: { type: 'array', items: { type: 'string' } },
+    outOfScope: { type: 'array', items: { type: 'string' } },
+  },
+}
+
+// One Prepare call per repo: the branch it left (empty for a detached HEAD) and the one it is on now.
+const PREPARE_SCHEMA = {
+  type: 'object',
+  required: ['branch', 'created', 'previousBranch', 'statusFlipped'],
+  properties: {
+    branch: { type: 'string' },
+    created: { type: 'boolean' },
+    previousBranch: { type: 'string' },
+    statusFlipped: { type: 'boolean' },
+    protected: { type: 'boolean' },
+    // git's message when the switch failed; absent otherwise.
+    error: { type: 'string' },
+  },
 }
 
 const TASK_LINE = /^- \[([ xX])\]\s+(\d+)\.\s+(.*)$/
 
 /**
+ * Kind of a task from its title, the text after "N. ": the same rule as `spec-lint --gates`.
+ * The prefix is case-sensitive plain text; anything else is a code task.
+ *
+ * @param {string} title  task title
+ * @returns {'gate'|'manual'|'code'}
+ * @example taskKind('Manual: check the invoice PDF')  // 'manual'
+ */
+function taskKind(title) {
+  if (title.startsWith('Gate:')) return 'gate'
+  if (title.startsWith('Manual:')) return 'manual'
+  return 'code'
+}
+
+/**
  * Splits a spec's open tasks at the first unchecked owner gate, using the rule of
  * `spec-lint --gates`: a gate is a top-level task whose title starts with `Gate:` (case-sensitive),
- * only the owner checks it, and it blocks every task after it.
+ * only the owner checks it, and it blocks every task after it. A `Manual:` task before the gate is a
+ * person's step: it is listed in `manual`, never built, and blocks nothing.
  *
- * Fails closed: returns ok=false when the tasks.md text holds no task line, or when the agent's
+ * Fails closed: returns ok=false when the text holds no task line, or when the agent's
  * pending list names a task the text does not hold as unchecked, so a build never runs on an
  * unverified task list.
  *
- * @param {string} tasksMd  tasks.md text as read from disk
+ * @param {string} taskText  tasks.md task lines joined with newlines (the full file text also works)
  * @param {{id: number, title: string}[]} pending  open tasks parsed by the spec-load agent
- * @returns {{ok: true, build: object[], gate: ({id: number, title: string}|null), cut: number[], maxId: number} | {ok: false, reason: string}}
- *   build = the pending tasks before the gate (never a gate), cut = open task ids at or after it,
- *   maxId = the highest task id in the file, so appended gap tasks never reuse one
- * @example ownerGateCut('- [ ] 1. A\n- [ ] 2. Gate: sign-off\n- [ ] 3. B', [{ id: 1 }, { id: 2 }, { id: 3 }])
- *   // { ok: true, build: [{ id: 1 }], gate: { id: 2, title: 'Gate: sign-off' }, cut: [2, 3], maxId: 3 }
+ * @returns {{ok: true, build: object[], manual: {id: number, title: string}[], gate: ({id: number, title: string}|null), cut: number[], open: {id: number, title: string}[], maxId: number} | {ok: false, reason: string}}
+ *   build = the pending code tasks before the gate, manual = the open Manual tasks before it,
+ *   cut = open task ids at or after it, open = every unchecked task in file order,
+ *   maxId = the highest task id in the text
+ * @example ownerGateCut('- [ ] 1. A\n- [ ] 2. Manual: check\n- [ ] 3. Gate: sign-off\n- [ ] 4. B', [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }])
+ *   // { ok: true, build: [{ id: 1 }], manual: [{ id: 2, title: 'Manual: check' }], gate: { id: 3, title: 'Gate: sign-off' }, cut: [3, 4], open: [...], maxId: 4 }
  */
-function ownerGateCut(tasksMd, pending) {
-  if (typeof tasksMd !== 'string') return { ok: false, reason: 'tasks.md text was not returned' }
+function ownerGateCut(taskText, pending) {
+  if (typeof taskText !== 'string') return { ok: false, reason: 'no task lines were returned' }
   const open = []
   let seen = 0
   let maxId = 0
-  for (const raw of tasksMd.replace(/<!--[\s\S]*?-->/g, '').split('\n')) {
+  for (const raw of taskText.replace(/<!--[\s\S]*?-->/g, '').split('\n')) {
     const m = TASK_LINE.exec(raw.replace(/\r$/, ''))
     if (!m) continue
     seen++
     maxId = Math.max(maxId, Number(m[2]))
     if (m[1] === ' ') open.push({ id: Number(m[2]), title: m[3].trim() })
   }
-  if (!seen) return { ok: false, reason: 'tasks.md text holds no "- [ ] N." task line' }
+  if (!seen) return { ok: false, reason: 'no task lines were returned' }
   const openIds = new Set(open.map((t) => t.id))
   const unknown = (pending || []).filter((t) => !openIds.has(Number(t.id)))
   if (unknown.length) return { ok: false, reason: `pending task(s) ${unknown.map((t) => t.id).join(', ')} are not unchecked in tasks.md` }
-  const at = open.findIndex((t) => t.title.startsWith('Gate:'))
-  const before = new Set((at === -1 ? open : open.slice(0, at)).map((t) => t.id))
+  const at = open.findIndex((t) => taskKind(t.title) === 'gate')
+  const beforeGate = at === -1 ? open : open.slice(0, at)
+  // Kind comes from the line in tasks.md; the loader's title only ever narrows the build further.
+  const code = new Set(beforeGate.filter((t) => taskKind(t.title) === 'code').map((t) => t.id))
   return {
     ok: true,
-    build: (pending || []).filter((t) => before.has(Number(t.id)) && !String(t.title || '').trim().startsWith('Gate:')),
+    build: (pending || []).filter((t) => code.has(Number(t.id)) && taskKind(String(t.title || '').trim()) === 'code'),
+    manual: beforeGate.filter((t) => taskKind(t.title) === 'manual'),
     gate: at === -1 ? null : open[at],
     cut: at === -1 ? [] : open.slice(at).map((t) => t.id),
+    open,
     maxId,
   }
+}
+
+/**
+ * Highest top-level task id in a list of task lines; 0 when there is none.
+ * Ids are unique across tasks.md and tasks-archive.md, so gap tasks number above both.
+ *
+ * @param {string[]} lines  task lines as the spec loader returns them
+ * @returns {number}
+ * @example maxTaskId(['- [x] 300. Last', '- [x] 12. Earlier'])  // 300
+ */
+function maxTaskId(lines) {
+  return (lines || []).reduce((max, line) => {
+    const m = TASK_LINE.exec(String(line).replace(/\r$/, ''))
+    return m ? Math.max(max, Number(m[2])) : max
+  }, 0)
+}
+
+/**
+ * The task lines of tasks.md after a converge round, with the lines it wrote placed where its
+ * prompt puts them: directly above the first unchecked owner gate, or at the end without one.
+ *
+ * @param {string[]} taskLines  task lines before the round
+ * @param {string[]} inserted   task lines the converge agent reports it wrote
+ * @param {number|null} gateId  id of the first unchecked gate, null when there is none
+ * @returns {string[]}
+ * @example withInsertedLines(['- [x] 1. A', '- [ ] 2. Gate: ship'], ['- [ ] 3. Gap'], 2)
+ *   // ['- [x] 1. A', '- [ ] 3. Gap', '- [ ] 2. Gate: ship']
+ */
+function withInsertedLines(taskLines, inserted, gateId) {
+  const lines = (inserted || []).map(String).filter((l) => TASK_LINE.test(l))
+  const at = gateId == null ? -1 : taskLines.findIndex((l) => {
+    const m = TASK_LINE.exec(l)
+    return !!m && m[1] === ' ' && Number(m[2]) === gateId
+  })
+  return at === -1 ? taskLines.concat(lines) : [...taskLines.slice(0, at), ...lines, ...taskLines.slice(at)]
 }
 
 /**
  * Lists the converge gap tasks that a later run could not build from tasks.md as written:
  * missing from the text, or placed at or after the first unchecked owner gate.
  *
- * @param {string} tasksMd  tasks.md text after the converge agent's edit
+ * @param {string} taskText  task lines of tasks.md after the converge agent's edit, joined with newlines
  * @param {{id: number, title: string}[]} gaps  gap tasks the agent reported
- * @returns {{stranded: number[], reason: string}}  stranded = gap ids that are not buildable
+ * @returns {{stranded: number[], reason: string, fix: string}}  stranded = gap ids that are not buildable;
+ *   fix = what the user does about it, by cause
  * @example strandedGaps('- [ ] 2. Gate: sign-off\n- [ ] 3. Gap', [{ id: 3, title: 'Gap' }])
- *   // { stranded: [3], reason: 'below the owner gate "Gate: sign-off"' }
+ *   // { stranded: [3], reason: 'below the owner gate "Gate: sign-off"', fix: 'Move them above the first unchecked gate and re-run.' }
  */
-function strandedGaps(tasksMd, gaps) {
-  const cut = ownerGateCut(tasksMd, gaps)
-  if (!cut.ok) return { stranded: gaps.map((g) => g.id), reason: cut.reason }
+function strandedGaps(taskText, gaps) {
+  const check = 'Check the gap task lines in tasks.md and re-run.'
+  const cut = ownerGateCut(taskText, gaps)
+  if (!cut.ok) return { stranded: gaps.map((g) => g.id), reason: cut.reason, fix: check }
   const buildable = new Set(cut.build.map((g) => Number(g.id)))
   const stranded = gaps.filter((g) => !buildable.has(Number(g.id))).map((g) => g.id)
-  return { stranded, reason: stranded.length && cut.gate ? `below the owner gate "${cut.gate.title}"` : '' }
+  if (stranded.length && cut.gate) return { stranded, reason: `below the owner gate "${cut.gate.title}"`, fix: 'Move them above the first unchecked gate and re-run.' }
+  return { stranded, reason: stranded.length ? 'their ids differ from the lines written to tasks.md' : '', fix: check }
+}
+
+/**
+ * Numbers the gaps a converge audit reported and splits them by kind. Ids run from nextId in the order
+ * the auditor returned the gaps, the order its prompt numbers them, so they match the lines it wrote. A
+ * "Gate:" gap keeps its id but is dropped (only the owner adds a gate); a gap of kind manual, or titled
+ * "Manual: ...", becomes a Manual task for the test plan.
+ *
+ * @param {object[]} gaps    CONVERGE_SCHEMA gaps
+ * @param {number} nextId    first free id across tasks.md and tasks-archive.md
+ * @returns {{code: object[], manual: {id: number, title: string, reason: string}[], dropped: {id: number, title: string}[]}}
+ * @example convergeGaps([{ title: 'Add test', reason: 'r' }, { title: 'Check on a phone', reason: 'r', kind: 'manual' }], 7)
+ *   // { code: [{ title: 'Add test', reason: 'r', id: 7 }], manual: [{ id: 8, title: 'Manual: Check on a phone', reason: 'r' }], dropped: [] }
+ */
+function convergeGaps(gaps, nextId) {
+  const all = (gaps || []).map((g, i) => ({ ...g, id: nextId + i }))
+  const isGate = (g) => taskKind(String(g.title || '').trim()) === 'gate'
+  const numbered = all.filter((g) => !isGate(g))
+  const isManual = (g) => g.kind === 'manual' || taskKind(String(g.title || '').trim()) === 'manual'
+  return {
+    dropped: all.filter(isGate).map((g) => ({ id: g.id, title: String(g.title || '').trim() })),
+    code: numbered.filter((g) => !isManual(g)),
+    manual: numbered.filter(isManual).map((g) => ({
+      id: g.id,
+      title: `Manual: ${String(g.title || '').trim().replace(/^Manual:\s*/, '')}`,
+      reason: g.reason,
+    })),
+  }
+}
+
+const FEATURE_BRANCH = /^feature\/[A-Za-z0-9._-]+$/
+
+/**
+ * The feature branch a run works on when it starts on a protected branch. Computed here, never by an
+ * agent, so no agent text reaches a git argument.
+ *
+ * The slug is the spec folder name without "spec-", the YYYYMMDD-HHMM- timestamp and a leading
+ * ticket key, lowercased, with every run of other characters turned into "-", and cut to 40
+ * characters at a hyphen. Without a folder, the same rule runs on the fallback text.
+ *
+ * @param {string|null} folder  spec folder path or name; null when no spec was persisted
+ * @param {string|null} key     ticket key; used only when it matches PROJ-123 form
+ * @param {string} [fallback]   text to slug when there is no folder (the feature description)
+ * @returns {string|null}  "feature/<KEY>-<slug>", "feature/<slug>", or null when nothing usable is left
+ * @example featureBranchName('.ai/specs/spec-20261112-1058-kit-limits', 'PROJ-7')  // 'feature/PROJ-7-kit-limits'
+ * @example featureBranchName('.ai/specs/spec-PROJ-7-kit-limits', 'PROJ-7')        // 'feature/PROJ-7-kit-limits'
+ */
+function featureBranchName(folder, key, fallback) {
+  const validKey = ticketKey(key)
+  let base = folder ? String(folder).split('/').filter(Boolean).pop() || '' : String(fallback || '')
+  if (folder) base = base.replace(/^spec-/, '').replace(/^\d{8}-\d{4}-/, '')
+  if (validKey && base.toUpperCase().startsWith(`${validKey.toUpperCase()}-`)) base = base.slice(validKey.length + 1)
+  let slug = base.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+  if (slug.length > 40) {
+    const cut = slug.slice(0, 40)
+    slug = slug[40] === '-' || cut.lastIndexOf('-') === -1 ? cut : cut.slice(0, cut.lastIndexOf('-'))
+    slug = slug.replace(/-+$/, '')
+  }
+  const name = validKey ? (slug ? `feature/${validKey}-${slug}` : `feature/${validKey}`) : slug ? `feature/${slug}` : null
+  return name && FEATURE_BRANCH.test(name) ? name : null
+}
+
+/**
+ * The part of the protected-branch rule that needs no git call: a detached HEAD (""), main, master,
+ * develop and release/*. The origin/HEAD target is known only inside the repo, so the Prepare agent
+ * reports it as `protected`.
+ *
+ * @param {string} branch  output of git branch --show-current
+ * @returns {boolean}
+ */
+function isProtectedBranch(branch) {
+  const b = String(branch || '').trim()
+  return b === '' || b === 'main' || b === 'master' || b === 'develop' || b.startsWith('release/')
+}
+
+/** A design finding is verified only when it names the violated convention and cites a file and an integer line. */
+function isConcreteDesignFinding(f) {
+  return !!f && typeof f.convention === 'string' && !!f.convention.trim() && typeof f.file === 'string' && !!f.file.trim() && Number.isInteger(f.line)
+}
+
+/**
+ * Tallies the verifier votes that returned for one finding.
+ * @param {object[]} votes  VERDICT_SCHEMA replies, nulls already removed
+ * @param {number} needed  votes that decide the finding either way (2, or 1 for a minor design finding)
+ * @returns {{confirmed: boolean, refuted: boolean, fixSize?: string, reasons: string[]}}
+ *   refuted = at least `needed` votes returned real=false; fixSize is 'trivial' only when every yes vote says so
+ */
+function tallyVotes(votes, needed) {
+  const yes = votes.filter((v) => v.real === true)
+  const confirmed = yes.length >= needed
+  const refuted = votes.filter((v) => v.real === false).length >= needed
+  const out = { confirmed, refuted, reasons: yes.map((v) => v.reason).filter(Boolean) }
+  if (confirmed) {
+    const sizes = yes.map((v) => v.fixSize)
+    out.fixSize = sizes.every((z) => z === 'trivial') ? 'trivial' : sizes.includes('large') ? 'large' : 'small'
+  }
+  return out
+}
+
+/**
+ * The run's cost as the result returns it: a copy of RUN_COST taken after the last snapshot.
+ * @param {{phases: object, probesFailed: number}} runCost  RUN_COST
+ * @returns {{phases: Object<string, {agents: number, tokens: number|null}>, probesFailed: number}}
+ */
+function costResult(runCost) {
+  const phases = {}
+  for (const [name, c] of Object.entries(runCost.phases)) phases[name] = { agents: c.agents, tokens: c.tokens }
+  return { phases, probesFailed: runCost.probesFailed }
+}
+
+/**
+ * The report's cost table: one row per phase that ran an agent or spent tokens, and the failed
+ * agent-name lookups. A phase without a token total (no budget, as on the bridge) shows "tokens: n/a".
+ * @param {{phases: object, probesFailed: number}} cost  costResult()
+ * @returns {string} markdown
+ * @example costTable({ phases: { Build: { agents: 3, tokens: null } }, probesFailed: 0 })
+ * // '| Phase | Agents | Tokens |\n| --- | --- | --- |\n| Build | 3 | tokens: n/a |\nFailed agent-name lookups: 0'
+ */
+function costTable(cost) {
+  const rows = Object.entries(cost.phases)
+    .filter(([, c]) => c.agents || c.tokens)
+    .map(([name, c]) => `| ${name} | ${c.agents} | ${c.tokens === null ? 'tokens: n/a' : c.tokens} |`)
+  return ['| Phase | Agents | Tokens |', '| --- | --- | --- |', ...rows, `Failed agent-name lookups: ${cost.probesFailed}`].join('\n')
+}
+
+/**
+ * Repo path as Detect reports it, compared without a leading "./" or trailing "/".
+ * @param {string} p
+ * @returns {string}  "." for the current directory
+ */
+function normalRepoPath(p) {
+  return String(p || '.').replace(/^(\.\/)+/, '').replace(/\/+$/, '') || '.'
+}
+
+/** A reported file path without a leading "./". */
+const normalFile = (f) => String(f || '').trim().replace(/^(\.\/)+/, '')
+
+/** Whether two reported paths name the same file; one may carry a longer prefix (an absolute or container path). */
+function sameFile(a, b) {
+  return a === b || a.endsWith(`/${b}`) || b.endsWith(`/${a}`)
+}
+
+// Lint and format violations can sit in files the run never touched; types, test, build and e2e failures can
+// come from a change in another file, so they always block.
+const SCOPED_GATE_KINDS = ['lint', 'format']
+
+/**
+ * Passes a failing lint or format gate whose reported files all lie outside the run's changed files.
+ * The kind comes from the stack manifest by gate name; a gate without files, of another kind or of an
+ * unknown kind stays as reported, so the check fails closed.
+ * @param {{ allPassed: boolean, gates?: object[] }|null} result  one repo's gate result
+ * @param {string} stack  the repo's stack
+ * @param {string[]} changed  the repo's changed files, repo-relative
+ * @returns {object|null}  the result, with allPassed recomputed when a gate was passed
+ * @example
+ * // The stack's manifest declares a gate "Lint" of kind lint; it fails only in legacy/old.js, which the run did not change:
+ * scopeLintFailures({ allPassed: false, gates: [{ name: 'Lint', status: 'fail', files: ['legacy/old.js'] }] }, stack, ['src/page.js'])
+ * // -> { allPassed: true, gates: [{ name: 'Lint', status: 'pass', details: 'pre-existing violations only: 1 file(s) this run did not change (not in scope)', ... }] }
+ */
+function scopeLintFailures(result, stack, changed) {
+  if (!result || !Array.isArray(result.gates)) return result
+  const kinds = extrasFor(stack).gates || {}
+  const inRun = (changed || []).map(normalFile).filter(Boolean)
+  let passed = 0
+  const gates = result.gates.map((g) => {
+    const kind = g && hasOwn(kinds, g.name) ? kinds[g.name].kind : null
+    if (!g || g.status !== 'fail' || !SCOPED_GATE_KINDS.includes(kind)) return g
+    const files = Array.from(new Set((Array.isArray(g.files) ? g.files : []).map(normalFile).filter(Boolean)))
+    if (!files.length || files.some((f) => inRun.some((c) => sameFile(f, c)))) return g
+    passed++
+    return { ...g, status: 'pass', details: `pre-existing violations only: ${files.length} file(s) this run did not change (not in scope)` }
+  })
+  if (!passed) return result
+  return { ...result, gates, allPassed: gates.every((g) => g && (g.status === 'pass' || g.status === 'skip')) }
+}
+
+/**
+ * The scope rule every gate-fix and Fix prompt carries.
+ * @param {string[]} files  the repo's changed files
+ * @param {string[]} [cited]  files the findings cite (Fix only)
+ * @returns {string}
+ */
+function gateFixScope(files, cited) {
+  const extra = Array.from(new Set((cited || []).filter((f) => !files.includes(f))))
+  const scope = !files.length
+    ? `Edit only the files the findings cite: ${extra.join(', ')}`
+    : `Edit only these files: ${files.join(', ')}${extra.length ? `, plus the files the findings cite: ${extra.join(', ')}` : ''}`
+  return `${scope}. Report a violation in any other file as "pre-existing (not in scope)" and leave it. Never edit the Must-NOT-change guard tests.`
+}
+
+/** A confirmed finding the Fix phase takes: critical, major, or a minor every yes vote sized trivial. */
+const isFixableFinding = (f) => f.severity === 'critical' || f.severity === 'major' || (f.severity === 'minor' && f.fixSize === 'trivial')
+
+/**
+ * Why the Fix phase stops after a round, first match wins; null to run another round.
+ * @param {{ greenBefore: boolean, greenAfter: boolean, open: number, resolved: number, rounds: number }} s
+ * @returns {'gates-red'|'clean'|'no-progress'|'cap'|null}
+ */
+function fixStopAfterRound(s) {
+  if (s.greenBefore && !s.greenAfter) return 'gates-red'
+  if (!s.open) return 'clean'
+  if (!s.resolved) return 'no-progress'
+  if (s.rounds >= FIX_ROUNDS) return 'cap'
+  return null
+}
+
+/**
+ * The run's recommendation. SHIP needs no blocking manifest, a full build, green gates, no critical or
+ * major finding left after Fix, acceptance not failed, a passing e2e test when one ran, no repo warning,
+ * no unbuilt converge gap and no converge audit that failed to return or wrote an owner gate; remaining
+ * minor findings do not block.
+ * @param {{ blockingManifests: number, partialBuild: boolean, gatesPassed: boolean, blockingFindings: number, acceptanceFailed: boolean, e2eFailed: boolean, repoWarnings: number, remainingGaps: number, convergeFailed?: boolean }} f
+ * @returns {'SHIP'|'FIX-FIRST'|'BLOCKED'}
+ */
+function shipRecommendation(f) {
+  if (f.blockingManifests) return 'BLOCKED'
+  const fixFirst = f.partialBuild || !f.gatesPassed || f.blockingFindings || f.acceptanceFailed || f.e2eFailed || f.repoWarnings || f.remainingGaps || f.convergeFailed
+  return fixFirst ? 'FIX-FIRST' : 'SHIP'
 }
 
 const BUILD_SCHEMA = {
@@ -2595,14 +3133,20 @@ const CONVERGE_SCHEMA = {
           approach: { type: 'string' },
           verify: { type: 'string' },
           covers: { type: 'array', items: { type: 'string' } },
+          // manual: only a person or a live external system can check it; it goes to the manual test plan.
+          kind: { type: 'string', enum: ['code', 'manual'] },
         },
       },
     },
     covered: { type: 'array', items: { type: 'string' } },
     appended: { type: 'boolean' },
-    tasksMd: { type: 'string' },
+    // The "- [ ] N. Title" lines the auditor wrote to tasks.md, verbatim; never the whole file.
+    insertedLines: { type: 'array', items: { type: 'string' } },
   },
 }
+
+// With a spec folder the auditor writes its gaps to tasks.md, so it must report the lines it wrote.
+const CONVERGE_WRITE_SCHEMA = { ...CONVERGE_SCHEMA, required: ['gaps', 'insertedLines'] }
 
 const GATES_SCHEMA = {
   type: 'object',
@@ -2620,9 +3164,22 @@ const GATES_SCHEMA = {
           // 'unreachable' = tooling could not run (NOT a pass); never treat as green.
           status: { type: 'string', enum: ['pass', 'fail', 'skip', 'unreachable'] },
           details: { type: 'string' },
+          // Repo-relative files with a violation, reported for a failing lint or format gate.
+          files: { type: 'array', items: { type: 'string' } },
         },
       },
     },
+  },
+}
+
+// One Fix call per repo: the finding ids it fixed and the files it changed.
+const FIX_SCHEMA = {
+  type: 'object',
+  required: ['fixed', 'changedFiles'],
+  properties: {
+    fixed: { type: 'array', items: { type: 'string' } },
+    changedFiles: { type: 'array', items: { type: 'string' } },
+    notes: { type: 'string' },
   },
 }
 
@@ -2641,6 +3198,7 @@ const FINDINGS_SCHEMA = {
           line: { type: 'integer' },
           severity: { type: 'string', enum: ['critical', 'major', 'minor'] },
           description: { type: 'string' },
+          convention: { type: 'string' },
         },
       },
     },
@@ -2650,7 +3208,11 @@ const FINDINGS_SCHEMA = {
 const VERDICT_SCHEMA = {
   type: 'object',
   required: ['real', 'reason'],
-  properties: { real: { type: 'boolean' }, reason: { type: 'string' } },
+  properties: {
+    real: { type: 'boolean' },
+    reason: { type: 'string' },
+    fixSize: { type: 'string', enum: ['trivial', 'small', 'large'] },
+  },
 }
 
 const VISUAL_SCHEMA = {
@@ -2759,6 +3321,7 @@ const REPORT_SCHEMA = {
 
 // --- Detect: stack(s) + repo layout (drives every later phase) ----------
 phase('Detect')
+costSnapshot('Detect')
 const detection = await detectStacks(
   `Detect the project's technology stack and repository layout so the rest of the pipeline can adapt. Use Bash to probe — do not assume.
 
@@ -2819,8 +3382,24 @@ function gateInstructionsFor(repo) {
 Gates to run (run each; if its tool is genuinely absent mark status "skip"; if the tool exists but cannot run — missing deps, broken env — mark status "unreachable", NEVER "pass"):
 ${cmds || noGatesLine(repo)}
 - Debug scan: grep for stray ${debugScanFor(repo.stack)} in ${sourceDirsFor(repo.stack)} (exclude tests) -> fail if found.${buildGateGuardFor(repo, gateDevUrlFor(repo, frontends.targets, devUrl || 'the dev server URL'))}
-Report each gate as pass/fail/skip/unreachable with failing output captured in details. Set allPassed=true only if every gate is pass or skip. Set repo="${repo.path}". Do not fix anything here.`
+Report each gate as pass/fail/skip/unreachable with failing output captured in details. For a failing lint or format gate, list in files every repo-relative file it reports a violation in. Set allPassed=true only if every gate is pass or skip. Set repo="${repo.path}". Do not fix anything here.`
 }
+
+// The files this run changed, per repo path: what Build, gap-build and Fix agents report, repo-relative,
+// without spec files. Gate fixes are confined to them and lint failures outside them do not block.
+const runChanged = new Map()
+function recordChanged(repo, files) {
+  const key = normalRepoPath(repo.path)
+  const prefix = key === '.' ? '' : `${key}/`
+  const set = runChanged.get(key) || new Set()
+  for (const f of files || []) {
+    const p = normalFile(f)
+    const rel = prefix && p.startsWith(prefix) ? p.slice(prefix.length) : p
+    if (rel && !/(^|\/)\.ai\/specs\//.test(rel)) set.add(rel)
+  }
+  runChanged.set(key, set)
+}
+const changedIn = (repo) => Array.from(runChanged.get(normalRepoPath(repo.path)) || [])
 
 let investigation = null
 let invFiles = []
@@ -2845,51 +3424,91 @@ let slice = null
 let awaitingOwner = null
 let ownerGateId = null
 let ownerCut = []
+// The call that continues the run once the owner ticks the gate; null without an open gate.
+let resume = null
+// Open Manual: tasks: a person's steps, never built; TestPlan writes them up and keeps the spec short of done.
+let manualTasks = []
 let specMaxTaskId = 0
+// The spec's In scope and Out of scope items, when the loader read them; converge audits against them.
+let specScope = { in: [], out: [] }
+// Task lines of tasks.md as loaded, kept current through converge so gap placement can be checked.
+let specTaskLines = []
+// Frontmatter status and ticket of a loaded spec; Prepare flips "approved" and names the branch from the ticket.
+let specStatus = null
+let specTicket = ticket
 
 if (specRef) {
   // --- Execute an existing spec -----------------------------------------
   phase('Spec')
+  costSnapshot('Spec')
   const loaded = await runAgent(
-    `Load the existing specification "${specRef}" so it can be executed.
+    `Load the existing specification "${specRef}" so it can be executed. This step is read-only: change no file.
 1. Resolve the reference to ONE folder under .ai/specs/. Accept: a full folder name or path; a legacy numeric id ("0042", "spec-0042", "14" → folders spec-0042-* or 14-*, leading zeros ignored); a ticket key ("PROJ-123" → spec-PROJ-123-*, case-insensitive); a timestamp id ("20261018-1430" → spec-20261018-1430-*). E.g.:
    REF="${specRef}"; REF="\${REF#.ai/specs/}"; REF="\${REF%/}"; KEY="\${REF#spec-}"
    [ -d ".ai/specs/$REF" ] || { echo "$KEY" | grep -qE '^[0-9]+$' && ls -d .ai/specs/*/ | grep -E "/(spec-)?0*$((10#$KEY))-" || ls -d .ai/specs/*/ | grep -iE "/(spec-)?$KEY-"; }
-   No match → return empty tasks. Several matches → return them in candidates with empty tasks (do not guess).
-2. Read spec-lite.md: frontmatter status (legacy specs without frontmatter → status "legacy"), type (feature | bug | improvement | refactor; empty when absent) and slice (the backlog slice id, empty when absent), unchecked items under "Open questions", the acceptance criteria (keep AC ids), the "Must NOT change" items (keep MNC ids), the "Quality attributes" rows as nfrs ("NFR-n: <attribute>: <requirement>", keep NFR ids; empty when the section is absent), architecture approach and conventions.
-3. Read tasks.md, parse the ordered tasks: integer id, title, any "Verify:" criterion, a stack tag if present, the "Covers:" ids, and done=true when checked [x].
-4. Return tasksMd: the full text of tasks.md exactly as read, every line unchanged and nothing summarized. Owner gates (tasks titled "Gate: ...") are decided from it by the workflow; never tick, skip or reorder one.
-5. If status is "approved" and there are pending tasks, set the frontmatter status to "in-progress" (edit only that line). Leave any other status untouched.
-Return specId (the folder name), the relative specFolder, tasksMd, status (as read, before your edit), type, openQuestions, acceptanceCriteria, mustNotChange, nfrs, conventions, and the not-yet-done tasks.`,
+   No match → return found=false with empty tasks, taskLines and archiveLines. Several matches → return them in candidates with empty tasks (do not guess). Otherwise set found=true.
+2. Read spec-lite.md: frontmatter status (legacy specs without frontmatter → status "legacy"), ticket (empty when absent), type (feature | bug | improvement | refactor; empty when absent) and slice (the backlog slice id, empty when absent), unchecked items under "Open questions", the acceptance criteria (keep AC ids), the "Must NOT change" items (keep MNC ids), the items under "In scope" and "Out of scope" (inScope, outOfScope; empty when the section is absent), the "Quality attributes" rows as nfrs ("NFR-n: <attribute>: <requirement>", keep NFR ids; empty when the section is absent), architecture approach and conventions.
+3. Extract the top-level task lines with exactly this command, run from the spec folder; it removes HTML comment text first, so a commented-out task is dropped and an inline comment does not hide its task:
+   awk '{l=$0; o=""; while (l != "") { if (c) { i=index(l, "-->"); if (!i) l=""; else { l=substr(l, i+3); c=0; o=o " " } } else { i=index(l, "<!--"); if (!i) { o=o l; l="" } else { o=o substr(l, 1, i-1) " "; l=substr(l, i+4); c=1 } } } if (o ~ /^- \\[[ xX]\\] [0-9]+\\./) print o}' tasks.md
+   Return every printed line verbatim and in order as taskLines. When tasks-archive.md exists, run the same command on it and return its lines as archiveLines; otherwise archiveLines is []. Never return the text of either file. Owner gates (tasks titled "Gate: ...") and manual tasks ("Manual: ...") are decided from taskLines by the workflow; never tick, skip or reorder one.
+4. Parse only the unchecked tasks of tasks.md: integer id, title, any "Verify:" criterion, a stack tag if present and the "Covers:" ids. Return no task bodies.
+Return found, specId (the folder name), the relative specFolder, taskLines, archiveLines, status (as read), ticket, type, openQuestions, acceptanceCriteria, mustNotChange, inScope, outOfScope, nfrs, conventions, and the unchecked tasks.`,
     { phase: 'Spec', schema: SPEC_LOAD_SCHEMA, agentType: 'code-explorer', ...MODELS.spec }
   )
-  if (loaded && (loaded.candidates || []).length > 1) {
+  if (!loaded) {
+    const error = `spec loader returned no result for "${specRef}". Fix: re-run; if it repeats, check that the spec folder is readable`
+    log(error)
+    return { specRef, error }
+  }
+  if ((loaded.candidates || []).length > 1) {
     log(`Spec reference "${specRef}" is ambiguous: ${loaded.candidates.join(', ')}`)
     return { specRef, error: 'ambiguous spec reference — pass the full folder name', candidates: loaded.candidates }
   }
-  if (!loaded || !(loaded.tasks || []).length) {
-    const idle = loaded ? ownerGateCut(loaded.tasksMd, []) : null
-    if (idle && idle.ok && idle.gate) {
-      log(`awaiting owner: ${idle.gate.title}`)
-      return { specRef, specId: loaded.specId, error: `awaiting owner: ${idle.gate.title}`, awaitingOwner: idle.gate.title, notBuilt: idle.cut }
-    }
-    log(`No executable tasks found for spec "${specRef}".`)
-    return { specRef, error: 'spec not found or all tasks complete' }
+  if (loaded.found === false) {
+    const error = `spec "${specRef}" not found under .ai/specs/. Fix: pass the spec folder name (ls .ai/specs)`
+    log(error)
+    return { specRef, error }
+  }
+  const taskLines = (loaded.taskLines || []).map(String)
+  if (!taskLines.some((l) => TASK_LINE.test(l))) {
+    const error = `${loaded.specFolder}/tasks.md has no task lines ("- [ ] N. Title"). Fix: write tasks in that form (specification-system.md) and run spec-lint on the folder`
+    log(error)
+    return { specRef, specId: loaded.specId, error }
   }
   // Only the owner checks a Gate: task; nothing at or after the first unchecked one is built.
-  const gateCut = ownerGateCut(loaded.tasksMd, loaded.tasks.filter((t) => !t.done))
+  const gateCut = ownerGateCut(taskLines.join('\n'), (loaded.tasks || []).filter((t) => !t.done))
   if (!gateCut.ok) {
     log(`Owner-gate check could not run: ${gateCut.reason}. Stopping before any build.`)
     return { specRef, specId: loaded.specId, error: `owner-gate check could not run: ${gateCut.reason}` }
   }
+  if (!gateCut.open.length) {
+    const error = `all tasks in ${loaded.specId} are complete. Fix: nothing to build; run /open-pr --spec=${loaded.specId}`
+    log(error)
+    return { specRef, specId: loaded.specId, error }
+  }
+  const beforeGate = gateCut.gate ? gateCut.open.slice(0, gateCut.open.findIndex((t) => t.id === gateCut.gate.id)) : gateCut.open
+  const codeOpen = beforeGate.filter((t) => taskKind(t.title) === 'code')
+  const parsed = new Set(gateCut.build.map((t) => Number(t.id)))
+  const unparsed = codeOpen.filter((t) => !parsed.has(t.id)).map((t) => t.id)
+  if (unparsed.length) {
+    const reason = `open task(s) ${unparsed.join(', ')} are missing from the loader's task list`
+    log(`Owner-gate check could not run: ${reason}. Stopping before any build.`)
+    return { specRef, specId: loaded.specId, error: `owner-gate check could not run: ${reason}` }
+  }
   if (gateCut.gate) {
     awaitingOwner = gateCut.gate.title
     ownerGateId = gateCut.gate.id
+    resume = `Workflow({ name: "sdd-kit:ship-feature", args: { spec: "${loaded.specId}" } })`
     log(`awaiting owner: ${awaitingOwner} (not built: ${gateCut.cut.join(', ')})`)
+    log(`Resume after the owner ticks "- [x] ${gateCut.gate.id}. ${gateCut.gate.title}" in tasks.md: ${resume} (file-copy install: name "ship-feature")`)
   }
-  if (!gateCut.build.length) {
-    const error = gateCut.gate ? `awaiting owner: ${gateCut.gate.title}` : 'spec not found or all tasks complete'
-    return { specRef, specId: loaded.specId, error, awaitingOwner, notBuilt: gateCut.cut }
+  if (!codeOpen.length) {
+    if (gateCut.gate) {
+      return { specRef, specId: loaded.specId, error: `awaiting owner: ${gateCut.gate.title}`, awaitingOwner, notBuilt: gateCut.cut, resume }
+    }
+    const error = `only Manual: tasks remain open in ${loaded.specId} (${beforeGate.map((t) => t.id).join(', ')}). Fix: run manual-test.md and tick them`
+    log(error)
+    return { specRef, specId: loaded.specId, error }
   }
   // Human approval is the gate between spec and build; /sdd records it in the frontmatter.
   if (loaded.status === 'draft' && !allowDraft) {
@@ -2898,19 +3517,25 @@ Return specId (the folder name), the relative specFolder, tasksMd, status (as re
   }
   acceptanceCriteria = loaded.acceptanceCriteria || []
   mustNotChange = loaded.mustNotChange || []
+  specScope = { in: loaded.inScope || [], out: loaded.outOfScope || [] }
   nfrs = loaded.nfrs || []
   specType = String(loaded.type || 'feature').trim().toLowerCase()
   specId = loaded.specId
   specFolder = loaded.specFolder
+  specStatus = String(loaded.status || '').trim()
+  specTicket = String(loaded.ticket || '').trim()
   slice = loaded.slice || null
   if ((loaded.conventions || []).length) invConventions = loaded.conventions
   tasks = gateCut.build
+  manualTasks = gateCut.manual
   ownerCut = gateCut.cut
-  specMaxTaskId = gateCut.maxId
-  log(`Loaded spec ${specId} (${specFolder}): ${tasks.length} task(s) to build`)
+  specTaskLines = taskLines
+  specMaxTaskId = Math.max(gateCut.maxId, maxTaskId(loaded.archiveLines))
+  log(`Loaded spec ${specId} (${specFolder}): ${tasks.length} task(s) to build${manualTasks.length ? `; Manual task(s) ${manualTasks.map((t) => t.id).join(', ')} go to the manual test plan` : ''}`)
 } else {
   // --- Investigate (per repo when cross-repo) ---------------------------
   phase('Investigate')
+  costSnapshot('Investigate')
   const investigatePrompt = (repo) =>
     `Think deeply and investigate the ${repo.role} repo (${repo.stack}) at "${repo.path}" before any code is written. cd there. Goal: a precise map of where this feature lives and what it must not break.
 Feature: ${feature}
@@ -2959,6 +3584,7 @@ Read the actual code and docs. Tag each relevant file with its repo path.`
 
   // --- Spec: decompose + persist ----------------------------------------
   phase('Spec')
+  costSnapshot('Spec')
   const spec = await runAgent(
     `Decompose this feature into an ordered, minimal list of implementation tasks across the detected repos.
 Feature: ${feature}
@@ -2975,10 +3601,13 @@ ${briefRules.length ? `- Business rules from ${brief.path} (each must be enforce
 ` : ''}
 Also write acceptanceCriteria ("AC-n: " + EARS "WHEN <trigger> THE SYSTEM SHALL <response>" or Given/When/Then, one observable outcome each) and mustNotChange ("MNC-n: " + existing behavior on the touched code paths that must remain identical). When authorization per role, a latency budget, an accessibility level, or personal-data handling is at stake, also write nfrs ("NFR-n: <attribute>: <requirement with a measurable target>"); otherwise leave nfrs empty.
 Each task needs: integer id, title, the "stack" it targets (one of ${repos.map((r) => r.stack).join('/')}), likely files, an approach, a one-line verify criterion, and covers (the AC/MNC/NFR ids it satisfies). Order so each builds on the previous; group backend-before-frontend where the frontend consumes new backend work.
-Skip tasks for pieces already marked 'complete'. Every broken link above MUST be covered by a task that makes the target resolve end-to-end — a feature that ends at a 404/missing target is not shippable.`,
+Skip tasks for pieces already marked 'complete'. Every broken link above MUST be covered by a task that makes the target resolve end-to-end — a feature that ends at a 404/missing target is not shippable.
+A step only a person can perform (a check on a real device or in a real mailbox, a client sign-off, a production action) is a task whose title starts with "Manual: " (case-sensitive, plain text); it is never built and goes to the manual test plan. Every other task is code and has no prefix. Never write a "Gate: " task: only the owner adds one.`,
     { phase: 'Spec', schema: SPEC_SCHEMA, agentType: 'code-explorer', ...MODELS.spec }
   )
-  tasks = (spec && spec.tasks) || []
+  const specTasks = ((spec && spec.tasks) || []).filter((t) => taskKind(String(t.title || '').trim()) !== 'gate')
+  tasks = specTasks.filter((t) => taskKind(String(t.title || '').trim()) === 'code')
+  manualTasks = specTasks.filter((t) => taskKind(String(t.title || '').trim()) === 'manual').map((t) => ({ id: t.id, title: String(t.title).trim() }))
   acceptanceCriteria = (spec && spec.acceptanceCriteria) || []
   mustNotChange = (spec && spec.mustNotChange) || []
   nfrs = (spec && spec.nfrs) || []
@@ -2986,7 +3615,7 @@ Skip tasks for pieces already marked 'complete'. Every broken link above MUST be
     log('Spec produced no tasks.')
     return { feature, project, investigation, error: 'no tasks generated' }
   }
-  log(`Spec: ${tasks.length} task(s)`)
+  log(`Spec: ${tasks.length} task(s)${manualTasks.length ? `, plus Manual task(s) ${manualTasks.map((t) => t.id).join(', ')} for the manual test plan` : ''}`)
 
   const gatesDoc = repos
     .map((r) => `${r.role} (${r.stack}): ${(r.gateCommands || []).map((g) => g.command).join(', ') || 'detected lint/test tooling'}`)
@@ -3003,7 +3632,7 @@ Spec folder (never compute "highest number + 1" — parallel sessions collide):
 Write (lowercase names, no AI-marker/changelog comments):
 1. spec-lite.md — YAML frontmatter: id (folder name), title, type: feature, size, priority: P2, status: in-progress, ticket: ${ticket || '<blank>'}, stakeholders: [], approved_by: <blank>, approved_at: <blank> (<blank> = key written with no value, e.g. "approved_by:"; never the literal text "<blank>", "(empty)" or "none"), created: $(date +%Y-%m-%d), stacks, slice: ${slice || '<blank>'}, brs: [${briefRules.map((r) => String(r).split(':')[0].trim()).join(', ')}]. Sections: Summary; Context (name ${brief ? brief.path : 'the product brief'} as the rules' source when there is one); Scope (In/Out); Must NOT change; Acceptance criteria;${nfrs.length ? ' Quality attributes (a table: | ID | Attribute | Requirement | Verified by |, one row per NFR);' : ''} Boundaries (Always / Ask first / Never — derive from the conventions and risks); Technical context (relevant files, approach, repos); Open questions (the investigation's open questions as unchecked items${briefDraft && briefRules.length ? `, plus one unchecked "Assumption: <BR-nn> is an unvalidated draft rule (${brief.path}, owner ${brief.owner || 'unnamed'})" per brief rule cited` : ''}); footer "Next: ship-feature {spec:\\"<specId>\\"}".${slice && brief ? `
 3. In the backlog.md next to ${brief.path}, set slice ${slice}'s Spec field to the specId and its Status to specced. Change nothing else in that file.` : ''}
-2. tasks.md — ordered checklist "- [ ] N. {title} ({stack})" each with a "Covers: ..." line and nested "- [ ] N.x **Verify**: {criterion}"; then a "## Traceability" heading followed by a table (| ID | Criterion (short) | Verified by | Kind (test/manual) | Task |) with one row per AC, MNC and NFR; then "Verification gates" listing the ACTUAL detected gates (do NOT hardcode commands): ${gatesDoc}; then "Done when".
+2. tasks.md — ordered checklist "- [ ] N. {title} ({stack})" each with a "Covers: ..." line and nested "- [ ] N.x **Verify**: {criterion}". Task kinds come from the plain-text title prefix right after "N. " (case-sensitive, no bold or backticks): keep a "Manual: " title exactly as given, so it reads "- [ ] N. Manual: {step}", and give code tasks no prefix; write no "Gate: " task. Then a "## Traceability" heading followed by a table (| ID | Criterion (short) | Verified by | Kind (test/manual) | Task |) with one row per AC, MNC and NFR; then "Verification gates" listing the ACTUAL detected gates (do NOT hardcode commands): ${gatesDoc}; then "Done when".
 
 Feature: ${feature}
 Repos: ${JSON.stringify(repos.map((r) => ({ role: r.role, stack: r.stack, path: r.path })))}
@@ -3012,7 +3641,7 @@ Acceptance criteria: ${JSON.stringify(acceptanceCriteria)}
 Must NOT change: ${JSON.stringify(mustNotChange)}
 Quality attributes: ${JSON.stringify(nfrs)}
 Open questions: ${JSON.stringify(investigations.flatMap((i) => i.openQuestions || []))}
-Tasks: ${JSON.stringify(tasks)}
+Tasks: ${JSON.stringify(specTasks)}
 
 Return specId (the folder name), specFolder (relative path), and the tasks you wrote (done:false, keep their stack and covers).`,
     { phase: 'Spec', schema: SPEC_FILE_SCHEMA, agentType: WRITER_AGENT, ...MODELS.spec }
@@ -3030,6 +3659,98 @@ const specLabel = specId ? `spec ${specId}` : (feature || 'feature')
 const specTrackNote = specFolder
   ? `When done, tick this task complete in ${specFolder}/tasks.md (its "- [ ] N." and Verify subitem → "- [x]"). Do not alter other tasks.`
   : ''
+
+// The repo that holds .ai/specs/<folder>: the spec's repo for Prepare and the report.
+const specRepoPath = specFolder ? specFolder.replace(/\/?\.ai\/specs\/[^/]+\/?$/, '') || '.' : null
+
+// --- Prepare: leave a protected branch, mark an approved spec in progress --
+// One call per tracked repo that gets a code task, plus the spec's repo. Nothing is committed: the
+// user commits on the feature branch. A failed switch stops the run before anything is built.
+const branches = []
+const codeTasks = tasks.filter((t) => !String(t.title || '').trim().startsWith('Manual:'))
+const prepareTargets = []
+if (codeTasks.length) {
+  const byPath = new Map()
+  const target = (repo) => {
+    const key = normalRepoPath(repo.path)
+    if (!byPath.has(key)) {
+      const t = { repo, switchBranch: false, flipStatus: false }
+      byPath.set(key, t)
+      prepareTargets.push(t)
+    }
+    return byPath.get(key)
+  }
+  for (const task of codeTasks) {
+    const repo = repoForStack(task.stack)
+    if (repo && repo.tracked === true) target(repo).switchBranch = true
+  }
+  if (specRepoPath) {
+    const repo = repos.find((r) => normalRepoPath(r.path) === normalRepoPath(specRepoPath))
+    if (repo && repo.tracked === true) target(repo).switchBranch = true
+    if (specStatus === 'approved') target(repo || { role: 'spec', path: specRepoPath }).flipStatus = true
+  }
+}
+const branchName = featureBranchName(specFolder, specTicket, feature)
+if (prepareTargets.some((t) => t.switchBranch) && !branchName) {
+  const error = `could not name a feature branch for ${specLabel}: its folder name holds no letters or digits. Fix: rename the spec folder, or switch each repo to a feature branch by hand, then re-run`
+  log(error)
+  return { specRef, specId, error }
+}
+
+function preparePrompt(t) {
+  const dir = t.repo.path
+  const steps = []
+  if (t.switchBranch) {
+    steps.push(`Branch. Run, one command at a time:
+   git -C "${dir}" branch --show-current
+   git -C "${dir}" symbolic-ref --short refs/remotes/origin/HEAD
+   The first prints the current branch, or nothing on a detached HEAD: that output is previousBranch ("" when detached). The second fails when origin or its HEAD is not set: ignore that failure and do not fetch. When it succeeds, its output without the "origin/" prefix is the default branch.
+   The branch is protected when HEAD is detached, or it is main, master, develop, release/<anything>, or the default branch. Set protected to match.
+   Not protected: stay on it. branch = previousBranch, created = false.
+   Protected: run git -C "${dir}" show-ref --verify --quiet "refs/heads/${branchName}". When it succeeds, run git -C "${dir}" switch "${branchName}" (created = false); otherwise run git -C "${dir}" switch -c "${branchName}" (created = true). Uncommitted changes move with the switch: never stash, reset, discard or commit anything to make it work. When the switch fails, stop here: error = git's message, branch = previousBranch, and skip every later step. Otherwise branch = the output of git -C "${dir}" branch --show-current.`)
+  } else {
+    steps.push('Branch. Run no git command here. branch = "", previousBranch = "", created = false, protected = false.')
+  }
+  steps.push(t.flipStatus
+    ? `Status. In "${specFolder}/spec-lite.md" (path from the current directory), change the frontmatter line "status: approved" to "status: in-progress" with a file edit. Change no other line and no other file. When the frontmatter status is not "approved", change nothing. statusFlipped = true only when you changed that line.`
+    : 'Status. Edit no file. statusFlipped = false.')
+  return `Prepare the ${t.repo.role} repo at "${dir}" for this run. Use Bash. Commit nothing, push nothing, fetch nothing.
+${steps.map((s, i) => `${i + 1}. ${s}`).join('\n')}
+Return branch, previousBranch, created, protected, statusFlipped, and error only when the switch failed.`
+}
+
+if (prepareTargets.length) {
+  phase('Prepare')
+  costSnapshot('Prepare')
+  const prepared = await parallel(prepareTargets.map((t) => () =>
+    runAgent(preparePrompt(t), { phase: 'Prepare', label: `prepare:${t.repo.role}`, schema: PREPARE_SCHEMA, ...MODELS.prepare })
+  ))
+  let stop = null
+  prepareTargets.forEach((t, i) => {
+    const r = prepared[i]
+    if (t.switchBranch) {
+      if (!r) {
+        stop = stop || `could not check the branch in ${t.repo.path}: the prepare step returned no result. Fix: re-run; if it repeats, switch the repo to a feature branch by hand`
+        return
+      }
+      const previous = String(r.previousBranch || '').trim()
+      const current = String(r.branch || '').trim()
+      const left = previous ? `"${previous}"` : '"detached HEAD"'
+      if (r.error || ((r.protected === true || isProtectedBranch(previous)) && current !== branchName)) {
+        const message = r.error ? String(r.error).replace(/\s+/g, ' ').trim() : `still on ${current ? `"${current}"` : 'a detached HEAD'} after the switch`
+        stop = stop || `could not leave protected branch ${left} in ${t.repo.path}: ${message}. Fix: commit or stash your changes, or switch to a feature branch, then re-run`
+        return
+      }
+      branches.push({ repo: t.repo.path, role: t.repo.role, branch: current, previousBranch: previous, created: !!r.created })
+      log(current === previous ? `Prepare: ${t.repo.role} stays on "${current}"` : `Prepare: ${t.repo.role} ${left} → "${current}"${r.created ? ' (created)' : ''}`)
+    }
+    if (t.flipStatus) log(r && r.statusFlipped ? `Prepare: ${specId} status approved → in-progress` : `Prepare: ${specId} status was not changed (still approved in ${specFolder}/spec-lite.md)`)
+  })
+  if (stop) {
+    log(stop)
+    return { specRef, specId, error: stop, branches }
+  }
+}
 
 // --- Build (serial; right specialist + repo per task; budget-guarded) ----
 const built = []
@@ -3068,6 +3789,7 @@ ${specTrackNote}
 Set completed=true only if the task is fully done with a passing test. Return what you changed (full repo-relative paths).`,
       { label: `build:t${task.id}`, phase: 'Build', schema: BUILD_SCHEMA, agentType: agentForStack(task.stack), ...MODELS.build }
     )
+    if (result) recordChanged(repo, result.changedFiles)
     if (result && result.completed !== false) built.push({ id: task.id, ...result })
     else failedTasks.push(task.id)
   }
@@ -3083,7 +3805,7 @@ Exit 0 = pass. Exit 1 = drift = fail: put every finding (missing-in-backend, met
 Report exactly one gate named "contract-sync"; set repo="${contractSync.repo}" and allPassed accordingly. Do not fix anything here.`
 }
 async function runGates() {
-  const jobs = repos.map((r) => () => runRepoGates(r, gateInstructionsFor, { label: `gates:${r.role}`, phase: 'Gates', schema: GATES_SCHEMA, ...MODELS.gatesFix }))
+  const jobs = repos.map((r) => async () => scopeLintFailures(await runRepoGates(r, gateInstructionsFor, { label: `gates:${r.role}`, phase: 'Gates', schema: GATES_SCHEMA, ...MODELS.gatesFix }), r.stack, changedIn(r)))
   if (contractSync && (isUntrustedStack(backendRepo.stack) || isUntrustedStack(frontendRepo.stack))) {
     jobs.push(async () => ({ repo: contractSync.repo, gates: [{ name: 'contract-sync', status: 'unreachable', details: NOT_RUN_UNTRUSTED }], allPassed: false }))
   } else if (contractSync && (!contractSync.command || backendRepo.declinedStack || frontendRepo.declinedStack)) {
@@ -3096,7 +3818,13 @@ async function runGates() {
   const allGates = results.flatMap((g) => (g.gates || []).map((x) => ({ ...x, repo: g.repo })))
   return { results, allGates, allPassed: results.length > 0 && results.every((g) => g.allPassed) }
 }
-async function gatesUntilGreen() {
+/**
+ * Runs the gates and lets the stack specialist fix failures in the files this run changed, up to 3 rounds.
+ * A repo where the run changed no file gets no fix call: its failures are pre-existing.
+ * @param {(repo: object) => string[]} [citedFor]  extra files a repo's fix may edit (the files Fix findings cite)
+ * @returns {Promise<{ results: object[], allGates: object[], allPassed: boolean }>}
+ */
+async function gatesUntilGreen(citedFor = () => []) {
   let current = await runGates()
   let fixRounds = 0
   while (!current.allPassed && fixRounds < 3) {
@@ -3109,15 +3837,20 @@ async function gatesUntilGreen() {
       log(`Gates failing but budget low (${Math.round(budget.remaining() / 1000)}k left) — stopping fix loop.`)
       break
     }
-    fixRounds++
-    log(`Gates round ${fixRounds}: fixing ${failing.length} failing gate(s)`)
     // Fix per repo so the right specialist edits the right tree.
     const byRepo = repos.filter((r) => failing.some((f) => f.repo === r.path))
+    const targets = byRepo.length ? byRepo : repos
+    targets.filter((r) => !changedIn(r).length).forEach((r) => log(`Gates: ${r.path} failures are pre-existing (this run changed no file there) — not fixed`))
+    const scoped = targets.filter((r) => changedIn(r).length)
+    if (!scoped.length) break
+    fixRounds++
+    log(`Gates round ${fixRounds}: fixing ${failing.length} failing gate(s)`)
     await parallel(
-      (byRepo.length ? byRepo : repos).map((r) => () =>
+      scoped.map((r) => () =>
         runAgent(
           `Quality gates are failing in the ${r.role} repo (${r.stack}) at "${r.path}". cd there. Fix the underlying code (not the gate config); do not suppress errors or weaken assertions.${contractSync ? `
 A "contract-sync" failure means the frontend and backend disagree on an endpoint. The backend contract (docs/api/api-contracts.md and the spec) is authoritative: fix the side that deviates from it, and if the backend itself is missing the route, report that instead of inventing a frontend workaround.` : ''}
+${gateFixScope(changedIn(r), citedFor(r))}
 Failures:
 ${failing.filter((f) => !f.repo || f.repo === r.path).map((g) => `- ${g.name}: ${g.details || ''}`).join('\n')}`,
           { label: `gates:fix${fixRounds}:${r.role}`, phase: 'Gates', agentType: agentForStack(r.stack), ...MODELS.gatesFix }
@@ -3131,77 +3864,143 @@ ${failing.filter((f) => !f.repo || f.repo === r.path).map((g) => `- ${g.name}: $
 
 // --- Build → Gates → Converge loop ---------------------------------------
 // Converge audits the code against the spec and APPENDS gap tasks to tasks.md
-// rather than editing code, so every change stays traceable to a task.
+// rather than editing code, so every change stays traceable to a task. The last
+// round's code gaps are built once with no further audit, so the loop always ends.
 let gates = null
 let pending = tasks
 let convergeRound = 0
 const convergeLog = []
 let remainingGaps = []
+// clean | cap | budget | stranded | nothing-built | unavailable; null until the loop ends.
+let convergeStop = null
+// Set when an audit did not return or wrote an owner gate; it blocks SHIP.
+let convergeFailed = false
 while (true) {
   phase('Build')
+  costSnapshot('Build')
   await buildTasks(pending)
   log(`Build: ${built.length}/${tasks.length} task(s) implemented${failedTasks.length ? ` (incomplete: ${failedTasks.join(', ')})` : ''}`)
 
   phase('Gates')
+  costSnapshot('Gates')
   gates = await gatesUntilGreen()
+  if (convergeStop === 'cap') break
 
   phase('Converge')
+  costSnapshot('Converge')
   if (!built.length) {
+    convergeStop = 'nothing-built'
     log('Converge: skipped — nothing was built.')
     break
   }
   if (budget.total && budget.remaining() < 100_000) {
+    convergeStop = 'budget'
     log(`Converge: skipped — budget low (${Math.round(budget.remaining() / 1000)}k left).`)
     break
   }
   convergeRound++
-  const nextId = Math.max(specMaxTaskId, ...tasks.map((t) => t.id || 0)) + 1
+  const nextId = Math.max(specMaxTaskId, ...tasks.map((t) => t.id || 0), ...manualTasks.map((t) => t.id || 0)) + 1
+  const priorGaps = convergeLog.flatMap((r) => [...r.gaps, ...r.manual])
+  const scopeNote = specScope.in.length || specScope.out.length
+    ? `In scope: ${JSON.stringify(specScope.in)}\nOut of scope (never a gap): ${JSON.stringify(specScope.out)}\n`
+    : specFolder ? `In scope and Out of scope: the "Scope" section of ${specFolder}/spec-lite.md; work it puts out of scope is never a gap.\n` : ''
   const audit = await runAgent(
     `Audit the implementation against the spec. Do NOT edit any code — your only write is appending gap tasks to tasks.md.
 Spec: ${specFolder ? `${specFolder} (read spec-lite.md and tasks.md)` : `in-memory (no spec folder) — feature: ${feature}`}
 Acceptance criteria: ${JSON.stringify(acceptanceCriteria)}
 Must NOT change: ${JSON.stringify(mustNotChange)}
 Quality attributes: ${JSON.stringify(nfrs)}
-Tasks: ${JSON.stringify(tasks.map((t) => ({ id: t.id, title: t.title, covers: t.covers || [] })))}
+${scopeNote}Tasks: ${JSON.stringify(tasks.map((t) => ({ id: t.id, title: t.title, covers: t.covers || [] })))}
 Built so far: ${JSON.stringify(built.map((b) => ({ id: b.id, summary: b.summary, changedFiles: b.changedFiles })))}
 Incomplete tasks: ${JSON.stringify(failedTasks)}
 Gate status: ${gates.allPassed ? 'green' : 'NOT green'}
-${awaitingOwner ? `Out of scope: tasks ${ownerCut.join(', ')} wait for the owner gate "${awaitingOwner}". Do not report their work as gaps, and never add a gap titled "Gate:".\n` : ''}
+${priorGaps.length ? `Gaps raised in earlier rounds, already tasks in tasks.md: ${JSON.stringify(priorGaps.map((g) => `${g.id}. ${g.title}`))}. Do not report one of them again under a new title; report only work that is still missing.\n` : ''}${awaitingOwner ? `Out of scope: tasks ${ownerCut.join(', ')} wait for the owner gate "${awaitingOwner}". Do not report their work as gaps.\n` : ''}Never add a gap titled "Gate:" and never write a "Gate:" task: only the owner adds an owner gate.\n${manualTasks.length ? `Manual tasks ${manualTasks.map((t) => t.id).join(', ')} are a person's steps for the manual test plan; do not report them as gaps.\n` : ''}
 Read the changed code and its tests. For every AC: is it implemented AND covered by a test (or a manual-test step)? For every MNC: is there a guard proving the behavior is unchanged? For every NFR: is the requirement met and proven by a test or a recorded measurement against its target? For every task: is its Verify criterion actually met? Anything missing, half-done, or untested is a gap.
-Report only concrete gaps grounded in the code (not style preferences, not scope creep beyond the spec). Each gap: title, reason (what is missing, with file evidence), stack, files, approach, verify, covers (AC/MNC/NFR ids).
-${specFolder ? `If there are gaps, ${awaitingOwner ? `insert them in ${specFolder}/tasks.md directly above the line "- [ ] ${ownerGateId}. ${awaitingOwner}" (never below it: nothing after an unchecked gate can be built)` : `append them to ${specFolder}/tasks.md`} under a "## Phase: Gaps (converge round ${convergeRound})" heading as "- [ ] N. {title} ({stack})" with "Covers:" and a "**Verify**:" subitem, numbering from ${nextId}; set appended=true. Change nothing else. Then return tasksMd: the full text of tasks.md after your edit, every line unchanged.` : 'There is no tasks.md to append to; just return the gaps.'}
+Report only concrete gaps grounded in the code (not style preferences, not scope creep beyond the spec). Each gap: title, reason (what is missing, with file evidence), stack, files, approach, verify, covers (AC/MNC/NFR ids), and kind: "manual" when only a person or a live external system can check it (a real device, a real third-party account, production data), otherwise "code".
+${specFolder ? `If there are gaps, ${awaitingOwner ? `insert them in ${specFolder}/tasks.md directly above the line "- [ ] ${ownerGateId}. ${awaitingOwner}" (never below it: nothing after an unchecked gate can be built)` : `append them to ${specFolder}/tasks.md`} under a "## Phase: Gaps (converge round ${convergeRound})" heading, numbering from ${nextId} in the order you return them: a code gap as "- [ ] N. {title} ({stack})" with "Covers:" and a "**Verify**:" subitem, a manual gap as "- [ ] N. Manual: {title}" with a "Covers:" subitem; set appended=true. Change nothing else. Return each "- [ ] N. ..." task line you wrote, verbatim, in insertedLines; never return the text of tasks.md.` : 'There is no tasks.md to append to; just return the gaps.'}
 List in covered the AC/MNC/NFR ids that are fully implemented and tested.`,
-    { phase: 'Converge', label: `converge:r${convergeRound}`, schema: CONVERGE_SCHEMA, ...MODELS.converge }
+    { phase: 'Converge', label: `converge:r${convergeRound}`, schema: specFolder ? CONVERGE_WRITE_SCHEMA : CONVERGE_SCHEMA, ...MODELS.converge }
   )
-  const gaps = ((audit && audit.gaps) || []).filter((g) => !String(g.title || '').trim().startsWith('Gate:')).map((g, i) => ({ ...g, id: nextId + i }))
-  convergeLog.push({ round: convergeRound, gaps: gaps.map((g) => ({ id: g.id, title: g.title, reason: g.reason })) })
-  if (!gaps.length) {
-    log(`Converge round ${convergeRound}: no gaps — implementation matches the spec.`)
+  if (!audit) {
+    convergeStop = 'unavailable'
+    convergeFailed = true
+    log(`Converge round ${convergeRound}: audit did not return — not verified`)
     break
   }
-  if (specFolder) {
+  const found = convergeGaps(audit.gaps, nextId)
+  if (found.dropped.length) log(`Converge round ${convergeRound}: dropped gap(s) ${found.dropped.map((g) => g.id).join(', ')} titled "Gate:" — only the owner adds a gate`)
+  const gaps = found.code
+  convergeLog.push({
+    round: convergeRound,
+    gaps: gaps.map((g) => ({ id: g.id, title: g.title, reason: g.reason })),
+    manual: found.manual,
+  })
+  if (found.manual.length) {
+    manualTasks = manualTasks.concat(found.manual.map((g) => ({ id: g.id, title: g.title })))
+    log(`Converge round ${convergeRound}: manual gap(s) ${found.manual.map((g) => g.id).join(', ')} go to the manual test plan, not to Build`)
+  }
+  const insertedLines = Array.isArray(audit.insertedLines) ? audit.insertedLines : null
+  const writtenGates = (insertedLines || []).filter((l) => {
+    const m = TASK_LINE.exec(String(l).replace(/\r$/, ''))
+    return !!m && taskKind(m[3].trim()) === 'gate'
+  })
+  if (specFolder && writtenGates.length) {
+    tasks = tasks.concat(gaps)
+    remainingGaps = gaps
+    convergeStop = 'stranded'
+    convergeFailed = true
+    log(`Converge round ${convergeRound}: the auditor wrote owner gate line(s) ${writtenGates.map((l) => `"${l}"`).join(', ')} to tasks.md; only the owner adds a gate. Fix: delete them from tasks.md and re-run`)
+    break
+  }
+  if (specFolder && gaps.length && !insertedLines) {
+    tasks = tasks.concat(gaps)
+    remainingGaps = gaps
+    convergeStop = 'stranded'
+    log(`Converge round ${convergeRound}: gap task(s) ${gaps.map((g) => g.id).join(', ')} were not built: the converge agent did not report the lines it wrote. Check tasks.md and re-run.`)
+    break
+  }
+  const afterEdit = specFolder ? withInsertedLines(specTaskLines, insertedLines, ownerGateId) : null
+  if (!gaps.length) {
+    if (afterEdit) specTaskLines = afterEdit
+    convergeStop = 'clean'
+    log(`Converge round ${convergeRound}: no code gaps — implementation matches the spec.`)
+    break
+  }
+  if (afterEdit) {
     // A gap task below an unchecked gate could never be built by a later run, so the round stops instead.
-    const placed = strandedGaps(audit.tasksMd, gaps)
+    const placed = strandedGaps(afterEdit.join('\n'), gaps)
     if (placed.stranded.length) {
       tasks = tasks.concat(gaps)
       remainingGaps = gaps
-      log(`Converge round ${convergeRound}: gap task(s) ${placed.stranded.join(', ')} are not buildable in tasks.md (${placed.reason}); none were built. Move them above the first unchecked gate and re-run.`)
+      convergeStop = 'stranded'
+      log(`Converge round ${convergeRound}: gap task(s) ${placed.stranded.join(', ')} are not buildable in tasks.md (${placed.reason}); none were built. ${placed.fix}`)
       break
     }
+    specTaskLines = afterEdit
   }
   tasks = tasks.concat(gaps)
-  if (convergeRound >= CONVERGE_ROUNDS) {
-    remainingGaps = gaps
-    log(`Converge round ${convergeRound}: ${gaps.length} gap(s) remain after ${CONVERGE_ROUNDS} rounds — left in tasks.md for a human: ${gaps.map((g) => `${g.id}. ${g.title}`).join('; ')}`)
-    break
-  }
-  log(`Converge round ${convergeRound}: ${gaps.length} gap task(s) appended — rebuilding`)
   pending = gaps
+  if (convergeRound >= CONVERGE_ROUNDS) {
+    convergeStop = 'cap'
+    log(`Converge round ${convergeRound}: ${gaps.length} gap task(s) appended — building them once, with no further audit`)
+  } else {
+    log(`Converge round ${convergeRound}: ${gaps.length} gap task(s) appended — rebuilding`)
+  }
 }
+if (convergeStop === 'cap') {
+  const last = convergeLog[convergeLog.length - 1]
+  const builtIds = new Set(built.map((b) => b.id))
+  last.builtNotReaudited = last.gaps.filter((g) => builtIds.has(g.id)).map((g) => g.id)
+  last.failed = last.gaps.filter((g) => !builtIds.has(g.id)).map((g) => g.id)
+  log(`Converge: round ${convergeRound} gap task(s) ${last.builtNotReaudited.join(', ') || 'none'} built, not re-audited${last.failed.length ? `; ${last.failed.join(', ')} failed to build` : ''}`)
+}
+log(`Converge: stopped (${convergeStop}) after ${convergeRound} round(s)`)
+const convergeResult = { rounds: convergeRound, stopReason: convergeStop, log: convergeLog }
 const partialBuild = built.length !== tasks.length - remainingGaps.length
 
 // --- Visual (Playwright MCP; only when UI changed) ----------------------
 phase('Visual')
+costSnapshot('Visual')
 const allChanged = Array.from(new Set(built.flatMap((b) => b.changedFiles || [])))
 const uiChanged = allChanged.filter((f) => /\.(tsx|jsx|html?|s?css|less)$/.test(f))
 let visual = null
@@ -3248,13 +4047,55 @@ const visualFindings = (visual && visual.findings) || []
 
 // --- Review (dimensions, each finding adversarially verified) ------------
 phase('Review')
+costSnapshot('Review')
 const DIMENSIONS = [
   { key: 'correctness', prompt: 'logic errors, edge cases, off-by-one, null handling, incorrect business rules' },
   { key: 'security', prompt: 'auth/authz gaps, injection, mass assignment, sensitive data exposure, missing validation' },
   { key: 'performance', prompt: 'N+1 queries, missing indexes, unbounded loops, unnecessary re-renders, oversized payloads' },
-  { key: 'design', prompt: 'layer violations, adherence to the detected stack conventions, dead code' },
+  {
+    key: 'design',
+    prompt: `layer violations, departures from the detected stack conventions${stackConventions.length ? ` (${stackConventions.join(', ')})` : ''}, dead code. Every design finding names the rule it breaks in convention, with its source: a CLAUDE.md, AGENTS.md or rules entry, an item of the stack conventions, or a named principle with its reference. It also cites file and an integer line. A design finding without a convention, a file and a line is dropped unverified, so leave out matters of taste and general advice`,
+  },
 ]
 const changedFiles = allChanged
+const VERIFY_LENSES = {
+  correctness: 'does the cited code really behave the way the finding claims?',
+  reproducibility: 'can you name a concrete input, state or call path in this code that triggers it?',
+  severity: 'this vote breaks a tie: weigh the evidence both ways and decide whether its impact makes it a real defect in this code',
+}
+
+// The lens line goes last so every vote on one finding shares its prompt prefix up to it. In the Fix phase
+// the same votes re-check a finding the agent reports fixed, against the code as it stands after the fix.
+const verifyVote = (f, dim, lens, stage = 'Review') =>
+  runAgent(
+    `You verify one finding from an adversarial code review of ${specLabel}. Try to REFUTE it: read the cited file and line in the actual code, and default real=false if you cannot confirm it there. Do not re-rate its severity. When it is real, set fixSize: trivial (a local change of a line or two), small (within one function or file) or large (several files, or a design change).${stage === 'Fix' ? ' A fix for it has just been applied: judge the code as it stands now.' : ''}
+Finding (${dim.key}): "${f.title}" in ${f.file || '?'}${f.line ? ':' + f.line : ''}
+${f.description || ''}${f.convention ? `\nConvention: ${f.convention}` : ''}
+Lens: ${lens} — ${VERIFY_LENSES[lens]}`,
+    { label: `${stage === 'Fix' ? 'reverify' : 'verify'}:${dim.key}`, phase: stage, schema: VERDICT_SCHEMA, ...MODELS.verify }
+  )
+
+/** Two votes (one for a minor design finding) and a severity tie-break only when they split or one is missing. */
+async function verifyFinding(f, dim, stage = 'Review') {
+  const single = dim.key === 'design' && f.severity === 'minor'
+  const first = single
+    ? [await verifyVote(f, dim, 'correctness', stage)]
+    : await parallel([() => verifyVote(f, dim, 'correctness', stage), () => verifyVote(f, dim, 'reproducibility', stage)])
+  const votes = first.filter(Boolean)
+  const label = stage === 'Fix' ? 'reverify' : 'verify'
+  if (!votes.length) {
+    log(`${label}:${dim.key} unavailable for "${f.title}"`)
+    return { confirmed: false, refuted: false, reasons: [] }
+  }
+  if (!single && (votes.length === 1 || votes[0].real !== votes[1].real)) {
+    const tie = await verifyVote(f, dim, 'severity', stage)
+    if (tie) votes.push(tie)
+  }
+  const tally = tallyVotes(votes, single ? 1 : 2)
+  // A fix counts only when the votes refute the finding; missing or undecided votes leave it open.
+  if (stage === 'Fix' && !tally.confirmed && !tally.refuted) log(`${label}:${dim.key} unavailable for "${f.title}"`)
+  return tally
+}
 
 const reviewed = await pipeline(
   DIMENSIONS,
@@ -3265,36 +4106,94 @@ Changed files: ${changedFiles.join(', ') || '(inspect recent git diff across all
 Question every pattern — do not assume correctness. Report concrete findings only, with file and line where possible.`,
       { label: `review:${d.key}`, phase: 'Review', schema: FINDINGS_SCHEMA, ...MODELS.review }
     ),
-  (review, dim) =>
-    parallel(
-      ((review && review.findings) || []).map((f) => () =>
-        parallel(
-          ['correctness', 'reproducibility', 'severity'].map((lens) => () =>
-            runAgent(
-              `A reviewer claims a real ${dim.key} issue: "${f.title}" in ${f.file || '?'}${f.line ? ':' + f.line : ''}.
-${f.description || ''}
-Judge it through the ${lens} lens. Try to REFUTE it — default real=false if you cannot confirm it from the actual code.`,
-              { label: `verify:${dim.key}`, phase: 'Review', schema: VERDICT_SCHEMA, ...MODELS.verify }
-            )
-          )
-        ).then((votes) => {
-          const present = votes.filter(Boolean)
-          const yes = present.filter((v) => v.real).length
-          // Confirmed only on a majority of the votes that actually returned.
-          const confirmed = present.length > 0 && yes >= Math.ceil(present.length / 2) && yes >= 2
-          return { ...f, dimension: dim.key, confirmed }
-        })
-      )
-    )
+  (review, dim) => {
+    let findings = (review && review.findings) || []
+    if (!findings.length) return []
+    if (dim.key === 'design') {
+      const concrete = findings.filter(isConcreteDesignFinding)
+      if (concrete.length < findings.length) log(`Review: dropped ${findings.length - concrete.length} design finding(s) without a convention, file and line`)
+      findings = concrete
+    }
+    // The finder's severity stands; the votes decide only whether the finding is real and how big its fix is.
+    return parallel(findings.map((f) => () => verifyFinding(f, dim).then((v) => ({ ...f, dimension: dim.key, ...v }))))
+  }
 )
 
-const confirmed = reviewed.flat().filter(Boolean).filter((f) => f.confirmed)
+const confirmed = reviewed.flat().filter(Boolean).filter((f) => f.confirmed).map((f, i) => ({ id: `F${i + 1}`, ...f }))
 log(`Review: ${confirmed.length} confirmed finding(s)`)
+
+// --- Fix: confirmed critical, major and trivial minor findings, re-gated and re-verified ---
+// Review is not re-run: a defect a fix introduces is caught by the gates, the test gates and Acceptance.
+// Nothing is committed; the user commits on the feature branch.
+phase('Fix')
+costSnapshot('Fix')
+/**
+ * The repo a finding's file lies in: by the longest repo path prefix, then the repo whose changed files
+ * include it (reviewers see repo-relative paths), and the primary repo otherwise.
+ */
+function repoForFinding(f) {
+  const file = normalFile(f.file)
+  const owners = repos.filter((r) => normalRepoPath(r.path) !== '.' && file.startsWith(`${normalRepoPath(r.path)}/`))
+  const byPrefix = owners.sort((a, b) => b.path.length - a.path.length)[0]
+  if (byPrefix) return byPrefix
+  return (file && repos.find((r) => changedIn(r).some((c) => sameFile(c, file)))) || primaryRepo
+}
+/** The finding's file relative to its repo. */
+function findingFile(f, repo) {
+  const file = normalFile(f.file)
+  const prefix = `${normalRepoPath(repo.path)}/`
+  return file.startsWith(prefix) ? file.slice(prefix.length) : file
+}
+const fixedIds = []
+let openFindings = confirmed.filter(isFixableFinding)
+let fixRound = 0
+let fixStop = openFindings.length ? null : 'clean'
+const citedFor = (repo) => openFindings.filter((f) => f.file && repoForFinding(f) === repo).map((f) => findingFile(f, repo))
+const findingLine = (f) => `- ${f.id} [${f.severity}] ${f.file || '?'}${f.line ? `:${f.line}` : ''} — ${f.title}${f.description ? `: ${f.description}` : ''}${(f.reasons || []).length ? `\n  Verifier reasons: ${f.reasons.join(' | ')}` : ''}`
+while (!fixStop) {
+  if (budget.total > 0 && budget.remaining() < 100_000) {
+    fixStop = 'budget'
+    break
+  }
+  fixRound++
+  const greenBefore = !!(gates && gates.allPassed)
+  const groups = repos.map((r) => ({ repo: r, findings: openFindings.filter((f) => repoForFinding(f) === r) })).filter((g) => g.findings.length)
+  log(`Fix round ${fixRound}: ${groups.map((g) => `${g.findings.map((f) => f.id).join(', ')} in ${g.repo.path}`).join('; ')}`)
+  const replies = await parallel(groups.map((g) => () => {
+    const failingGates = ((gates && gates.allGates) || []).filter((x) => isFixableGate(x) && (!x.repo || x.repo === g.repo.path))
+    return runAgent(
+      `Fix these confirmed review findings of ${specLabel} in the ${g.repo.role} repo (${g.repo.stack}) at "${g.repo.path}" — cd there. Fix round ${fixRound} of ${FIX_ROUNDS}.
+Findings:
+${g.findings.map(findingLine).join('\n')}
+${failingGates.length ? `Failing gates:\n${failingGates.map((x) => `- ${x.name}: ${x.details || ''}`).join('\n')}\n` : ''}${gateFixScope(changedIn(g.repo), g.findings.filter((f) => f.file).map((f) => findingFile(f, g.repo)))}
+${mustNotChange.length ? `Must NOT change (keep identical; do not edit their guard tests): ${mustNotChange.join('; ')}\n` : ''}Make the smallest change that removes each defect, with a test when it changes behaviour; do not suppress errors or weaken assertions, and commit nothing. Return in fixed only the ids you fixed, and in changedFiles every file you changed (full repo-relative paths).`,
+      { label: `fix:r${fixRound}:${g.repo.role}`, phase: 'Fix', schema: FIX_SCHEMA, agentType: agentForStack(g.repo.stack), ...MODELS.fix }
+    )
+  }))
+  const reported = new Set()
+  replies.forEach((reply, i) => {
+    if (!reply) return
+    recordChanged(groups[i].repo, reply.changedFiles)
+    const ids = new Set(groups[i].findings.map((f) => f.id))
+    for (const id of reply.fixed || []) if (ids.has(id)) reported.add(id)
+  })
+  gates = await gatesUntilGreen(citedFor)
+  const recheck = openFindings.filter((f) => reported.has(f.id))
+  const verdicts = await parallel(recheck.map((f) => () => verifyFinding(f, DIMENSIONS.find((d) => d.key === f.dimension) || { key: f.dimension || 'review' }, 'Fix')))
+  const resolved = recheck.filter((f, i) => verdicts[i] && verdicts[i].refuted).map((f) => f.id)
+  fixedIds.push(...resolved)
+  openFindings = openFindings.filter((f) => !resolved.includes(f.id))
+  fixStop = fixStopAfterRound({ greenBefore, greenAfter: !!(gates && gates.allPassed), open: openFindings.length, resolved: resolved.length, rounds: fixRound })
+}
+const unresolved = confirmed.filter((f) => !fixedIds.includes(f.id))
+const fixResult = { rounds: fixRound, stopReason: fixStop, fixed: fixedIds, remaining: unresolved.map((f) => f.id) }
+log(`Fix: stopped (${fixStop}) after ${fixRound} round(s); fixed ${fixedIds.join(', ') || 'none'}; remaining ${fixResult.remaining.join(', ') || 'none'}`)
 
 // --- Acceptance: trace the ORIGINAL reported scenario end-to-end ----------
 // Guards against "tests pass but the feature still doesn't work" — the build
 // can be green while the reported problem (a 404, a dead link) is untouched.
 phase('Acceptance')
+costSnapshot('Acceptance')
 let acceptance = null
 if (!built.length) {
   log('Acceptance: skipped — nothing was built.')
@@ -3324,6 +4223,8 @@ Walk the journey as a real request/user would: from each entry point, follow eve
   }
   if (acceptance) {
     log(`Acceptance: ${acceptance.resolved ? 'RESOLVED' : 'NOT resolved'}${(acceptance.brokenLinks || []).length ? ` — broken: ${acceptance.brokenLinks.join(', ')}` : ''}`)
+  } else {
+    log('Acceptance: did not return — not verified')
   }
 }
 
@@ -3369,14 +4270,15 @@ const acceptanceResolved = !!(acceptance && acceptance.resolved) && !e2eFailed
 
 // --- Docs ---------------------------------------------------------------
 phase('Docs')
+costSnapshot('Docs')
 let docs = null
-const blockingFindings = confirmed.filter((f) => f.severity === 'critical')
+const criticalFindings = unresolved.filter((f) => f.severity === 'critical')
 if (!built.length) {
   log('Docs: skipped — nothing was built.')
 } else if (partialBuild) {
   log('Docs: skipped — build incomplete; docs would describe unfinished behavior.')
-} else if (blockingFindings.length) {
-  log(`Docs: skipped — ${blockingFindings.length} critical finding(s) unresolved.`)
+} else if (criticalFindings.length) {
+  log(`Docs: skipped — ${criticalFindings.length} critical finding(s) unresolved.`)
 } else if (acceptance && !acceptance.resolved) {
   log('Docs: skipped — acceptance not met; docs would describe a feature that does not work end-to-end.')
 } else {
@@ -3401,10 +4303,24 @@ Rules: prefer updating existing docs; new docs only when nothing covers the area
 
 // Only an untrusted manifest that a detected repo uses blocks SHIP; the others are reported for information.
 const blockingManifests = blockingUntrusted(untrustedManifests, repos)
-const notShippable = partialBuild || (gates && !gates.allPassed) || blockingFindings.length || (acceptance && !acceptance.resolved) || e2eFailed || repoWarnings.length || remainingGaps.length || blockingManifests.length
+const blockingFindings = unresolved.filter((f) => f.severity === 'critical' || f.severity === 'major')
+const recommendation = shipRecommendation({
+  blockingManifests: blockingManifests.length,
+  partialBuild,
+  gatesPassed: !!(gates && gates.allPassed),
+  blockingFindings: blockingFindings.length,
+  // Acceptance that never returned after a build is not verified, so it blocks like a failed one.
+  acceptanceFailed: built.length > 0 && !(acceptance && acceptance.resolved),
+  e2eFailed,
+  repoWarnings: repoWarnings.length,
+  remainingGaps: remainingGaps.length,
+  convergeFailed,
+})
+const notShippable = recommendation !== 'SHIP'
 
 // --- TestPlan: copy-paste manual QA steps for a human --------------------
 phase('TestPlan')
+costSnapshot('TestPlan')
 let testPlan = null
 if (!built.length) {
   log('TestPlan: skipped — nothing was built.')
@@ -3419,8 +4335,8 @@ Expected end state: ${(userJourney && userJourney.expectedEndState) || '(reporte
 App URL(s): ${appUrlLine(devUrl)}
 Acceptance trace: ${JSON.stringify(acceptance && { resolved: acceptance.resolved, steps: acceptance.steps } || 'not run')}
 Changed files: ${allChanged.join(', ') || '(inspect git diff)'}
-
-Each step: a precise action (exact URL to open / command to run / button to click with real example data) and the exact expected result (status code, redirect target, on-screen text). Include preconditions (env, seeded data, login) and a rollback note if the change is risky. Cover the happy path AND the originally-reported failing case (it must now pass), plus one step for each acceptance criterion, Must NOT change item, or quality attribute that has no automated test: ${JSON.stringify([...acceptanceCriteria, ...mustNotChange, ...nfrs])}.${specFolder ? ` Then in ${specFolder}/tasks.md fill the Traceability "Verified by" cells that point at manual steps with "manual-test.md#step-N"${notShippable || awaitingOwner ? '' : `, and set status: done in ${specFolder}/spec-lite.md frontmatter${slice ? `, then set slice ${slice}'s Status to shipped in the backlog.md next to the product-brief.md (the repo root or its parent; change nothing else there)` : ''}`}.` : ''}${planPath ? `\n\nWrite the plan to "${planPath}" as markdown (lowercase filename, human-authored tone, no AI-marker comments). Set path to that file.` : '\nReturn the steps inline (no spec folder to write to).'}`,
+${manualTasks.length ? `Manual tasks (never built; a person runs them): ${JSON.stringify(manualTasks.map((t) => `${t.id}. ${t.title}`))}. Give each its own step, and end the plan with a "Tick after the manual steps pass" line naming the task ids ${manualTasks.map((t) => t.id).join(', ')}${specFolder ? ` (their "- [ ] N." lines in ${specFolder}/tasks.md; leave them unchecked yourself)` : ''}.\n` : ''}
+Each step: a precise action (exact URL to open / command to run / button to click with real example data) and the exact expected result (status code, redirect target, on-screen text). Include preconditions (env, seeded data, login) and a rollback note if the change is risky. Cover the happy path AND the originally-reported failing case (it must now pass), plus one step for each acceptance criterion, Must NOT change item, or quality attribute that has no automated test: ${JSON.stringify([...acceptanceCriteria, ...mustNotChange, ...nfrs])}.${specFolder ? ` Then in ${specFolder}/tasks.md fill the Traceability "Verified by" cells that point at manual steps with "manual-test.md#step-N"${notShippable || awaitingOwner || manualTasks.length ? '' : `, and set status: done in ${specFolder}/spec-lite.md frontmatter${slice ? `, then set slice ${slice}'s Status to shipped in the backlog.md next to the product-brief.md (the repo root or its parent; change nothing else there)` : ''}`}.` : ''}${planPath ? `\n\nWrite the plan to "${planPath}" as markdown (lowercase filename, human-authored tone, no AI-marker comments). Set path to that file.` : '\nReturn the steps inline (no spec folder to write to).'}`,
     { phase: 'TestPlan', schema: TEST_PLAN_SCHEMA, agentType: WRITER_AGENT, ...MODELS.testplan }
   )
   if (testPlan) log(`TestPlan: ${(testPlan.steps || []).length} step(s)${testPlan.path ? ` → ${testPlan.path}` : ''}`)
@@ -3428,36 +4344,50 @@ Each step: a precise action (exact URL to open / command to run / button to clic
 
 // --- Report -------------------------------------------------------------
 phase('Report')
-const recommendationHint = blockingManifests.length ? 'BLOCKED (untrusted stack manifest)' : notShippable ? 'FIX-FIRST or BLOCKED' : 'SHIP unless findings say otherwise'
+costSnapshot('Report')
+const recommendationHint = recommendation === 'BLOCKED' ? 'BLOCKED (untrusted stack manifest)' : recommendation
 const trustNext = untrustedNext('ship-feature', blockingManifests)
 const specName = specFolder ? specFolder.split('/').filter(Boolean).pop() : specId || null
-// The report lives next to the spec: the repo that holds .ai/specs/<folder>.
-const reportRepo = specFolder
-  ? specFolder.replace(/\/?\.ai\/specs\/[^/]+\/?$/, '') || '.'
-  : (primaryRepo && primaryRepo.path) || '.'
-const reportSlug = specName || ticket || '<slug>'
+// The report lives next to the spec.
+const reportRepo = specRepoPath || (primaryRepo && primaryRepo.path) || '.'
+// The spec folder name comes back from an agent, so it names the report file only when it is a plain file name.
+const reportSlug = (specName && /^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(specName) ? specName : '') || ticket || '<slug>'
+// The Report agent gets counts, ids and file paths; it reads a file itself when it needs more.
+const reportFindings = confirmed.map((f) => ({ id: f.id, severity: f.severity, dimension: f.dimension, file: f.file, line: f.line, title: f.title, status: fixedIds.includes(f.id) ? 'fixed' : 'remaining' }))
+const reportVisual = visual && { ran: visual.ran, status: visual.status, details: visual.details, findings: visualFindings.length, bySeverity: ['critical', 'major', 'minor'].map((sev) => `${sev}: ${visualFindings.filter((f) => f.severity === sev).length}`).join(', ') }
+const reportAcceptance = acceptance && { resolved: acceptance.resolved, steps: (acceptance.steps || []).length, failedSteps: (acceptance.steps || []).filter((x) => !x.ok).map((x) => x.step), brokenLinks: acceptance.brokenLinks || [] }
+const reportDocs = docs && { updated: docs.updatedDocs || [], created: docs.newDocs || [] }
+const reportTestPlan = testPlan && { path: testPlan.path || null, steps: (testPlan.steps || []).length }
+const reportCost = costTable(costResult(RUN_COST))
 const report = await runAgent(
-  `Write a concise markdown ship report. Sections: Summary, Stack & repos (flag any untracked/WIP repo; add a "Stack overlay" line: ${stackOverlayLine(stackOverlay, untrustedManifests)}), Spec (id + folder), Investigation highlights (key files, risks, pieces already shipped), Tasks completed (note any incomplete: ${failedTasks.join(', ') || 'none'}), Converge (rounds run, gap tasks appended, gaps left unbuilt), Quality gates per repo (pass/fail/skip/unreachable), Visual tests, Acceptance (did the ORIGINAL reported scenario resolve end-to-end? list any broken hop; the E2E regression test written, its AC ids, and whether it passed or could not run), Confirmed review findings (grouped by severity, file:line + one-line fix), Documentation updated, Manual test plan (where it was written + a one-line how-to-run), Recommendation (SHIP / FIX-FIRST / BLOCKED — likely ${recommendationHint}; a partial build, any unreachable gate (contract-sync included), an unresolved acceptance trace, a failing e2e test, unbuilt converge gaps, or building into an untracked WIP repo must NOT be SHIP). End with a "Next" line: when the recommendation is SHIP, "Next: /open-pr --spec=${specName || '<spec id>'} --report=<reportPath>"; otherwise the first fix to make.${trustNext ? ` An untrusted stack manifest means its gates did not run: the recommendation is BLOCKED and the Next line is exactly "${trustNext}"` : ''}
-Save the report: in the repo at "${reportRepo}", mkdir -p .ai/reports and write it to .ai/reports/ship-${reportSlug}-$(date +%Y%m%d-%H%M).md${specName || ticket ? '' : ' (<slug> = 2-5 lowercase-hyphenated words naming the feature)'}, taking the timestamp from the shell, never inventing it. Lowercase filename, written as a human maintainer, no AI-marker comments. Write the file after every other section is final, so its modification time is later than the gate runs it records. Return reportPath (the path relative to the current directory, the same path the Next line names) and markdown (the full report).
+  `Write a concise markdown ship report. Sections: Summary, Stack & repos (flag any untracked/WIP repo; name the branch each repo is on from Branches, and the branch it left when Prepare switched; add a "Stack overlay" line: ${stackOverlayLine(stackOverlay, untrustedManifests)}), Spec (id + folder), Investigation highlights (key files, risks, pieces already shipped), Tasks completed (note any incomplete: ${failedTasks.join(', ') || 'none'}), Converge (rounds run and the stop reason; gap tasks appended per round; the last round's gaps built but not re-audited, and any that failed to build; manual gaps sent to the manual test plan; gaps left unbuilt), Quality gates per repo (pass/fail/skip/unreachable), Visual tests, Acceptance (did the ORIGINAL reported scenario resolve end-to-end? list any broken hop; the E2E regression test written, its AC ids, and whether it passed or could not run), Confirmed review findings (grouped by severity, by id, file:line and title, each marked fixed or remaining as in its status; remaining minor findings are listed and do not block SHIP), Fix (rounds run, the stop reason, the ids fixed and the ids remaining), Documentation updated, Manual test plan (where it was written + a one-line how-to-run), Cost (the per-phase table under Cost below, as given; tokens: n/a means the run had no token budget, and the Report agent itself is not in it), Recommendation (one of SHIP / FIX-FIRST / BLOCKED; this run's recommendation is ${recommendationHint}, computed from the facts below: state it as is, with the reasons). End with a "Next" line: when the recommendation is SHIP, "Next: /open-pr --spec=${specName || '<spec id>'} --report=<reportPath>"; otherwise the first fix to make.${trustNext ? ` An untrusted stack manifest means its gates did not run: the recommendation is BLOCKED and the Next line is exactly "${trustNext}"` : ''}
+Save the report: in the repo at "${reportRepo}", mkdir -p .ai/reports and write it to .ai/reports/ship-${reportSlug}-$(date +%Y%m%d-%H%M).md${reportSlug !== '<slug>' ? '' : ' (<slug> = 2-5 lowercase-hyphenated words naming the feature)'}, taking the timestamp from the shell, never inventing it. Lowercase filename, written as a human maintainer, no AI-marker comments. Write the file after every other section is final, so its modification time is later than the gate runs it records. Return reportPath (the path relative to the current directory, the same path the Next line names) and markdown (the full report).
 Feature: ${specLabel}
 Stack: ${JSON.stringify(repos.map((r) => ({ role: r.role, stack: r.stack, tracked: r.tracked })))}
 Repo warnings: ${JSON.stringify(repoWarnings)}
+Branches: ${JSON.stringify(branches)}
 Stack overlay: ${JSON.stringify({ ...stackOverlay, untrusted: untrustedManifests })}
 Spec: ${JSON.stringify({ specId, specFolder })}
-Build: ${built.length}/${tasks.length} (incomplete: ${JSON.stringify(failedTasks)})${awaitingOwner ? `\nAwaiting owner: ${awaitingOwner} (tasks ${ownerCut.join(', ')} not built; say so under Tasks completed)` : ''}
-Converge: ${JSON.stringify({ rounds: convergeRound, log: convergeLog, remainingGaps: remainingGaps.map((g) => `${g.id}. ${g.title}`) })}
+Build: ${built.length}/${tasks.length} (incomplete: ${JSON.stringify(failedTasks)})${awaitingOwner ? `\nAwaiting owner: ${awaitingOwner} (tasks ${ownerCut.join(', ')} not built; say so under Tasks completed, and give the resume call: ${resume} (file-copy install: name "ship-feature"))` : ''}${manualTasks.length ? `\nManual tasks: ${manualTasks.map((t) => `${t.id}. ${t.title}`).join('; ')} (not built and not incomplete; under Manual test plan, name the ids to tick after the steps pass)` : ''}
+Converge: ${JSON.stringify({ ...convergeResult, remainingGaps: remainingGaps.map((g) => `${g.id}. ${g.title}`) })}
 Investigation: ${JSON.stringify({ relevantFiles: invFiles.slice(0, 12), risks: invRisks, existingImplementation: existingImpl })}
 Gates: ${JSON.stringify(gates.allGates)}
-Visual: ${JSON.stringify(visual)}
-Acceptance: ${JSON.stringify(acceptance)}
+Visual: ${JSON.stringify(reportVisual)}
+Acceptance: ${JSON.stringify(reportAcceptance)}
 E2E: ${JSON.stringify(e2e)}
-Confirmed findings: ${JSON.stringify(confirmed)}
-Docs: ${JSON.stringify(docs)}
-Manual test plan: ${JSON.stringify(testPlan)}`,
+Confirmed findings: ${JSON.stringify(reportFindings)}
+Fix: ${JSON.stringify(fixResult)}
+Docs: ${JSON.stringify(reportDocs)}
+Manual test plan: ${JSON.stringify(reportTestPlan)}
+Cost:
+${reportCost}`,
   { phase: 'Report', schema: REPORT_SCHEMA, ...MODELS.report }
 )
 const reportPath = (report && report.reportPath) || null
 if (reportPath) log(`Report saved: ${reportPath}`)
+costSnapshot('Report')
+const cost = costResult(RUN_COST)
+log(`Cost: ${Object.values(cost.phases).reduce((n, c) => n + c.agents, 0)} agent(s); ${cost.probesFailed} failed agent-name lookup(s)`)
 
 return {
   feature: feature || null,
@@ -3465,17 +4395,24 @@ return {
   specFolder,
   stacks: repos.map((r) => ({ role: r.role, stack: r.stack, path: r.path })),
   crossRepo,
+  branches,
   taskCount: tasks.length,
   built: built.length,
   partialBuild,
   failedTasks,
   awaitingOwner,
   notBuilt: ownerCut,
+  resume,
+  manualTasks: manualTasks.map((t) => t.id),
   convergeRounds: convergeRound,
+  converge: convergeResult,
   remainingGaps: remainingGaps.map((g) => ({ id: g.id, title: g.title, reason: g.reason })),
   gatesPassed: gates ? gates.allPassed : false,
   visualFindings,
   confirmedFindings: confirmed,
+  fix: fixResult,
+  recommendation,
+  cost,
   acceptanceResolved,
   acceptance,
   e2e,

@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../../index.html">SDD Kit</a>
-    <span class="badge">v4.0.2</span>
+    <span class="badge">v4.1.0</span>
   </div>
   <nav class="site-nav" aria-label="Site">
     <ul>
@@ -35,7 +35,29 @@
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main" tabindex="-1">
+<main id="content" class="doc-main has-toc" tabindex="-1">
+  <nav class="page-toc" aria-label="On this page"><details open><summary>On this page</summary>
+    <ol>
+      <li><a href="#1-spec-and-approval-compressed">1. Spec and approval (compressed)</a></li>
+      <li><a href="#2-ship-feature-builds-both-repos">2. ship-feature builds both repos</a></li>
+      <li><a href="#3-deep-review-before-merge">3. /deep-review before merge</a></li>
+      <li><a href="#4-fix-with-simple-task-then-re-review">4. Fix with /simple-task, then re-review</a></li>
+      <li><a href="#5-pr-review-per-repo-then-merge-api-first">5. PR review per repo, then merge api first</a></li>
+      <li><a href="#what-you-have-now">What you have now</a></li>
+    </ol>
+  </details></nav>
+<script>
+  (function () {
+    var d = document.querySelector('.page-toc details'), s = d.querySelector('summary');
+    var narrow = window.matchMedia('(max-width: 767.98px)'), wide = window.matchMedia('(min-width: 1100px)');
+    function sync() { d.open = !narrow.matches; s.tabIndex = wide.matches ? -1 : 0; }
+    function listen(q) { if (q.addEventListener) q.addEventListener('change', sync); else q.addListener(sync); }
+    listen(narrow);
+    listen(wide);
+    d.addEventListener('toggle', function () { if (wide.matches && !d.open) d.open = true; });
+    sync();
+  })();
+</script>
   <article class="doc-body">
 <h2 id="07--job-applications-with-ship-feature-then-deep-review-before-merge-hire-6">07 — Job applications with ship-feature, then /deep-review before merge (HIRE-6)</h2>
 <p>Previous: <a href="06-execute-task-candidate-profiles.html">06 — Build task by task and resume: candidate profiles with /execute-task</a></p>
@@ -47,7 +69,7 @@ reports <code>SHIP</code>. Alex Rivera gates the merge with <code>/deep-review</
 spec or the prompt. It finds a real bug. Alex fixes it with a small <code>/simple-task</code>, re-reviews,
 and merges both repos in order.</p>
 <p>Reference pages, so this chapter doesn&#39;t repeat them:</p>
-<ul><li><a href="../../reference/usage-examples.html#1-feature-from-a-ticket">USAGE-EXAMPLES.md, section 1 &quot;Feature from a ticket&quot;</a> and <a href="../../reference/usage-examples.html#9-review-before-merge">section 9 &quot;Review before merge&quot;</a></li><li><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/sdd/references/ship-feature.md" target="_blank" rel="noopener noreferrer"><code>/sdd</code> route reference: ship-feature</a>: args, phases, outputs, done-when</li><li><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/deep-review/SKILL.md" target="_blank" rel="noopener noreferrer"><code>deep-review</code> skill</a> and its <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/deep-review/references/adversarial-review.md#report-template" target="_blank" rel="noopener noreferrer">report template</a></li></ul>
+<ul><li><a href="../../reference/usage-examples.html#1-feature-from-a-ticket">USAGE-EXAMPLES.md, section 1 &quot;Feature from a ticket&quot;</a> and <a href="../../reference/usage-examples.html#9-review-before-merge">section 9 &quot;Review before merge&quot;</a></li><li><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/sdd/references/ship-feature.md" target="_blank" rel="noopener noreferrer"><code>/sdd</code> route reference: ship-feature</a>: args, phases, outputs, done-when</li><li><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/deep-review/SKILL.md" target="_blank" rel="noopener noreferrer"><code>deep-review</code> skill</a> and its <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/deep-review/references/adversarial-review.md#report-template" target="_blank" rel="noopener noreferrer">report template</a></li></ul>
 <div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody><tr><td>Ticket</td><td>HIRE-6 &quot;Candidates apply to open jobs with an optional cover letter; employers see applicants for their own jobs&quot;</td></tr><tr><td>Route</td><td><code>feature</code> → <code>write-spec</code> → approval → <code>ship-feature</code>, then <code>/deep-review</code> → <code>/simple-task</code> → <code>/deep-review --staged</code></td></tr><tr><td>Spec</td><td><a href="artifacts/api/.ai/specs/spec-HIRE-6-job-applications/spec-lite.html"><code>api/.ai/specs/spec-HIRE-6-job-applications/</code></a> (M, 5 tasks)</td></tr><tr><td>Branches</td><td><code>feature/HIRE-6-job-applications</code> in <code>api/</code> and <code>web/</code></td></tr><tr><td>Date</td><td>2026-10-24</td></tr><tr><td>Review report</td><td><a href="artifacts/api/.ai/reviews/REVIEW-spec-HIRE-6-job-applications-20261024-161502.html"><code>api/.ai/reviews/REVIEW-spec-HIRE-6-job-applications-20261024-161502.md</code></a></td></tr></tbody></table></div>
 <blockquote><p>Command names below are bare (<code>/sdd</code>, <code>/deep-review</code>). In plugin mode they are namespaced
 (<code>/sdd-kit:sdd</code>, <code>/sdd-kit:deep-review</code>). See <a href="01-workspace-and-install.html">chapter 01</a>.</p></blockquote>
@@ -120,7 +142,10 @@ drive the browser.</p>
 <p><em>Simulated run, abridged (watch it with <code>/workflows</code>):</em></p>
 <pre><code class="language-text">Detect      laravel → api (git, clean, feature/HIRE-6-job-applications)
             nextjs  → web (git, clean, feature/HIRE-6-job-applications)
-Spec        loaded spec-HIRE-6-job-applications: 5 pending tasks; status approved → in-progress
+Spec        loaded spec-HIRE-6-job-applications: 5 pending tasks
+Prepare     backend stays on &quot;feature/HIRE-6-job-applications&quot;
+            frontend stays on &quot;feature/HIRE-6-job-applications&quot;
+            spec-HIRE-6-job-applications status approved → in-progress
 Build       1 schema doc + migration + model + factory                 laravel-backend-dev  ✓
             2 submit endpoint + rules + tests (5 tests red → green)     laravel-backend-dev  ✓
             3 candidate/employer lists + policy + tests                 laravel-backend-dev  ✓
@@ -130,7 +155,8 @@ Gates       api  pint ✓  phpstan ✓  php artisan test ✓
             web  lint ✓  tsc ✓  npm test ✓  npm run build ✓ (routes added)
 Converge    round 1: every AC and MNC has a test or manual step; no gap tasks appended
 Visual      /jobs/[id]/apply, /applications, /employer/applications at 375/768/1280: no issues
-Review      4 dimensions → 3 candidate findings → 0 survived the 3-vote refutation panel
+Review      4 dimensions → 3 candidate findings → 0 confirmed (two verifier votes each, refuted)
+Fix         stopped (clean) after 0 round(s); fixed none; remaining none
 Acceptance  journey re-walked at http://localhost:3000:
               new candidate without profile → apply → &quot;Create your candidate profile before
                 you apply.&quot; banner, link to /profile ✓
@@ -381,7 +407,7 @@ git -C ~/work/hireboard/web push -u origin feature/HIRE-6-job-applications</code
 <p>In the <code>api/</code> session:</p>
 <pre><code class="language-text">/deep-review --depth=standard --branch=feature/HIRE-6-job-applications --base=main --format=json</code></pre>
 <p>For <code>web/</code>, the diff has to come from the web repo&#39;s git, so run it there. Headless works the
-same way as in CI (<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/deep-review/references/standard-review.md#ci-integration" target="_blank" rel="noopener noreferrer">standard-review reference</a>):</p>
+same way as in CI (<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/deep-review/references/standard-review.md#ci-integration" target="_blank" rel="noopener noreferrer">standard-review reference</a>):</p>
 <pre><code class="language-bash">cd ~/work/hireboard/web
 claude -p &quot;/deep-review --depth=standard --branch=feature/HIRE-6-job-applications --base=main --format=json&quot; &gt; review.json
 jq -e &#39;.blocking&#39; review.json &amp;&amp; echo &quot;blocking findings&quot; || echo &quot;no blocking findings&quot;</code></pre>
@@ -437,7 +463,7 @@ doesn&#39;t exist yet. The reverse order would ship an Apply button that answers
 is merged and its CI is green, merge the web PR.</p>
 <blockquote><p><strong><code>/deep-review</code> complements ship-feature&#39;s Review phase. It does not replace it.</strong>
 ship-feature&#39;s panel reviews the build <em>with</em> the spec: four dimensions, and each finding has
-to survive a three-vote refutation. That makes it good at &quot;does this match what we agreed?&quot;.
+to survive two refutation votes (a third breaks a tie). That makes it good at &quot;does this match what we agreed?&quot;.
 <code>/deep-review</code> at the adversarial depth deliberately works <em>without</em> the spec or the prompt,
 so it catches what everyone who read the spec agreed not to look at. Here, everyone who read
 &quot;even under a race&quot; assumed the AC-4 test proved it. Use both for anything that touches auth,
@@ -453,7 +479,7 @@ through <code>/simple-task</code> and re-reviewed <code>APPROVED</code> at the a
   </article>
 </main>
 <footer class="site-footer">
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/examples/job-board/07-applications-and-deep-review.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/examples/job-board/07-applications-and-deep-review.md">View the Markdown source</a></p>
 </footer>
 <script>
   (function () {

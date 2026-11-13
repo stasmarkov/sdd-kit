@@ -32,6 +32,7 @@ Two forms exist. A file-copy install has `.codex/sdd-kit/` (the runtime root, wi
 7. **Trust store.** Run `node <skills dir>/stack-trust/scripts/trust-store.mjs --host codex --list-untrusted`. Untrusted manifests are WARN with the `$stack-trust` command; `trust store unreadable` is WARN.
 8. **Workflow collisions.** Project workflow files that reuse the name of a shipped workflow are WARN.
 9. **Leftovers.** Files from an older install listed in no `installed.json` are WARN.
+10. **Node.** `node --version` on PATH: major 18 or later is PASS `Node: v<x> (18+ required)`; below 18 is FAIL with `not run (Node 18+ required, found v<x>). Fix: put Node 18+ first on PATH`, since the gate planner (`stack-trust/scripts/launch.cjs`) runs no gate on it; no node is FAIL `node not found on PATH. Fix: install Node 18+`.
 
 ## Phase 3: report
 

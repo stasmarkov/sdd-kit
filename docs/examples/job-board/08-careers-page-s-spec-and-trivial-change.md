@@ -56,7 +56,7 @@ the spec belongs in `web/`, since the change starts and ends there. Neither `/sd
 ```
 
 `write-spec` sizes the work before investigating
-([write-spec Step 1](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/write-spec/SKILL.md)). Its investigation is
+([write-spec Step 1](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/write-spec/SKILL.md)). Its investigation is
 what makes the size small. Everything the page needs is already shipped:
 
 ```text
@@ -239,20 +239,23 @@ Workflow({
   nothing in `api/` moved.
 
 The phases are the same as for an M spec
-([ship-feature reference](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/sdd/references/ship-feature.md)). They
+([ship-feature reference](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/sdd/references/ship-feature.md)). They
 are just shorter:
 
 ```text
   (simulated, abridged — /workflows)
   Detect       api (laravel, tracked), web (nextjs, tracked, branch feature/HIRE-7-company-careers-page)
-  Spec         loaded spec-HIRE-7-company-careers-page: 2 pending tasks; approved → in-progress
+  Spec         loaded spec-HIRE-7-company-careers-page: 2 pending tasks
+  Prepare      frontend stays on "feature/HIRE-7-company-careers-page"
+               spec-HIRE-7-company-careers-page status approved → in-progress
   Build        task 1 (nextjs-frontend-dev) app/companies/[slug]/page.tsx ✓
                task 2 (nextjs-frontend-dev) rating summary; app/jobs/[id]/page.tsx company link ✓
   Gates        web: npm run lint ✓  npx tsc --noEmit ✓  npm test ✓ (3 passed)
                api: pint --test ✓  phpstan ✓  php artisan test ✓  (no changes)
   Converge     round 1: AC-1..AC-3 and MNC-1..MNC-2 covered — no gaps
   Visual       /companies/acme-robotics at 375/768/1280: layout, contrast OK
-  Review       4 dimensions, 1 candidate finding → refuted 3/3 (see below)
+  Review       4 dimensions, 1 candidate finding → refuted 2/2 (see below)
+  Fix          stopped (clean) after 0 round(s); fixed none; remaining none
   Acceptance   job detail → company name → /companies/acme-robotics ✓
                /companies/no-such-company → not-found page (HTTP 200, streamed after the skeleton) ✓
                MNC-1: `git -C api diff --stat main` → (empty) ✓
@@ -270,7 +273,7 @@ page:
   (simulated)
   Candidate: "Promise.all rejects when listCompanyReviews throws for an unknown slug, so AC-2
   would show the error boundary instead of not-found."
-  Refuted 3/3: loadReviewSummary() catches ApiError with status 404 and returns null;
+  Refuted 2/2: loadReviewSummary() catches ApiError with status 404 and returns null;
   getCompany() returns null on 404; notFound() runs before any render, and a malformed slug is stopped by SLUG_PATTERN first. Verified against
   app/companies/[slug]/page.tsx:34-60 and manual-test.md#step-2.
 ```
@@ -286,8 +289,8 @@ git -C api diff --stat main
 
 Two honest notes about running ship-feature on an S spec:
 
-- **It is still the full pipeline.** An S spec skips nothing: Converge, Visual, a 3-vote review
-  panel and Acceptance all run. For a two-task web change that is a lot of background agents.
+- **It is still the full pipeline.** An S spec skips nothing: Converge, Visual, the review
+  panel with its verifier votes, Fix and Acceptance all run. For a two-task web change that is a lot of background agents.
   Two cheaper options from earlier chapters work just as well here: "Approve only" followed by
   a session started inside `web/` (`cd web && CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1 claude --add-dir ../api`)
   running `/execute-task --spec=HIRE-7` (chapter 06), or building the two tasks yourself. Alex picks ship-feature because Acceptance gives him a browser re-walk
@@ -417,7 +420,7 @@ presentational. The cost is real. `formatSalary` has three branches of pure logi
 tests. Moving it to `lib/format-salary.ts` with a Vitest case would be the stricter alternative;
 chapter 10's QA plan lists the missing coverage.
 
-The `trivial` signal in [/sdd Step 2](https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/sdd/SKILL.md) is "≤ ~5 files,
+The `trivial` signal in [/sdd Step 2](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/sdd/SKILL.md) is "≤ ~5 files,
 no design choice, no behavior contract at risk". This is the same line `write-spec` draws as
 **XS**: "≤ ~3 files, one obvious change … **No spec.** Recommend `/simple-task`". Had Alex
 routed it as a feature, `write-spec` would have sized it XS and sent it back to this route.

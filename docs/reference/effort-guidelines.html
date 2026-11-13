@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../index.html">SDD Kit</a>
-    <span class="badge">v4.0.2</span>
+    <span class="badge">v4.1.0</span>
   </div>
   <nav class="site-nav" aria-label="Site">
     <ul>
@@ -35,7 +35,31 @@
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main" tabindex="-1">
+<main id="content" class="doc-main has-toc" tabindex="-1">
+  <nav class="page-toc" aria-label="On this page"><details open><summary>On this page</summary>
+    <ol>
+      <li><a href="#effort-levels">Effort Levels</a></li>
+      <li><a href="#agent-allocation-guide">Agent Allocation Guide</a></li>
+      <li><a href="#token-budget-guidelines">Token Budget Guidelines</a></li>
+      <li><a href="#model-tier-selection">Model Tier Selection</a></li>
+      <li><a href="#cost-considerations">Cost Considerations</a></li>
+      <li><a href="#checkpointing-thresholds">Checkpointing Thresholds</a></li>
+      <li><a href="#quick-reference-card">Quick Reference Card</a></li>
+      <li><a href="#related-documentation">Related Documentation</a></li>
+    </ol>
+  </details></nav>
+<script>
+  (function () {
+    var d = document.querySelector('.page-toc details'), s = d.querySelector('summary');
+    var narrow = window.matchMedia('(max-width: 767.98px)'), wide = window.matchMedia('(min-width: 1100px)');
+    function sync() { d.open = !narrow.matches; s.tabIndex = wide.matches ? -1 : 0; }
+    function listen(q) { if (q.addEventListener) q.addEventListener('change', sync); else q.addListener(sync); }
+    listen(narrow);
+    listen(wide);
+    d.addEventListener('toggle', function () { if (wide.matches && !d.open) d.open = true; });
+    sync();
+  })();
+</script>
   <article class="doc-body">
 <h2 id="effort-scaling-guidelines">Effort Scaling Guidelines</h2>
 <p>How much model, how many agents, and how many tool calls a task deserves in SDD Kit. This is the one place that covers model tiering, effort scaling, token budgets, and checkpointing; other docs link here instead of repeating it.</p>
@@ -84,7 +108,7 @@
 <div class="table-wrap"><table><thead><tr><th>Complexity</th><th>Input Budget</th><th>Output Budget</th><th>Total</th></tr></thead><tbody><tr><td>Simple</td><td>5K</td><td>2K</td><td>7K</td></tr><tr><td>Medium</td><td>20K</td><td>10K</td><td>30K</td></tr><tr><td>Complex</td><td>80K</td><td>40K</td><td>120K</td></tr></tbody></table></div>
 <h4 id="optimization-strategies">Optimization Strategies</h4>
 <ol><li><strong>Use concise response format</strong> by default</li><li><strong>Preload only relevant skills</strong> through the agent&#39;s <code>skills:</code> frontmatter</li><li><strong>Return summaries</strong> from subagents, not full transcripts</li><li><strong>Use checkpointing</strong> for tasks exceeding 100K tokens</li><li><strong>Filter tool outputs</strong> before returning to context</li></ol>
-<p>The <code>token-budget</code> hook enforces part of this: it always blocks <code>find</code> from the filesystem root, and once context usage (hinted via <code>CLAUDE_CONTEXT_USAGE</code>) reaches <code>CLAUDE_BUDGET_THRESHOLD</code> (default 75%) it also blocks unbounded reads of huge files, unscoped repo-wide greps, open-ended globs, and dumping full logs. See the <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/share/hooks/README.md" target="_blank" rel="noopener noreferrer">hooks reference</a>.</p>
+<p>The <code>token-budget</code> hook enforces part of this: it always blocks <code>find</code> from the filesystem root, and once context usage (hinted via <code>CLAUDE_CONTEXT_USAGE</code>) reaches <code>CLAUDE_BUDGET_THRESHOLD</code> (default 75%) it also blocks unbounded reads of huge files, unscoped repo-wide greps, open-ended globs, and dumping full logs. See the <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/share/hooks/README.md" target="_blank" rel="noopener noreferrer">hooks reference</a>.</p>
 <hr>
 <h3 id="model-tier-selection">Model Tier Selection</h3>
 <p>Workflow phases name a <strong>tier</strong>, never a model. The tiers live in one place — <code>MODEL_TIERS</code> in <code>tools/stacks/runtime.template.js</code>, generated into <code>src/workflows/lib/stacks.js</code> and every workflow&#39;s registry region by <code>node tools/gen-stacks.mjs</code> (<code>verify.sh</code> fails if they are stale):</p>
@@ -107,6 +131,10 @@
 <ol><li>Task genuinely requires multiple specializations</li><li>Parallel exploration provides significant speedup</li><li>Quality requirements justify the additional cost</li><li>Task complexity warrants coordination overhead</li></ol>
 <h4 id="cost-effective-patterns">Cost-Effective Patterns</h4>
 <div class="table-wrap"><table><thead><tr><th>Pattern</th><th>When to Use</th><th>Token Multiplier</th></tr></thead><tbody><tr><td>Single Agent</td><td>Simple tasks, clear requirements</td><td>1x</td></tr><tr><td>Sequential Agents</td><td>Dependent tasks, handoffs</td><td>2-3x</td></tr><tr><td>Parallel Agents</td><td>Independent exploration</td><td>3-5x</td></tr><tr><td>Full Swarm</td><td>Complex research, major features</td><td>10-20x</td></tr></tbody></table></div>
+<h4 id="what-a-ship-feature-run-spends">What a ship-feature run spends</h4>
+<p>Every ship-feature report ends with a Cost table: the agents each phase started and, when the run has a token budget, the tokens spent while that phase ran (<code>tokens: n/a</code> without one, as on the Codex and Cursor bridge). The same numbers are in the result&#39;s <code>cost</code> field, with the failed agent-name lookups. The phases that cost the most are bounded:</p>
+<div class="table-wrap"><table><thead><tr><th>Phase</th><th>Bound</th></tr></thead><tbody><tr><td>Review</td><td>Two verifier votes per finding (<code>standard</code> tier), a third only when they split; a minor design finding gets one</td></tr><tr><td>Fix</td><td>At most 2 rounds, each a stack-agent fix, the gates on the changed files and a re-vote on the fixed findings</td></tr><tr><td>Converge</td><td>At most 2 audits; round-2 gaps are built once without a third audit</td></tr><tr><td>Gates</td><td>At most 3 auto-fix attempts per repo, scoped to the files the run changed</td></tr></tbody></table></div>
+<p>Compare runs by the Cost table, not by wall time alone: a slow run that spent most of its agents in Fix points at the review findings, one that spent them in Gates at the build.</p>
 <hr>
 <h3 id="checkpointing-thresholds">Checkpointing Thresholds</h3>
 <p>Enable checkpointing when:</p>
@@ -141,12 +169,12 @@
 └─────────────────────────────────────────────────────────────┘</code></pre>
 <hr>
 <h3 id="related-documentation">Related Documentation</h3>
-<ul><li>Framework Design Rules - Core principles</li><li><a href="agents.html">Agent index</a> - Available agents</li><li><a href="skills.html">Skill index</a> - Available skills</li><li><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/share/hooks/README.md" target="_blank" rel="noopener noreferrer">Hooks reference</a> - <code>token-budget</code>, <code>pre-compact-save</code>, and the rest</li></ul>
+<ul><li>Framework Design Rules - Core principles</li><li><a href="agents.html">Agent index</a> - Available agents</li><li><a href="skills.html">Skill index</a> - Available skills</li><li><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/share/hooks/README.md" target="_blank" rel="noopener noreferrer">Hooks reference</a> - <code>token-budget</code>, <code>pre-compact-save</code>, and the rest</li></ul>
 <p>Source: Anthropic Engineering, &quot;How we built our multi-agent research system&quot;.</p>
   </article>
 </main>
 <footer class="site-footer">
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/reference/effort-guidelines.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/reference/effort-guidelines.md">View the Markdown source</a></p>
 </footer>
 <script>
   (function () {

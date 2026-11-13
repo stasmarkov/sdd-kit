@@ -11,8 +11,10 @@ Chooses between technologies or approaches and writes an ADR. For planning an al
 | `criteria` | Decision drivers, weighted if known (must / should / nice). |
 | `repos`, `models` | As in the other routes. |
 
+Launch with the plugin name and fall back to the bare name on "not found" ([workflow name rule](../SKILL.md#workflow-names)).
+
 ```
-Workflow({ name: "tech-research", args: { question: "PROJ-77: REST vs tRPC for the admin API", options: ["REST", "tRPC"], criteria: ["type safety", "ops cost"] } })
+Workflow({ name: "sdd-kit:tech-research", args: { question: "PROJ-77: REST vs tRPC for the admin API", options: ["REST", "tRPC"], criteria: ["type safety", "ops cost"] } })
 ```
 
 ## Phases

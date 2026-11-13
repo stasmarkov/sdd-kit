@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; script-src &#39;sha256-M5edhj8x2WzQNwoqf+VA2OeQHyNW/8qZFs09l2/tcFU=&#39;; style-src &#39;sha256-cfml39gPvv291UeRwt/qmXFS8Nc9/bvCYklHmn1X+rM=&#39;; img-src data:; connect-src &#39;self&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;">
+<meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; script-src &#39;sha256-M5edhj8x2WzQNwoqf+VA2OeQHyNW/8qZFs09l2/tcFU=&#39;; style-src &#39;sha256-JNLV2cFPOdoq+H/guGetolX5bciCauidXfKTIk8lnx0=&#39;; img-src data:; connect-src &#39;self&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;">
 <meta name="referrer" content="no-referrer">
 <meta name="color-scheme" content="light dark">
 <title>Hireboard: spec board (worked example)</title>
@@ -249,11 +249,24 @@ body{background:#fff;color:#000}
 .col{break-inside:avoid;margin-bottom:12px;border-color:#999}
 .card{break-inside:avoid;box-shadow:none}
 }
+
+.site-nav ul{display:flex;flex-wrap:wrap;gap:4px 16px;margin:0 0 12px;padding:0;list-style:none}
+.site-nav a{color:#4f46e5;display:inline-flex;align-items:center;min-height:32px}
+@media (prefers-color-scheme:dark){.site-nav a{color:#818cf8}}
+.site-nav a[aria-current="page"]{color:var(--text);font-weight:600;text-decoration-thickness:2px;text-underline-offset:6px}
 </style>
 </head>
 <body>
 <a class="skip" href="#board">Skip to board</a>
 <div class="page">
+<nav class="site-nav" aria-label="Site">
+<ul>
+<li><a href="index.html">Guide</a></li>
+<li><a href="adopt.html">Adopt</a></li>
+<li><a href="reference/index.html">Reference</a></li>
+<li><a href="example-board.html" aria-current="page">Example</a></li>
+</ul>
+</nav>
 <header class="top">
 <div>
 <h1>Hireboard: spec board (worked example)</h1>

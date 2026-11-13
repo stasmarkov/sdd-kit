@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../../index.html">SDD Kit</a>
-    <span class="badge">v4.0.2</span>
+    <span class="badge">v4.1.0</span>
   </div>
   <nav class="site-nav" aria-label="Site">
     <ul>
@@ -35,7 +35,35 @@
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main" tabindex="-1">
+<main id="content" class="doc-main has-toc" tabindex="-1">
+  <nav class="page-toc" aria-label="On this page"><details open><summary>On this page</summary>
+    <ol>
+      <li><a href="#before-you-start">Before you start</a></li>
+      <li><a href="#step-1--branch-both-repos-before-anything-else">Step 1 — Branch both repos before anything else</a></li>
+      <li><a href="#step-2--sdd-hire-3-route-and-inputs">Step 2 — /sdd HIRE-3: route and inputs</a></li>
+      <li><a href="#step-3--write-spec-size-investigate-clarify-create-the-folder">Step 3 — write-spec: size, investigate, clarify, create the folder</a></li>
+      <li><a href="#step-4--the-spec-condensed">Step 4 — The spec, condensed</a></li>
+      <li><a href="#step-5--approval-step-4b">Step 5 — Approval (Step 4b)</a></li>
+      <li><a href="#step-6--launch-ship-feature-with-explicit-split-repo-arguments">Step 6 — Launch ship-feature with explicit split-repo arguments</a></li>
+      <li><a href="#step-7--reading-the-code-the-pipeline-wrote">Step 7 — Reading the code the pipeline wrote</a></li>
+      <li><a href="#step-8--run-the-manual-test-commit-and-open-one-pr-per-repo">Step 8 — Run the manual test, commit, and open one PR per repo</a></li>
+      <li><a href="#frictions-you-met-in-this-chapter">Frictions you met in this chapter</a></li>
+      <li><a href="#artifacts-from-this-chapter">Artifacts from this chapter</a></li>
+      <li><a href="#what-you-have-now">What you have now</a></li>
+    </ol>
+  </details></nav>
+<script>
+  (function () {
+    var d = document.querySelector('.page-toc details'), s = d.querySelector('summary');
+    var narrow = window.matchMedia('(max-width: 767.98px)'), wide = window.matchMedia('(min-width: 1100px)');
+    function sync() { d.open = !narrow.matches; s.tabIndex = wide.matches ? -1 : 0; }
+    function listen(q) { if (q.addEventListener) q.addEventListener('change', sync); else q.addListener(sync); }
+    listen(narrow);
+    listen(wide);
+    d.addEventListener('toggle', function () { if (wide.matches && !d.open) d.open = true; });
+    sync();
+  })();
+</script>
   <article class="doc-body">
 <h2 id="04--first-feature-accounts-and-roles-via-write-spec--approval--ship-feature-hire-3">04 — First feature: accounts and roles via write-spec → approval → ship-feature (HIRE-3)</h2>
 <blockquote><p><strong>Date in the story:</strong> 2026-10-21 · <strong>Route:</strong> <code>feature</code> → <code>write-spec</code> → approval → <code>ship-feature</code>
@@ -281,7 +309,7 @@ pass the repo-relative path. <code>repos</code> uses <code>api</code> and <code>
 where the session started. <a href="03-decision-spa-auth-adr.html">Chapter 03</a> started inside <code>api/</code> and used
 <code>&quot;.&quot;</code> and <code>&quot;../web&quot;</code>.</p>
 <p>The arguments are documented in
-<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/sdd/references/ship-feature.md" target="_blank" rel="noopener noreferrer">references/ship-feature.md</a>. The
+<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/sdd/references/ship-feature.md" target="_blank" rel="noopener noreferrer">references/ship-feature.md</a>. The
 <code>ticket</code> arg only names the folder in free-text <code>feature</code> mode. In spec mode it is ignored, which is
 harmless. The key still shows up in the report because it is part of the spec id
 <code>spec-HIRE-3-accounts-and-roles</code>.</p>
@@ -517,7 +545,7 @@ manual step, plus two merged PRs (api first).</li></ul>
   </article>
 </main>
 <footer class="site-footer">
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/examples/job-board/04-feature-accounts-and-roles.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/examples/job-board/04-feature-accounts-and-roles.md">View the Markdown source</a></p>
 </footer>
 <script>
   (function () {

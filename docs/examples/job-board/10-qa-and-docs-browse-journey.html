@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../../index.html">SDD Kit</a>
-    <span class="badge">v4.0.2</span>
+    <span class="badge">v4.1.0</span>
   </div>
   <nav class="site-nav" aria-label="Site">
     <ul>
@@ -35,7 +35,32 @@
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main" tabindex="-1">
+<main id="content" class="doc-main has-toc" tabindex="-1">
+  <nav class="page-toc" aria-label="On this page"><details open><summary>On this page</summary>
+    <ol>
+      <li><a href="#the-situation">The situation</a></li>
+      <li><a href="#step-1--start-in-the-repo-that-will-own-the-plan">Step 1 — Start in the repo that will own the plan</a></li>
+      <li><a href="#step-2--sdd-classifies-the-request-as-shipped">Step 2 — /sdd classifies the request as shipped</a></li>
+      <li><a href="#step-3--what-the-phases-do">Step 3 — What the phases do</a></li>
+      <li><a href="#step-4--the-artifacts">Step 4 — The artifacts</a></li>
+      <li><a href="#step-5--grade-pass-and-what-the-phantom-link-gate-catches">Step 5 — Grade PASS, and what the phantom-link gate catches</a></li>
+      <li><a href="#step-6--human-review-commit-pr">Step 6 — Human review, commit, PR</a></li>
+      <li><a href="#variations">Variations</a></li>
+      <li><a href="#what-you-have-now">What you have now</a></li>
+    </ol>
+  </details></nav>
+<script>
+  (function () {
+    var d = document.querySelector('.page-toc details'), s = d.querySelector('summary');
+    var narrow = window.matchMedia('(max-width: 767.98px)'), wide = window.matchMedia('(min-width: 1100px)');
+    function sync() { d.open = !narrow.matches; s.tabIndex = wide.matches ? -1 : 0; }
+    function listen(q) { if (q.addEventListener) q.addEventListener('change', sync); else q.addListener(sync); }
+    listen(narrow);
+    listen(wide);
+    d.addEventListener('toggle', function () { if (wide.matches && !d.open) d.open = true; });
+    sync();
+  })();
+</script>
   <article class="doc-body">
 <h2 id="10--shipped-code-a-traceable-qa-plan-and-docs-for-the-public-browse-journey-hire-10">10 — Shipped code: a traceable QA plan and docs for the public browse journey (HIRE-10)</h2>
 <p><strong>Route:</strong> <code>shipped</code> → <code>qa-and-docs</code> workflow
@@ -107,7 +132,7 @@ Ticket:   HIRE-10
 Scope:    paths (7 web, 4 api)
 Launched: qa-and-docs — runs in the background; watch with /workflows
 Done when: grader passes the coverage and phantom-link gates; a human reviews before publishing</code></pre>
-<p>The phases, the args table and the done-definition for this route are in <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/plugins/sdd-kit/skills/sdd/references/qa-and-docs.md" target="_blank" rel="noopener noreferrer">references/qa-and-docs.md</a>. <a href="../../reference/usage-examples.html#4-qa-plan-and-docs-for-shipped-code">USAGE-EXAMPLES §4</a> shows the same route with other kinds of scope.</p>
+<p>The phases, the args table and the done-definition for this route are in <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/sdd/references/qa-and-docs.md" target="_blank" rel="noopener noreferrer">references/qa-and-docs.md</a>. <a href="../../reference/usage-examples.html#4-qa-plan-and-docs-for-shipped-code">USAGE-EXAMPLES §4</a> shows the same route with other kinds of scope.</p>
 <h3 id="step-3--what-the-phases-do">Step 3 — What the phases do</h3>
 <pre><code>Detect         stack(s) + repo layout
 Index          files → methods/routes/components → features (bottom-up), one agent per repo
@@ -199,7 +224,7 @@ gh pr create --base main --title &quot;HIRE-10: QA plan and docs for the public 
   </article>
 </main>
 <footer class="site-footer">
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/examples/job-board/10-qa-and-docs-browse-journey.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/examples/job-board/10-qa-and-docs-browse-journey.md">View the Markdown source</a></p>
 </footer>
 <script>
   (function () {

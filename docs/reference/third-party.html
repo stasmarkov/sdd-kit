@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../index.html">SDD Kit</a>
-    <span class="badge">v4.0.2</span>
+    <span class="badge">v4.1.0</span>
   </div>
   <nav class="site-nav" aria-label="Site">
     <ul>
@@ -35,7 +35,27 @@
     <button type="button" class="btn theme-toggle" id="theme-toggle"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg><span class="btn-label">Theme</span></button>
   </div>
 </header>
-<main id="content" class="doc-main" tabindex="-1">
+<main id="content" class="doc-main has-toc" tabindex="-1">
+  <nav class="page-toc" aria-label="On this page"><details open><summary>On this page</summary>
+    <ol>
+      <li><a href="#policy">Policy</a></li>
+      <li><a href="#review-checklist-before-pinning-or-moving-a-pin">Review checklist (before pinning or moving a pin)</a></li>
+      <li><a href="#current-status-reviewed-2026-10-19">Current status (reviewed 2026-10-19)</a></li>
+      <li><a href="#vendored">Vendored</a></li>
+    </ol>
+  </details></nav>
+<script>
+  (function () {
+    var d = document.querySelector('.page-toc details'), s = d.querySelector('summary');
+    var narrow = window.matchMedia('(max-width: 767.98px)'), wide = window.matchMedia('(min-width: 1100px)');
+    function sync() { d.open = !narrow.matches; s.tabIndex = wide.matches ? -1 : 0; }
+    function listen(q) { if (q.addEventListener) q.addEventListener('change', sync); else q.addListener(sync); }
+    listen(narrow);
+    listen(wide);
+    d.addEventListener('toggle', function () { if (wide.matches && !d.open) d.open = true; });
+    sync();
+  })();
+</script>
   <article class="doc-body">
 <h2 id="third-party-skills-and-plugins">Third-Party Skills and Plugins</h2>
 <p>Skills, plugins, and MCP servers run with your privileges, and their payload is often plain English instructions that static scanners miss (Snyk&#39;s 2026 ToxicSkills scan found critical issues in 13.4% of public skills). SDD Kit therefore <strong>recommends</strong> third-party components but never vendors them. Each one is listed in a manifest with its source, license, pinned commit, and risk notes.</p>
@@ -54,7 +74,7 @@ A <code>manual</code> entry is reviewed, licensed, and pinned for reference, but
   </article>
 </main>
 <footer class="site-footer">
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.0.2/docs/reference/third-party.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/reference/third-party.md">View the Markdown source</a></p>
 </footer>
 <script>
   (function () {
