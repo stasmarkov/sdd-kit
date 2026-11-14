@@ -1,6 +1,6 @@
 ---
 name: investigate
-description: Research a technical problem or evaluate a technology inline — searches the codebase and framework docs, compares options in a pros/cons table, and ends with a concrete recommendation, implementation steps, and a testing strategy. Use when you need a quick answer to "how should we do X" or "which library fits" before coding. For a formal, adversarially verified decision with an ADR, use /tech-research instead.
+description: Research a technical problem or evaluate a technology inline - searches the codebase and framework docs, compares options in a pros/cons table, ends with a recommendation, implementation steps and a testing strategy. Use for a quick answer to "how should we do X" or "which library fits" before coding. For a verified decision with an ADR, use /tech-research.
 argument-hint: "[problem-or-topic] | --tech | --compare --options=A,B,C | --approach=options"
 allowed-tools: Read, Grep, Glob, WebSearch, WebFetch
 metadata:

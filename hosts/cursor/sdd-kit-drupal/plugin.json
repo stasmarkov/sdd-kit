@@ -1,5 +1,5 @@
 {
   "name": "sdd-kit-drupal",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "description": "Drupal 10/11 add-on: drupal-backend-dev agent, drupal-11 skill with module scaffolding and testing patterns, path-scoped rules, test-first and PHPCS hooks, DDEV gates and the Drupal stack manifest."
 }

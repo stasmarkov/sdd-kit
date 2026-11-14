@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../index.html">SDD Kit</a>
-    <span class="badge">v4.1.0</span>
+    <span class="badge">v4.1.1</span>
   </div>
   <nav class="site-nav" aria-label="Site">
     <ul>
@@ -88,7 +88,7 @@ winget install Anthropic.ClaudeCode                 # WinGet</code></pre>
 <p>In plugin mode the workflows&#39; browser steps use the plugin&#39;s own Playwright server and need no project <code>.mcp.json</code> entry: see <a href="installation.html#playwright-in-plugin-mode">Playwright in plugin mode</a>.</p>
 <p>or copied into your project&#39;s <code>.claude/</code> without cloning (from your project root; requirements in <a href="installation.html#without-cloning-npx">Without cloning: npx</a>):</p>
 <pre><code class="language-bash">npx github:stasmarkov/sdd-kit install --project</code></pre>
-<p>Both modes, add-ons, and a clone-based install are in <a href="installation.html">INSTALLATION.md</a>. The core is stack-agnostic: stack add-ons supply detection, gates and specialists, and a new stack is one manifest (<code>/new-stack</code>). Plugin mode: the preset above, or the core plus your stack&#39;s add-ons (see INSTALLATION). File-copy mode installs the default stack add-ons, and <code>--stack</code> changes the choice. Coming from 2.x: <a href="installation.html#upgrading-from-2x">Upgrading from 2.x</a>; see <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/README.md#stacks-and-roadmap" target="_blank" rel="noopener noreferrer">Stacks and roadmap</a>.</p>
+<p>Both modes, add-ons, and a clone-based install are in <a href="installation.html">INSTALLATION.md</a>. The core is stack-agnostic: stack add-ons supply detection, gates and specialists, and a new stack is one manifest (<code>/new-stack</code>). Plugin mode: the preset above, or the core plus your stack&#39;s add-ons (see INSTALLATION). File-copy mode installs the default stack add-ons, and <code>--stack</code> changes the choice. Coming from 2.x: <a href="installation.html#upgrading-from-2x">Upgrading from 2.x</a>; see <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/README.md#stacks-and-roadmap" target="_blank" rel="noopener noreferrer">Stacks and roadmap</a>.</p>
 <p>Start Claude Code in your project root and run the health check:</p>
 <pre><code class="language-bash">cd ~/projects/my-app
 claude</code></pre>
@@ -97,7 +97,7 @@ claude</code></pre>
 <p>It reports PASS / WARN / FAIL for the directory layout, skill discovery, agents, MCP config, and hooks. In file-copy mode it also fires a harmless payload at the hooks to check they run; in plugin mode run <code>/hooks</code> to see which are listed. Fix any FAIL before you go on. <code>--fix</code> only sets permissions and creates missing directories. Anything else is covered in the troubleshooting section of <a href="installation.html">INSTALLATION.md</a>.</p>
 <h3 id="2-give-claude-your-project-context">2. Give Claude your project context</h3>
 <p>Claude only knows what the code shows and what you tell it. Three files carry that context. The file-copy installer creates them and never overwrites files that already exist. Plugin mode creates none of them, so plugin users fetch the templates once from the project root (skip any file you already have):</p>
-<pre><code class="language-bash">base=https://raw.githubusercontent.com/stasmarkov/sdd-kit/v4.1.0/share
+<pre><code class="language-bash">base=https://raw.githubusercontent.com/stasmarkov/sdd-kit/v4.1.1/share
 curl -fsSL &quot;$base/CLAUDE.template.md&quot; -o CLAUDE.md
 curl -fsSL &quot;$base/templates/AGENTS.template.md&quot; -o AGENTS.md
 mkdir -p .claude/rules
@@ -123,7 +123,7 @@ curl -fsSL &quot;$base/templates/rules/tests.md&quot; -o .claude/rules/tests.md<
 <pre><code>/sdd PROJ-123</code></pre>
 <p><strong>1. Classify and confirm.</strong> <code>/sdd</code> pulls the ticket text from Jira or Linear if a tracker MCP server or CLI is available. Otherwise it asks you to paste the ticket. It then proposes a route with a one-line reason:</p>
 <pre><code>Route: feature. Adds a new behavior (refund guard on top-up orders); no existing behavior is broken.</code></pre>
-<p>You confirm it or pick another route. The routes are trivial, bug, decision, feature, shipped code, new app, and security audit (a deep, coverage-led audit of existing code). The full route tree is in the <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/README.md" target="_blank" rel="noopener noreferrer">README</a>. Nothing launches until you confirm.</p>
+<p>You confirm it or pick another route. The routes are trivial, bug, decision, feature, shipped code, new app, and security audit (a deep, coverage-led audit of existing code). The full route tree is in the <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/README.md" target="_blank" rel="noopener noreferrer">README</a>. Nothing launches until you confirm.</p>
 <p><strong>2. Inputs up front.</strong> Background workflows can&#39;t stop to ask questions, so <code>/sdd</code> asks two to four now: single repo or backend and frontend paths, the dev URL for browser checks, and anything specific to the route.</p>
 <p>A request is <strong>trivial</strong> only when it touches about three files with no design choice; <code>/sdd</code> sends it to <code>/simple-task</code> without a spec.</p>
 <p><strong>3. Spec.</strong> For a feature, <code>/sdd</code> runs <code>/write-spec</code>. It sizes the work, investigates the codebase, asks clarifying questions, and writes the spec:</p>
@@ -186,7 +186,7 @@ $sdd PROJ-123</code></pre>
   </article>
 </main>
 <footer class="site-footer">
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/reference/getting-started.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/docs/reference/getting-started.md">View the Markdown source</a></p>
 </footer>
 <script>
   (function () {

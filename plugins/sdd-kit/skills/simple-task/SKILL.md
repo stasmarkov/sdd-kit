@@ -1,6 +1,6 @@
 ---
 name: simple-task
-description: Execute a small-to-medium task (bug fix, small feature, refactor, safe symbol rename, or research-only question) in a single context window — investigate, clarify if ambiguous, implement test-first, run the verification gates, and leave a resumable task log. Use when the change touches roughly three files or fewer (the same XS threshold as /sdd and write-spec) and needs no formal spec; escalates to /write-spec when complexity thresholds are exceeded.
+description: Execute a small-to-medium task (bug fix, small feature, refactor, safe rename, or research-only question) in one context window - investigate, clarify if ambiguous, implement test-first, run the verification gates, leave a resumable task log. Use when the change touches about three files or fewer and needs no formal spec; escalates to /write-spec when it grows.
 argument-hint: "[task-description] | --continue=TASK-ID | --research-only | --rename | --no-tests | --force"
 allowed-tools: Agent, Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion, WebFetch, WebSearch
 metadata:

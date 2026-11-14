@@ -238,7 +238,7 @@ npx --allow-git=root github:stasmarkov/sdd-kit install --project
 
 Supported npm versions: 11 and 12. npm 10 is not supported.
 
-Add `#v4.1.0` to pin a release (`npx github:stasmarkov/sdd-kit#v4.1.0 install --project`);
+Add `#v4.1.1` to pin a release (`npx github:stasmarkov/sdd-kit#v4.1.1 install --project`);
 without a tag npx fetches the default branch. npx caches the download. The package is not
 published to npm.
 
@@ -482,7 +482,7 @@ Bare names keep working (`/laravel-12`, `/migrate-db`, agent `laravel-backend-de
 
 Re-run the installer (or update the plugin). In file-copy mode every upgrade removes the files 1.x installed that the current kit no longer ships and backs them up first; no flag is needed. It only removes a file whose content matches a copy the kit shipped; a file you edited or replaced is listed as "kept (modified or not from the kit)" and left for you to review. `install.sh --prune` does something else: it also removes installed add-ons that you did not select (see [Flags](#flags)).
 
-The renamed and removed commands, agents and skills are listed in the CHANGELOG 2.0.0 entry, under [Migrating from 1.x](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/CHANGELOG.md#migrating-from-1x). Current lists: [skills](skills.md), [agents](agents.md).
+The renamed and removed commands, agents and skills are listed in the CHANGELOG 2.0.0 entry, under [Migrating from 1.x](https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/CHANGELOG.md#migrating-from-1x). Current lists: [skills](skills.md), [agents](agents.md).
 
 If you used a moved agent (iOS, ops or design), add the add-on: `--stack=laravel,nextjs,ios --with=ops,design` or the matching `sdd-kit-*` plugins.
 
@@ -496,7 +496,7 @@ If you used a moved agent (iOS, ops or design), add the add-on: `--stack=laravel
 | `/plugin` → **Errors** tab | Plugin components that failed to load (plugin mode) |
 | `claude plugin validate <path>` | Manifest and frontmatter problems in a plugin directory |
 
-The hooks themselves are documented in [src/hooks/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/share/hooks/README.md).
+The hooks themselves are documented in [src/hooks/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/share/hooks/README.md).
 
 ## Uninstalling
 

@@ -96,7 +96,7 @@ All of the kit's hooks are global (`hooks/hooks.json`), so plugin mode keeps the
 | PostToolUse (Bash/WebFetch/MCP) | `scan-injection.sh` | Flag prompt-injection patterns |
 | SessionStart, UserPromptSubmit, PreCompact, SessionEnd, Stop, SubagentStop, Notification | various | Context load/save, prompt preflight, completion checks |
 
-`hooks/hooks.json` is the source of truth. If this table and that file disagree, trust the file. Every hook, with how to tune or disable it, is in [src/hooks/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/share/hooks/README.md).
+`hooks/hooks.json` is the source of truth. If this table and that file disagree, trust the file. Every hook, with how to tune or disable it, is in [src/hooks/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/share/hooks/README.md).
 
 ## Verifying an install
 

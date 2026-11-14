@@ -155,6 +155,23 @@ window.CATALOG = {
       }
     },
     {
+      "name": "doc-hygiene",
+      "ships": "core",
+      "category": "quality",
+      "invoke": "both",
+      "description": "Use before you create, rename, move or link a Markdown doc, or via /doc-hygiene to check changed docs, --audit a repo's docs or --init a convention. Applies only changes the user approves.",
+      "hosts": {
+        "codex": {
+          "invoke": "$doc-hygiene",
+          "availability": "available"
+        },
+        "cursor": {
+          "invoke": "/doc-hygiene",
+          "availability": "available"
+        }
+      }
+    },
+    {
       "name": "error-handling-patterns",
       "ships": "core",
       "category": "patterns",
@@ -227,7 +244,7 @@ window.CATALOG = {
       "ships": "core",
       "category": "execution",
       "invoke": "both",
-      "description": "Generate code scaffolding that follows project conventions - controllers, services, data objects, repositories, models, CRUD and API resource sets, pages, components, hooks, route handlers and test stubs - from the templates of the stack's scaffold skills (the manifest's skills.scaffold). Use when starting a new component or entity and you want boilerplate that already matches the project's patterns instead of writing it by hand.",
+      "description": "Generate code scaffolding that follows project conventions (controllers, services, data objects, repositories, models, CRUD and API resource sets, pages, components, hooks, route handlers, test stubs) from the templates of the stack's scaffold skills (skills.scaffold). Use when starting a new component or entity and you want boilerplate that matches the project's patterns.",
       "hosts": {
         "codex": {
           "invoke": "$generate",
@@ -261,7 +278,7 @@ window.CATALOG = {
       "ships": "core",
       "category": "discovery",
       "invoke": "both",
-      "description": "Research a technical problem or evaluate a technology inline — searches the codebase and framework docs, compares options in a pros/cons table, and ends with a concrete recommendation, implementation steps, and a testing strategy. Use when you need a quick answer to \"how should we do X\" or \"which library fits\" before coding. For a formal, adversarially verified decision with an ADR, use /tech-research instead.",
+      "description": "Research a technical problem or evaluate a technology inline - searches the codebase and framework docs, compares options in a pros/cons table, ends with a recommendation, implementation steps and a testing strategy. Use for a quick answer to \"how should we do X\" or \"which library fits\" before coding. For a verified decision with an ADR, use /tech-research.",
       "hosts": {
         "codex": {
           "invoke": "$investigate",
@@ -482,7 +499,7 @@ window.CATALOG = {
       "ships": "core",
       "category": "execution",
       "invoke": "both",
-      "description": "Execute a small-to-medium task (bug fix, small feature, refactor, safe symbol rename, or research-only question) in a single context window — investigate, clarify if ambiguous, implement test-first, run the verification gates, and leave a resumable task log. Use when the change touches roughly three files or fewer (the same XS threshold as /sdd and write-spec) and needs no formal spec; escalates to /write-spec when complexity thresholds are exceeded.",
+      "description": "Execute a small-to-medium task (bug fix, small feature, refactor, safe rename, or research-only question) in one context window - investigate, clarify if ambiguous, implement test-first, run the verification gates, leave a resumable task log. Use when the change touches about three files or fewer and needs no formal spec; escalates to /write-spec when it grows.",
       "hosts": {
         "codex": {
           "invoke": "$simple-task",

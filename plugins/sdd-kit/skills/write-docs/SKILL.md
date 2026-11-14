@@ -24,7 +24,7 @@ Three modes, one owner for project documentation:
 | `--import <file\|url>` | Reformats an external document into the context paths `CLAUDE.md` loads |
 | `--audit` | Compares docs and code against the project's conventions and reports drift |
 
-Code reading goes to the `code-explorer` agent and prose writing to the `doc-creator` agent. Filenames are always lowercase.
+Code reading goes to the `code-explorer` agent and prose writing to the `doc-creator` agent. Filenames follow the [doc-hygiene](../doc-hygiene/SKILL.md) convention.
 
 ## Where docs go
 
@@ -82,7 +82,7 @@ These are the paths the project `CLAUDE.md` (from `CLAUDE.template.md`) loads, s
 
 ## File Naming Rules
 
-**CRITICAL**: All generated files use lowercase filenames.
+Names, folders and links follow the [`doc-hygiene`](../doc-hygiene/SKILL.md) convention (lowercase and hyphenated by default; a project overrides it). Run its `check` on a path before writing a doc that is not in the table.
 
 | Generated File | Purpose |
 |----------------|---------|
@@ -91,10 +91,6 @@ These are the paths the project `CLAUDE.md` (from `CLAUDE.template.md`) loads, s
 | `docs/context/architecture.md` | System architecture docs |
 | `docs/schemas/{table}.md` | Database schema documentation |
 | `validation-rules.md` | Input validation documentation (supporting doc) |
-
-Transformation for imported or legacy names: lowercase, underscores and spaces to dashes, special characters removed, extension `.md` (`BUSINESS_RULES.md` → `business-rules.md`).
-
-**Exceptions**: only `README.md`, `CLAUDE.md`, `CHANGELOG.md`, `CONTRIBUTING.md` and `AGENTS.md` may use uppercase.
 
 ---
 
@@ -190,7 +186,7 @@ Hand the extracted, cited content to the `doc-creator` agent to write:
 2. Generate tables for structured data
 3. Include code examples where helpful
 4. Add cross-references between docs
-5. Ensure lowercase filenames
+5. Name files by the doc-hygiene convention
 
 When `docs/context/business-rules.md` or `docs/context/architecture.md` does not exist yet, start it from `${CLAUDE_SKILL_DIR}/assets/business-rules.template.md` or `${CLAUDE_SKILL_DIR}/assets/architecture.template.md` (the assets/ folder of this skill), keep the sections the code gives content for, and drop the rest. These three files (business-rules, architecture, api-contracts) are the Golden Triangle CLAUDE.md loads: one fact, one place. If a target file already exists, merge into it section by section and show the diff; never overwrite human-written rules silently. Generated business rules describe what the code does, which is not always what the business wants: each carries the `**Validation**: needs human validation` line until someone confirms it.
 
@@ -261,7 +257,7 @@ The audit only reports. Code fixes go through `/sdd`; doc fixes through generate
 |-------|-------|----------|
 | `Source not found` | Invalid path provided | Verify the source path exists |
 | `No content extracted` | Source has no documentable content | Try a different source or type |
-| `Uppercase filename detected` | Legacy naming attempted | Automatically converted to lowercase |
+| `Name breaks the convention` | Legacy or imported name | Use the path `convention.mjs check` suggests (doc-hygiene) |
 
 **Recovery**: check generated files for completeness, re-run with `--type` for specific sections, edit generated docs by hand where needed.
 

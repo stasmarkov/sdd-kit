@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../index.html">SDD Kit</a>
-    <span class="badge">v4.1.0</span>
+    <span class="badge">v4.1.1</span>
   </div>
   <nav class="site-nav" aria-label="Site">
     <ul>
@@ -170,7 +170,7 @@ npm 11 or 12. On Windows use Git Bash or WSL, or the plugin.</p>
 <pre><code class="language-bash">npx --allow-git=root github:stasmarkov/sdd-kit install --project --dry-run
 npx --allow-git=root github:stasmarkov/sdd-kit install --project</code></pre>
 <p>Supported npm versions: 11 and 12. npm 10 is not supported.</p>
-<p>Add <code>#v4.1.0</code> to pin a release (<code>npx github:stasmarkov/sdd-kit#v4.1.0 install --project</code>);
+<p>Add <code>#v4.1.1</code> to pin a release (<code>npx github:stasmarkov/sdd-kit#v4.1.1 install --project</code>);
 without a tag npx fetches the default branch. npx caches the download. The package is not
 published to npm.</p>
 <h4 id="flags">Flags</h4>
@@ -311,11 +311,11 @@ an add-on agent wins: the staged copy is dropped and the installer prints the fi
 Bare names keep working (<code>/laravel-12</code>, <code>/migrate-db</code>, agent <code>laravel-backend-dev</code>).</p>
 <h3 id="upgrading-from-1x">Upgrading from 1.x</h3>
 <p>Re-run the installer (or update the plugin). In file-copy mode every upgrade removes the files 1.x installed that the current kit no longer ships and backs them up first; no flag is needed. It only removes a file whose content matches a copy the kit shipped; a file you edited or replaced is listed as &quot;kept (modified or not from the kit)&quot; and left for you to review. <code>install.sh --prune</code> does something else: it also removes installed add-ons that you did not select (see <a href="#flags" data-anchor="flags">Flags</a>).</p>
-<p>The renamed and removed commands, agents and skills are listed in the CHANGELOG 2.0.0 entry, under <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/CHANGELOG.md#migrating-from-1x" target="_blank" rel="noopener noreferrer">Migrating from 1.x</a>. Current lists: <a href="skills.html">skills</a>, <a href="agents.html">agents</a>.</p>
+<p>The renamed and removed commands, agents and skills are listed in the CHANGELOG 2.0.0 entry, under <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/CHANGELOG.md#migrating-from-1x" target="_blank" rel="noopener noreferrer">Migrating from 1.x</a>. Current lists: <a href="skills.html">skills</a>, <a href="agents.html">agents</a>.</p>
 <p>If you used a moved agent (iOS, ops or design), add the add-on: <code>--stack=laravel,nextjs,ios --with=ops,design</code> or the matching <code>sdd-kit-*</code> plugins.</p>
 <h3 id="verifying-an-install">Verifying an install</h3>
 <div class="table-wrap"><table><thead><tr><th>Check</th><th>What it tells you</th></tr></thead><tbody><tr><td><code>/framework-doctor</code></td><td>Directory layout, flat skill discovery, manifest drift, workflow name collisions, MCP config, and that hooks are wired and actually fire (it sends a harmless payload that must be blocked)</td></tr><tr><td><code>/hooks</code></td><td>Active hooks and where they come from</td></tr><tr><td><code>/memory</code></td><td>Loaded <code>CLAUDE.md</code>, <code>AGENTS.md</code>, and rules files</td></tr><tr><td><code>/plugin</code> → <strong>Errors</strong> tab</td><td>Plugin components that failed to load (plugin mode)</td></tr><tr><td><code>claude plugin validate &lt;path&gt;</code></td><td>Manifest and frontmatter problems in a plugin directory</td></tr></tbody></table></div>
-<p>The hooks themselves are documented in <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/share/hooks/README.md" target="_blank" rel="noopener noreferrer">src/hooks/README.md</a>.</p>
+<p>The hooks themselves are documented in <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/share/hooks/README.md" target="_blank" rel="noopener noreferrer">src/hooks/README.md</a>.</p>
 <h3 id="uninstalling">Uninstalling</h3>
 <p><strong>Plugin mode:</strong> <code>/plugin uninstall sdd-kit@sdd-kit</code> and the same for each add-on.</p>
 <p><strong>File-copy mode:</strong> there is no <code>--uninstall</code> flag. The manifest lists every file the kit
@@ -364,7 +364,7 @@ whether files have drifted from the manifest.</p>
   </article>
 </main>
 <footer class="site-footer">
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/reference/installation.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/docs/reference/installation.md">View the Markdown source</a></p>
 </footer>
 <script>
   (function () {

@@ -67,7 +67,7 @@ or copied into your project's `.claude/` without cloning (from your project root
 npx github:stasmarkov/sdd-kit install --project
 ```
 
-Both modes, add-ons, and a clone-based install are in [INSTALLATION.md](installation.md). The core is stack-agnostic: stack add-ons supply detection, gates and specialists, and a new stack is one manifest (`/new-stack`). Plugin mode: the preset above, or the core plus your stack's add-ons (see INSTALLATION). File-copy mode installs the default stack add-ons, and `--stack` changes the choice. Coming from 2.x: [Upgrading from 2.x](installation.md#upgrading-from-2x); see [Stacks and roadmap](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/README.md#stacks-and-roadmap).
+Both modes, add-ons, and a clone-based install are in [INSTALLATION.md](installation.md). The core is stack-agnostic: stack add-ons supply detection, gates and specialists, and a new stack is one manifest (`/new-stack`). Plugin mode: the preset above, or the core plus your stack's add-ons (see INSTALLATION). File-copy mode installs the default stack add-ons, and `--stack` changes the choice. Coming from 2.x: [Upgrading from 2.x](installation.md#upgrading-from-2x); see [Stacks and roadmap](https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/README.md#stacks-and-roadmap).
 
 Start Claude Code in your project root and run the health check:
 
@@ -89,7 +89,7 @@ It reports PASS / WARN / FAIL for the directory layout, skill discovery, agents,
 Claude only knows what the code shows and what you tell it. Three files carry that context. The file-copy installer creates them and never overwrites files that already exist. Plugin mode creates none of them, so plugin users fetch the templates once from the project root (skip any file you already have):
 
 ```bash
-base=https://raw.githubusercontent.com/stasmarkov/sdd-kit/v4.1.0/share
+base=https://raw.githubusercontent.com/stasmarkov/sdd-kit/v4.1.1/share
 curl -fsSL "$base/CLAUDE.template.md" -o CLAUDE.md
 curl -fsSL "$base/templates/AGENTS.template.md" -o AGENTS.md
 mkdir -p .claude/rules
@@ -152,7 +152,7 @@ With no code yet, start with `/product-brief`: it turns the idea into a brief (u
 Route: feature. Adds a new behavior (refund guard on top-up orders); no existing behavior is broken.
 ```
 
-You confirm it or pick another route. The routes are trivial, bug, decision, feature, shipped code, new app, and security audit (a deep, coverage-led audit of existing code). The full route tree is in the [README](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/README.md). Nothing launches until you confirm.
+You confirm it or pick another route. The routes are trivial, bug, decision, feature, shipped code, new app, and security audit (a deep, coverage-led audit of existing code). The full route tree is in the [README](https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/README.md). Nothing launches until you confirm.
 
 **2. Inputs up front.** Background workflows can't stop to ask questions, so `/sdd` asks two to four now: single repo or backend and frontend paths, the dev URL for browser checks, and anything specific to the route.
 

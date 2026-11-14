@@ -15,13 +15,14 @@ Start spec-driven work with `/sdd`. "Manual only" skills have side effects and n
 | `deep-review` | core | `/deep-review` | Use for a code or PR review before merge. Reviews finished code adversarially and returns APPROVED, CHANGES_REQUIRED or BLOCKED. |
 | `design-api` | core | `/design-api` | Design RESTful API architecture: resources, endpoints, request/response contracts, error format, and optional OpenAPI output, producing an… |
 | `design-schema` | core | `/design-schema` | Design a database schema - entities, columns and types, relationships, indexes, naming, and migration strategy - and write it as… |
+| `doc-hygiene` | core | `/doc-hygiene` | Use before you create, rename, move or link a Markdown doc, or via /doc-hygiene to check changed docs, --audit a repo's docs or --init a… |
 | `error-handling-patterns` | core | auto only | Robust error handling with typed exceptions, Result types, and graceful degradation. Use when designing error flows or improving resilience. |
 | `execute-task` | core | `/execute-task` | Execute an approved spec's tasks one at a time with TDD, verification gates, AC-to-test traceability, and session state for cross-session… |
 | `fix-ci` | core | `/fix-ci` | Use when CI is red, a PR check fails, or a build or install broke. Reproduces the failing gate and makes the minimal fix without weakening… |
 | `framework-doctor` | core | `/framework-doctor` (manual only) | Diagnose a framework installation and report PASS / WARN / FAIL per check - directory layout, flat skill discovery, agents, manifest drift… |
-| `generate` | core | `/generate` | Generate code scaffolding that follows project conventions - controllers, services, data objects, repositories, models, CRUD and API… |
+| `generate` | core | `/generate` | Generate code scaffolding that follows project conventions (controllers, services, data objects, repositories, models, CRUD and API… |
 | `grade` | core | `/grade` | Grade a target artifact against a domain rubric using the outcomes-grader subagent. Returns PASS / CHANGES_REQUIRED / BLOCKED with… |
-| `investigate` | core | `/investigate` | Research a technical problem or evaluate a technology inline — searches the codebase and framework docs, compares options in a pros/cons… |
+| `investigate` | core | `/investigate` | Research a technical problem or evaluate a technology inline - searches the codebase and framework docs, compares options in a pros/cons… |
 | `learn` | core | `/learn` (manual only) | Fix the system, not the instance - turn one mistake into the cheapest durable guard so the whole class cannot recur. States the mistake… |
 | `lint` | core | `/lint` | Run the code quality suite - the format, lint and type-check gates of the detected stack (taken from the stack manifest) - in check or… |
 | `new-stack` | core | `/new-stack` (manual only) | Scaffold a new stack add-on (manifest, agent, conventions skill, lint hook) from the kit template, or stage a project-local stack. Use… |
@@ -34,7 +35,7 @@ Start spec-driven work with `/sdd`. "Manual only" skills have side effects and n
 | `sdd` | core | `/sdd` | Use when starting work on a ticket (PROJ-123), a bug, a feature or a tech choice, or when asked to run a workflow. Picks the route and… |
 | `security-audit` | core | auto only | Security guidance and vulnerability review for codebases, APIs, services, CLIs and libraries. Use for security questions, focused reviews… |
 | `security-scan` | core | `/security-scan` | Use for a security check before a release or after new dependencies or auth code. Audits dependencies, scans for injection, XSS, secrets… |
-| `simple-task` | core | `/simple-task` | Execute a small-to-medium task (bug fix, small feature, refactor, safe symbol rename, or research-only question) in a single context… |
+| `simple-task` | core | `/simple-task` | Execute a small-to-medium task (bug fix, small feature, refactor, safe rename, or research-only question) in one context window -… |
 | `source-verification` | core | auto only | Rules for verifying claims against the actual code before stating or changing anything — read referenced files, cite file:line, never… |
 | `spec-board` | core | `/spec-board` | Use to see, browse or share the specs as a Kanban board by status with task progress, as a live local page or one offline HTML file. |
 | `stack-trust` | core | `/stack-trust` (manual only) | Review and approve overlay stack manifests (project .claude/stacks, user stacks directory, third-party plugin stack.json) before their… |

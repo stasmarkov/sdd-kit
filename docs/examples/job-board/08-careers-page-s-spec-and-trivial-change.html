@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../../index.html">SDD Kit</a>
-    <span class="badge">v4.1.0</span>
+    <span class="badge">v4.1.1</span>
   </div>
   <nav class="site-nav" aria-label="Site">
     <ul>
@@ -102,7 +102,7 @@ the spec belongs in <code>web/</code>, since the change starts and ends there. N
   Skill(&quot;write-spec&quot;, &quot;--ticket=HIRE-7 Public careers page per company at /companies/&lt;slug&gt;
   listing its open jobs and rating, linked from job detail. Spec folder goes in web/.ai/specs/&quot;)</code></pre>
 <p><code>write-spec</code> sizes the work before investigating
-(<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/write-spec/SKILL.md" target="_blank" rel="noopener noreferrer">write-spec Step 1</a>). Its investigation is
+(<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/plugins/sdd-kit/skills/write-spec/SKILL.md" target="_blank" rel="noopener noreferrer">write-spec Step 1</a>). Its investigation is
 what makes the size small. Everything the page needs is already shipped:</p>
 <pre><code class="language-text">  (simulated, abridged)
   Investigate
@@ -234,7 +234,7 @@ the resolver looks in <code>./.ai/specs</code>. Chapter 04 shows the same patter
 as read-only context: they confirm that <code>?company=</code> and <code>meta.average_rating</code> exist and that
 nothing in <code>api/</code> moved.</li></ul>
 <p>The phases are the same as for an M spec
-(<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/sdd/references/ship-feature.md" target="_blank" rel="noopener noreferrer">ship-feature reference</a>). They
+(<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/plugins/sdd-kit/skills/sdd/references/ship-feature.md" target="_blank" rel="noopener noreferrer">ship-feature reference</a>). They
 are just shorter:</p>
 <pre><code class="language-text">  (simulated, abridged — /workflows)
   Detect       api (laravel, tracked), web (nextjs, tracked, branch feature/HIRE-7-company-careers-page)
@@ -367,7 +367,7 @@ environment: Vitest covers <code>lib/**/*.test.ts</code> in a node environment, 
 presentational. The cost is real. <code>formatSalary</code> has three branches of pure logic that nothing
 tests. Moving it to <code>lib/format-salary.ts</code> with a Vitest case would be the stricter alternative;
 chapter 10&#39;s QA plan lists the missing coverage.</p>
-<p>The <code>trivial</code> signal in <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/sdd/SKILL.md" target="_blank" rel="noopener noreferrer">/sdd Step 2</a> is &quot;≤ ~5 files,
+<p>The <code>trivial</code> signal in <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/plugins/sdd-kit/skills/sdd/SKILL.md" target="_blank" rel="noopener noreferrer">/sdd Step 2</a> is &quot;≤ ~5 files,
 no design choice, no behavior contract at risk&quot;. This is the same line <code>write-spec</code> draws as
 <strong>XS</strong>: &quot;≤ ~3 files, one obvious change … <strong>No spec.</strong> Recommend <code>/simple-task</code>&quot;. Had Alex
 routed it as a feature, <code>write-spec</code> would have sized it XS and sent it back to this route.
@@ -458,7 +458,7 @@ on lint, tsc and vitest, plus <code>npm run build</code> for the new route.</li>
   </article>
 </main>
 <footer class="site-footer">
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/examples/job-board/08-careers-page-s-spec-and-trivial-change.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/docs/examples/job-board/08-careers-page-s-spec-and-trivial-change.md">View the Markdown source</a></p>
 </footer>
 <script>
   (function () {

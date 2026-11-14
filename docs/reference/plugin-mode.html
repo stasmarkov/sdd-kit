@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../index.html">SDD Kit</a>
-    <span class="badge">v4.1.0</span>
+    <span class="badge">v4.1.1</span>
   </div>
   <nav class="site-nav" aria-label="Site">
     <ul>
@@ -107,13 +107,13 @@ in both modes. To get the deny list and env as well, copy them into the project&
 <h3 id="hooks-that-run-in-both-modes">Hooks that run in both modes</h3>
 <p>All of the kit&#39;s hooks are global (<code>hooks/hooks.json</code>), so plugin mode keeps them:</p>
 <div class="table-wrap"><table><thead><tr><th>Event</th><th>Script</th><th>Purpose</th></tr></thead><tbody><tr><td>PreToolUse (Bash)</td><td><code>block-dangerous.sh</code>, <code>check-commit-msg.sh</code></td><td>Block destructive commands; enforce commit format</td></tr><tr><td>PreToolUse (Write/Edit)</td><td><code>laravel-test-first.sh</code>, <code>nextjs-test-first.sh</code> (stack add-ons)</td><td>Block edits to Laravel controllers, models and services, and Next.js components, until a matching test exists</td></tr><tr><td>PreToolUse (Read/Grep/Glob/Bash)</td><td><code>token-budget.sh</code></td><td>Block <code>find /</code>, and unbounded reads once context usage passes the threshold</td></tr><tr><td>PostToolUse (Write/Edit)</td><td><code>laravel-lint.sh</code>, <code>nextjs-lint.sh</code> (stack add-ons), <code>scan-secrets.sh</code></td><td>Lint changed files; catch secrets</td></tr><tr><td>PostToolUse (Bash/WebFetch/MCP)</td><td><code>scan-injection.sh</code></td><td>Flag prompt-injection patterns</td></tr><tr><td>SessionStart, UserPromptSubmit, PreCompact, SessionEnd, Stop, SubagentStop, Notification</td><td>various</td><td>Context load/save, prompt preflight, completion checks</td></tr></tbody></table></div>
-<p><code>hooks/hooks.json</code> is the source of truth. If this table and that file disagree, trust the file. Every hook, with how to tune or disable it, is in <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/share/hooks/README.md" target="_blank" rel="noopener noreferrer">src/hooks/README.md</a>.</p>
+<p><code>hooks/hooks.json</code> is the source of truth. If this table and that file disagree, trust the file. Every hook, with how to tune or disable it, is in <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/share/hooks/README.md" target="_blank" rel="noopener noreferrer">src/hooks/README.md</a>.</p>
 <h3 id="verifying-an-install">Verifying an install</h3>
 <ul><li><code>/plugin</code> → <strong>Errors</strong> tab shows components that failed to load.</li><li><code>claude plugin validate &lt;path&gt;</code> checks the manifest and agent frontmatter.</li><li><code>/hooks</code> lists active hooks; <code>/memory</code> lists loaded <code>CLAUDE.md</code>, <code>AGENTS.md</code>, and rules files.</li><li><code>/framework-doctor</code> (<code>/sdd-kit:framework-doctor</code> in plugin mode) checks that hooks fire and paths resolve.</li></ul>
   </article>
 </main>
 <footer class="site-footer">
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/reference/plugin-mode.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/docs/reference/plugin-mode.md">View the Markdown source</a></p>
 </footer>
 <script>
   (function () {

@@ -11,6 +11,10 @@ const ENTRY_OVERHEAD = 4
 const AGENT_NOTE = 'On this host, run Workflow and Agent through the sdd-runtime skill.'
 const PATH_NOTE = 'Relative paths in this skill (scripts/..., ../other-skill/..., ../../runtime/...) are relative to the directory that holds this SKILL.md, not to the project directory; resolve them against it before running a command.'
 const SKILL_TEXT = /\.(md|mdc|template)$/
+// Skill files copied without token mapping: they name the files a project has on disk (CLAUDE.md as a convention
+// source, .claude/** as an ignored folder), which stay the same on every host. The token check still runs on them,
+// so each Claude token they keep needs a token-allowlist.json entry.
+export const UNMAPPED_SKILL_FILES = new Set(['skills/doc-hygiene/SKILL.md', 'skills/doc-hygiene/references/default-convention.md'])
 export const read = (file) => fs.readFileSync(file, 'utf8')
 export const readJson = (file) => JSON.parse(read(file))
 export const sortedNames = (dir, filter = () => true) => {
@@ -129,6 +133,10 @@ export function buildSkills({ sources, overlayDir, pkgDir, pkgRel, isCore, host,
       const file = path.join(out, r)
       const text = read(file)
       const rel = `${outRel}/${r}`
+      if (UNMAPPED_SKILL_FILES.has(rel)) {
+        errors.push(...leftoverTokens(text, rel, host, allowlist).map(({ line, token }) => `${rel}:${line}: unmapped token ${token}; the file is copied as is, so list it in src/adapters/token-allowlist.json with a reason or drop the token`))
+        continue
+      }
       const { text: mapped, errors: errs } = convertText({
         text, file: rel, host, hostConfig, allowlist, pluginRoot: pluginRoot(rel),
       })

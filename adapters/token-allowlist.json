@@ -58,5 +58,53 @@
     "file": "templates/stack-addon/scripts/lint.sh",
     "token": "CLAUDE_PROJECT_DIR",
     "reason": "Scaffold input for new-stack, copied unmapped: it becomes an add-on hook script, and the dispatcher sets CLAUDE_PROJECT_DIR for every script it runs."
+  },
+  {
+    "host": "codex",
+    "file": "skills/doc-hygiene/SKILL.md",
+    "token": "CLAUDE.md",
+    "reason": "Copied unmapped: CLAUDE.md is one of the convention sources convention.mjs reads from the project on every host."
+  },
+  {
+    "host": "codex",
+    "file": "skills/doc-hygiene/references/default-convention.md",
+    "token": "CLAUDE.md",
+    "reason": "Copied unmapped: the default convention lists the files and folders a project has on disk (CLAUDE.md as a root file and convention source, .claude/** as an ignored folder); mapping them would duplicate AGENTS.md and drop the Claude folder from the ignore list."
+  },
+  {
+    "host": "codex",
+    "file": "skills/doc-hygiene/references/default-convention.md",
+    "token": ".claude/",
+    "reason": "Copied unmapped: the default convention lists the files and folders a project has on disk (CLAUDE.md as a root file and convention source, .claude/** as an ignored folder); mapping them would duplicate AGENTS.md and drop the Claude folder from the ignore list."
+  },
+  {
+    "host": "codex",
+    "file": "skills/doc-hygiene/references/default-convention.md",
+    "token": ".claude",
+    "reason": "Copied unmapped: the default convention lists the files and folders a project has on disk (CLAUDE.md as a root file and convention source, .claude/** as an ignored folder); mapping them would duplicate AGENTS.md and drop the Claude folder from the ignore list."
+  },
+  {
+    "host": "cursor",
+    "file": "skills/doc-hygiene/SKILL.md",
+    "token": "CLAUDE.md",
+    "reason": "Copied unmapped: CLAUDE.md is one of the convention sources convention.mjs reads from the project on every host."
+  },
+  {
+    "host": "cursor",
+    "file": "skills/doc-hygiene/references/default-convention.md",
+    "token": "CLAUDE.md",
+    "reason": "Copied unmapped: the default convention lists the files and folders a project has on disk (CLAUDE.md as a root file and convention source, .claude/** as an ignored folder); mapping them would duplicate AGENTS.md and drop the Claude folder from the ignore list."
+  },
+  {
+    "host": "cursor",
+    "file": "skills/doc-hygiene/references/default-convention.md",
+    "token": ".claude/",
+    "reason": "Copied unmapped: the default convention lists the files and folders a project has on disk (CLAUDE.md as a root file and convention source, .claude/** as an ignored folder); mapping them would duplicate AGENTS.md and drop the Claude folder from the ignore list."
+  },
+  {
+    "host": "cursor",
+    "file": "skills/doc-hygiene/references/default-convention.md",
+    "token": ".claude",
+    "reason": "Copied unmapped: the default convention lists the files and folders a project has on disk (CLAUDE.md as a root file and convention source, .claude/** as an ignored folder); mapping them would duplicate AGENTS.md and drop the Claude folder from the ignore list."
   }
 ]

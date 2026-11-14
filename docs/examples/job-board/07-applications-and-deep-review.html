@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../../index.html">SDD Kit</a>
-    <span class="badge">v4.1.0</span>
+    <span class="badge">v4.1.1</span>
   </div>
   <nav class="site-nav" aria-label="Site">
     <ul>
@@ -69,7 +69,7 @@ reports <code>SHIP</code>. Alex Rivera gates the merge with <code>/deep-review</
 spec or the prompt. It finds a real bug. Alex fixes it with a small <code>/simple-task</code>, re-reviews,
 and merges both repos in order.</p>
 <p>Reference pages, so this chapter doesn&#39;t repeat them:</p>
-<ul><li><a href="../../reference/usage-examples.html#1-feature-from-a-ticket">USAGE-EXAMPLES.md, section 1 &quot;Feature from a ticket&quot;</a> and <a href="../../reference/usage-examples.html#9-review-before-merge">section 9 &quot;Review before merge&quot;</a></li><li><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/sdd/references/ship-feature.md" target="_blank" rel="noopener noreferrer"><code>/sdd</code> route reference: ship-feature</a>: args, phases, outputs, done-when</li><li><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/deep-review/SKILL.md" target="_blank" rel="noopener noreferrer"><code>deep-review</code> skill</a> and its <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/deep-review/references/adversarial-review.md#report-template" target="_blank" rel="noopener noreferrer">report template</a></li></ul>
+<ul><li><a href="../../reference/usage-examples.html#1-feature-from-a-ticket">USAGE-EXAMPLES.md, section 1 &quot;Feature from a ticket&quot;</a> and <a href="../../reference/usage-examples.html#9-review-before-merge">section 9 &quot;Review before merge&quot;</a></li><li><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/plugins/sdd-kit/skills/sdd/references/ship-feature.md" target="_blank" rel="noopener noreferrer"><code>/sdd</code> route reference: ship-feature</a>: args, phases, outputs, done-when</li><li><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/plugins/sdd-kit/skills/deep-review/SKILL.md" target="_blank" rel="noopener noreferrer"><code>deep-review</code> skill</a> and its <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/plugins/sdd-kit/skills/deep-review/references/adversarial-review.md#report-template" target="_blank" rel="noopener noreferrer">report template</a></li></ul>
 <div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody><tr><td>Ticket</td><td>HIRE-6 &quot;Candidates apply to open jobs with an optional cover letter; employers see applicants for their own jobs&quot;</td></tr><tr><td>Route</td><td><code>feature</code> → <code>write-spec</code> → approval → <code>ship-feature</code>, then <code>/deep-review</code> → <code>/simple-task</code> → <code>/deep-review --staged</code></td></tr><tr><td>Spec</td><td><a href="artifacts/api/.ai/specs/spec-HIRE-6-job-applications/spec-lite.html"><code>api/.ai/specs/spec-HIRE-6-job-applications/</code></a> (M, 5 tasks)</td></tr><tr><td>Branches</td><td><code>feature/HIRE-6-job-applications</code> in <code>api/</code> and <code>web/</code></td></tr><tr><td>Date</td><td>2026-10-24</td></tr><tr><td>Review report</td><td><a href="artifacts/api/.ai/reviews/REVIEW-spec-HIRE-6-job-applications-20261024-161502.html"><code>api/.ai/reviews/REVIEW-spec-HIRE-6-job-applications-20261024-161502.md</code></a></td></tr></tbody></table></div>
 <blockquote><p>Command names below are bare (<code>/sdd</code>, <code>/deep-review</code>). In plugin mode they are namespaced
 (<code>/sdd-kit:sdd</code>, <code>/sdd-kit:deep-review</code>). See <a href="01-workspace-and-install.html">chapter 01</a>.</p></blockquote>
@@ -407,7 +407,7 @@ git -C ~/work/hireboard/web push -u origin feature/HIRE-6-job-applications</code
 <p>In the <code>api/</code> session:</p>
 <pre><code class="language-text">/deep-review --depth=standard --branch=feature/HIRE-6-job-applications --base=main --format=json</code></pre>
 <p>For <code>web/</code>, the diff has to come from the web repo&#39;s git, so run it there. Headless works the
-same way as in CI (<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/deep-review/references/standard-review.md#ci-integration" target="_blank" rel="noopener noreferrer">standard-review reference</a>):</p>
+same way as in CI (<a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/plugins/sdd-kit/skills/deep-review/references/standard-review.md#ci-integration" target="_blank" rel="noopener noreferrer">standard-review reference</a>):</p>
 <pre><code class="language-bash">cd ~/work/hireboard/web
 claude -p &quot;/deep-review --depth=standard --branch=feature/HIRE-6-job-applications --base=main --format=json&quot; &gt; review.json
 jq -e &#39;.blocking&#39; review.json &amp;&amp; echo &quot;blocking findings&quot; || echo &quot;no blocking findings&quot;</code></pre>
@@ -479,7 +479,7 @@ through <code>/simple-task</code> and re-reviewed <code>APPROVED</code> at the a
   </article>
 </main>
 <footer class="site-footer">
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/examples/job-board/07-applications-and-deep-review.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/docs/examples/job-board/07-applications-and-deep-review.md">View the Markdown source</a></p>
 </footer>
 <script>
   (function () {

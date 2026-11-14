@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../index.html">SDD Kit</a>
-    <span class="badge">v4.1.0</span>
+    <span class="badge">v4.1.1</span>
   </div>
   <nav class="site-nav" aria-label="Site">
     <ul>
@@ -108,7 +108,7 @@
 <div class="table-wrap"><table><thead><tr><th>Complexity</th><th>Input Budget</th><th>Output Budget</th><th>Total</th></tr></thead><tbody><tr><td>Simple</td><td>5K</td><td>2K</td><td>7K</td></tr><tr><td>Medium</td><td>20K</td><td>10K</td><td>30K</td></tr><tr><td>Complex</td><td>80K</td><td>40K</td><td>120K</td></tr></tbody></table></div>
 <h4 id="optimization-strategies">Optimization Strategies</h4>
 <ol><li><strong>Use concise response format</strong> by default</li><li><strong>Preload only relevant skills</strong> through the agent&#39;s <code>skills:</code> frontmatter</li><li><strong>Return summaries</strong> from subagents, not full transcripts</li><li><strong>Use checkpointing</strong> for tasks exceeding 100K tokens</li><li><strong>Filter tool outputs</strong> before returning to context</li></ol>
-<p>The <code>token-budget</code> hook enforces part of this: it always blocks <code>find</code> from the filesystem root, and once context usage (hinted via <code>CLAUDE_CONTEXT_USAGE</code>) reaches <code>CLAUDE_BUDGET_THRESHOLD</code> (default 75%) it also blocks unbounded reads of huge files, unscoped repo-wide greps, open-ended globs, and dumping full logs. See the <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/share/hooks/README.md" target="_blank" rel="noopener noreferrer">hooks reference</a>.</p>
+<p>The <code>token-budget</code> hook enforces part of this: it always blocks <code>find</code> from the filesystem root, and once context usage (hinted via <code>CLAUDE_CONTEXT_USAGE</code>) reaches <code>CLAUDE_BUDGET_THRESHOLD</code> (default 75%) it also blocks unbounded reads of huge files, unscoped repo-wide greps, open-ended globs, and dumping full logs. See the <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/share/hooks/README.md" target="_blank" rel="noopener noreferrer">hooks reference</a>.</p>
 <hr>
 <h3 id="model-tier-selection">Model Tier Selection</h3>
 <p>Workflow phases name a <strong>tier</strong>, never a model. The tiers live in one place — <code>MODEL_TIERS</code> in <code>tools/stacks/runtime.template.js</code>, generated into <code>src/workflows/lib/stacks.js</code> and every workflow&#39;s registry region by <code>node tools/gen-stacks.mjs</code> (<code>verify.sh</code> fails if they are stale):</p>
@@ -169,12 +169,12 @@
 └─────────────────────────────────────────────────────────────┘</code></pre>
 <hr>
 <h3 id="related-documentation">Related Documentation</h3>
-<ul><li>Framework Design Rules - Core principles</li><li><a href="agents.html">Agent index</a> - Available agents</li><li><a href="skills.html">Skill index</a> - Available skills</li><li><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/share/hooks/README.md" target="_blank" rel="noopener noreferrer">Hooks reference</a> - <code>token-budget</code>, <code>pre-compact-save</code>, and the rest</li></ul>
+<ul><li>Framework Design Rules - Core principles</li><li><a href="agents.html">Agent index</a> - Available agents</li><li><a href="skills.html">Skill index</a> - Available skills</li><li><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/share/hooks/README.md" target="_blank" rel="noopener noreferrer">Hooks reference</a> - <code>token-budget</code>, <code>pre-compact-save</code>, and the rest</li></ul>
 <p>Source: Anthropic Engineering, &quot;How we built our multi-agent research system&quot;.</p>
   </article>
 </main>
 <footer class="site-footer">
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/reference/effort-guidelines.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/docs/reference/effort-guidelines.md">View the Markdown source</a></p>
 </footer>
 <script>
   (function () {

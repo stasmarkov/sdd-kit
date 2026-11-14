@@ -1,6 +1,6 @@
 ---
 name: generate
-description: Generate code scaffolding that follows project conventions - controllers, services, data objects, repositories, models, CRUD and API resource sets, pages, components, hooks, route handlers and test stubs - from the templates of the stack's scaffold skills (the manifest's skills.scaffold). Use when starting a new component or entity and you want boilerplate that already matches the project's patterns instead of writing it by hand.
+description: Generate code scaffolding that follows project conventions (controllers, services, data objects, repositories, models, CRUD and API resource sets, pages, components, hooks, route handlers, test stubs) from the templates of the stack's scaffold skills (skills.scaffold). Use when starting a new component or entity and you want boilerplate that matches the project's patterns.
 argument-hint: "[type] [name] | --crud=[entity] | --api=[resource] | --frontend [page|component|hook|route] [name]"
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 metadata:

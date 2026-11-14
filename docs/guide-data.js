@@ -5,7 +5,7 @@
 // text: renderers set it with textContent.
 window.GUIDE = {
   product: 'SDD Kit',
-  version: '4.1.0',
+  version: '4.1.1',
   repo: 'https://github.com/stasmarkov/sdd-kit',
   tagline: 'One front door, fixed pipelines, verified outcomes.',
   promise: 'Write down what "done" means, let the agent build it through gates, and approve the result as a human.',
@@ -40,7 +40,7 @@ window.GUIDE = {
       ],
       href: 'reference/installation.html#without-cloning-npx',
       hrefLabel: 'npm 12 blocks git dependencies unless you allow them: see INSTALLATION',
-      note: 'You need Claude Code, git, jq, npm 11 or 12 (npm 10 is not supported) and Google Chrome (or Chromium selected with --browser chromium, see the README\'s MCP servers section). Without jq the guardrail hooks cannot read their input; without a browser, browser checks report "not run". Run it from your project root; it uses the same install.sh as a clone, so every flag works, and also needs bash. Add #v4.1.0 after the repo name to pin a release. The package is not published to npm.',
+      note: 'You need Claude Code, git, jq, npm 11 or 12 (npm 10 is not supported) and Google Chrome (or Chromium selected with --browser chromium, see the README\'s MCP servers section). Without jq the guardrail hooks cannot read their input; without a browser, browser checks report "not run". Run it from your project root; it uses the same install.sh as a clone, so every flag works, and also needs bash. Add #v4.1.1 after the repo name to pin a release. The package is not published to npm.',
     },
     flags: [
       { flag: '--project | --user', meaning: 'Install into ./.claude or ~/.claude' },
@@ -103,7 +103,7 @@ window.GUIDE = {
       { label: 'Snapshot', code: 'npx github:stasmarkov/sdd-kit spec-board --out /tmp/spec-board.html' },
       { label: 'Split repos', code: 'npx github:stasmarkov/sdd-kit spec-board api/.ai/specs web/.ai/specs --serve' },
     ],
-    note: 'The npx form needs npm 11 or 12 and git, and works in any repo that has .ai/specs. Add #v4.1.0 after the repo name to pin a release. The package is not published to npm.',
+    note: 'The npx form needs npm 11 or 12 and git, and works in any repo that has .ai/specs. Add #v4.1.1 after the repo name to pin a release. The package is not published to npm.',
     exampleHref: 'example-board.html',
   },
 
@@ -116,7 +116,7 @@ window.GUIDE = {
   stacks: {
     now: 'Laravel API + Next.js',
     roadmap: 'Symfony and Java as first-class stacks, and Drupal and Swift beyond their early previews; add your own with /new-stack',
-    href: 'https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/README.md#stacks-and-roadmap',
+    href: 'https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/README.md#stacks-and-roadmap',
   },
 
   routes: [
@@ -204,7 +204,7 @@ window.GUIDE = {
 
   hooksSummary: {
     text: 'Core hooks block destructive commands and force pushes to main, check commit messages, scan written files for secrets and fetched content for prompt injection, and save session state across compaction. Stack add-ons can add a test-first hook and a lint hook.',
-    href: 'https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/share/hooks/README.md',
+    href: 'https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/share/hooks/README.md',
   },
 
   workflowsDirect: {
@@ -304,7 +304,7 @@ window.GUIDE = {
     { label: 'Usage examples', href: 'reference/usage-examples.html' },
     { label: 'Worked example: Hireboard', href: 'examples/job-board/README.html' },
     { label: 'Example spec board', href: 'example-board.html' },
-    { label: 'Spec board skill', href: 'https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/plugins/sdd-kit/skills/spec-board/SKILL.md' },
+    { label: 'Spec board skill', href: 'https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/plugins/sdd-kit/skills/spec-board/SKILL.md' },
     { label: 'Plugin mode', href: 'reference/plugin-mode.html' },
     { label: 'Multi-repo', href: 'reference/multi-repo.html' },
     { label: 'Model tiers', href: 'reference/effort-guidelines.html' },

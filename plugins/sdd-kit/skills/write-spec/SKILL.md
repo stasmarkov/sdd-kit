@@ -125,8 +125,9 @@ Non-negotiables:
 - **Rollout** (optional; required for L, migrations, and public API contract changes): the flag name or "none", the deploy order (backend before frontend, expand/contract for breaking changes), and the rollback path. With the ops add-on installed, name and document the flag with its `feature-flag` skill.
 - **Boundaries**: Always / Ask first / Never.
 - **Traceability** table in `tasks.md`: every AC, MNC and NFR maps to a test or a manual-test step, and every task lists `Covers:`.
-- **Task kinds** in `tasks.md`: prefix an owner sign-off with `Gate:` and a step a person performs with `Manual:`; leave code tasks unprefixed. Top-level ids are unique across `tasks.md` and `tasks-archive.md`. Rules: [spec format](https://github.com/stasmarkov/sdd-kit/blob/v4.1.0/docs/reference/specification-system.md#tasksmd).
+- **Task kinds** in `tasks.md`: prefix an owner sign-off with `Gate:` and a step a person performs with `Manual:`; leave code tasks unprefixed. Top-level ids are unique across `tasks.md` and `tasks-archive.md`. Rules: [spec format](https://github.com/stasmarkov/sdd-kit/blob/v4.1.1/docs/reference/specification-system.md#tasksmd).
 - Verification gates list only tooling that exists in the project.
+- Spec folders follow the spec format and are exempt from `doc-hygiene` names; any other doc you create follows [doc-hygiene](../doc-hygiene/SKILL.md).
 
 ## Step 6 — Clarity gate
 

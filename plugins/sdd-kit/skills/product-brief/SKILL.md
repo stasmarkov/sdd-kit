@@ -69,6 +69,8 @@ Useful question themes: who pays or who loses if this fails; which role can do w
 
 Fill [assets/product-brief.template.md](assets/product-brief.template.md). Sections, in order: **Problem**, **Users and roles**, **MVP scope**, **Non-goals**, **Draft business rules**, **Success metrics**, **Open questions**.
 
+`product-brief.md` and `backlog.md` are allowed at the repo root by the default convention; any other doc follows [doc-hygiene](../doc-hygiene/SKILL.md).
+
 Business rules are the part every later spec cites, so:
 
 - **Numbered `BR-01`, `BR-02`, …** With more than one area, group by area in tens (`BR-01…09` accounts, `BR-10…19` postings) so related rules stay together and new ones slot in.
