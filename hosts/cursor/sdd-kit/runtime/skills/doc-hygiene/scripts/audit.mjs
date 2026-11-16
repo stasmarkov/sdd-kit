@@ -12,7 +12,7 @@
 //
 // No dependencies.
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, readdirSync, mkdirSync, realpathSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, mkdirSync, realpathSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve, relative, posix as pp } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -29,6 +29,8 @@ import {
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const STALE_DAYS = 180;
+const MIN_CITATIONS = 3;
+const LINKED_DOC = 3;
 const LINK_FILES = ['CLAUDE.md', 'AGENTS.md', 'README.md'];
 const HARD_IGNORED = /(^|\/)(node_modules|vendor|\.git)\//;
 const STOP_WORDS = new Set('a an and are as at be by for from how in is it of on or the to what when where which with'.split(' '));
@@ -314,7 +316,7 @@ function loadRegistry() {
 // Built-in commands of the supported hosts. A miss only adds evidence, never a verdict,
 // so the list errs on the side of inclusion.
 const HOST_BUILTINS = new Set(
-  'add-dir agents bug clear code-review compact config context cost doctor exit export goal help hooks ide init install-github-app login logout loop mcp memory model name output-style permissions plugin pr-comments privacy-settings release-notes reload-plugins resume review rewind schedule security-review skill-doctor status statusline terminal-setup todos undo upgrade usage vim'.split(' '),
+  'add-dir agents bug clear code-review compact config context cost doctor effort exit export fast goal help hooks ide init install-github-app login logout loop mcp memory model name output-style permissions plugin pr-comments privacy-settings release-notes reload-plugins resume review rewind schedule security-review simplify skill-doctor status statusline terminal-setup todos undo upgrade usage vim workflows'.split(' '),
 );
 
 const dirNames = (dir, keep = () => true) => {
@@ -340,6 +342,11 @@ function commandNames(root, registryFile) {
     addCommands(join(base, 'commands'));
   }
   addSkills(join(HERE, '..', '..'));
+  // The kit's own checkout: core skills and add-on skills, as the plugin root or under src/.
+  for (const kit of [root, join(root, 'src')]) {
+    addSkills(join(kit, 'skills'));
+    for (const addon of dirNames(join(kit, 'plugins'), isDir)) addSkills(join(kit, 'plugins', addon, 'skills'));
+  }
   const cache = join(config, 'plugins', 'cache');
   for (const market of dirNames(cache, isDir)) {
     for (const plugin of dirNames(join(cache, market), isDir)) {
@@ -357,6 +364,77 @@ function commandNames(root, registryFile) {
     for (const addon of dirNames(join(kit, 'plugins'), isDir)) addSkills(join(kit, 'plugins', addon, 'skills'));
   }
   return names;
+}
+
+const HTTP_METHOD_BEFORE = /\b(?:GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\s*`?\s*$/;
+const HTTP_METHOD = /\b(?:GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\b/;
+const ROUTE_WORD_AFTER = /^\s*(?:page|route|endpoint|url|uri|path|screen)s?\b/i;
+const ROUTE_HEADER = /\b(?:route|path|endpoint|url|uri|page)s?\b/i;
+// A command is `/name` followed by a space or the end: `/a/b`, `/cart?x=1` and `(/cart)` are paths.
+const COMMAND_HEAD = /^\/([a-z][a-z0-9:-]*)(?=\s|$)/;
+const PROSE_COMMAND = /(^|\s)\/([a-z][a-z0-9:-]*)(?=\s|$)/g;
+const TABLE_ROW = /^\s*\|/;
+const TABLE_SEPARATOR = /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?\s*$/;
+
+/** Cells of a table row, split on unescaped pipes. */
+const tableCells = (line) => line.trim().replace(/^\|/, '').replace(/\|$/, '').split(/(?<!\\)\|/).map((c) => c.trim());
+
+/** Zero-based column of offset `pos` in a table row. */
+const columnAt = (line, pos) => (line.slice(0, pos).match(/(?<!\\)\|/g) ?? []).length - (/^\s*\|/.test(line) ? 1 : 0);
+
+/** True when the rest of a span reads as a sentence (an error message quoting a JSON pointer), not arguments. */
+const isSentence = (rest) => {
+  const words = rest.trim().split(/\s+/).filter(Boolean);
+  return words.length >= 3 && words.every((w) => /^\(?[a-z][a-z']*\)?[,.;:]?$/.test(w));
+};
+
+/**
+ * Slash commands a doc invokes, by context: a code span or a fenced line that starts with
+ * `/name`, or `/name` in prose between spaces. Routes are skipped: a token after an HTTP
+ * method, before a word such as "page" or "endpoint", or in a table whose row names an HTTP
+ * method or whose column header names routes, paths or URLs.
+ * @param {string} text Markdown source
+ * @returns {string[]} command names without the slash, e.g. ["sdd", "sdd-kit:fix-bug"]
+ */
+export function commandTokens(text) {
+  const out = [];
+  const lines = text.split('\n');
+  let fence = null;
+  let header = null;
+  lines.forEach((line, i) => {
+    const f = FENCE.exec(line);
+    if (fence) {
+      if (f && f[1][0] === fence[0] && f[1].length >= fence.length) fence = null;
+      else {
+        const m = COMMAND_HEAD.exec(line.trim());
+        if (m && !HTTP_METHOD.test(line)) out.push(m[1]);
+      }
+      return;
+    }
+    if (f) {
+      fence = f[1];
+      return;
+    }
+    const row = TABLE_ROW.test(line);
+    if (!row) header = null;
+    else if (TABLE_SEPARATOR.test(line)) return;
+    else if (TABLE_SEPARATOR.test(lines[i + 1] ?? '')) header = tableCells(line);
+    const routeRow = row && HTTP_METHOD.test(line);
+    const routeColumn = (pos) => row && header && ROUTE_HEADER.test(header[columnAt(line, pos)] ?? '');
+    const routeContext = (pos, end) => routeRow || routeColumn(pos) || HTTP_METHOD_BEFORE.test(line.slice(0, pos)) || ROUTE_WORD_AFTER.test(line.slice(end));
+    for (const m of line.matchAll(CODE_SPAN)) {
+      const span = m[2].trim();
+      const c = COMMAND_HEAD.exec(span);
+      if (!c || isSentence(span.slice(c[0].length)) || routeContext(m.index, m.index + m[0].length)) continue;
+      out.push(c[1]);
+    }
+    const prose = line.replace(CODE_SPAN, (x) => ' '.repeat(x.length));
+    for (const m of prose.matchAll(PROSE_COMMAND)) {
+      const start = m.index + m[1].length;
+      if (!routeContext(start, start + 1 + m[2].length)) out.push(m[2]);
+    }
+  });
+  return out;
 }
 
 function runnerScripts(root, registry) {
@@ -432,6 +510,19 @@ function linksOf(from, text, conv, base, exists) {
     targets.push(r.path);
   }
   return { problems, targets };
+}
+
+/** The fixed folder in front of a glob's first wildcard: `docs/context/**` -> `docs/context`. */
+const globFolder = (glob) => glob.split(/[*?]/)[0].replace(/\/$/, '');
+
+/** A file's own date (YYYY-MM-DD) for dated rename suggestions: its last commit, else its mtime; null when unreadable. */
+function ownDate(root, p, lastCommit) {
+  if (lastCommit !== 'unknown') return lastCommit;
+  try {
+    return statSync(join(root, p)).mtime.toISOString().slice(0, 10);
+  } catch {
+    return null;
+  }
 }
 
 /** True when a repo path's first segment exists at the root, so a dead citation of it is about this repo. */
@@ -512,6 +603,15 @@ export function audit(root, opts = {}) {
   const commands = commandNames(root, found?.file);
   const runners = runnerScripts(root, found?.registry);
   const top = new Set(dirNames(root));
+  // Generated folders hold run output that a checkout need not have.
+  const isGenerated = (repoPath) => matchesAny(repoPath, conv.generated) || matchesAny(`${repoPath}/`, conv.generated);
+  // A cited path under an examplePaths glob describes a reader's project, unless that folder exists here.
+  const isExample = (repoPath) =>
+    (conv.examplePaths ?? []).some((g) => {
+      if (!matchesAny(repoPath, [g]) && !matchesAny(`${repoPath}/`, [g])) return false;
+      const folder = globFolder(g);
+      return !folder || !exists(folder);
+    });
   const titles = new Map();
   for (const row of rows.values()) {
     const p = row.path;
@@ -525,23 +625,32 @@ export function audit(root, opts = {}) {
     const live = new Set();
     const dead = new Set();
     const unknown = new Set();
+    // Historical docs (changelogs, ADRs, archives) record paths and commands as they were.
+    const historical = matchesAny(p, conv.historical ?? []);
     const consider = (s, isLink) => {
       const span = s.trim();
       if (looksLikePath(span)) {
         const c = span.replace(/[#?].*$/, '');
         const fromDoc = pp.normalize(pp.join(pp.dirname(p), c));
-        if (exists(c) || exists(fromDoc) || exists(c.replace(/^\//, ''))) live.add(c);
-        else if (!matchesAny(c.replace(/^\//, ''), conv.ignore) && ((isLink && /^\.\.?\//.test(c)) || citesThisRepo(c, top))) dead.add(c);
+        const repoPath = c.replace(/^\//, '');
+        if (exists(c) || exists(fromDoc) || exists(repoPath)) live.add(c);
+        else if (!matchesAny(repoPath, conv.ignore) && !isGenerated(repoPath) && !isExample(repoPath) && ((isLink && /^\.\.?\//.test(c)) || citesThisRepo(c, top))) dead.add(c);
       }
-      const cmd = /^\/([a-z][a-z0-9:-]*)(?:\s|$)/.exec(span);
-      if (cmd && !commands.has(cmd[1].split(':').pop())) unknown.add(`/${cmd[1]}`);
       const run = /\b([a-z][\w-]*) run (?:-s |--silent )?([\w:.-]+)/.exec(span);
       if (run && runners[run[1]] && !runners[run[1]].has(run[2])) unknown.add(`${run[1]} run ${run[2]}`);
     };
-    codeSpans(text).forEach((span) => consider(span, false));
-    for (const l of scanLinks(text)) {
-      const t = l.target.replace(/[#?].*$/, '');
-      if (t && !/^[a-z][a-z0-9+.-]*:/i.test(t) && !t.startsWith('#')) consider(safeDecode(t), true);
+    if (!historical) {
+      codeSpans(text).forEach((span) => consider(span, false));
+      for (const l of scanLinks(text)) {
+        const t = l.target.replace(/[#?].*$/, '');
+        if (t && !/^[a-z][a-z0-9+.-]*:/i.test(t) && !t.startsWith('#')) consider(safeDecode(t), true);
+      }
+      for (const name of commandTokens(text)) {
+        // `/sdd-kit:` is a namespace placeholder; `/docs` names a folder of this repo.
+        if (name.endsWith(':')) continue;
+        const bare = name.split(':').pop();
+        if (!commands.has(bare) && !top.has(bare)) unknown.add(`/${name}`);
+      }
     }
     ev.deadCitations = [...dead].sort();
     ev.unknownCommands = [...unknown].sort();
@@ -589,7 +698,8 @@ export function audit(root, opts = {}) {
     if (row.evidence.placeholder) deletes.add(p);
 
     const ev = row.evidence;
-    const half = ev.citations > 0 && ev.deadCitations.length * 2 >= ev.citations;
+    // Citation evidence needs enough citations, and never outweighs a doc other docs link to.
+    const half = ev.citations >= MIN_CITATIONS && ev.deadCitations.length * 2 >= ev.citations && ev.inbound < LINKED_DOC;
     const age = ev.lastCommit === 'unknown' ? null : daysBetween(today, ev.lastCommit);
     if (half) {
       row.reasons.push('stale: at least half of the path citations are dead');
@@ -617,7 +727,7 @@ export function audit(root, opts = {}) {
   const assigned = new Map();
   for (const row of rows.values()) {
     const p = row.path;
-    const check = checkPath(p, conv, { root, today, assigned });
+    const check = checkPath(p, conv, { root, today: ownDate(root, p, row.evidence.lastCommit) ?? today, assigned });
     const naming = !check.skipped && !check.ok;
     for (const w of check.warnings) row.reasons.push(`warning: ${w.message}`);
     if (naming) {

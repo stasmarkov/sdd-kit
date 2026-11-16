@@ -14,7 +14,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_FILE = join(HERE, '..', 'references', 'default-convention.md');
 
 const MAP_KEYS = ['folders', 'ordered'];
-const LIST_KEYS = ['rootAllowed', 'bannedTokens', 'generated', 'ignore', 'nameExceptions', 'absoluteLinks'];
+const LIST_KEYS = ['rootAllowed', 'bannedTokens', 'generated', 'ignore', 'nameExceptions', 'absoluteLinks', 'examplePaths', 'historical'];
 const KNOWN_KEYS = [...MAP_KEYS, ...LIST_KEYS];
 
 export class ConventionError extends Error {}

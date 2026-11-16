@@ -7,6 +7,17 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [4.1.2] - 2026-11-16
+
+The doc-hygiene audit stops flagging example paths, URL routes and well-linked docs as problems.
+
+### Fixed
+
+- **doc-hygiene: paths of a reader's project are not dead citations.** A new convention key `examplePaths` lists the paths docs describe in the reader's project (by default `docs/context/**`, `docs/api/**`, `docs/schemas/**`, `.ai/decisions/**`, `.ai/workflow-runs/**`, `.ai/codex-workflows/**`); a citation under one counts only when that folder exists in the repo. Citations of generated folders are not checked, and a new key `historical` (by default `docs/adr/**`, `docs/postmortems/**`, `**/CHANGELOG.md`, `**/_archive/**`) names docs whose paths and commands record the past, so they get no dead-citation or command evidence.
+- **doc-hygiene: URL routes are not unknown commands.** The audit takes `/name` as a command only in a code span or fenced line that starts with it, or between spaces in prose; a token after an HTTP method, before "page" or "endpoint", in a table row with a method or under a route, path or URL column, a link target, a `/a/b` path, a quoted error message, a `/plugin:` placeholder and a top-level folder name are skipped. Commands also resolve to the add-on skills of a kit checkout and the built-ins `/workflows`, `/effort`, `/fast` and `/simplify`.
+- **doc-hygiene: a few dead citations no longer archive a well-linked doc.** Stale by content now needs at least 3 path citations with half of them dead, and a doc with 3 or more inbound links is never archived on citation evidence; it stays keep with `fix N dead citation(s)`.
+- **doc-hygiene: dated rename suggestions use the file's own date.** A report or postmortem rename takes the date of its last commit, else its file date, instead of today's.
+
 ## [4.1.1] - 2026-11-13
 
 Adds the doc-hygiene skill for doc names, folders and relevance, and a pilot-readiness appendix in the Drupal rollout plan.

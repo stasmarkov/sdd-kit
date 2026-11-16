@@ -30,13 +30,15 @@ generated: [.ai/reviews/**, .ai/verification/**, .ai/session/**, .ai/requests/**
 ignore: ["**/SKILL.md", "**/skills/**", "**/agents/**", "**/commands/**", "**/templates/**", "**/*.template.md", "**/prompts/**", "**/rules/**", "**/test/**", "**/tests/**", "**/__tests__/**", "**/fixtures/**", .github/**, "**/node_modules/**", "**/vendor/**", dist/**, build/**, .git/**, .claude/**, .agents/**, .cursor/**, .codex/**]
 nameExceptions: []  # path globs exempt from the case, space and banned-token rules
 absoluteLinks: []   # path globs whose links leaving the glob must be absolute URLs
+examplePaths: [docs/context/**, docs/api/**, docs/schemas/**, .ai/decisions/**, .ai/workflow-runs/**, .ai/codex-workflows/**]  # cited paths that describe a reader's project; checked only when the glob's folder exists here
+historical: [docs/adr/**, docs/postmortems/**, "**/CHANGELOG.md", "**/_archive/**"]  # docs whose path citations and commands record the past; not checked
 ```
 
 ## Merging an override
 
 - Top-level keys the override sets replace the default's; omitted keys keep the default.
 - `folders` and `ordered` merge per type; a type set to `~` is removed.
-- Lists (`rootAllowed`, `bannedTokens`, `generated`, `ignore`, `nameExceptions`, `absoluteLinks`) replace the default list as a whole.
+- Lists (`rootAllowed`, `bannedTokens`, `generated`, `ignore`, `nameExceptions`, `absoluteLinks`, `examplePaths`, `historical`) replace the default list as a whole.
 - Unknown keys are an error naming their line. `folders` values are repo-relative folders (no `..`, no absolute path, no glob). The first existing source wins as a whole.
 
 ## Rules with examples
@@ -53,5 +55,7 @@ absoluteLinks: []   # path globs whose links leaving the glob must be absolute U
 | Reports follow `<kind>[-<subject>]-YYYYMMDD[-HHMM][-<n>]` | `.ai/reports/ship-spec-x-20261020-1538.md`, `.ai/reports/doc-hygiene-20261113-2.md` |
 | A file outside the `folders` tree, `docs/` itself and `rootAllowed` is unplaced | `Deploy NOTES.md` at the root, suggested `docs/guides/deploy-notes.md` |
 | Archives keep the original name, in `archive` and any `_archive` folder | `docs/archive/Old Plan.md`, `.ai/reports/_archive/v3-run.md` ok |
+| A citation under an `examplePaths` glob is checked only when the glob's folder exists in the repo | `docs/context/architecture.md` in a guide for users is not dead in a repo without `docs/context/` |
+| `historical` docs get no dead-citation or command evidence | a removed path in `CHANGELOG.md` or `docs/adr/0003-use-queues.md` is not reported |
 
 Pattern vocabulary: `NNNN` four digits, `YYYY-MM-DD` and `YYYYMMDD` a date, `HHMM` four digits, `<slug>`, `<kind>`, `<subject>` lowercase hyphenated words, `<n>` digits, `[...]` optional, `.md` implied; `spec-folder` means the folder rules of the spec system; `keep` means the original name is kept. In `bannedTokens`, a trailing `<N>` means followed by one or more digits.
