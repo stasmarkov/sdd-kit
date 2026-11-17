@@ -2402,8 +2402,95 @@ function contractSyncCommandFor(reported) {
   return ''
 }
 
-// A gate failure the fix loop can act on: untrusted gates were never run, so there is nothing to fix.
-const isFixableGate = (g) => (g.status === 'fail' || g.status === 'unreachable') && g.details !== NOT_RUN_UNTRUSTED && !String(g.details || '').startsWith(NOT_RUN_DECLINED) && !String(g.details || '').startsWith(NOT_RUN_NO_GATE)
+// A gate failure the fix loop can act on: untrusted gates were never run and an unreachable gate is an
+// environment problem for the owner, so neither has anything a fix agent can change.
+const isNotRunGate = (g) => [NOT_RUN_UNTRUSTED, NOT_RUN_DECLINED, NOT_RUN_NO_GATE].some((s) => String(g.details || '').startsWith(s))
+const isFixableGate = (g) => g.status === 'fail' && !isNotRunGate(g)
+
+// What a gate-fix agent returns: the files it changed, why the gate fails, and what the owner does about it.
+const GATE_FIX_SCHEMA = {
+  type: 'object',
+  required: ['changedFiles', 'cause'],
+  properties: {
+    changedFiles: { type: 'array', items: { type: 'string' } },
+    cause: { type: 'string', enum: ['code', 'environment', 'pre-existing', 'unknown'] },
+    ownerAction: { type: 'string' },
+  },
+}
+
+const GATE_FIX_PROMPT_TAIL = 'Return changedFiles (every file you changed; an empty list when you changed none), cause (code when the failure is in this repo\'s code and you fixed it; environment when the tooling, dependencies, services or container cannot run the gate; pre-existing when the failure predates this run; unknown otherwise) and ownerAction (what the owner does by hand, empty for a fixed code failure).'
+
+/**
+ * Identity of a failing gate across fix rounds: its name plus the first output line that names an error
+ * (a tool banner is skipped), or the first non-empty line when none does; 160 characters at most.
+ * @param {{name: string, details?: string}} gate
+ * @returns {string}
+ */
+function gateSignature(gate) {
+  const lines = String((gate && gate.details) || '').split('\n').map((l) => l.trim()).filter(Boolean)
+  const first = lines.find((l) => /error|fail|exception|fatal/i.test(l)) || lines[0] || ''
+  return `${gate && gate.name}: ${first.slice(0, 160)}`
+}
+
+/**
+ * Whether a fix round got nowhere: no result, an invalid one, no changed file, or a cause the agent cannot fix.
+ * A cause of unknown with changed files is not stuck.
+ * @param {*} result the gate-fix agent's reply
+ * @returns {boolean}
+ */
+function gateFixStuck(result) {
+  if (!result || !Array.isArray(result.changedFiles) || !GATE_FIX_SCHEMA.properties.cause.enum.includes(result.cause)) return true
+  return result.changedFiles.length === 0 || result.cause === 'environment' || result.cause === 'pre-existing'
+}
+
+/**
+ * Records the failing gates a fix round left stuck, with the owner action the agent reported.
+ * @param {Map<string, string>} stuck signature to owner action, updated in place
+ * @param {object[]} failing the gates that round was asked to fix
+ * @param {*} result the gate-fix agent's reply
+ * @returns {boolean} whether the round was stuck
+ */
+function recordGateFix(stuck, failing, result) {
+  if (!gateFixStuck(result)) return false
+  const action = result && typeof result.ownerAction === 'string' ? result.ownerAction : ''
+  failing.forEach((g) => stuck.set(gateSignature(g), action))
+  return true
+}
+
+/** The failing gates a fix agent may still be sent: fixable and not recorded as stuck. */
+const gatesToFix = (gates, stuck) => gates.filter((g) => isFixableGate(g) && !stuck.has(gateSignature(g)))
+
+/**
+ * Whether a gate-fix round changed no file in any repo, so re-running the gates would repeat the same result.
+ * An invalid reply is not counted: the agent may still have edited files.
+ * @param {*[]} replies the gate-fix agents' replies for the round
+ * @returns {boolean}
+ */
+const gateRoundIdle = (replies) => replies.length > 0 && replies.every((r) => r && Array.isArray(r.changedFiles) && r.changedFiles.length === 0)
+
+/**
+ * The gates the owner must act on: every unreachable gate and every failing gate a fix round left stuck.
+ * Gates that were never run (untrusted, declined, no allowlisted gate) are left out: /stack-trust, not a hand run, resolves them.
+ * @returns {{gate: string, command: string, ownerAction: string}[]}
+ */
+function environmentIssues(gates, stuck) {
+  return gates
+    .filter((g) => (g.status === 'unreachable' && !isNotRunGate(g)) || (g.status === 'fail' && stuck.has(gateSignature(g))))
+    .map((g) => ({
+      gate: g.name,
+      command: g.command || '(see the gate output)',
+      ownerAction: stuck.get(gateSignature(g)) || String(g.details || '').split('\n').map((l) => l.trim()).find(Boolean) || 'check the environment and re-run the gate',
+    }))
+}
+
+/** Report text for the environment issues: an "Environment issues" table and the Next line entries; '' when there are none. */
+function environmentReportText(issues) {
+  if (!issues.length) return ''
+  const cell = (v) => String(v).replace(/\|/g, '\\|').replace(/\s+/g, ' ')
+  const rows = issues.map((i) => `| ${cell(i.gate)} | \`${cell(i.command)}\` | ${cell(i.ownerAction)} |`)
+  const table = ['Environment issues (gates the fix loop could not act on):', '| Gate | Command | Owner action |', '| --- | --- | --- |', ...rows].join('\n')
+  return `${table}\nPut this table in the report under "Environment issues" and end the Next line with: ${issues.map((i) => `Run by hand: ${i.command}`).join('; ')}`
+}
 
 /**
  * Whether a repo with no allowlisted gate may fall back to the lint and test tooling it visibly has (AC-36):
@@ -2488,15 +2575,21 @@ async function runRepoGates(repo, instructionsFor, runOpts) {
   if (!result) return result
   const wrapper = execWrapperFor(repo)
   const wrapped = new Set(plan.run.filter((g) => g.wrapped).map((g) => g.name))
+  const commands = new Map(plan.run.map((g) => [g.name, g.command]))
   const reported = (result.gates || []).map((g) => {
-    if (!wrapped.has(g && g.name)) return g
+    // Only a gate the owner may have to re-run by hand carries its command.
+    const withCommand = g && (g.status === 'fail' || g.status === 'unreachable') && commands.has(g.name) ? { ...g, command: commands.get(g.name) } : g
+    if (!wrapped.has(g && g.name)) return withCommand
     const details = mapContainerPaths(String(g.details || ''), wrapper)
-    if (details.includes(wrapper.command)) return details === String(g.details || '') ? g : { ...g, details }
-    return { ...g, details: `${details ? `${details} ` : ''}(via ${wrapper.command})` }
+    if (details.includes(wrapper.command)) return details === String(g.details || '') ? withCommand : { ...withCommand, details }
+    return { ...withCommand, details: `${details ? `${details} ` : ''}(via ${wrapper.command})` }
   })
-  return plan.fixed.length || wrapped.size ? { ...result, gates: [...reported, ...plan.fixed] } : result
+  return { ...result, gates: [...reported, ...plan.fixed] }
 }
 // --- registry: end ---
+
+// Shared by every prompt that edits code: workflows leave version control to the owner.
+const NO_VCS_WRITES = 'Do not commit, push, merge, tag or open a pull request. If a task asks for one of these, leave it undone and report it as an owner step.'
 
 const MODELS = phaseModels({
   detect: 'standard',
@@ -3786,6 +3879,7 @@ Conventions: ${(repo.conventions || invConventions).join('; ') || 'match surroun
 Skills to consult: ${skillNamesFor(repo.stack).join(', ') || '(none declared)'}
 Standards: no changelog/AI-marker comments, lowercase doc filenames, match surrounding style.
 ${specTrackNote}
+${NO_VCS_WRITES} When a task asks for one, set completed=false and put owner-step in notes.
 Set completed=true only if the task is fully done with a passing test. Return what you changed (full repo-relative paths).`,
       { label: `build:t${task.id}`, phase: 'Build', schema: BUILD_SCHEMA, agentType: agentForStack(task.stack), ...MODELS.build }
     )
@@ -3818,6 +3912,8 @@ async function runGates() {
   const allGates = results.flatMap((g) => (g.gates || []).map((x) => ({ ...x, repo: g.repo })))
   return { results, allGates, allPassed: results.length > 0 && results.every((g) => g.allPassed) }
 }
+// Failing gates a fix round left stuck, by signature, with the owner action the agent reported.
+const stuckGates = new Map()
 /**
  * Runs the gates and lets the stack specialist fix failures in the files this run changed, up to 3 rounds.
  * A repo where the run changed no file gets no fix call: its failures are pre-existing.
@@ -3828,7 +3924,7 @@ async function gatesUntilGreen(citedFor = () => []) {
   let current = await runGates()
   let fixRounds = 0
   while (!current.allPassed && fixRounds < 3) {
-    const failing = current.allGates.filter(isFixableGate)
+    const failing = gatesToFix(current.allGates, stuckGates)
     if (!failing.length) {
       log('Gates not all green but nothing actionable to fix — stopping loop.')
       break
@@ -3845,18 +3941,27 @@ async function gatesUntilGreen(citedFor = () => []) {
     if (!scoped.length) break
     fixRounds++
     log(`Gates round ${fixRounds}: fixing ${failing.length} failing gate(s)`)
-    await parallel(
-      scoped.map((r) => () =>
-        runAgent(
+    const replies = await parallel(
+      scoped.map((r) => async () => {
+        const repoFailing = failing.filter((f) => !f.repo || f.repo === r.path)
+        const fixed = await runAgent(
           `Quality gates are failing in the ${r.role} repo (${r.stack}) at "${r.path}". cd there. Fix the underlying code (not the gate config); do not suppress errors or weaken assertions.${contractSync ? `
 A "contract-sync" failure means the frontend and backend disagree on an endpoint. The backend contract (docs/api/api-contracts.md and the spec) is authoritative: fix the side that deviates from it, and if the backend itself is missing the route, report that instead of inventing a frontend workaround.` : ''}
 ${gateFixScope(changedIn(r), citedFor(r))}
+${NO_VCS_WRITES}
 Failures:
-${failing.filter((f) => !f.repo || f.repo === r.path).map((g) => `- ${g.name}: ${g.details || ''}`).join('\n')}`,
-          { label: `gates:fix${fixRounds}:${r.role}`, phase: 'Gates', agentType: agentForStack(r.stack), ...MODELS.gatesFix }
+${repoFailing.map((g) => `- ${g.name}: ${g.details || ''}`).join('\n')}
+${GATE_FIX_PROMPT_TAIL}`,
+          { label: `gates:fix${fixRounds}:${r.role}`, phase: 'Gates', agentType: agentForStack(r.stack), schema: GATE_FIX_SCHEMA, ...MODELS.gatesFix }
         )
-      )
+        if (recordGateFix(stuckGates, repoFailing, fixed)) log(`Gates: the ${r.role} fix round changed no file or reported an environment cause — those failures are not sent to a fix agent again`)
+        return fixed
+      })
     )
+    if (gateRoundIdle(replies)) {
+      log('Gates: no fix agent changed a file — not re-running the gates.')
+      break
+    }
     current = await runGates()
   }
   return current
@@ -3905,7 +4010,7 @@ while (true) {
     ? `In scope: ${JSON.stringify(specScope.in)}\nOut of scope (never a gap): ${JSON.stringify(specScope.out)}\n`
     : specFolder ? `In scope and Out of scope: the "Scope" section of ${specFolder}/spec-lite.md; work it puts out of scope is never a gap.\n` : ''
   const audit = await runAgent(
-    `Audit the implementation against the spec. Do NOT edit any code — your only write is appending gap tasks to tasks.md.
+    `Audit the implementation against the spec. Do NOT edit any code — your only write is appending gap tasks to tasks.md. ${NO_VCS_WRITES}
 Spec: ${specFolder ? `${specFolder} (read spec-lite.md and tasks.md)` : `in-memory (no spec folder) — feature: ${feature}`}
 Acceptance criteria: ${JSON.stringify(acceptanceCriteria)}
 Must NOT change: ${JSON.stringify(mustNotChange)}
@@ -4166,7 +4271,7 @@ while (!fixStop) {
 Findings:
 ${g.findings.map(findingLine).join('\n')}
 ${failingGates.length ? `Failing gates:\n${failingGates.map((x) => `- ${x.name}: ${x.details || ''}`).join('\n')}\n` : ''}${gateFixScope(changedIn(g.repo), g.findings.filter((f) => f.file).map((f) => findingFile(f, g.repo)))}
-${mustNotChange.length ? `Must NOT change (keep identical; do not edit their guard tests): ${mustNotChange.join('; ')}\n` : ''}Make the smallest change that removes each defect, with a test when it changes behaviour; do not suppress errors or weaken assertions, and commit nothing. Return in fixed only the ids you fixed, and in changedFiles every file you changed (full repo-relative paths).`,
+${mustNotChange.length ? `Must NOT change (keep identical; do not edit their guard tests): ${mustNotChange.join('; ')}\n` : ''}Make the smallest change that removes each defect, with a test when it changes behaviour; do not suppress errors or weaken assertions. ${NO_VCS_WRITES} Return in fixed only the ids you fixed, and in changedFiles every file you changed (full repo-relative paths).`,
       { label: `fix:r${fixRound}:${g.repo.role}`, phase: 'Fix', schema: FIX_SCHEMA, agentType: agentForStack(g.repo.stack), ...MODELS.fix }
     )
   }))
@@ -4210,7 +4315,7 @@ Must NOT change: ${JSON.stringify(mustNotChange)}
 Quality attributes: ${JSON.stringify(nfrs)}
 Changed files: ${allChanged.join(', ') || '(inspect git diff)'}
 
-Walk the journey as a real request/user would: from each entry point, follow every hop (route → controller → service → response, or page → redirect → target page) to the expected end state. For each hop record step, expected, actual, ok. A redirect or link whose TARGET does not exist/resolve is ok=false and goes in brokenLinks. Also add one step per acceptance criterion (does the code satisfy it?) one per Must NOT change item (is that behavior still identical? compare against git history for the touched paths), and one per quality attribute (does the code meet it, and which test or measurement shows it?). Set resolved=true ONLY if the full journey reaches the expected end state with no broken hop, every AC and NFR holds, and no MNC behavior changed. If a repo is untracked WIP, say so in reason — it is not a verified deploy target.`,
+Walk the journey as a real request/user would: from each entry point, follow every hop (route → controller → service → response, or page → redirect → target page) to the expected end state. For each hop record step, expected, actual, ok. A redirect or link whose TARGET does not exist/resolve is ok=false and goes in brokenLinks. Also add one step per acceptance criterion (does the code satisfy it?) one per Must NOT change item (is that behavior still identical? compare against git history for the touched paths), and one per quality attribute (does the code meet it, and which test or measurement shows it?). Set resolved=true ONLY if the full journey reaches the expected end state with no broken hop, every AC and NFR holds, and no MNC behavior changed. If a repo is untracked WIP, say so in reason — it is not a verified deploy target. Uncommitted changes in a changed repo are expected (this workflow commits nothing); they are not WIP.`,
     { phase: 'Acceptance', schema: ACCEPTANCE_SCHEMA, ...MODELS.acceptance, ...opts }
   )
   if (frontends.targets.length > 1) {
@@ -4343,6 +4448,7 @@ Each step: a precise action (exact URL to open / command to run / button to clic
 }
 
 // --- Report -------------------------------------------------------------
+const gateEnvironmentText = environmentReportText(environmentIssues(gates.allGates, stuckGates))
 phase('Report')
 costSnapshot('Report')
 const recommendationHint = recommendation === 'BLOCKED' ? 'BLOCKED (untrusted stack manifest)' : recommendation
@@ -4372,7 +4478,7 @@ Build: ${built.length}/${tasks.length} (incomplete: ${JSON.stringify(failedTasks
 Converge: ${JSON.stringify({ ...convergeResult, remainingGaps: remainingGaps.map((g) => `${g.id}. ${g.title}`) })}
 Investigation: ${JSON.stringify({ relevantFiles: invFiles.slice(0, 12), risks: invRisks, existingImplementation: existingImpl })}
 Gates: ${JSON.stringify(gates.allGates)}
-Visual: ${JSON.stringify(reportVisual)}
+${gateEnvironmentText ? gateEnvironmentText + '\n' : ''}Visual: ${JSON.stringify(reportVisual)}
 Acceptance: ${JSON.stringify(reportAcceptance)}
 E2E: ${JSON.stringify(e2e)}
 Confirmed findings: ${JSON.stringify(reportFindings)}

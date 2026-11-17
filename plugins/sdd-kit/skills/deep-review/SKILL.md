@@ -17,7 +17,7 @@ Post-implementation review with a blocking verdict. One skill, three depths:
 
 | Depth | Persona | Context given to the reviewer | Best for |
 |-------|---------|-------------------------------|----------|
-| `adversarial` (default) | Skeptical: assumes bugs until proven otherwise | Code, business rules, architecture, tool results. **Not** the original task prompt | Gate before deploy; anything touching auth, money, or data |
+| `adversarial` (default) | Skeptical: assumes bugs until proven otherwise | Code, business rules, the spec's acceptance criteria, architecture, tool results. **Not** the implementer's reasoning | Gate before deploy; anything touching auth, money, or data |
 | `standard` | Constructive, checklist-driven | Code, diff against base, original intent (PR description, spec) | Branch/PR review; CI with `--format=json` |
 | `quick` | Critical-only | Changed files and security/debug scans | Fast sanity check on small changes |
 
@@ -93,7 +93,7 @@ grep -i "file" .ai/specs/{ID}/tasks.md         # --spec
 
 Load ground truth when present: `docs/context/business-rules.md` (or `docs/business-rules.md`) and `docs/context/architecture.md` (or `docs/architecture.md`).
 
-- **adversarial**: deliberately exclude the original task prompt, generation logs, and earlier review comments. The reviewer judges what the code does, not what it was meant to do.
+- **adversarial**: give the spec's acceptance criteria and business rules, but exclude the implementer's reasoning, generation logs, and earlier review comments. The reviewer judges what the code does against the documented requirement, not against the implementer's explanation.
 - **standard**: include the PR description or spec summary so feedback addresses intent.
 - **quick**: changed files only.
 
@@ -115,6 +115,8 @@ Pattern scans and how to classify each tool failure: `references/adversarial-rev
 
 Always delegate the analysis with the Agent tool. The reviewing agent must not be the one that wrote the code.
 
+Every prompt below starts with `Criteria: <this skill's base directory>/references/adversarial-review.md` as an absolute path, so the reviewer can read the criteria; the agent has no access to this skill's relative paths.
+
 **adversarial**
 
 ```
@@ -122,13 +124,14 @@ Agent tool:
   subagent_type: "adversarial-reviewer"
   model: "opus"
   prompt: |
+    Criteria: {criteria_path}
     Adversarial review of: {files}
     Business rules: {business_rules}
     Architecture: {architecture}
     Tool results: {tool_results}
-    Apply all 13 review criteria. Assume each file has bugs until you prove otherwise.
+    Apply all 13 review criteria; a design or architecture finding must cite a project convention (file:line) or be dropped. Assume each file has bugs until you prove otherwise.
     Return findings as CRITICAL / MAJOR / MINOR / OBSERVATION with file:line and a concrete fix.
-    Do not consider the original task prompt.
+    Use the spec's acceptance criteria and business rules; ignore the implementer's reasoning and the generation transcript.
 ```
 
 **standard**
@@ -137,6 +140,7 @@ Agent tool:
 Agent tool:
   subagent_type: "adversarial-reviewer"
   prompt: |
+    Criteria: {criteria_path}
     Structured code review of {branch} against {base}.
     Changed files, grouped by category: {categorized_files}
     Intent: {pr_description_or_spec_summary}
@@ -152,6 +156,7 @@ Agent tool:
 Agent tool:
   subagent_type: "adversarial-reviewer"
   prompt: |
+    Criteria: {criteria_path}
     Critical-only pass over: {files}
     Scan results: {scan_results}
     Report only issues that would allow unauthorized access, lose or corrupt data,
@@ -177,7 +182,7 @@ Merge security-auditor findings into the review, mapping high → CRITICAL or MA
 | Severity | Meaning | Gate effect |
 |----------|---------|-------------|
 | CRITICAL | Security vulnerability, data loss, crash, leaked secret | Blocks |
-| MAJOR | User-facing bug, architecture violation, significant performance hit, missing required behavior | Requires changes |
+| MAJOR | User-facing bug, violation of a cited project convention, significant performance hit, missing required behavior | Requires changes |
 | MINOR | Style, small improvement, leftover debug call | Can defer |
 | OBSERVATION / Suggestion | Good pattern or optional improvement | None |
 

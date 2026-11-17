@@ -7,6 +7,31 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [4.2.0] - 2026-11-17
+
+Pilot fixes for a Drupal, DDEV, Jira and Bitbucket team: the adoption docs match the code, subagents stop committing and pushing, and a gate that cannot be fixed stops looping.
+
+### Changed behaviour
+
+- **Drupal test-first hook: brownfield default.** `SDD_KIT_TEST_FIRST` takes `strict`, `new` or `warn`; unset or unknown means `new`, which denies a new guarded class and edits in modules that already have `tests/src`, and only warns on edits in untested modules. `strict` denies exactly what the hook denied before, and `CLAUDE_SKIP_TEST_FIRST=1` still bypasses the hook entirely.
+- **Subagents cannot push.** `block-dangerous.sh` blocks `git push` when the PreToolUse payload carries an `agent_id`; the main session pushes after review. Set `SDD_KIT_ALLOW_AGENT_PUSH=1` to allow agent pushes. Force pushes to protected branches stay blocked.
+- **Workflows do not commit.** The Build, Gates-fix, Fix and Converge prompts of ship-feature, fix-bug and greenfield-build tell agents not to commit, push, merge, tag or open a PR. fix-bug still commits its regression-test checkpoint on a `fix/` branch.
+- **Gate-fix loop stops on failures it cannot fix.** Fix agents return `{ changedFiles, cause, ownerAction }`; a gate whose fix round changes no file or reports an environment or pre-existing cause is not retried, and unreachable gates are no longer treated as fixable. They appear in the report as environment issues with the command to run by hand.
+
+### Added
+
+- **Drupal planted-defects eval** `evals/deep-review-drupal-planted-defects`, and a stack-neutral `adversarial-reviewer` that reads the project's own conventions instead of Laravel ones.
+- **Bitbucket SSH hosts** `ssh.bitbucket.org`, `altssh.bitbucket.org` and SSH aliases that resolve to them are treated as `bitbucket.org` by `/open-pr` and `/fix-ci`.
+- **spec-lint warning** for an unchecked, unprefixed task whose action is to commit, push, deploy, merge or release (at the start of the title or after "and", "then" or a comma); it suggests `Gate:` or `Manual:`. Titles that only describe these words, such as "push guard", do not warn.
+- **Bitbucket marketplace guide** in `docs/team-marketplace.md`, a stack chooser in the README and the guide quickstart, and a paste-ready Drupal `permissions.allow` block with a demo rehearsal step and the "Large workflow" note in the rollout plan and launch recipe.
+
+### Fixed
+
+- The rollout plan, launch recipe and `/sdd` skill match the code: maturity statement, branch and commit behaviour, nested-site detection, `/open-pr --link`, Rovo tool names, and the sandbox advice (optional, and incompatible with DDEV).
+- The ddev skill and its database reference use commands that work in the container.
+- `/deep-review` passes the reviewer the absolute path of its criteria file, and the adversarial depth now gives the reviewer the spec's acceptance criteria and business rules, while still excluding the implementer's reasoning.
+- The rollout plan's first-day checklist includes the **Dynamic workflows** admin check: the organization admin enables Dynamic workflows in Claude Code settings before the demo.
+
 ## [4.1.2] - 2026-11-16
 
 The doc-hygiene audit stops flagging example paths, URL routes and well-linked docs as problems.

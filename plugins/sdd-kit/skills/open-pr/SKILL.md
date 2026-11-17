@@ -72,7 +72,7 @@ git -C "$REPO" log --oneline "origin/$BASE..HEAD"      # empty → no PR for thi
 git -C "$REPO" status --porcelain                      # uncommitted work → Step 2
 ```
 
-**Origin host.** Read `git remote get-url origin` per repo. Accepted forms: `git@<host>:<path>`, `ssh://[user@]<host>[:port]/<path>`, `http(s)://[user@]<host>[:port]/<path>`. Lowercase the host, drop the port, and drop a trailing `.git` from the path. For the two SSH forms the host may be an alias from `~/.ssh/config` (`git@github-work:org/repo.git`): replace it with the `hostname` line that `ssh -G <host>` prints (it reads the config and connects to nothing), and treat `ssh.github.com` as `github.com`.
+**Origin host.** Read `git remote get-url origin` per repo. Accepted forms: `git@<host>:<path>`, `ssh://[user@]<host>[:port]/<path>`, `http(s)://[user@]<host>[:port]/<path>`. Lowercase the host, drop the port, and drop a trailing `.git` from the path. For the two SSH forms the host may be an alias from `~/.ssh/config` (`git@github-work:org/repo.git`): replace it with the `hostname` line that `ssh -G <host>` prints (it reads the config and connects to nothing), treat `ssh.github.com` as `github.com`, and treat `ssh.bitbucket.org` and `altssh.bitbucket.org` as `bitbucket.org`.
 
 | Host | gh | Render mode | Next step printed |
 |------|----|-------------|-------------------|

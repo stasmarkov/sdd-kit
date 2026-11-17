@@ -40,8 +40,8 @@ The catalog points at the kit's public distribution repository, `stasmarkov/sdd-
         "source": "git-subdir",
         "url": "stasmarkov/sdd-kit",
         "path": "plugins/sdd-kit-laravel-nextjs",
-        "ref": "v4.1.2",
-        "sha": "<40-char commit sha of v4.1.2>"
+        "ref": "v4.2.0",
+        "sha": "<40-char commit sha of v4.2.0>"
       }
     },
     {
@@ -51,8 +51,8 @@ The catalog points at the kit's public distribution repository, `stasmarkov/sdd-
         "source": "git-subdir",
         "url": "stasmarkov/sdd-kit",
         "path": "plugins/sdd-kit",
-        "ref": "v4.1.2",
-        "sha": "<40-char commit sha of v4.1.2>"
+        "ref": "v4.2.0",
+        "sha": "<40-char commit sha of v4.2.0>"
       }
     },
     {
@@ -62,8 +62,8 @@ The catalog points at the kit's public distribution repository, `stasmarkov/sdd-
         "source": "git-subdir",
         "url": "stasmarkov/sdd-kit",
         "path": "plugins/sdd-kit-laravel",
-        "ref": "v4.1.2",
-        "sha": "<40-char commit sha of v4.1.2>"
+        "ref": "v4.2.0",
+        "sha": "<40-char commit sha of v4.2.0>"
       }
     },
     {
@@ -73,8 +73,8 @@ The catalog points at the kit's public distribution repository, `stasmarkov/sdd-
         "source": "git-subdir",
         "url": "stasmarkov/sdd-kit",
         "path": "plugins/sdd-kit-nextjs",
-        "ref": "v4.1.2",
-        "sha": "<40-char commit sha of v4.1.2>"
+        "ref": "v4.2.0",
+        "sha": "<40-char commit sha of v4.2.0>"
       }
     },
     {
@@ -84,8 +84,8 @@ The catalog points at the kit's public distribution repository, `stasmarkov/sdd-
         "source": "git-subdir",
         "url": "stasmarkov/sdd-kit",
         "path": "plugins/sdd-kit-devenv",
-        "ref": "v4.1.2",
-        "sha": "<40-char commit sha of v4.1.2>"
+        "ref": "v4.2.0",
+        "sha": "<40-char commit sha of v4.2.0>"
       }
     },
     {
@@ -95,8 +95,8 @@ The catalog points at the kit's public distribution repository, `stasmarkov/sdd-
         "source": "git-subdir",
         "url": "stasmarkov/sdd-kit",
         "path": "plugins/sdd-kit-ops",
-        "ref": "v4.1.2",
-        "sha": "<40-char commit sha of v4.1.2>"
+        "ref": "v4.2.0",
+        "sha": "<40-char commit sha of v4.2.0>"
       }
     },
     {
@@ -107,8 +107,8 @@ The catalog points at the kit's public distribution repository, `stasmarkov/sdd-
         "source": "git-subdir",
         "url": "stasmarkov/sdd-kit",
         "path": "plugins/sdd-kit-design",
-        "ref": "v4.1.2",
-        "sha": "<40-char commit sha of v4.1.2>"
+        "ref": "v4.2.0",
+        "sha": "<40-char commit sha of v4.2.0>"
       }
     }
   ]
@@ -118,7 +118,7 @@ The catalog points at the kit's public distribution repository, `stasmarkov/sdd-
 Notes:
 
 - Keep each entry's `name` identical to the `name` in that plugin's own `.claude-plugin/plugin.json`; the entry name is the install id (`<name>@your-org-claude`) and the key written to `enabledPlugins`.
-- Get the commit for a tag with `git ls-remote https://github.com/stasmarkov/sdd-kit refs/tags/v4.1.2` (use the `^{}` line for annotated tags).
+- Get the commit for a tag with `git ls-remote https://github.com/stasmarkov/sdd-kit refs/tags/v4.2.0` (use the `^{}` line for annotated tags).
 - If you fork the framework, point `repo` / `url` at your fork. A fork is the right choice when you carry local changes; otherwise reference upstream.
 - Stack add-ons are separate entries (`plugins/sdd-kit-laravel`, `plugins/sdd-kit-nextjs`, `plugins/sdd-kit-devenv`) that the preset resolves from your catalog. The preset `sdd-kit-laravel-nextjs` (`plugins/sdd-kit-laravel-nextjs`) is the first entry above: it only declares dependencies on the core and those three add-ons, so list all of them in your catalog too, pinned like the preset.
 - List only the add-ons you approve. `ios` and `drupal` can be added the same way (`path: plugins/sdd-kit-ios`, `plugins/sdd-kit-drupal`).
@@ -139,6 +139,37 @@ claude plugin details sdd-kit-laravel-nextjs
 ```
 
 Push the repo. Teammates register it with `claude plugin marketplace add your-org/claude-marketplace`. For a private repo, each user needs read access through their git credentials; CI needs a token (on GitHub Actions: export `GH_TOKEN` and run `gh auth setup-git`).
+
+## Marketplace on Bitbucket or another git host
+
+The catalog repo does not have to live on GitHub. Any git host works: give Claude Code the full clone URL instead of the `owner/repo` shorthand.
+
+```
+/plugin marketplace add https://bitbucket.org/<ws>/claude-marketplace.git
+```
+
+Pin a release of the catalog by appending a tag or branch after `#`:
+
+```
+/plugin marketplace add https://bitbucket.org/<ws>/claude-marketplace.git#<tag>
+```
+
+To register it for a project, use a `git` source in `extraKnownMarketplaces` (`.claude/settings.json`, or managed settings):
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "your-org-claude": {
+      "source": { "source": "git", "url": "https://bitbucket.org/<ws>/claude-marketplace.git" }
+    }
+  },
+  "enabledPlugins": {
+    "sdd-kit@your-org-claude": true
+  }
+}
+```
+
+Each developer needs read access to the repo through their git credentials (an SSH key or an app password). The plugin entries inside the catalog still point at the kit's public repository, so only the catalog itself is hosted on your git host. In managed settings, allow the same URL in `strictKnownMarketplaces` as `{ "source": "git", "url": "https://bitbucket.org/<ws>/claude-marketplace.git" }`.
 
 ## 2. Enable plugins per project
 

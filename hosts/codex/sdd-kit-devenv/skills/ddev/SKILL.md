@@ -107,12 +107,15 @@ ddev drush uli
 
 ### Database
 ```bash
-ddev import-db < dump.sql      # Import database
-ddev export-db > backup.sql    # Export database
-ddev snapshot                  # Create named snapshot
-ddev snapshot restore          # Restore latest snapshot
+ddev import-db --file=dump.sql.gz            # Import database
+ddev export-db --file=backup.sql.gz          # Export database
+ddev snapshot --name=before-update           # Create named snapshot
+ddev snapshot restore --latest               # Restore latest snapshot
+ddev snapshot restore <name>                 # Restore a named snapshot
 ddev mysql                     # MySQL CLI
 ```
+
+Take a snapshot before a risky update (`composer update`, `drush updb`, `drush cim`, a migration) so you can roll the database back.
 
 ## Debugging with Xdebug
 

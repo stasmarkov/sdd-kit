@@ -2397,8 +2397,95 @@ function contractSyncCommandFor(reported) {
   return ''
 }
 
-// A gate failure the fix loop can act on: untrusted gates were never run, so there is nothing to fix.
-const isFixableGate = (g) => (g.status === 'fail' || g.status === 'unreachable') && g.details !== NOT_RUN_UNTRUSTED && !String(g.details || '').startsWith(NOT_RUN_DECLINED) && !String(g.details || '').startsWith(NOT_RUN_NO_GATE)
+// A gate failure the fix loop can act on: untrusted gates were never run and an unreachable gate is an
+// environment problem for the owner, so neither has anything a fix agent can change.
+const isNotRunGate = (g) => [NOT_RUN_UNTRUSTED, NOT_RUN_DECLINED, NOT_RUN_NO_GATE].some((s) => String(g.details || '').startsWith(s))
+const isFixableGate = (g) => g.status === 'fail' && !isNotRunGate(g)
+
+// What a gate-fix agent returns: the files it changed, why the gate fails, and what the owner does about it.
+const GATE_FIX_SCHEMA = {
+  type: 'object',
+  required: ['changedFiles', 'cause'],
+  properties: {
+    changedFiles: { type: 'array', items: { type: 'string' } },
+    cause: { type: 'string', enum: ['code', 'environment', 'pre-existing', 'unknown'] },
+    ownerAction: { type: 'string' },
+  },
+}
+
+const GATE_FIX_PROMPT_TAIL = 'Return changedFiles (every file you changed; an empty list when you changed none), cause (code when the failure is in this repo\'s code and you fixed it; environment when the tooling, dependencies, services or container cannot run the gate; pre-existing when the failure predates this run; unknown otherwise) and ownerAction (what the owner does by hand, empty for a fixed code failure).'
+
+/**
+ * Identity of a failing gate across fix rounds: its name plus the first output line that names an error
+ * (a tool banner is skipped), or the first non-empty line when none does; 160 characters at most.
+ * @param {{name: string, details?: string}} gate
+ * @returns {string}
+ */
+function gateSignature(gate) {
+  const lines = String((gate && gate.details) || '').split('\n').map((l) => l.trim()).filter(Boolean)
+  const first = lines.find((l) => /error|fail|exception|fatal/i.test(l)) || lines[0] || ''
+  return `${gate && gate.name}: ${first.slice(0, 160)}`
+}
+
+/**
+ * Whether a fix round got nowhere: no result, an invalid one, no changed file, or a cause the agent cannot fix.
+ * A cause of unknown with changed files is not stuck.
+ * @param {*} result the gate-fix agent's reply
+ * @returns {boolean}
+ */
+function gateFixStuck(result) {
+  if (!result || !Array.isArray(result.changedFiles) || !GATE_FIX_SCHEMA.properties.cause.enum.includes(result.cause)) return true
+  return result.changedFiles.length === 0 || result.cause === 'environment' || result.cause === 'pre-existing'
+}
+
+/**
+ * Records the failing gates a fix round left stuck, with the owner action the agent reported.
+ * @param {Map<string, string>} stuck signature to owner action, updated in place
+ * @param {object[]} failing the gates that round was asked to fix
+ * @param {*} result the gate-fix agent's reply
+ * @returns {boolean} whether the round was stuck
+ */
+function recordGateFix(stuck, failing, result) {
+  if (!gateFixStuck(result)) return false
+  const action = result && typeof result.ownerAction === 'string' ? result.ownerAction : ''
+  failing.forEach((g) => stuck.set(gateSignature(g), action))
+  return true
+}
+
+/** The failing gates a fix agent may still be sent: fixable and not recorded as stuck. */
+const gatesToFix = (gates, stuck) => gates.filter((g) => isFixableGate(g) && !stuck.has(gateSignature(g)))
+
+/**
+ * Whether a gate-fix round changed no file in any repo, so re-running the gates would repeat the same result.
+ * An invalid reply is not counted: the agent may still have edited files.
+ * @param {*[]} replies the gate-fix agents' replies for the round
+ * @returns {boolean}
+ */
+const gateRoundIdle = (replies) => replies.length > 0 && replies.every((r) => r && Array.isArray(r.changedFiles) && r.changedFiles.length === 0)
+
+/**
+ * The gates the owner must act on: every unreachable gate and every failing gate a fix round left stuck.
+ * Gates that were never run (untrusted, declined, no allowlisted gate) are left out: /stack-trust, not a hand run, resolves them.
+ * @returns {{gate: string, command: string, ownerAction: string}[]}
+ */
+function environmentIssues(gates, stuck) {
+  return gates
+    .filter((g) => (g.status === 'unreachable' && !isNotRunGate(g)) || (g.status === 'fail' && stuck.has(gateSignature(g))))
+    .map((g) => ({
+      gate: g.name,
+      command: g.command || '(see the gate output)',
+      ownerAction: stuck.get(gateSignature(g)) || String(g.details || '').split('\n').map((l) => l.trim()).find(Boolean) || 'check the environment and re-run the gate',
+    }))
+}
+
+/** Report text for the environment issues: an "Environment issues" table and the Next line entries; '' when there are none. */
+function environmentReportText(issues) {
+  if (!issues.length) return ''
+  const cell = (v) => String(v).replace(/\|/g, '\\|').replace(/\s+/g, ' ')
+  const rows = issues.map((i) => `| ${cell(i.gate)} | \`${cell(i.command)}\` | ${cell(i.ownerAction)} |`)
+  const table = ['Environment issues (gates the fix loop could not act on):', '| Gate | Command | Owner action |', '| --- | --- | --- |', ...rows].join('\n')
+  return `${table}\nPut this table in the report under "Environment issues" and end the Next line with: ${issues.map((i) => `Run by hand: ${i.command}`).join('; ')}`
+}
 
 /**
  * Whether a repo with no allowlisted gate may fall back to the lint and test tooling it visibly has (AC-36):
@@ -2483,15 +2570,21 @@ async function runRepoGates(repo, instructionsFor, runOpts) {
   if (!result) return result
   const wrapper = execWrapperFor(repo)
   const wrapped = new Set(plan.run.filter((g) => g.wrapped).map((g) => g.name))
+  const commands = new Map(plan.run.map((g) => [g.name, g.command]))
   const reported = (result.gates || []).map((g) => {
-    if (!wrapped.has(g && g.name)) return g
+    // Only a gate the owner may have to re-run by hand carries its command.
+    const withCommand = g && (g.status === 'fail' || g.status === 'unreachable') && commands.has(g.name) ? { ...g, command: commands.get(g.name) } : g
+    if (!wrapped.has(g && g.name)) return withCommand
     const details = mapContainerPaths(String(g.details || ''), wrapper)
-    if (details.includes(wrapper.command)) return details === String(g.details || '') ? g : { ...g, details }
-    return { ...g, details: `${details ? `${details} ` : ''}(via ${wrapper.command})` }
+    if (details.includes(wrapper.command)) return details === String(g.details || '') ? withCommand : { ...withCommand, details }
+    return { ...withCommand, details: `${details ? `${details} ` : ''}(via ${wrapper.command})` }
   })
-  return plan.fixed.length || wrapped.size ? { ...result, gates: [...reported, ...plan.fixed] } : result
+  return { ...result, gates: [...reported, ...plan.fixed] }
 }
 // --- registry: end ---
+
+// Shared by every prompt that edits code: workflows leave version control to the owner.
+const NO_VCS_WRITES = 'Do not commit, push, merge, tag or open a pull request. If a task asks for one of these, leave it undone and report it as an owner step.'
 
 const MODELS = phaseModels({
   detect: 'standard',
@@ -3003,7 +3096,7 @@ Conventions/principles: ${JSON.stringify(principles)}
 Architecture decisions (binding, including validation and error behavior): ${JSON.stringify(architecture.decisions || [])}
 ${prior}
 
-Implement just enough to make the slice work end-to-end for this repo's part (e.g. backend: migration + model + service + controller + route + test; frontend: page + component + API call + test). Cover the applicable architecture decisions with regression tests, including rejected inputs and error paths. Do not silently substitute a broader contract or defer a first-slice requirement to the backlog. No AI-marker/changelog comments; match the scaffold's style. Return changed files (repo-relative) and completed=true only with passing tests and the applicable decisions implemented.`,
+Implement just enough to make the slice work end-to-end for this repo's part (e.g. backend: migration + model + service + controller + route + test; frontend: page + component + API call + test). Cover the applicable architecture decisions with regression tests, including rejected inputs and error paths. Do not silently substitute a broader contract or defer a first-slice requirement to the backlog. No AI-marker/changelog comments; match the scaffold's style. ${NO_VCS_WRITES} Return changed files (repo-relative) and completed=true only with passing tests and the applicable decisions implemented.`,
     { label: `slice:${t.role}`, phase: 'Slice', schema: BUILD_SCHEMA, agentType: agentForStack(t.stack), ...MODELS.slice }
   )
   if (part && part.completed !== false) sliceBuilt.push({ repo: t.path, ...part })
@@ -3032,23 +3125,34 @@ async function runGates() {
 }
 let gates = await runGates()
 let fixRounds = 0
+// Failing gates a fix round left stuck, by signature, with the owner action the agent reported.
+const stuckGates = new Map()
 while (!gates.allPassed && fixRounds < 3) {
-  const failing = gates.allGates.filter(isFixableGate)
+  const failing = gatesToFix(gates.allGates, stuckGates)
   if (!failing.length) { log('Gates not all green but nothing actionable — stopping.'); break }
   if (budget.total && budget.remaining() < 60_000) { log(`Budget low — stopping gate fixes.`); break }
   fixRounds++
   log(`Gates round ${fixRounds}: fixing ${failing.length} failing gate(s)`)
   const list = (sliceReposOrdered.length ? sliceReposOrdered : targets)
-  await parallel(
-    list.filter((t) => failing.some((f) => !f.repo || f.repo === t.path)).map((t) => () =>
-      runAgent(
+  const replies = await parallel(
+    list.filter((t) => failing.some((f) => !f.repo || f.repo === t.path)).map((t) => async () => {
+      const repoFailing = failing.filter((f) => !f.repo || f.repo === t.path)
+      const fixed = await runAgent(
         `Quality gates are failing in the ${t.role} repo (${t.stack}) at "${t.path}". cd there. Fix the underlying code/config (not by suppressing errors or weakening tests).
+${NO_VCS_WRITES}
 Failures:
-${failing.filter((f) => !f.repo || f.repo === t.path).map((g) => `- ${g.name}: ${g.details || ''}`).join('\n')}`,
-        { label: `gates:fix${fixRounds}:${t.role}`, phase: 'Gates', agentType: agentForStack(t.stack), ...MODELS.gatesFix }
+${repoFailing.map((g) => `- ${g.name}: ${g.details || ''}`).join('\n')}
+${GATE_FIX_PROMPT_TAIL}`,
+        { label: `gates:fix${fixRounds}:${t.role}`, phase: 'Gates', agentType: agentForStack(t.stack), schema: GATE_FIX_SCHEMA, ...MODELS.gatesFix }
       )
-    )
+      if (recordGateFix(stuckGates, repoFailing, fixed)) log(`Gates: the ${t.role} fix round changed no file or reported an environment cause — those failures are not sent to a fix agent again`)
+      return fixed
+    })
   )
+  if (gateRoundIdle(replies)) {
+    log('Gates: no fix agent changed a file — not re-running the gates.')
+    break
+  }
   gates = await runGates()
 }
 
@@ -3068,7 +3172,7 @@ Constitution principles: ${JSON.stringify(principles)}
 Targets: ${JSON.stringify(targets.map((t) => ({ role: t.role, stack: t.stack, path: t.path })))}
 Changed files: ${sliceChanged.join(', ')}
 
-From the entry point, follow every hop to the expected end state (boot the app / run the route / load the page as needed). Record step/expected/actual/ok, including forbidden inputs and error behavior. A redirect or link whose target does not resolve is ok=false (brokenLinks). Return exactly one architectureChecks entry for EVERY listed decisionIndex, with ok and concrete evidence from commands or file inspection. Check the built code, not merely whether the plan sounds reasonable. An unmet, deferred, or unverified decision is ok=false; do not rewrite the architecture to match an accidental implementation. resolved=true ONLY if all journey steps and architecture checks pass with no broken hop.`,
+From the entry point, follow every hop to the expected end state (boot the app / run the route / load the page as needed). Record step/expected/actual/ok, including forbidden inputs and error behavior. A redirect or link whose target does not resolve is ok=false (brokenLinks). Return exactly one architectureChecks entry for EVERY listed decisionIndex, with ok and concrete evidence from commands or file inspection. Check the built code, not merely whether the plan sounds reasonable. An unmet, deferred, or unverified decision is ok=false; do not rewrite the architecture to match an accidental implementation. resolved=true ONLY if all journey steps and architecture checks pass with no broken hop. Uncommitted changes in a changed repo are expected (this workflow commits only the scaffold and CI checkpoints; the slice stays uncommitted); they are not WIP.`,
     { phase: 'Acceptance', schema: ACCEPTANCE_SCHEMA, ...MODELS.acceptance }
   )
 }
@@ -3107,6 +3211,7 @@ Return the files written and the run commands.`,
 }
 
 // --- Report -------------------------------------------------------------
+const gateEnvironmentText = environmentReportText(environmentIssues(gates.allGates, stuckGates))
 phase('Report')
 const blockingManifests = blockingUntrusted(untrustedManifests, targets)
 const shippable = scaffolded && sliceComplete && gates.allPassed && acceptanceResolved && archSound && !blockingManifests.length
@@ -3142,7 +3247,7 @@ CI: ${JSON.stringify(ciResults)}
 Backlog: ${JSON.stringify(backlog)}
 Slice: ${JSON.stringify(sliceBuilt.map((b) => ({ repo: b.repo, summary: b.summary })))} (complete=${sliceComplete})
 Gates: ${JSON.stringify(gates.allGates)}
-Acceptance (validated resolved=${acceptanceResolved}): ${JSON.stringify(acceptance)}
+${gateEnvironmentText ? gateEnvironmentText + '\n' : ''}Acceptance (validated resolved=${acceptanceResolved}): ${JSON.stringify(acceptance)}
 Handoff: ${JSON.stringify(handoff)}`,
   { phase: 'Report', ...MODELS.report }
 )

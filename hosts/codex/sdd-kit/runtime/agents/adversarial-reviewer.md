@@ -43,37 +43,35 @@ A model reviewing its own output tends to miss the same mistakes it made while g
 
 # Review Protocol
 
-## Phase 1: Context Gathering (Without Bias)
+## Phase 1: Context Gathering
 
 **DO gather:**
 - Changed files from git diff
-- Business rules documentation (ground truth)
-- Architecture documentation (design principles)
+- The project's own rules: AGENTS.md, AGENTS.md and any rules files they point to (architecture and coding conventions come from here, never from your own preferences)
+- The stack manifest's `conventions` and `debugPatterns`, and the stack add-on's skills and rules for the stack under review
+- The spec's acceptance criteria and business rules, when a spec exists (ground truth for the Business Logic lens)
 - Your project memory: recurring defects and false positives from earlier reviews of this codebase
 
 **DO NOT gather:**
-- Original task prompt or spec (prevents bias toward original intent)
-- Generation context (prevents rationalizing implementation choices)
+- Generation context or the implementer's reasoning (prevents rationalizing implementation choices)
 
 ```bash
-# Get changed files
 git diff --name-only HEAD~1
-
-# Get diff content
 git diff HEAD~1
-
-# Check for business rules
-ls docs/business-rules.md .ai/specs/*/spec.md 2>/dev/null
+ls docs/business-rules.md .ai/specs/*/spec-lite.md 2>/dev/null
 ```
+
+The criteria for the review are listed once, in the deep-review skill's `references/adversarial-review.md`. The caller names it on a `Criteria:` line with its absolute path; read that file. When no path is given, find it with Glob (`**/deep-review/references/adversarial-review.md` under `~/.codex/` or the project's `.codex/`). Do not invent a second list.
 
 ## Phase 2: External Tool Verification
 
 Run objective tools FIRST - their output is ground truth:
 
 ```bash
-# Static analysis at the strictest level the stack's tool offers, on {files}
-# The test suite with coverage (the manifest's test gate)
-# The stack add-on's security pattern scan (raw queries, command execution), run on {files}
+# The stack's static analysis and lint gates from the manifest, on {files}
+# The test suite (the manifest's test gate)
+# The stack add-on's security pattern scan, on {files}
+# The manifest's debugPatterns, searched in {files}
 grep -rn "eval(\|exec(\|shell_exec(" {files}
 ```
 
@@ -95,76 +93,18 @@ For each file, apply these adversarial lenses:
 
 ---
 
-# Review Checklists
+# Review Focus
 
-## 1. Security Issues
-- [ ] No SQL injection (check ALL queries, including the ORM's raw-query escape hatches)
-- [ ] No XSS vulnerabilities (check all output rendering)
-- [ ] No mass assignment risks (check mass-assignment guards)
-- [ ] Authorization on ALL endpoints (not just some)
-- [ ] Input validation COMPLETE (all fields, all constraints)
-- [ ] No secrets hardcoded or logged
-- [ ] Rate limiting where traffic could be abused
+Apply the criteria in `references/adversarial-review.md`. Security, business-logic, robustness and test findings need no outside source. Highlights to check on every change:
 
-## 2. Architecture Compliance
-- [ ] Service-repository pattern followed
-- [ ] Controllers are thin (< 20 lines per method)
-- [ ] DTOs used for service boundaries
-- [ ] Module boundaries not violated
-- [ ] No circular dependencies
-- [ ] Dependency injection used (no `new` for services)
+- Injection, output encoding, authorization on every entry point, complete input validation, secrets in code or logs
+- Every acceptance criterion and spec edge case is implemented and tested
+- Null, empty and boundary inputs, concurrency, N+1 access, unclosed resources
+- Premature abstraction, speculative options and error handling for impossible errors
+- Debug leftovers matching the manifest's `debugPatterns`
+- Tests that exist, are meaningful and cover error conditions
 
-## 3. Overengineering Detection
-- [ ] No premature abstraction (used only once = inline it)
-- [ ] No unnecessary design patterns
-- [ ] No "just in case" code paths
-- [ ] Solution is MINIMAL for requirements
-- [ ] No over-complicated error handling
-- [ ] Feature flags only when demonstrably needed
-
-## 4. Good/Bad Practice Violations
-- [ ] No magic numbers (extract constants)
-- [ ] No deep nesting (max 3 levels)
-- [ ] No god methods (> 50 lines)
-- [ ] No commented-out code
-- [ ] No debug statements (dd, dump, console.log)
-- [ ] Errors are handled, not swallowed
-
-## 5. Code Style Compliance
-- [ ] The stack's formatter and linter pass; consistent naming; type hints everywhere
-
-## 6. Business Logic Match
-- [ ] Implementation matches EVERY spec requirement
-- [ ] Edge cases from spec ARE handled
-- [ ] Acceptance criteria ARE met (test each one)
-- [ ] No undocumented behavior
-- [ ] Error messages match UX requirements
-
-## 7. Bug & Bottleneck Detection
-- [ ] No N+1 queries (check loops with DB access)
-- [ ] Race conditions considered (concurrent modifications)
-- [ ] Null pointer exceptions handled
-- [ ] Off-by-one errors checked
-- [ ] Timezone issues addressed
-- [ ] Memory leaks (unclosed resources, growing arrays)
-
-## 8. Better Approaches and Standards
-- [ ] Simpler alternatives, framework helpers, or established patterns that replace custom code
-- [ ] PSR-12 structure; single responsibility; depend on abstractions
-- [ ] Patterns (factory, repository, strategy) used where they earn their place, not forced (YAGNI)
-
-## 9. Test Coverage Quality
-- [ ] Tests exist for new/changed code
-- [ ] Tests are meaningful (not just coverage)
-- [ ] Edge cases tested
-- [ ] Error conditions tested
-- [ ] Integration tests for workflows
-
-## 10. Documentation Sufficiency
-- [ ] Complex logic has explanatory comments
-- [ ] API changes documented
-- [ ] Breaking changes noted
-- [ ] Non-obvious side effects documented
+**Design and architecture findings** (layering, patterns, naming, structure) are allowed only against a convention the project states. Each such finding must name its convention source with `file:line` (AGENTS.md, AGENTS.md, a rules file, a manifest convention or an add-on skill). Drop any design finding that cannot cite one: your taste is not a source.
 
 ---
 
@@ -172,14 +112,11 @@ For each file, apply these adversarial lenses:
 
 ## Severity Levels
 
-| Level | Criteria | Action |
-|-------|----------|--------|
-| **CRITICAL** | Unauthorized data access, data corruption/loss, crash, exposed secrets, compliance violation | BLOCKS deployment, must fix immediately |
-| **MAJOR** | User-facing bugs, architecture violations, >2x performance regression, missing spec functionality | SHOULD fix before merge |
-| **MINOR** | Stylistic, minimal impact, under 5 minutes to fix | CAN defer to follow-up |
-| **OBSERVATION** | Positive patterns, things done well | Document for replication |
+CRITICAL, MAJOR, MINOR and OBSERVATION are defined in `references/adversarial-review.md` (Severity Classification Rules). A MAJOR design finding needs a cited project convention.
 
 When in doubt between two levels, ask: would a user or attacker hit this in production? If yes, choose the higher level.
+
+Re-read the cited line of every CRITICAL or MAJOR finding before reporting it, and drop or downgrade any the code does not support.
 
 ---
 
@@ -192,7 +129,7 @@ When in doubt between two levels, ask: would a user or attacker hit this in prod
 
 **File:** `{filepath}:{line_number}` · **Category:** {security | architecture | performance | business-logic | overengineering | testing}
 
-**Issue:** {what is wrong and why it matters}
+**Issue:** {what is wrong and why it matters; for architecture findings, the convention source as file:line}
 
 **Current Code:**
 ```{language}

@@ -2396,8 +2396,95 @@ function contractSyncCommandFor(reported) {
   return ''
 }
 
-// A gate failure the fix loop can act on: untrusted gates were never run, so there is nothing to fix.
-const isFixableGate = (g) => (g.status === 'fail' || g.status === 'unreachable') && g.details !== NOT_RUN_UNTRUSTED && !String(g.details || '').startsWith(NOT_RUN_DECLINED) && !String(g.details || '').startsWith(NOT_RUN_NO_GATE)
+// A gate failure the fix loop can act on: untrusted gates were never run and an unreachable gate is an
+// environment problem for the owner, so neither has anything a fix agent can change.
+const isNotRunGate = (g) => [NOT_RUN_UNTRUSTED, NOT_RUN_DECLINED, NOT_RUN_NO_GATE].some((s) => String(g.details || '').startsWith(s))
+const isFixableGate = (g) => g.status === 'fail' && !isNotRunGate(g)
+
+// What a gate-fix agent returns: the files it changed, why the gate fails, and what the owner does about it.
+const GATE_FIX_SCHEMA = {
+  type: 'object',
+  required: ['changedFiles', 'cause'],
+  properties: {
+    changedFiles: { type: 'array', items: { type: 'string' } },
+    cause: { type: 'string', enum: ['code', 'environment', 'pre-existing', 'unknown'] },
+    ownerAction: { type: 'string' },
+  },
+}
+
+const GATE_FIX_PROMPT_TAIL = 'Return changedFiles (every file you changed; an empty list when you changed none), cause (code when the failure is in this repo\'s code and you fixed it; environment when the tooling, dependencies, services or container cannot run the gate; pre-existing when the failure predates this run; unknown otherwise) and ownerAction (what the owner does by hand, empty for a fixed code failure).'
+
+/**
+ * Identity of a failing gate across fix rounds: its name plus the first output line that names an error
+ * (a tool banner is skipped), or the first non-empty line when none does; 160 characters at most.
+ * @param {{name: string, details?: string}} gate
+ * @returns {string}
+ */
+function gateSignature(gate) {
+  const lines = String((gate && gate.details) || '').split('\n').map((l) => l.trim()).filter(Boolean)
+  const first = lines.find((l) => /error|fail|exception|fatal/i.test(l)) || lines[0] || ''
+  return `${gate && gate.name}: ${first.slice(0, 160)}`
+}
+
+/**
+ * Whether a fix round got nowhere: no result, an invalid one, no changed file, or a cause the agent cannot fix.
+ * A cause of unknown with changed files is not stuck.
+ * @param {*} result the gate-fix agent's reply
+ * @returns {boolean}
+ */
+function gateFixStuck(result) {
+  if (!result || !Array.isArray(result.changedFiles) || !GATE_FIX_SCHEMA.properties.cause.enum.includes(result.cause)) return true
+  return result.changedFiles.length === 0 || result.cause === 'environment' || result.cause === 'pre-existing'
+}
+
+/**
+ * Records the failing gates a fix round left stuck, with the owner action the agent reported.
+ * @param {Map<string, string>} stuck signature to owner action, updated in place
+ * @param {object[]} failing the gates that round was asked to fix
+ * @param {*} result the gate-fix agent's reply
+ * @returns {boolean} whether the round was stuck
+ */
+function recordGateFix(stuck, failing, result) {
+  if (!gateFixStuck(result)) return false
+  const action = result && typeof result.ownerAction === 'string' ? result.ownerAction : ''
+  failing.forEach((g) => stuck.set(gateSignature(g), action))
+  return true
+}
+
+/** The failing gates a fix agent may still be sent: fixable and not recorded as stuck. */
+const gatesToFix = (gates, stuck) => gates.filter((g) => isFixableGate(g) && !stuck.has(gateSignature(g)))
+
+/**
+ * Whether a gate-fix round changed no file in any repo, so re-running the gates would repeat the same result.
+ * An invalid reply is not counted: the agent may still have edited files.
+ * @param {*[]} replies the gate-fix agents' replies for the round
+ * @returns {boolean}
+ */
+const gateRoundIdle = (replies) => replies.length > 0 && replies.every((r) => r && Array.isArray(r.changedFiles) && r.changedFiles.length === 0)
+
+/**
+ * The gates the owner must act on: every unreachable gate and every failing gate a fix round left stuck.
+ * Gates that were never run (untrusted, declined, no allowlisted gate) are left out: /stack-trust, not a hand run, resolves them.
+ * @returns {{gate: string, command: string, ownerAction: string}[]}
+ */
+function environmentIssues(gates, stuck) {
+  return gates
+    .filter((g) => (g.status === 'unreachable' && !isNotRunGate(g)) || (g.status === 'fail' && stuck.has(gateSignature(g))))
+    .map((g) => ({
+      gate: g.name,
+      command: g.command || '(see the gate output)',
+      ownerAction: stuck.get(gateSignature(g)) || String(g.details || '').split('\n').map((l) => l.trim()).find(Boolean) || 'check the environment and re-run the gate',
+    }))
+}
+
+/** Report text for the environment issues: an "Environment issues" table and the Next line entries; '' when there are none. */
+function environmentReportText(issues) {
+  if (!issues.length) return ''
+  const cell = (v) => String(v).replace(/\|/g, '\\|').replace(/\s+/g, ' ')
+  const rows = issues.map((i) => `| ${cell(i.gate)} | \`${cell(i.command)}\` | ${cell(i.ownerAction)} |`)
+  const table = ['Environment issues (gates the fix loop could not act on):', '| Gate | Command | Owner action |', '| --- | --- | --- |', ...rows].join('\n')
+  return `${table}\nPut this table in the report under "Environment issues" and end the Next line with: ${issues.map((i) => `Run by hand: ${i.command}`).join('; ')}`
+}
 
 /**
  * Whether a repo with no allowlisted gate may fall back to the lint and test tooling it visibly has (AC-36):
@@ -2482,15 +2569,21 @@ async function runRepoGates(repo, instructionsFor, runOpts) {
   if (!result) return result
   const wrapper = execWrapperFor(repo)
   const wrapped = new Set(plan.run.filter((g) => g.wrapped).map((g) => g.name))
+  const commands = new Map(plan.run.map((g) => [g.name, g.command]))
   const reported = (result.gates || []).map((g) => {
-    if (!wrapped.has(g && g.name)) return g
+    // Only a gate the owner may have to re-run by hand carries its command.
+    const withCommand = g && (g.status === 'fail' || g.status === 'unreachable') && commands.has(g.name) ? { ...g, command: commands.get(g.name) } : g
+    if (!wrapped.has(g && g.name)) return withCommand
     const details = mapContainerPaths(String(g.details || ''), wrapper)
-    if (details.includes(wrapper.command)) return details === String(g.details || '') ? g : { ...g, details }
-    return { ...g, details: `${details ? `${details} ` : ''}(via ${wrapper.command})` }
+    if (details.includes(wrapper.command)) return details === String(g.details || '') ? withCommand : { ...withCommand, details }
+    return { ...withCommand, details: `${details ? `${details} ` : ''}(via ${wrapper.command})` }
   })
-  return plan.fixed.length || wrapped.size ? { ...result, gates: [...reported, ...plan.fixed] } : result
+  return { ...result, gates: [...reported, ...plan.fixed] }
 }
 // --- registry: end ---
+
+// Shared by every prompt that edits code: workflows leave version control to the owner.
+const NO_VCS_WRITES = 'Do not commit, push, merge, tag or open a pull request. If a task asks for one of these, leave it undone and report it as an owner step.'
 
 const MODELS = phaseModels({
   detect: 'standard',
@@ -2932,7 +3025,7 @@ Expected behavior: ${repro.expectedBehavior || rootCause && rootCause.mechanism 
 2. Run it and confirm it is red, and red for the bug's reason (not a setup error).
 ${mustNotChange.length ? `3. Guard tests — for each behavior below, find an existing test that pins it or write one; each must be GREEN now (it documents behavior that must survive the fix):
 ${mustNotChange.map((m, i) => `   MNC-${i + 1}: ${m}`).join('\n')}
-4.` : '3.'} Commit the failing test${mustNotChange.length ? ' and the guard tests' : ''} as a checkpoint on a work branch. Run git branch --show-current first. When HEAD is detached or on a base branch (the default branch from git symbolic-ref --short refs/remotes/origin/HEAD without its origin/ prefix, main, master, develop or release/*), run git switch -c fix/${branchKey ? `${branchKey}-` : ''}<slug> first (<slug> = 2-5 lowercase-hyphenated words naming the bug). Then git add the test files and commit with the subject "test(<area>): add failing regression test${branchKey ? ` (${branchKey})` : ''}" (<area> = one lowercase word for the affected module; no AI-marker comments). Return the commit sha as checkpointSha, every committed test file path (full repo-relative) as testPaths, and the branch the commit is on as branch.
+4.` : '3.'} Commit the failing test${mustNotChange.length ? ' and the guard tests' : ''} as a checkpoint on a work branch. Run git branch --show-current first. When HEAD is detached or on a base branch (the default branch from git symbolic-ref --short refs/remotes/origin/HEAD without its origin/ prefix, main, master, develop or release/*), run git switch -c fix/${branchKey ? `${branchKey}-` : ''}<slug> first (<slug> = 2-5 lowercase-hyphenated words naming the bug). Then git add the test files and commit with the subject "test(<area>): add failing regression test${branchKey ? ` (${branchKey})` : ''}" (<area> = one lowercase word for the affected module; no AI-marker comments; no Co-Authored-By or Generated with lines). Return the commit sha as checkpointSha, every committed test file path (full repo-relative) as testPaths, and the branch the commit is on as branch.
 Conventions: ${(fixRepo.conventions || []).join('; ') || 'match surrounding test style'}.
 Skills to consult: ${testSkillNamesFor(fixRepo.stack).join(', ') || '(none declared)'}. Return the test file path(s) in changedFiles and completed=true only if the test is red for the right reason.`,
   { label: 'regression', phase: 'RegressionTest', schema: REGRESSION_SCHEMA, agentType: agentForStack(fixRepo.stack), ...MODELS.regression }
@@ -2960,7 +3053,7 @@ Regression test (DO NOT EDIT — it is the oracle): ${regressionFiles.join(', ')
 ${mustNotChange.length ? `Must NOT change (their guard tests are equally immutable and must stay green): ${mustNotChange.join('; ')}` : ''}
 
 Skills to consult: ${skillNamesFor(fixRepo.stack).join(', ') || '(none declared)'}.
-Change only what is needed to address the cause. You are FORBIDDEN from editing the regression test or guard tests, or weakening any assertion. Run the test; it must pass. Run the broader suite for the touched area to catch neighbors. Standards: no changelog/AI-marker comments, match surrounding style. Return changed files (full repo-relative paths); completed=true only if the regression test passes without modifying it.`,
+Change only what is needed to address the cause. You are FORBIDDEN from editing the regression test or guard tests, or weakening any assertion. Run the test; it must pass. Run the broader suite for the touched area to catch neighbors. Standards: no changelog/AI-marker comments, match surrounding style. ${NO_VCS_WRITES} Return changed files (full repo-relative paths); completed=true only if the regression test passes without modifying it.`,
   { label: 'fix', phase: 'Fix', schema: BUILD_SCHEMA, agentType: agentForStack(fixRepo.stack), ...MODELS.fix }
 )
 const changedFiles = Array.from(new Set([...(regressionFiles), ...((fix && fix.changedFiles) || [])]))
@@ -2978,8 +3071,10 @@ async function runGates() {
 }
 let gates = await runGates()
 let fixRounds = 0
+// Failing gates a fix round left stuck, by signature, with the owner action the agent reported.
+const stuckGates = new Map()
 while (!gates.allPassed && fixRounds < 3) {
-  const failing = gates.allGates.filter(isFixableGate)
+  const failing = gatesToFix(gates.allGates, stuckGates)
   if (!failing.length) {
     log('Gates not all green but nothing actionable — stopping loop.')
     break
@@ -2995,17 +3090,26 @@ while (!gates.allPassed && fixRounds < 3) {
   if (!scoped.length) break
   fixRounds++
   log(`Gates round ${fixRounds}: fixing ${failing.length} failing gate(s)`)
-  await parallel(
-    scoped.map((r) => () =>
-      runAgent(
+  const replies = await parallel(
+    scoped.map((r) => async () => {
+      const repoFailing = failing.filter((f) => !f.repo || f.repo === r.path)
+      const fixed = await runAgent(
         `Quality gates are failing in the ${r.role} repo (${r.stack}) at "${r.path}". cd there. Fix the underlying code (not the gate config, not the regression or guard tests); do not suppress errors or weaken assertions.
 Edit only these files: ${changedIn(r).join(', ')}. Report a violation in any other file as "pre-existing (not in scope)" and leave it. Never edit the Must-NOT-change guard tests.
+${NO_VCS_WRITES}
 Failures:
-${failing.filter((f) => !f.repo || f.repo === r.path).map((g) => `- ${g.name}: ${g.details || ''}`).join('\n')}`,
-        { label: `gates:fix${fixRounds}:${r.role}`, phase: 'Gates', agentType: agentForStack(r.stack), ...MODELS.gatesFix }
+${repoFailing.map((g) => `- ${g.name}: ${g.details || ''}`).join('\n')}
+${GATE_FIX_PROMPT_TAIL}`,
+        { label: `gates:fix${fixRounds}:${r.role}`, phase: 'Gates', agentType: agentForStack(r.stack), schema: GATE_FIX_SCHEMA, ...MODELS.gatesFix }
       )
-    )
+      if (recordGateFix(stuckGates, repoFailing, fixed)) log(`Gates: the ${r.role} fix round changed no file or reported an environment cause — those failures are not sent to a fix agent again`)
+      return fixed
+    })
   )
+  if (gateRoundIdle(replies)) {
+    log('Gates: no fix agent changed a file — not re-running the gates.')
+    break
+  }
   gates = await runGates()
 }
 
@@ -3029,7 +3133,7 @@ Must NOT change: ${JSON.stringify(mustNotChange)}
 From each entry point, follow every hop to the expected end state. Record step/expected/actual/ok. A redirect or link whose target does not resolve is ok=false (brokenLinks).
 For each Must NOT change behavior, re-walk it and record it in unchanged (behavior, ok, evidence — guard test result or the hop you traced); compare with \`git diff\` of the fix so an incidental change is caught.
 ${perf ? `This is a slowness report. Re-measure with the same command (${perf.command || 'as in Reproduce'}) and record it as a step: baseline ${perf.baseline}, target ${perf.target || '(none set)'}, actual now. The symptom is gone only when the target is met.
-` : ''}Set resolved=true ONLY if the original symptom no longer occurs, the full journey reaches the expected end state, and every unchanged entry is ok. If a repo is untracked WIP, note it in reason.`,
+` : ''}Set resolved=true ONLY if the original symptom no longer occurs, the full journey reaches the expected end state, and every unchanged entry is ok. If a repo is untracked WIP, note it in reason. Uncommitted changes in a changed repo are expected (this workflow commits only the regression-test checkpoint); they are not WIP.`,
     { phase: 'Acceptance', schema: ACCEPTANCE_SCHEMA, ...MODELS.acceptance, ...opts }
   )
   if (frontends.targets.length > 1) {
@@ -3072,6 +3176,7 @@ Exit 0 means unchanged. A non-zero exit means changed: run git diff --name-only 
 }
 
 // --- Report -------------------------------------------------------------
+const gateEnvironmentText = environmentReportText(environmentIssues(gates.allGates, stuckGates))
 phase('Report')
 const testPlan = await runAgent(
   `Write a short copy-paste manual test plan a human runs to confirm this bug is fixed by hand — real values, no jargon. Verify each step against the actual code.
@@ -3100,7 +3205,7 @@ RootCause: ${JSON.stringify(rootCause)} (confirmed=${rcConfirmed})
 Regression: ${JSON.stringify(regression)}
 Fix: ${JSON.stringify(fix)}
 Gates: ${JSON.stringify(gates.allGates)}
-Must NOT change: ${JSON.stringify(mustNotChange)}
+${gateEnvironmentText ? gateEnvironmentText + '\n' : ''}Must NOT change: ${JSON.stringify(mustNotChange)}
 Performance: ${JSON.stringify(perf)}
 Acceptance: ${JSON.stringify(acceptance)}
 Manual test plan: ${JSON.stringify(testPlan)}`,

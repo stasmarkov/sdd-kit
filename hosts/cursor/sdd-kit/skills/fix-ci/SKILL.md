@@ -46,7 +46,7 @@ READ FAILURE → CLASSIFY STEP → REPRODUCE LOCALLY → MINIMAL FIX → RE-RUN 
 
 Resolve the input to one failing run and its head commit.
 
-**CI provider.** Read the origin host as `/open-pr` does (`git remote get-url origin`, SSH aliases resolved with `ssh -G`): `github.com`, or another host that passes `gh auth status --hostname <host>` (GitHub Enterprise), is GitHub; `bitbucket.org` is Bitbucket; `gitlab.com` or a first label of `gitlab` is GitLab. Check the config files (`.github/workflows/`, `.gitlab-ci.yml`, `bitbucket-pipelines.yml`) only when the host is unknown, or when the host's own file is missing and another provider's file exists; if that still leaves more than one candidate, ask with `AskUserQuestion`. A `--run` URL names its provider directly.
+**CI provider.** Read the origin host as `/open-pr` does (`git remote get-url origin`, SSH aliases resolved with `ssh -G`; `ssh.github.com` is `github.com`, and `ssh.bitbucket.org` and `altssh.bitbucket.org` are `bitbucket.org`): `github.com`, or another host that passes `gh auth status --hostname <host>` (GitHub Enterprise), is GitHub; `bitbucket.org` is Bitbucket; `gitlab.com` or a first label of `gitlab` is GitLab. Check the config files (`.github/workflows/`, `.gitlab-ci.yml`, `bitbucket-pipelines.yml`) only when the host is unknown, or when the host's own file is missing and another provider's file exists; if that still leaves more than one candidate, ask with `AskUserQuestion`. A `--run` URL names its provider directly.
 
 GitHub:
 

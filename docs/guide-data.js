@@ -5,7 +5,7 @@
 // text: renderers set it with textContent.
 window.GUIDE = {
   product: 'SDD Kit',
-  version: '4.1.2',
+  version: '4.2.0',
   repo: 'https://github.com/stasmarkov/sdd-kit',
   tagline: 'One front door, fixed pipelines, verified outcomes.',
   promise: 'Write down what "done" means, let the agent build it through gates, and approve the result as a human.',
@@ -15,8 +15,9 @@ window.GUIDE = {
       label: 'Plugin (recommended for teams)',
       steps: [
         { text: 'Add the marketplace', code: '/plugin marketplace add stasmarkov/sdd-kit' },
-        { text: 'Install the core plus the Laravel, Next.js and devenv add-ons (preset)', code: '/plugin install sdd-kit-laravel-nextjs@sdd-kit' },
-        { text: 'Or pick your stack add-on and any optional ones', code: '/plugin install sdd-kit-laravel@sdd-kit' },
+        { text: 'Laravel + Next.js: install the preset (the core plus the Laravel, Next.js and devenv add-ons)', code: '/plugin install sdd-kit-laravel-nextjs@sdd-kit' },
+        { text: 'Drupal: install the core, the Drupal add-on and devenv (file copy: install.sh --project --full --stack=drupal)', code: '/plugin install sdd-kit@sdd-kit\n/plugin install sdd-kit-drupal@sdd-kit\n/plugin install sdd-kit-devenv@sdd-kit' },
+        { text: 'Any other stack: install the core, then describe your stack with /new-stack', code: '/plugin install sdd-kit@sdd-kit' },
       ],
       note: 'You need Claude Code, git, jq, Node 18+ and Google Chrome (or Chromium selected with --browser chromium, see the README\'s MCP servers section). Without jq the guardrail hooks cannot read their input; without a browser, browser checks report "not run". In plugin mode skills are namespaced: /sdd-kit:sdd, /sdd-kit-ops:deploy. Playwright setup for plugin mode: see the INSTALLATION guide, section "Playwright in plugin mode".',
     },
@@ -40,7 +41,7 @@ window.GUIDE = {
       ],
       href: 'reference/installation.html#without-cloning-npx',
       hrefLabel: 'npm 12 blocks git dependencies unless you allow them: see INSTALLATION',
-      note: 'You need Claude Code, git, jq, npm 11 or 12 (npm 10 is not supported) and Google Chrome (or Chromium selected with --browser chromium, see the README\'s MCP servers section). Without jq the guardrail hooks cannot read their input; without a browser, browser checks report "not run". Run it from your project root; it uses the same install.sh as a clone, so every flag works, and also needs bash. Add #v4.1.2 after the repo name to pin a release. The package is not published to npm.',
+      note: 'You need Claude Code, git, jq, npm 11 or 12 (npm 10 is not supported) and Google Chrome (or Chromium selected with --browser chromium, see the README\'s MCP servers section). Without jq the guardrail hooks cannot read their input; without a browser, browser checks report "not run". Run it from your project root; it uses the same install.sh as a clone, so every flag works, and also needs bash. Add #v4.2.0 after the repo name to pin a release. The package is not published to npm.',
     },
     flags: [
       { flag: '--project | --user', meaning: 'Install into ./.claude or ~/.claude' },
@@ -56,7 +57,7 @@ window.GUIDE = {
 
   quickstart: [
     { title: 'Add the marketplace', claudeOnly: true, text: 'Inside Claude Code, register the kit\'s plugin marketplace. Prefer files in your repo? Use the file-copy installer instead (see install).', code: '/plugin marketplace add stasmarkov/sdd-kit' },
-    { title: 'Install the plugin', claudeOnly: true, text: 'Install the preset: the core plus the Laravel, Next.js and devenv add-ons. For another stack, pick add-ons from the install section. Takes a minute.', code: '/plugin install sdd-kit-laravel-nextjs@sdd-kit' },
+    { title: 'Install the plugin', claudeOnly: true, text: 'Pick your stack. Laravel + Next.js: install the preset below. Drupal: install sdd-kit-drupal@sdd-kit and sdd-kit-devenv@sdd-kit with the core (file copy: --stack=drupal). Any other stack: install sdd-kit, then run /new-stack. Takes a minute.', code: '/plugin install sdd-kit-laravel-nextjs@sdd-kit' },
     { title: 'Check the install', hostAware: true, text: 'The doctor checks the install, the hook wiring and the MCP servers, and prints a fix for each problem. In plugin mode, confirm the hooks are listed under /hooks.', hostText: 'The doctor checks the install, the hook wiring and the MCP servers, and prints a fix for each problem. If your host asks you to trust hooks, approve the kit\'s hooks first.', code: '/framework-doctor' },
     { title: 'Give Claude project context', hostAware: true, text: 'In your project, generate the business rules and architecture docs Claude reads before every task. Starting a new product? Run /product-brief instead.', hostTitle: 'Give the agent project context', hostText: 'In your project, generate the business rules and architecture docs the agent reads before every task. Starting a new product? Use the product-brief skill instead.', code: '/write-docs --type=all' },
     { title: 'Describe the work', hostAware: true, text: 'A ticket key or a sentence. /sdd proposes a route; you confirm.', hostText: 'A ticket key or a sentence. The sdd skill proposes a route; you confirm.', code: '/sdd PROJ-123' },
@@ -103,7 +104,7 @@ window.GUIDE = {
       { label: 'Snapshot', code: 'npx github:stasmarkov/sdd-kit spec-board --out /tmp/spec-board.html' },
       { label: 'Split repos', code: 'npx github:stasmarkov/sdd-kit spec-board api/.ai/specs web/.ai/specs --serve' },
     ],
-    note: 'The npx form needs npm 11 or 12 and git, and works in any repo that has .ai/specs. Add #v4.1.2 after the repo name to pin a release. The package is not published to npm.',
+    note: 'The npx form needs npm 11 or 12 and git, and works in any repo that has .ai/specs. Add #v4.2.0 after the repo name to pin a release. The package is not published to npm.',
     exampleHref: 'example-board.html',
   },
 
@@ -116,7 +117,7 @@ window.GUIDE = {
   stacks: {
     now: 'Laravel API + Next.js',
     roadmap: 'Symfony and Java as first-class stacks, and Drupal and Swift beyond their early previews; add your own with /new-stack',
-    href: 'https://github.com/stasmarkov/sdd-kit/blob/v4.1.2/README.md#stacks-and-roadmap',
+    href: 'https://github.com/stasmarkov/sdd-kit/blob/v4.2.0/README.md#stacks-and-roadmap',
   },
 
   routes: [
@@ -204,7 +205,7 @@ window.GUIDE = {
 
   hooksSummary: {
     text: 'Core hooks block destructive commands and force pushes to main, check commit messages, scan written files for secrets and fetched content for prompt injection, and save session state across compaction. Stack add-ons can add a test-first hook and a lint hook.',
-    href: 'https://github.com/stasmarkov/sdd-kit/blob/v4.1.2/share/hooks/README.md',
+    href: 'https://github.com/stasmarkov/sdd-kit/blob/v4.2.0/share/hooks/README.md',
   },
 
   workflowsDirect: {
@@ -304,7 +305,7 @@ window.GUIDE = {
     { label: 'Usage examples', href: 'reference/usage-examples.html' },
     { label: 'Worked example: Hireboard', href: 'examples/job-board/README.html' },
     { label: 'Example spec board', href: 'example-board.html' },
-    { label: 'Spec board skill', href: 'https://github.com/stasmarkov/sdd-kit/blob/v4.1.2/plugins/sdd-kit/skills/spec-board/SKILL.md' },
+    { label: 'Spec board skill', href: 'https://github.com/stasmarkov/sdd-kit/blob/v4.2.0/plugins/sdd-kit/skills/spec-board/SKILL.md' },
     { label: 'Plugin mode', href: 'reference/plugin-mode.html' },
     { label: 'Multi-repo', href: 'reference/multi-repo.html' },
     { label: 'Model tiers', href: 'reference/effort-guidelines.html' },

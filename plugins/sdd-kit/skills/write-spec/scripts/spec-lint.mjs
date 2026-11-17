@@ -165,6 +165,13 @@ export function taskKind(title) {
 }
 
 /**
+ * A version-control or release step: commit, push, deploy, merge or release used as the task's action, at the
+ * start of the title or after "and", "then", a comma or a semicolon. Words used as nouns or descriptions
+ * ("push guard", "agents never commit") do not count.
+ */
+const VCS_STEP = /(?:^|\b(?:and|then)\s+|[,;]\s*)(?:commit(?:s|ting)?|push(?:es|ing)?|deploy(?:s|ing)?|merg(?:e|es|ing)|releas(?:e|es|ing))\b/i;
+
+/**
  * Top-level task lines of a tasks file outside HTML comments.
  * @param {string} text file contents
  * @returns {{line: number, checked: boolean, id: number, title: string}[]} line is 1-based
@@ -351,6 +358,15 @@ export function lintSpec(dir, opts = {}) {
       if (m && m[1] === ' ' && taskKind(m[3]) === 'gate') {
         add(tasksFile, start + 1, 'warning', `unchecked gate task "${m[3].trim()}"`,
           'the owner checks a gate task; no task after it runs until then');
+      }
+    });
+
+    // A workflow agent never commits or pushes, so such a task needs an owner (Gate:) or a person (Manual:)
+    tasks.forEach((start) => {
+      const m = TASK_LINE.exec(tLines[start]);
+      if (m && m[1] === ' ' && taskKind(m[3]) === 'code' && VCS_STEP.test(m[3].trim())) {
+        add(tasksFile, start + 1, 'warning', `task "${m[3].trim()}" asks for a version-control or release step`,
+          'prefix the title with "Gate:" (owner decides) or "Manual:" (a person does it)');
       }
     });
 

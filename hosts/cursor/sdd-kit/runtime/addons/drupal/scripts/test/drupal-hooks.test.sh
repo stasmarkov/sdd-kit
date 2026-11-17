@@ -120,6 +120,79 @@ module "$P/repo/web/modules/custom/inner"
 first "$P" "$P/repo/web/modules/custom/inner/src/Controller/InnerController.php"
 check "a site nested below the project dir resolves" '[[ $CODE -eq 2 && "$ERR" == *"repo/web/modules/custom/inner/tests/src"* ]]' "got $CODE: $ERR"
 
+echo "drupal-test-first.sh modes (AC-15)"
+
+N="$TMP/modes"
+T="$N/web/modules/custom/tested"
+U="$N/web/modules/custom/untested"
+module "$T" src/Controller/ExistingController.php tests/src/Unit/OtherTest.php
+module "$U" src/Controller/ExistingController.php
+payload_tool() { jq -nc --arg f "$1" --arg t "$2" '{tool_name: $t, tool_input: {file_path: $f}}'; }
+mode() {
+    local file="$1" tool="$2"; shift 2
+    payload_tool "$file" "$tool" | env CLAUDE_PROJECT_DIR="$N" "$@" "$SCRIPTS/drupal-test-first.sh" >"$TMP/out" 2>"$TMP/err"
+    CODE=$?
+    OUT=$(cat "$TMP/out"); ERR=$(cat "$TMP/err")
+}
+
+for setting in "" "SDD_KIT_TEST_FIRST=new"; do
+    label="${setting:-unset}"
+    mode "$T/src/Controller/FreshController.php" Write $setting
+    check "$label: a new class is denied" '[[ $CODE -eq 2 ]]' "got $CODE"
+    mode "$T/src/Controller/ExistingController.php" Edit $setting
+    check "$label: an edit in a tested module is denied" '[[ $CODE -eq 2 ]]' "got $CODE"
+    mode "$U/src/Controller/ExistingController.php" Edit $setting
+    check "$label: an edit in an untested module only warns" \
+        '[[ $CODE -eq 0 && -z "$ERR" && "$(jq -r .systemMessage <<<"$OUT")" == *"Functional test"*"ExistingControllerTest.php"* ]]' "got $CODE: $OUT"
+done
+
+mode "$U/src/Controller/ExistingController.php" Edit SDD_KIT_TEST_FIRST=strict
+check "strict denies an edit in an untested module" '[[ $CODE -eq 2 && "$ERR" == *"Fix:"* ]]' "got $CODE"
+mode "$T/src/Plugin/Block/CartBlock.php" Write SDD_KIT_TEST_FIRST=strict
+check "strict keeps the Plugin warn path" '[[ $CODE -eq 0 && "$(jq -r .systemMessage <<<"$OUT")" == *"Kernel test"* ]]' "got $CODE"
+B="$N/web/modules/custom/bare"
+module "$B" src/Controller/OldController.php src/Form/OldForm.php src/Access/OldAccess.php src/EventSubscriber/OldSubscriber.php src/Service/OldService.php src/Services/OldPricing.php src/Plugin/Block/OldBlock.php src/Entity/OldEntity.php
+for cls in Controller Form Access EventSubscriber Service Services; do
+    for tool in Write Edit; do
+        if [[ $tool == Write ]]; then target="$B/src/$cls/Fresh$cls.php"; else target=$(ls "$B/src/$cls"/Old*.php); fi
+        mode "$target" $tool SDD_KIT_TEST_FIRST=strict
+        check "MNC-2: strict $tool in an untested module denies $cls with the unchanged message" \
+            '[[ $CODE -eq 2 && "$ERR" == "Test-first guard: "* && "$ERR" == *"Fix:"* && "$ERR" == *"CLAUDE_SKIP_TEST_FIRST=1 to bypass."* && "$(jq -r .hookSpecificOutput.permissionDecision <<<"$OUT")" == deny && "$(jq -r .hookSpecificOutput.permissionDecisionReason <<<"$OUT")" == "$ERR" && -z "$(jq -r ".systemMessage // empty" <<<"$OUT")" ]]' "got $CODE: $ERR"
+        mode "$target" $tool
+        strict_err="$ERR"
+        mode "$target" $tool SDD_KIT_TEST_FIRST=strict
+        [[ $tool == Write ]] && check "MNC-2: strict $tool $cls message equals the new-mode message" '[[ "$ERR" == "$strict_err" ]]' "$ERR"
+    done
+done
+for cls in Plugin/Block Entity; do
+    for tool in Write Edit; do
+        if [[ $tool == Write ]]; then target="$B/src/$cls/Fresh.php"; else target=$(ls "$B/src/$cls"/Old*.php); fi
+        mode "$target" $tool SDD_KIT_TEST_FIRST=strict
+        check "MNC-2: strict $tool keeps the $cls warn path" \
+            '[[ $CODE -eq 0 && -z "$ERR" && "$(jq -r .systemMessage <<<"$OUT")" == *"Kernel test"* ]]' "got $CODE: $OUT"
+    done
+done
+mode "$T/src/Plugin/Block/CartBlock.php" Write
+check "new keeps the Plugin warn path" '[[ $CODE -eq 0 && "$(jq -r .systemMessage <<<"$OUT")" == *"Kernel test"* ]]' "got $CODE"
+
+mode "$T/src/Controller/FreshController.php" Write SDD_KIT_TEST_FIRST=warn
+check "warn never denies a new class" '[[ $CODE -eq 0 && -z "$ERR" && -n "$(jq -r .systemMessage <<<"$OUT")" ]]' "got $CODE: $OUT"
+mode "$T/src/Controller/ExistingController.php" Edit SDD_KIT_TEST_FIRST=warn
+check "warn never denies an edit" '[[ $CODE -eq 0 ]]' "got $CODE"
+
+mode "$T/src/Controller/FreshController.php" Write SDD_KIT_TEST_FIRST=bogus
+check "an unknown value behaves as new and names the valid values" \
+    '[[ $CODE -eq 2 && "$(jq -r .systemMessage <<<"$OUT")" == *"strict, new, warn"* ]]' "got $CODE: $OUT"
+check "an unknown value on a deny reaches stderr too" '[[ "$ERR" == *"strict, new, warn"* ]]' "got: $ERR"
+mode "$U/src/Controller/ExistingController.php" Edit SDD_KIT_TEST_FIRST=bogus
+check "an unknown value warns with the valid values in the one message" \
+    '[[ $CODE -eq 0 && "$(jq -r .systemMessage <<<"$OUT")" == *"strict, new, warn"* ]]' "got $CODE: $OUT"
+
+for setting in strict new warn; do
+    mode "$T/src/Controller/FreshController.php" Write CLAUDE_SKIP_TEST_FIRST=1 SDD_KIT_TEST_FIRST=$setting
+    check "MNC-1: CLAUDE_SKIP_TEST_FIRST=1 bypasses in $setting" '[[ $CODE -eq 0 && -z "$OUT$ERR" ]]' "got $CODE"
+done
+
 echo "drupal-lint.sh"
 
 # PATH for the lint runs: the tools the hook needs, plus stubs, so host php and ddev are controlled.

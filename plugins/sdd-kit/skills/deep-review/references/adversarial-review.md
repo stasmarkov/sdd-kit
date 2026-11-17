@@ -18,7 +18,7 @@ Detail for `/deep-review` at `--depth=adversarial` (the default). Load when runn
 ## The 13 Review Criteria
 
 1. Security issues
-2. Architecture compliance
+2. Architecture compliance (against a convention the project states)
 3. Overengineering detection
 4. Good/bad practice violations
 5. Code style compliance
@@ -31,12 +31,14 @@ Detail for `/deep-review` at `--depth=adversarial` (the default). Load when runn
 12. Test coverage quality
 13. Documentation sufficiency
 
+Design and architecture findings (layering, patterns, naming, structure, SOLID) are allowed only against a convention the project states, and each must cite its source with `file:line` (CLAUDE.md, AGENTS.md, a rules file, a manifest convention or an add-on skill). Drop any design finding that cannot cite one.
+
 Analysis prompts per lens:
 
 | Lens | Question |
 |------|----------|
 | Security | Assume vulnerable, prove otherwise |
-| Architecture | Question every pattern choice |
+| Architecture | Does it follow a convention the project states? Cite the source |
 | Business logic | Does the code do what the business rules say? |
 | Overengineering | Could this be simpler? |
 | Edge cases | What inputs would break this? |
@@ -57,7 +59,7 @@ CRITICAL if:
 
 MAJOR if:
 ├── Is a bug that users will encounter
-├── Violates established architecture patterns
+├── Violates a project convention cited with file:line
 ├── Has significant performance impact (>2x slower)
 ├── Missing required functionality from spec
 ├── Would require significant rework later
@@ -90,13 +92,17 @@ OBSERVATION if:
 
 ## Security and Debug Pattern Scans
 
+Stack-specific sinks and debug leftovers come from data, not from a fixed grep list:
+
+- Search {files} for the manifest's `debugPatterns` (debug dumps, stray logging, debugger statements).
+- Search {files} for the security sinks the stack add-on's skills and rules name (raw queries, unescaped output, access-check bypasses).
+
+Generic scans that apply to any stack:
+
 ```bash
-grep -rn "DB::raw\|->whereRaw\|eval(\|exec(\|shell_exec(" {files}
+grep -rn "eval(\|exec(\|shell_exec(" {files}
 grep -rn "unserialize\|file_get_contents.*\$_\|include.*\$" {files}
 grep -rn "password.*=.*['\"]" {files}
-
-grep -rn "dd(\|dump(\|var_dump(\|print_r(" {files}
-grep -rn "console\.log\|debugger" {files}
 ```
 
 A grep hit is a lead, not a finding: read the surrounding code and confirm user-controlled input reaches the sink before classifying it CRITICAL.

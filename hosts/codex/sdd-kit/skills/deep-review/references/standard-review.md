@@ -24,10 +24,9 @@ Group changed files before applying checklists:
 
 ### 1. Architecture
 
-- [ ] Follows the service-repository pattern
-- [ ] Uses DTOs for data transfer (not raw arrays)
-- [ ] Controllers are invokable (single action)
-- [ ] Business logic in services, not controllers
+- [ ] Follows the architecture conventions the project states (cite file:line; skip an item with no stated convention)
+- [ ] Data crosses boundaries the way the project's conventions require
+- [ ] Business logic sits where the project's conventions put it
 - [ ] Module boundaries respected
 - [ ] Events used for cross-module communication
 - [ ] No circular dependencies introduced
@@ -35,7 +34,7 @@ Group changed files before applying checklists:
 ### 2. Security
 
 - [ ] Authorization policies enforced (`$this->authorize()` / policies / middleware)
-- [ ] Input validated via Form Requests or DTOs
+- [ ] Input validated through the project's validation layer
 - [ ] No SQL injection (raw queries checked)
 - [ ] No XSS (output escaped, no unsafe `dangerouslySetInnerHTML`)
 - [ ] Sensitive data not logged
@@ -85,7 +84,7 @@ Group changed files before applying checklists:
 |------|----------|
 | `--focus=security` | OWASP Top 10, authn/authz flows, input validation, sensitive data, rate limiting/CORS, sessions, crypto. Also spawn `security-auditor`. |
 | `--focus=performance` | Query analysis, caching, algorithmic complexity, memory, eager vs lazy loading, index use, response times. |
-| `--focus=architecture` | Pattern adherence (service-repository, DTO-first), module boundaries, dependency direction, single responsibility, duplication. |
+| `--focus=architecture` | Adherence to the project's stated architecture conventions, module boundaries, dependency direction, single responsibility, duplication. |
 | `--focus=testing` | Testing checklist in full, plus missing-test inventory per changed class. |
 
 ---
@@ -147,9 +146,9 @@ FINDINGS
   Issue: Loading user relationship inside loop
   Suggested: eager-load the user relationship before the loop
 
-[MINOR] Raw Array Instead of DTO
+[MINOR] Unvalidated Array Crossing a Service Boundary
   File: src/services/payment-service:23
-  Suggested: Create ProcessPaymentDTO and use it
+  Suggested: Use the typed input the project's convention requires (cite file:line)
 
 [SUGGESTION] Consider Caching
   File: src/repositories/product-repository:34

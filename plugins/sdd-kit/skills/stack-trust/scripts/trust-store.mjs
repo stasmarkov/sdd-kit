@@ -2430,8 +2430,95 @@ const createWorkflowRegistry = (log = () => {}) => {
     return ''
   }
 
-  // A gate failure the fix loop can act on: untrusted gates were never run, so there is nothing to fix.
-  const isFixableGate = (g) => (g.status === 'fail' || g.status === 'unreachable') && g.details !== NOT_RUN_UNTRUSTED && !String(g.details || '').startsWith(NOT_RUN_DECLINED) && !String(g.details || '').startsWith(NOT_RUN_NO_GATE)
+  // A gate failure the fix loop can act on: untrusted gates were never run and an unreachable gate is an
+  // environment problem for the owner, so neither has anything a fix agent can change.
+  const isNotRunGate = (g) => [NOT_RUN_UNTRUSTED, NOT_RUN_DECLINED, NOT_RUN_NO_GATE].some((s) => String(g.details || '').startsWith(s))
+  const isFixableGate = (g) => g.status === 'fail' && !isNotRunGate(g)
+
+  // What a gate-fix agent returns: the files it changed, why the gate fails, and what the owner does about it.
+  const GATE_FIX_SCHEMA = {
+    type: 'object',
+    required: ['changedFiles', 'cause'],
+    properties: {
+      changedFiles: { type: 'array', items: { type: 'string' } },
+      cause: { type: 'string', enum: ['code', 'environment', 'pre-existing', 'unknown'] },
+      ownerAction: { type: 'string' },
+    },
+  }
+
+  const GATE_FIX_PROMPT_TAIL = 'Return changedFiles (every file you changed; an empty list when you changed none), cause (code when the failure is in this repo\'s code and you fixed it; environment when the tooling, dependencies, services or container cannot run the gate; pre-existing when the failure predates this run; unknown otherwise) and ownerAction (what the owner does by hand, empty for a fixed code failure).'
+
+  /**
+   * Identity of a failing gate across fix rounds: its name plus the first output line that names an error
+   * (a tool banner is skipped), or the first non-empty line when none does; 160 characters at most.
+   * @param {{name: string, details?: string}} gate
+   * @returns {string}
+   */
+  function gateSignature(gate) {
+    const lines = String((gate && gate.details) || '').split('\n').map((l) => l.trim()).filter(Boolean)
+    const first = lines.find((l) => /error|fail|exception|fatal/i.test(l)) || lines[0] || ''
+    return `${gate && gate.name}: ${first.slice(0, 160)}`
+  }
+
+  /**
+   * Whether a fix round got nowhere: no result, an invalid one, no changed file, or a cause the agent cannot fix.
+   * A cause of unknown with changed files is not stuck.
+   * @param {*} result the gate-fix agent's reply
+   * @returns {boolean}
+   */
+  function gateFixStuck(result) {
+    if (!result || !Array.isArray(result.changedFiles) || !GATE_FIX_SCHEMA.properties.cause.enum.includes(result.cause)) return true
+    return result.changedFiles.length === 0 || result.cause === 'environment' || result.cause === 'pre-existing'
+  }
+
+  /**
+   * Records the failing gates a fix round left stuck, with the owner action the agent reported.
+   * @param {Map<string, string>} stuck signature to owner action, updated in place
+   * @param {object[]} failing the gates that round was asked to fix
+   * @param {*} result the gate-fix agent's reply
+   * @returns {boolean} whether the round was stuck
+   */
+  function recordGateFix(stuck, failing, result) {
+    if (!gateFixStuck(result)) return false
+    const action = result && typeof result.ownerAction === 'string' ? result.ownerAction : ''
+    failing.forEach((g) => stuck.set(gateSignature(g), action))
+    return true
+  }
+
+  /** The failing gates a fix agent may still be sent: fixable and not recorded as stuck. */
+  const gatesToFix = (gates, stuck) => gates.filter((g) => isFixableGate(g) && !stuck.has(gateSignature(g)))
+
+  /**
+   * Whether a gate-fix round changed no file in any repo, so re-running the gates would repeat the same result.
+   * An invalid reply is not counted: the agent may still have edited files.
+   * @param {*[]} replies the gate-fix agents' replies for the round
+   * @returns {boolean}
+   */
+  const gateRoundIdle = (replies) => replies.length > 0 && replies.every((r) => r && Array.isArray(r.changedFiles) && r.changedFiles.length === 0)
+
+  /**
+   * The gates the owner must act on: every unreachable gate and every failing gate a fix round left stuck.
+   * Gates that were never run (untrusted, declined, no allowlisted gate) are left out: /stack-trust, not a hand run, resolves them.
+   * @returns {{gate: string, command: string, ownerAction: string}[]}
+   */
+  function environmentIssues(gates, stuck) {
+    return gates
+      .filter((g) => (g.status === 'unreachable' && !isNotRunGate(g)) || (g.status === 'fail' && stuck.has(gateSignature(g))))
+      .map((g) => ({
+        gate: g.name,
+        command: g.command || '(see the gate output)',
+        ownerAction: stuck.get(gateSignature(g)) || String(g.details || '').split('\n').map((l) => l.trim()).find(Boolean) || 'check the environment and re-run the gate',
+      }))
+  }
+
+  /** Report text for the environment issues: an "Environment issues" table and the Next line entries; '' when there are none. */
+  function environmentReportText(issues) {
+    if (!issues.length) return ''
+    const cell = (v) => String(v).replace(/\|/g, '\\|').replace(/\s+/g, ' ')
+    const rows = issues.map((i) => `| ${cell(i.gate)} | \`${cell(i.command)}\` | ${cell(i.ownerAction)} |`)
+    const table = ['Environment issues (gates the fix loop could not act on):', '| Gate | Command | Owner action |', '| --- | --- | --- |', ...rows].join('\n')
+    return `${table}\nPut this table in the report under "Environment issues" and end the Next line with: ${issues.map((i) => `Run by hand: ${i.command}`).join('; ')}`
+  }
 
   /**
    * Whether a repo with no allowlisted gate may fall back to the lint and test tooling it visibly has (AC-36):
@@ -2516,13 +2603,16 @@ const createWorkflowRegistry = (log = () => {}) => {
     if (!result) return result
     const wrapper = execWrapperFor(repo)
     const wrapped = new Set(plan.run.filter((g) => g.wrapped).map((g) => g.name))
+    const commands = new Map(plan.run.map((g) => [g.name, g.command]))
     const reported = (result.gates || []).map((g) => {
-      if (!wrapped.has(g && g.name)) return g
+      // Only a gate the owner may have to re-run by hand carries its command.
+      const withCommand = g && (g.status === 'fail' || g.status === 'unreachable') && commands.has(g.name) ? { ...g, command: commands.get(g.name) } : g
+      if (!wrapped.has(g && g.name)) return withCommand
       const details = mapContainerPaths(String(g.details || ''), wrapper)
-      if (details.includes(wrapper.command)) return details === String(g.details || '') ? g : { ...g, details }
-      return { ...g, details: `${details ? `${details} ` : ''}(via ${wrapper.command})` }
+      if (details.includes(wrapper.command)) return details === String(g.details || '') ? withCommand : { ...withCommand, details }
+      return { ...withCommand, details: `${details ? `${details} ` : ''}(via ${wrapper.command})` }
     })
-    return plan.fixed.length || wrapped.size ? { ...result, gates: [...reported, ...plan.fixed] } : result
+    return { ...result, gates: [...reported, ...plan.fixed] }
   }
   const planInputs = (key) => ({ gates: STACKS[key].gates, execWrapper: traitsFor(key).execWrapper, guards: extrasFor(key).gates || {}, packageManagers: packageManagersFor(key) })
   return { mergeOverlay, manifestHash, validateStackManifest, firstPartyEntry, manifestRows, HOSTS, installOverlay, resolveRepo, gatePlanFor, execWrapperFor, planInputs, isDevUrl, DEV_URL_HOST_TEXT, unlessGlobMatches, stackKeys: () => STACK_KEYS }

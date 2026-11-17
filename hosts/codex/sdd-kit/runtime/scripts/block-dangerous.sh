@@ -401,6 +401,49 @@ if printf '%s\n' "$PUSH_TEXT" | grep -qE 'git.*push.*[[:space:]](--for|--m|-[[:a
     fi
 fi
 
+# A subagent never pushes: the main session pushes after review. Segments are read like the force-push
+# check above; a git word followed by push (past its global options) in any segment counts. A commit
+# message that merely mentions pushing is not a push. SDD_KIT_ALLOW_AGENT_PUSH=1 opts out.
+# Only a command naming git and push pays for parsing.
+if [[ -n "$AGENT_ID" && "${SDD_KIT_ALLOW_AGENT_PUSH:-}" != 1 ]] && printf '%s\n' "$PUSH_TEXT" | grep -qE 'git.*push'; then
+    AGENT_PUSH=''
+    set -f
+    while IFS= read -r SEGMENT; do
+        TOKENS=()
+        read -r -a TOKENS <<< "$SEGMENT" || true
+        K=0
+        while (( K < ${#TOKENS[@]} )); do
+            WORD=${TOKENS[K]##*[\(\`]}
+            if [[ "${WORD##*/}" == git ]]; then
+                J=$((K + 1))
+                while (( J < ${#TOKENS[@]} )); do
+                    case "${TOKENS[J]}" in
+                        -c)
+                            # An inline alias that expands to push is a push.
+                            [[ "${TOKENS[J + 1]:-}" == alias.*=push* ]] && AGENT_PUSH=1
+                            J=$((J + 2)) ;;
+                        -C|--config-env|--git-dir|--work-tree|--namespace) J=$((J + 2)) ;;
+                        -*) J=$((J + 1)) ;;
+                        *) break ;;
+                    esac
+                done
+                PUSH_WORD=${TOKENS[J]:-}
+                PUSH_WORD=${PUSH_WORD%%[\)\`]*}
+                if [[ "$PUSH_WORD" == push ]]; then
+                    AGENT_PUSH=1
+                fi
+                break
+            fi
+            K=$((K + 1))
+        done
+    done < <(printf '%s\n' "$PUSH_TEXT" | tr ';&|' '\n\n\n')
+    set +f
+    if [[ -n "$AGENT_PUSH" ]]; then
+        echo "Blocked: a subagent tried to run git push. The main session pushes after review. Fix: report the branch and let the main session push, or set SDD_KIT_ALLOW_AGENT_PUSH=1 to allow agent pushes." >&2
+        exit 2
+    fi
+fi
+
 # Block drop database
 if echo "$COMMAND" | grep -qiE '(drop[[:space:]]+database|dropdb)[[:space:]]'; then
     echo "Blocked: dropping databases requires manual confirmation." >&2

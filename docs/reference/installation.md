@@ -155,16 +155,7 @@ you. Plugin mode prefixes every skill with its plugin name: `/sdd-kit:sdd`,
 
 ### Project context is not installed
 
-Plugins do not create `CLAUDE.md`, `AGENTS.md`, or `.claude/rules/`. Copy them from the repo
-by hand:
-
-```bash
-cp /path/to/sdd-kit/share/CLAUDE.template.md CLAUDE.md
-cp /path/to/sdd-kit/share/templates/AGENTS.template.md AGENTS.md
-mkdir -p .claude/rules && cp /path/to/sdd-kit/share/templates/rules/*.md .claude/rules/
-```
-
-How to fill them in is covered in [GETTING-STARTED](getting-started.md).
+Plugins do not create `CLAUDE.md`, `AGENTS.md`, or `.claude/rules/`. Fetch the templates once from the project root, as shown in [GETTING-STARTED, section 2](getting-started.md#2-give-claude-your-project-context).
 
 ### Update and uninstall
 
@@ -238,7 +229,7 @@ npx --allow-git=root github:stasmarkov/sdd-kit install --project
 
 Supported npm versions: 11 and 12. npm 10 is not supported.
 
-Add `#v4.1.2` to pin a release (`npx github:stasmarkov/sdd-kit#v4.1.2 install --project`);
+Add `#v4.2.0` to pin a release (`npx github:stasmarkov/sdd-kit#v4.2.0 install --project`);
 without a tag npx fetches the default branch. npx caches the download. The package is not
 published to npm.
 
@@ -415,8 +406,10 @@ from it into your own `settings.json`, in either mode. A plugin's `settings.json
 these keys; see
 [plugin-mode.md](plugin-mode.md#limitation-plugin-settingsjson).
 To opt in to a stricter `defaultMode` or sandbox, set them in your own `settings.json`.
-Filesystem sandboxing limits where Claude can write; do not rely on network sandboxing as a
-security control.
+The sandbox is optional: turn it on only if your gate check (`/lint --check`) still passes with it on. Container-based
+environments are incompatible with the sandbox, and commands you exclude from it run with full
+access. Filesystem sandboxing limits where Claude can write; do not rely on network sandboxing
+as a security control.
 
 A stack manifest (`stack.json`) is the only thing that makes a stack; its fields and the trust
 rules are in [stack-manifest.md](stack-manifest.md).
@@ -482,7 +475,7 @@ Bare names keep working (`/laravel-12`, `/migrate-db`, agent `laravel-backend-de
 
 Re-run the installer (or update the plugin). In file-copy mode every upgrade removes the files 1.x installed that the current kit no longer ships and backs them up first; no flag is needed. It only removes a file whose content matches a copy the kit shipped; a file you edited or replaced is listed as "kept (modified or not from the kit)" and left for you to review. `install.sh --prune` does something else: it also removes installed add-ons that you did not select (see [Flags](#flags)).
 
-The renamed and removed commands, agents and skills are listed in the CHANGELOG 2.0.0 entry, under [Migrating from 1.x](https://github.com/stasmarkov/sdd-kit/blob/v4.1.2/CHANGELOG.md#migrating-from-1x). Current lists: [skills](skills.md), [agents](agents.md).
+The renamed and removed commands, agents and skills are listed in the CHANGELOG 2.0.0 entry, under [Migrating from 1.x](https://github.com/stasmarkov/sdd-kit/blob/v4.2.0/CHANGELOG.md#migrating-from-1x). Current lists: [skills](skills.md), [agents](agents.md).
 
 If you used a moved agent (iOS, ops or design), add the add-on: `--stack=laravel,nextjs,ios --with=ops,design` or the matching `sdd-kit-*` plugins.
 
@@ -496,7 +489,7 @@ If you used a moved agent (iOS, ops or design), add the add-on: `--stack=laravel
 | `/plugin` → **Errors** tab | Plugin components that failed to load (plugin mode) |
 | `claude plugin validate <path>` | Manifest and frontmatter problems in a plugin directory |
 
-The hooks themselves are documented in [src/hooks/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.1.2/share/hooks/README.md).
+The hooks themselves are documented in [src/hooks/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.2.0/share/hooks/README.md).
 
 ## Uninstalling
 

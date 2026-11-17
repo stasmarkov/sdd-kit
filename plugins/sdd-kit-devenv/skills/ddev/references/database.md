@@ -21,30 +21,23 @@ ddev psql -c "SELECT 1"        # Execute single command
 
 ### Import Database
 ```bash
-# From SQL file
-ddev import-db < dump.sql
+ddev import-db --file=dump.sql
 ddev import-db --file=dump.sql.gz  # Compressed
-
-# From specific file
-ddev import-db --src=backups/prod-2024-01-01.sql
+ddev import-db --file=backups/prod-2024-01-01.sql
 
 # Into specific database
-ddev import-db --database=other_db < dump.sql
+ddev import-db --database=other_db --file=dump.sql
 ```
 
 ### Export Database
 ```bash
-# To stdout (pipe to file)
-ddev export-db > backup.sql
+ddev export-db --file=backup.sql.gz            # Gzip by default
 
-# Compressed
-ddev export-db --gzip > backup.sql.gz
+# Uncompressed
+ddev export-db --gzip=false --file=backup.sql
 
 # Specific database
-ddev export-db --database=other_db > other.sql
-
-# With specific tables only
-ddev export-db --tables=users,orders > partial.sql
+ddev export-db --database=other_db --file=other.sql.gz
 ```
 
 ## Snapshots
@@ -52,6 +45,8 @@ ddev export-db --tables=users,orders > partial.sql
 Snapshots are quick database backups stored locally.
 
 ### Create Snapshot
+Take a snapshot before a risky update (composer update, drush updb, drush cim, migrations).
+
 ```bash
 ddev snapshot                  # Auto-named with timestamp
 ddev snapshot --name=before-migration
@@ -65,9 +60,8 @@ ddev snapshot --list
 
 ### Restore Snapshot
 ```bash
-ddev snapshot restore          # Restore latest
-ddev snapshot restore --name=before-migration
-ddev snapshot restore --latest # Explicitly latest
+ddev snapshot restore --latest            # Restore latest
+ddev snapshot restore before-migration    # Restore by name: ddev snapshot restore <name>
 ```
 
 ### Delete Snapshots
@@ -164,7 +158,7 @@ https://your-project.ddev.site:8037
 ### Adminer
 Add as DDEV add-on:
 ```bash
-ddev get ddev/ddev-adminer
+ddev add-on get ddev/ddev-adminer
 ddev restart
 # Available at https://your-project.ddev.site:9999
 ```
@@ -218,7 +212,7 @@ iconv -f ISO-8859-1 -t UTF-8 dump.sql > dump-utf8.sql
 
 # For large files, increase timeout
 ddev config --web-timeout=600
-ddev import-db < large-dump.sql
+ddev import-db --file=large-dump.sql
 ```
 
 ### Connection Refused
