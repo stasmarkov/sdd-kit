@@ -7,6 +7,24 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [4.2.1] - 2026-11-18
+
+Review follow-ups to 4.2.0: the gate-fix report, the push guard and the owner-step handling lose their remaining edge cases.
+
+### Fixed
+
+- **F4**: gates that are unreachable because the manifest is untrusted or declined, or because the stack has no such gate, no longer appear in Environment issues with a meaningless command.
+- **F5**: the gate-fix loop records a cause per gate (`causes: [{ gate, cause, ownerAction }]`), so one environment cause no longer marks every failing gate in a repo as stuck.
+- **F6**: the subagent push guard blocks `(cd x && git push)`, `$(git push)`, backtick substitution and inline aliases whose value names push. A non-push alias whose later arguments contain the word push stays allowed.
+- **F9**: a Build task that reports `completed: false` with notes starting `owner-step:` is an owner step, not a failed task, so a run can reach SHIP. Every Build prompt of ship-feature, fix-bug and greenfield-build now asks for that exact marker, and the results carry an `ownerSteps` list.
+- **F13**: the "Run by hand" command comes only from the trusted gate plan, never from an agent report, and backticks in the report table are escaped.
+- **F16**: the stuck signature uses the repo, gate name and plan command, not LLM-written details, so the dedup holds across rounds.
+
+### Changed
+
+- **F21**: the test-first hook semantics (`strict`, `new`, `warn`) now live in the Drupal add-on docs; the core hooks README names only the variable.
+- **F22**: `NO_VCS_WRITES` is defined once in the runtime template and generated into every workflow.
+
 ## [4.2.0] - 2026-11-17
 
 Pilot fixes for a Drupal, DDEV, Jira and Bitbucket team: the adoption docs match the code, subagents stop committing and pushing, and a gate that cannot be fixed stops looping.

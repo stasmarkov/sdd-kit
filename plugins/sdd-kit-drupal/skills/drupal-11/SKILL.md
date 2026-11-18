@@ -345,7 +345,7 @@ final class OrderServiceTest extends KernelTestBase {
 }
 ```
 
-Use the `@group` annotation: PHPUnit 9.6 on Drupal 10.3 ignores the `#[Group]` attribute. List every module the test needs in `$modules`. The add-on's test-first hook blocks edits to Controller, Form, Service(s), Access and EventSubscriber classes until a test under the module's `tests/src` is named after the class or names it; Plugin and Entity classes only get a warning (`CLAUDE_SKIP_TEST_FIRST=1` bypasses it). Base classes, environment variables and run commands: `references/testing-patterns.md`.
+Use the `@group` annotation: PHPUnit 9.6 on Drupal 10.3 ignores the `#[Group]` attribute. List every module the test needs in `$modules`. The add-on's test-first hook guards Controller, Form, Service(s), Access and EventSubscriber classes, blocking or warning according to `SDD_KIT_TEST_FIRST` when no test under the module's `tests/src` is named after the class or names it; Plugin and Entity classes only get a warning (`CLAUDE_SKIP_TEST_FIRST=1` bypasses it). `SDD_KIT_TEST_FIRST` sets the mode: `new` (default) denies new classes and edits in modules that already have `tests/src`, `strict` denies every guarded edit without a test, `warn` never denies. Base classes, environment variables and run commands: `references/testing-patterns.md`.
 
 ## Gate setup
 

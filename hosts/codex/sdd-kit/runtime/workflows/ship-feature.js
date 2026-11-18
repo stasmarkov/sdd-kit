@@ -2407,58 +2407,100 @@ function contractSyncCommandFor(reported) {
 const isNotRunGate = (g) => [NOT_RUN_UNTRUSTED, NOT_RUN_DECLINED, NOT_RUN_NO_GATE].some((s) => String(g.details || '').startsWith(s))
 const isFixableGate = (g) => g.status === 'fail' && !isNotRunGate(g)
 
-// What a gate-fix agent returns: the files it changed, why the gate fails, and what the owner does about it.
+// What a gate-fix agent returns: the files it changed (shared by the round) and, per failing gate, why it fails
+// and what the owner does about it.
+const GATE_CAUSES = ['code', 'environment', 'pre-existing', 'unknown']
+// Shared by every prompt that edits code: workflows leave version control to the owner.
+const NO_VCS_WRITES = 'Do not commit, push, merge, tag or open a pull request. If a task asks for one of these, leave it undone and report it as an owner step.'
+
+/** How a Build agent reports an owner step so isOwnerStep can recognise it; follows NO_VCS_WRITES in Build prompts. */
+const OWNER_STEP_NOTE = 'When you leave a task undone as an owner step, return completed=false and start notes with "owner-step:" followed by what the owner must do.'
+
 const GATE_FIX_SCHEMA = {
   type: 'object',
-  required: ['changedFiles', 'cause'],
+  required: ['changedFiles', 'causes'],
   properties: {
     changedFiles: { type: 'array', items: { type: 'string' } },
-    cause: { type: 'string', enum: ['code', 'environment', 'pre-existing', 'unknown'] },
-    ownerAction: { type: 'string' },
+    causes: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['gate', 'cause'],
+        properties: {
+          gate: { type: 'string' },
+          cause: { type: 'string', enum: GATE_CAUSES },
+          ownerAction: { type: 'string' },
+        },
+      },
+    },
   },
 }
 
-const GATE_FIX_PROMPT_TAIL = 'Return changedFiles (every file you changed; an empty list when you changed none), cause (code when the failure is in this repo\'s code and you fixed it; environment when the tooling, dependencies, services or container cannot run the gate; pre-existing when the failure predates this run; unknown otherwise) and ownerAction (what the owner does by hand, empty for a fixed code failure).'
+const GATE_FIX_PROMPT_TAIL = 'Return changedFiles (every file you changed; an empty list when you changed none) and causes: one entry for each failing gate listed above, with gate (its name exactly as listed), cause (code when the failure is in this repo\'s code and you fixed it; environment when the tooling, dependencies, services or container cannot run the gate; pre-existing when the failure predates this run; unknown otherwise) and ownerAction (what the owner does by hand, empty for a fixed code failure).'
 
 /**
- * Identity of a failing gate across fix rounds: its name plus the first output line that names an error
- * (a tool banner is skipped), or the first non-empty line when none does; 160 characters at most.
- * @param {{name: string, details?: string}} gate
- * @returns {string}
+ * Identity of a failing gate across fix rounds: repo, gate name and the trusted plan command. Agent-written
+ * details never enter it, so a gate whose output text changes between rounds is still recognised.
+ * @param {{name: string, repo?: string}} gate
+ * @param {Map<string, string>} [planCommands] gatePlanKey to plan command
+ * @returns {string} `<repo>::<name>::<command>`; the command is empty when the plan has none
  */
-function gateSignature(gate) {
-  const lines = String((gate && gate.details) || '').split('\n').map((l) => l.trim()).filter(Boolean)
-  const first = lines.find((l) => /error|fail|exception|fatal/i.test(l)) || lines[0] || ''
-  return `${gate && gate.name}: ${first.slice(0, 160)}`
+function gateSignature(gate, planCommands = GATE_PLAN_COMMANDS) {
+  const repo = (gate && gate.repo) || ''
+  const name = (gate && gate.name) || ''
+  return `${repo}::${name}::${planCommands.get(gatePlanKey(repo, name)) || ''}`
 }
 
 /**
- * Whether a fix round got nowhere: no result, an invalid one, no changed file, or a cause the agent cannot fix.
- * A cause of unknown with changed files is not stuck.
- * @param {*} result the gate-fix agent's reply
+ * Whether a Build agent's reply hands the task to the owner: not completed, and the notes start with the
+ * marker "owner-step:" (any case). A note that only mentions the word, such as a negation, does not count.
+ * Such a task is an owner step, not a failure.
+ * @param {*} result the build agent's reply
  * @returns {boolean}
  */
-function gateFixStuck(result) {
-  if (!result || !Array.isArray(result.changedFiles) || !GATE_FIX_SCHEMA.properties.cause.enum.includes(result.cause)) return true
-  return result.changedFiles.length === 0 || result.cause === 'environment' || result.cause === 'pre-existing'
+function isOwnerStep(result) {
+  return !!result && result.completed === false && /^\s*owner-step:/i.test(String(result.notes || ''))
+}
+
+/** The first entry of a fix reply's causes for the named gate, or undefined. */
+const gateFixEntry = (result, gateName) =>
+  result && Array.isArray(result.causes) ? result.causes.find((c) => c && c.gate === gateName) : undefined
+
+/**
+ * Whether a fix round got nowhere for one gate: no result, an invalid one, no changed file, no valid entry
+ * for the gate, or a cause the agent cannot fix. A cause of code or unknown with changed files is not stuck.
+ * @param {*} result the gate-fix agent's reply
+ * @param {string} gateName
+ * @returns {boolean}
+ */
+function gateFixStuck(result, gateName) {
+  if (!result || !Array.isArray(result.changedFiles)) return true
+  const entry = gateFixEntry(result, gateName)
+  if (!entry || !GATE_CAUSES.includes(entry.cause)) return true
+  return result.changedFiles.length === 0 || entry.cause === 'environment' || entry.cause === 'pre-existing'
 }
 
 /**
- * Records the failing gates a fix round left stuck, with the owner action the agent reported.
+ * Records, gate by gate, the failing gates a fix round left stuck, with the owner action reported for each.
  * @param {Map<string, string>} stuck signature to owner action, updated in place
  * @param {object[]} failing the gates that round was asked to fix
  * @param {*} result the gate-fix agent's reply
- * @returns {boolean} whether the round was stuck
+ * @param {Map<string, string>} [planCommands] gatePlanKey to plan command
+ * @returns {boolean} whether any gate was left stuck
  */
-function recordGateFix(stuck, failing, result) {
-  if (!gateFixStuck(result)) return false
-  const action = result && typeof result.ownerAction === 'string' ? result.ownerAction : ''
-  failing.forEach((g) => stuck.set(gateSignature(g), action))
-  return true
+function recordGateFix(stuck, failing, result, planCommands = GATE_PLAN_COMMANDS) {
+  let any = false
+  for (const g of failing) {
+    if (!gateFixStuck(result, g.name)) continue
+    const entry = gateFixEntry(result, g.name)
+    stuck.set(gateSignature(g, planCommands), entry && typeof entry.ownerAction === 'string' ? entry.ownerAction : '')
+    any = true
+  }
+  return any
 }
 
 /** The failing gates a fix agent may still be sent: fixable and not recorded as stuck. */
-const gatesToFix = (gates, stuck) => gates.filter((g) => isFixableGate(g) && !stuck.has(gateSignature(g)))
+const gatesToFix = (gates, stuck, planCommands = GATE_PLAN_COMMANDS) => gates.filter((g) => isFixableGate(g) && !stuck.has(gateSignature(g, planCommands)))
 
 /**
  * Whether a gate-fix round changed no file in any repo, so re-running the gates would repeat the same result.
@@ -2468,28 +2510,36 @@ const gatesToFix = (gates, stuck) => gates.filter((g) => isFixableGate(g) && !st
  */
 const gateRoundIdle = (replies) => replies.length > 0 && replies.every((r) => r && Array.isArray(r.changedFiles) && r.changedFiles.length === 0)
 
+/** Plan commands of the gates run so far, by gatePlanKey. */
+const GATE_PLAN_COMMANDS = new Map()
+const gatePlanKey = (repo, name) => `${repo}\u0000${name}`
+
 /**
  * The gates the owner must act on: every unreachable gate and every failing gate a fix round left stuck.
  * Gates that were never run (untrusted, declined, no allowlisted gate) are left out: /stack-trust, not a hand run, resolves them.
- * @returns {{gate: string, command: string, ownerAction: string}[]}
+ * The command comes only from the trusted gate plan, looked up by repo and gate name; a command the agent reported is ignored.
+ * @param {object[]} gates the gates of every repo, each with its repo path
+ * @param {Map<string, string>} stuck signature to owner action
+ * @param {Map<string, string>} [planCommands] gatePlanKey to plan command
+ * @returns {{gate: string, command: string, ownerAction: string}[]} command is '' when the plan has none
  */
-function environmentIssues(gates, stuck) {
+function environmentIssues(gates, stuck, planCommands = GATE_PLAN_COMMANDS) {
   return gates
-    .filter((g) => (g.status === 'unreachable' && !isNotRunGate(g)) || (g.status === 'fail' && stuck.has(gateSignature(g))))
+    .filter((g) => (g.status === 'unreachable' && !isNotRunGate(g)) || (g.status === 'fail' && stuck.has(gateSignature(g, planCommands))))
     .map((g) => ({
       gate: g.name,
-      command: g.command || '(see the gate output)',
-      ownerAction: stuck.get(gateSignature(g)) || String(g.details || '').split('\n').map((l) => l.trim()).find(Boolean) || 'check the environment and re-run the gate',
+      command: planCommands.get(gatePlanKey(g.repo, g.name)) || '',
+      ownerAction: stuck.get(gateSignature(g, planCommands)) || String(g.details || '').split('\n').map((l) => l.trim()).find(Boolean) || 'check the environment and re-run the gate',
     }))
 }
 
 /** Report text for the environment issues: an "Environment issues" table and the Next line entries; '' when there are none. */
 function environmentReportText(issues) {
   if (!issues.length) return ''
-  const cell = (v) => String(v).replace(/\|/g, '\\|').replace(/\s+/g, ' ')
-  const rows = issues.map((i) => `| ${cell(i.gate)} | \`${cell(i.command)}\` | ${cell(i.ownerAction)} |`)
+  const cell = (v) => String(v).replace(/`/g, "'").replace(/\|/g, '\\|').replace(/\s+/g, ' ')
+  const rows = issues.map((i) => `| ${cell(i.gate)} | ${i.command ? `\`${cell(i.command)}\`` : '(no command; see the gate output)'} | ${cell(i.ownerAction)} |`)
   const table = ['Environment issues (gates the fix loop could not act on):', '| Gate | Command | Owner action |', '| --- | --- | --- |', ...rows].join('\n')
-  return `${table}\nPut this table in the report under "Environment issues" and end the Next line with: ${issues.map((i) => `Run by hand: ${i.command}`).join('; ')}`
+  return `${table}\nPut this table in the report under "Environment issues" and end the Next line with: ${issues.filter((i) => i.command).map((i) => `Run by hand: ${i.command}`).join('; ')}`
 }
 
 /**
@@ -2562,6 +2612,9 @@ function gatePlanFor(repo) {
 
 /**
  * Runs one repo's gates through an agent, resolving skipped and untrusted gates in the script.
+ * Side effect: records each gate's trusted plan command in GATE_PLAN_COMMANDS, keyed by repo.path, which
+ * gateSignature, recordGateFix, gatesToFix and environmentIssues read; the returned `repo` is repo.path
+ * (never the agent's text) so those lookups match.
  * @param {object} repo the detected repo (path, stack, gateCommands, unlessMatched)
  * @param {(repo: object) => string} instructionsFor builds the gate prompt for the gates that remain
  * @param {object} runOpts options for runAgent
@@ -2576,20 +2629,20 @@ async function runRepoGates(repo, instructionsFor, runOpts) {
   const wrapper = execWrapperFor(repo)
   const wrapped = new Set(plan.run.filter((g) => g.wrapped).map((g) => g.name))
   const commands = new Map(plan.run.map((g) => [g.name, g.command]))
+  commands.forEach((command, name) => GATE_PLAN_COMMANDS.set(gatePlanKey(repo.path, name), command))
   const reported = (result.gates || []).map((g) => {
-    // Only a gate the owner may have to re-run by hand carries its command.
-    const withCommand = g && (g.status === 'fail' || g.status === 'unreachable') && commands.has(g.name) ? { ...g, command: commands.get(g.name) } : g
+    // A failing or unreachable gate also carries its trusted command on the gate itself.
+    const { command: _agentCommand, ...own } = g || {}
+    const withCommand = g && (g.status === 'fail' || g.status === 'unreachable') && commands.has(g.name) ? { ...own, command: commands.get(g.name) } : own
     if (!wrapped.has(g && g.name)) return withCommand
     const details = mapContainerPaths(String(g.details || ''), wrapper)
     if (details.includes(wrapper.command)) return details === String(g.details || '') ? withCommand : { ...withCommand, details }
     return { ...withCommand, details: `${details ? `${details} ` : ''}(via ${wrapper.command})` }
   })
-  return { ...result, gates: [...reported, ...plan.fixed] }
+  return { ...result, repo: repo.path, gates: [...reported, ...plan.fixed] }
 }
 // --- registry: end ---
 
-// Shared by every prompt that edits code: workflows leave version control to the owner.
-const NO_VCS_WRITES = 'Do not commit, push, merge, tag or open a pull request. If a task asks for one of these, leave it undone and report it as an owner step.'
 
 const MODELS = phaseModels({
   detect: 'standard',
@@ -3848,6 +3901,7 @@ if (prepareTargets.length) {
 // --- Build (serial; right specialist + repo per task; budget-guarded) ----
 const built = []
 const failedTasks = []
+const ownerSteps = []
 async function buildTasks(list) {
   for (const task of list) {
     if (budget.total && budget.remaining() < 80_000) {
@@ -3879,12 +3933,13 @@ Conventions: ${(repo.conventions || invConventions).join('; ') || 'match surroun
 Skills to consult: ${skillNamesFor(repo.stack).join(', ') || '(none declared)'}
 Standards: no changelog/AI-marker comments, lowercase doc filenames, match surrounding style.
 ${specTrackNote}
-${NO_VCS_WRITES} When a task asks for one, set completed=false and put owner-step in notes.
+${NO_VCS_WRITES} ${OWNER_STEP_NOTE}
 Set completed=true only if the task is fully done with a passing test. Return what you changed (full repo-relative paths).`,
       { label: `build:t${task.id}`, phase: 'Build', schema: BUILD_SCHEMA, agentType: agentForStack(task.stack), ...MODELS.build }
     )
     if (result) recordChanged(repo, result.changedFiles)
     if (result && result.completed !== false) built.push({ id: task.id, ...result })
+    else if (isOwnerStep(result)) ownerSteps.push({ id: task.id, title: task.title, note: String(result.notes).slice(0, 300) })
     else failedTasks.push(task.id)
   }
 }
@@ -4018,7 +4073,7 @@ Quality attributes: ${JSON.stringify(nfrs)}
 ${scopeNote}Tasks: ${JSON.stringify(tasks.map((t) => ({ id: t.id, title: t.title, covers: t.covers || [] })))}
 Built so far: ${JSON.stringify(built.map((b) => ({ id: b.id, summary: b.summary, changedFiles: b.changedFiles })))}
 Incomplete tasks: ${JSON.stringify(failedTasks)}
-Gate status: ${gates.allPassed ? 'green' : 'NOT green'}
+${ownerSteps.length ? `Owner steps (the owner does these by hand; not gaps): ${JSON.stringify(ownerSteps.map((o) => o.id))}\n` : ''}Gate status: ${gates.allPassed ? 'green' : 'NOT green'}
 ${priorGaps.length ? `Gaps raised in earlier rounds, already tasks in tasks.md: ${JSON.stringify(priorGaps.map((g) => `${g.id}. ${g.title}`))}. Do not report one of them again under a new title; report only work that is still missing.\n` : ''}${awaitingOwner ? `Out of scope: tasks ${ownerCut.join(', ')} wait for the owner gate "${awaitingOwner}". Do not report their work as gaps.\n` : ''}Never add a gap titled "Gate:" and never write a "Gate:" task: only the owner adds an owner gate.\n${manualTasks.length ? `Manual tasks ${manualTasks.map((t) => t.id).join(', ')} are a person's steps for the manual test plan; do not report them as gaps.\n` : ''}
 Read the changed code and its tests. For every AC: is it implemented AND covered by a test (or a manual-test step)? For every MNC: is there a guard proving the behavior is unchanged? For every NFR: is the requirement met and proven by a test or a recorded measurement against its target? For every task: is its Verify criterion actually met? Anything missing, half-done, or untested is a gap.
 Report only concrete gaps grounded in the code (not style preferences, not scope creep beyond the spec). Each gap: title, reason (what is missing, with file evidence), stack, files, approach, verify, covers (AC/MNC/NFR ids), and kind: "manual" when only a person or a live external system can check it (a real device, a real third-party account, production data), otherwise "code".
@@ -4096,12 +4151,14 @@ if (convergeStop === 'cap') {
   const last = convergeLog[convergeLog.length - 1]
   const builtIds = new Set(built.map((b) => b.id))
   last.builtNotReaudited = last.gaps.filter((g) => builtIds.has(g.id)).map((g) => g.id)
-  last.failed = last.gaps.filter((g) => !builtIds.has(g.id)).map((g) => g.id)
+  const ownerIds = new Set(ownerSteps.map((o) => o.id))
+  last.failed = last.gaps.filter((g) => !builtIds.has(g.id) && !ownerIds.has(g.id)).map((g) => g.id)
   log(`Converge: round ${convergeRound} gap task(s) ${last.builtNotReaudited.join(', ') || 'none'} built, not re-audited${last.failed.length ? `; ${last.failed.join(', ')} failed to build` : ''}`)
 }
 log(`Converge: stopped (${convergeStop}) after ${convergeRound} round(s)`)
 const convergeResult = { rounds: convergeRound, stopReason: convergeStop, log: convergeLog }
-const partialBuild = built.length !== tasks.length - remainingGaps.length
+// A run that built nothing is partial even when every task is an owner step: no code changed to ship.
+const partialBuild = built.length + ownerSteps.length !== tasks.length - remainingGaps.length || (tasks.length > 0 && built.length === 0)
 
 // --- Visual (Playwright MCP; only when UI changed) ----------------------
 phase('Visual')
@@ -4466,7 +4523,7 @@ const reportDocs = docs && { updated: docs.updatedDocs || [], created: docs.newD
 const reportTestPlan = testPlan && { path: testPlan.path || null, steps: (testPlan.steps || []).length }
 const reportCost = costTable(costResult(RUN_COST))
 const report = await runAgent(
-  `Write a concise markdown ship report. Sections: Summary, Stack & repos (flag any untracked/WIP repo; name the branch each repo is on from Branches, and the branch it left when Prepare switched; add a "Stack overlay" line: ${stackOverlayLine(stackOverlay, untrustedManifests)}), Spec (id + folder), Investigation highlights (key files, risks, pieces already shipped), Tasks completed (note any incomplete: ${failedTasks.join(', ') || 'none'}), Converge (rounds run and the stop reason; gap tasks appended per round; the last round's gaps built but not re-audited, and any that failed to build; manual gaps sent to the manual test plan; gaps left unbuilt), Quality gates per repo (pass/fail/skip/unreachable), Visual tests, Acceptance (did the ORIGINAL reported scenario resolve end-to-end? list any broken hop; the E2E regression test written, its AC ids, and whether it passed or could not run), Confirmed review findings (grouped by severity, by id, file:line and title, each marked fixed or remaining as in its status; remaining minor findings are listed and do not block SHIP), Fix (rounds run, the stop reason, the ids fixed and the ids remaining), Documentation updated, Manual test plan (where it was written + a one-line how-to-run), Cost (the per-phase table under Cost below, as given; tokens: n/a means the run had no token budget, and the Report agent itself is not in it), Recommendation (one of SHIP / FIX-FIRST / BLOCKED; this run's recommendation is ${recommendationHint}, computed from the facts below: state it as is, with the reasons). End with a "Next" line: when the recommendation is SHIP, "Next: /open-pr --spec=${specName || '<spec id>'} --report=<reportPath>"; otherwise the first fix to make.${trustNext ? ` An untrusted stack manifest means its gates did not run: the recommendation is BLOCKED and the Next line is exactly "${trustNext}"` : ''}
+  `Write a concise markdown ship report. Sections: Summary, Stack & repos (flag any untracked/WIP repo; name the branch each repo is on from Branches, and the branch it left when Prepare switched; add a "Stack overlay" line: ${stackOverlayLine(stackOverlay, untrustedManifests)}), Spec (id + folder), Investigation highlights (key files, risks, pieces already shipped), Tasks completed (note any incomplete: ${failedTasks.join(', ') || 'none'}), Owner steps (${ownerSteps.length ? 'list each task id, title and note: the owner does these by hand; they are not failures and do not lower the recommendation' : 'omit when there are none'}), Converge (rounds run and the stop reason; gap tasks appended per round; the last round's gaps built but not re-audited, and any that failed to build; manual gaps sent to the manual test plan; gaps left unbuilt), Quality gates per repo (pass/fail/skip/unreachable), Visual tests, Acceptance (did the ORIGINAL reported scenario resolve end-to-end? list any broken hop; the E2E regression test written, its AC ids, and whether it passed or could not run), Confirmed review findings (grouped by severity, by id, file:line and title, each marked fixed or remaining as in its status; remaining minor findings are listed and do not block SHIP), Fix (rounds run, the stop reason, the ids fixed and the ids remaining), Documentation updated, Manual test plan (where it was written + a one-line how-to-run), Cost (the per-phase table under Cost below, as given; tokens: n/a means the run had no token budget, and the Report agent itself is not in it), Recommendation (one of SHIP / FIX-FIRST / BLOCKED; this run's recommendation is ${recommendationHint}, computed from the facts below: state it as is, with the reasons). End with a "Next" line: when the recommendation is SHIP, "Next: /open-pr --spec=${specName || '<spec id>'} --report=<reportPath>"; otherwise the first fix to make.${trustNext ? ` An untrusted stack manifest means its gates did not run: the recommendation is BLOCKED and the Next line is exactly "${trustNext}"` : ''}
 Save the report: in the repo at "${reportRepo}", mkdir -p .ai/reports and write it to .ai/reports/ship-${reportSlug}-$(date +%Y%m%d-%H%M).md${reportSlug !== '<slug>' ? '' : ' (<slug> = 2-5 lowercase-hyphenated words naming the feature)'}, taking the timestamp from the shell, never inventing it. Lowercase filename, written as a human maintainer, no AI-marker comments. Write the file after every other section is final, so its modification time is later than the gate runs it records. Return reportPath (the path relative to the current directory, the same path the Next line names) and markdown (the full report).
 Feature: ${specLabel}
 Stack: ${JSON.stringify(repos.map((r) => ({ role: r.role, stack: r.stack, tracked: r.tracked })))}
@@ -4474,7 +4531,7 @@ Repo warnings: ${JSON.stringify(repoWarnings)}
 Branches: ${JSON.stringify(branches)}
 Stack overlay: ${JSON.stringify({ ...stackOverlay, untrusted: untrustedManifests })}
 Spec: ${JSON.stringify({ specId, specFolder })}
-Build: ${built.length}/${tasks.length} (incomplete: ${JSON.stringify(failedTasks)})${awaitingOwner ? `\nAwaiting owner: ${awaitingOwner} (tasks ${ownerCut.join(', ')} not built; say so under Tasks completed, and give the resume call: ${resume} (file-copy install: name "ship-feature"))` : ''}${manualTasks.length ? `\nManual tasks: ${manualTasks.map((t) => `${t.id}. ${t.title}`).join('; ')} (not built and not incomplete; under Manual test plan, name the ids to tick after the steps pass)` : ''}
+Build: ${built.length}/${tasks.length} (incomplete: ${JSON.stringify(failedTasks)})${ownerSteps.length ? `\nOwner steps: ${JSON.stringify(ownerSteps)}` : ''}${awaitingOwner ? `\nAwaiting owner: ${awaitingOwner} (tasks ${ownerCut.join(', ')} not built; say so under Tasks completed, and give the resume call: ${resume} (file-copy install: name "ship-feature"))` : ''}${manualTasks.length ? `\nManual tasks: ${manualTasks.map((t) => `${t.id}. ${t.title}`).join('; ')} (not built and not incomplete; under Manual test plan, name the ids to tick after the steps pass)` : ''}
 Converge: ${JSON.stringify({ ...convergeResult, remainingGaps: remainingGaps.map((g) => `${g.id}. ${g.title}`) })}
 Investigation: ${JSON.stringify({ relevantFiles: invFiles.slice(0, 12), risks: invRisks, existingImplementation: existingImpl })}
 Gates: ${JSON.stringify(gates.allGates)}
@@ -4506,6 +4563,7 @@ return {
   built: built.length,
   partialBuild,
   failedTasks,
+  ownerSteps,
   awaitingOwner,
   notBuilt: ownerCut,
   resume,

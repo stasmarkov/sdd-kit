@@ -4,7 +4,7 @@ What to type for each kind of work in SDD Kit, and what you get back.
 
 See the routes used on one project in the [Hireboard worked example](../examples/job-board/README.md).
 
-Start with `/sdd` unless you already know you want a specific skill. It classifies the request, confirms the route with you, collects every input up front, and launches one fixed pipeline. The route tree itself is in the [README](https://github.com/stasmarkov/sdd-kit/blob/v4.2.0/README.md); this page shows each route in practice.
+Start with `/sdd` unless you already know you want a specific skill. It classifies the request, confirms the route with you, collects every input up front, and launches one fixed pipeline. The route tree itself is in the [README](https://github.com/stasmarkov/sdd-kit/blob/v4.2.1/README.md); this page shows each route in practice.
 
 Skill names below are bare (`/sdd`, `/write-spec`). In plugin mode they are namespaced: `/sdd-kit:sdd`, `/sdd-kit-ops:deploy`. The full lists are in [skill index](skills.md) and [agent index](agents.md).
 
@@ -156,7 +156,7 @@ Verdict:
 
 **You get:** a scaffold with CI, one working slice, and handoff docs: `getting-started.md`, `architecture.md` (a lightweight ADR), and `manual-test.md`. The slice is marked `shipped` in `backlog.md` and the next slices are added to it. Verdict: `SHIP-SLICE`, `FIX-FIRST`, or `BLOCKED` (target was not empty). Build later slices with their `Run:` line (scenario 1). Feedback from a demo or sprint review goes back into the backlog with `/product-brief --intake "<notes>"`.
 
-Supported stacks come from the registry in [src/workflows/lib/stacks.js](https://github.com/stasmarkov/sdd-kit/blob/v4.2.0/plugins/sdd-kit/workflows/lib/stacks.js).
+Supported stacks come from the registry in [src/workflows/lib/stacks.js](https://github.com/stasmarkov/sdd-kit/blob/v4.2.1/plugins/sdd-kit/workflows/lib/stacks.js).
 
 ## 6. Small change
 
@@ -345,7 +345,7 @@ Layout, the parent-folder `CLAUDE.md`, contract rules, and merge order: [multi-r
 
 **When:** you want a full adversarially validated review of an existing codebase without sitting in a session.
 
-The pipeline runs `claude -p` from a plain terminal (not from inside Claude Code). Setup, configuration, and phases: [scripts/review/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.2.0/plugins/sdd-kit/scripts/review/README.md).
+The pipeline runs `claude -p` from a plain terminal (not from inside Claude Code). Setup, configuration, and phases: [scripts/review/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.2.1/plugins/sdd-kit/scripts/review/README.md).
 
 ## 13. Add-ons: ops and design
 
@@ -434,7 +434,7 @@ There are three ways to start a background workflow:
 
 1. **`/sdd`** (preferred). It confirms the route, collects inputs, and never builds an unapproved spec.
 2. **Plain English containing the word "workflow"**, e.g. "run the fix-bug workflow for the refund 500". Claude only launches a background workflow when you explicitly opt in like this.
-3. **A direct call**, `Workflow({ name: "sdd-kit:<name>", args })`. A file-copy install registers the bare name, so when the call fails with "not found", retry with the bare `<name>` ([workflow name rule](https://github.com/stasmarkov/sdd-kit/blob/v4.2.0/plugins/sdd-kit/skills/sdd/SKILL.md#workflow-names)). Each workflow is also runnable as a skill: `/ship-feature`, `/fix-bug`, `/qa-and-docs`, `/tech-research`, `/greenfield-build`, `/create-spec`, `/security-audit` (the audit workflow opens in guidance mode on hosts where it is also a skill).
+3. **A direct call**, `Workflow({ name: "sdd-kit:<name>", args })`. A file-copy install registers the bare name, so when the call fails with "not found", retry with the bare `<name>` ([workflow name rule](https://github.com/stasmarkov/sdd-kit/blob/v4.2.1/plugins/sdd-kit/skills/sdd/SKILL.md#workflow-names)). Each workflow is also runnable as a skill: `/ship-feature`, `/fix-bug`, `/qa-and-docs`, `/tech-research`, `/greenfield-build`, `/create-spec`, `/security-audit` (the audit workflow opens in guidance mode on hosts where it is also a skill).
 
 Watch running workflows with `/workflows`.
 

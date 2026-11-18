@@ -171,6 +171,19 @@ is_protected() {
     return 1
 }
 
+# Normalises the words in TOKENS in place: text up to a ( or a leading backtick and from a ) or backtick on
+# is dropped, so (cd x && git push), $(git push) and `git push` read as plain words. Both push guards use it.
+normalize_tokens() {
+    local k=0 word
+    while (( k < ${#TOKENS[@]} )); do
+        word=${TOKENS[k]}
+        word=${word%"${word##*[^\)\`]}"}
+        word=${word##*[\(\`]}
+        TOKENS[k]=${word%%[\)\`]*}
+        k=$((k + 1))
+    done
+}
+
 # Prints the branches a wildcard destination $3 (such as `*` from refs/heads/*) reaches among main,
 # master, the SDD_KIT_PROTECTED_BRANCHES entries, the local branches and the branches tracked from
 # remote $2 of the repository at $1.
@@ -191,6 +204,50 @@ glob_targets() {
     done
 }
 
+# Reads the git global options of OPT_WORDS starting at index $1 with directory $2. Sets GIT_I (the index of
+# the subcommand), GIT_BASE (the directory after any -C), GIT_CONFIGS (each -c / --config-env as key[=value])
+# and GIT_ALIAS (the lowercase name of an inline alias that can push, else empty). Both push guards use it.
+# An alias can push when its value names push as a word, or when its value cannot be read (--config-env, or
+# empty). Only the alias value counts: a non-push alias whose later arguments contain the word push is allowed.
+scan_git_options() {
+    local i=$1 cfg key value words tok
+    GIT_BASE=$2 GIT_ALIAS='' GIT_CONFIGS=()
+    local n=${#OPT_WORDS[@]}
+    while (( i < n )); do
+        tok=${OPT_WORDS[i]}
+        cfg=''
+        case "$tok" in
+            -C) GIT_BASE=$(resolve_dir "$GIT_BASE" "${OPT_WORDS[i + 1]:-.}"); i=$((i + 2)) ;;
+            -c) cfg=${OPT_WORDS[i + 1]:-}; i=$((i + 2)) ;;
+            -c?*) cfg=${tok#-c}; i=$((i + 1)) ;;
+            # --config-env names an environment variable the hook cannot read, so only its key is kept.
+            --config-env) cfg=${OPT_WORDS[i + 1]%%=*}; i=$((i + 2)) ;;
+            --config-env=*) tok=${tok#--config-env=}; cfg=${tok%%=*}; i=$((i + 1)) ;;
+            --git-dir|--work-tree|--namespace|--super-prefix|--attr-source) i=$((i + 2)) ;;
+            -*) i=$((i + 1)) ;;
+            *) break ;;
+        esac
+        if [[ -n "$cfg" ]]; then
+            GIT_CONFIGS+=("$cfg")
+            key=$(printf '%s' "${cfg%%=*}" | tr '[:upper:]' '[:lower:]')
+            if [[ "$key" == alias.* ]]; then
+                value=${cfg#*=}
+                # The word splitter splits a quoted value such as '-C x push', so a value that starts with an
+                # option continues in the words up to the alias name.
+                if [[ "$value" == -* ]]; then
+                    local k=$i
+                    while (( k < n )) && [[ "${OPT_WORDS[k]}" != "${key#alias.}" ]]; do value+=" ${OPT_WORDS[k]}"; k=$((k + 1)); done
+                fi
+                words=" ${value//[\'\"\;\(\)\!\{\}]/ } "
+                if [[ "$cfg" != *=* || -z "$value" || "$words" == *" push "* ]]; then
+                    GIT_ALIAS=${key#alias.}
+                fi
+            fi
+        fi
+    done
+    GIT_I=$i
+}
+
 # Prints the protected branch that the git command in TOKENS (its words after `git` start at index $1)
 # would force-push to, and nothing for any other command. $2 is the directory the command runs in.
 # A command running an inline alias that can push prints `alias:<name>` instead: the alias expansion,
@@ -199,19 +256,10 @@ forced_push_target() {
     local i=$1 base=$2 n=${#TOKENS[@]} tok j force='' all='' value_next='' options_done='' remote='' ref rforce dst
     local cfg key value matching='' alias_name=''
     local refs=() dests=() configs=()
-    while (( i < n )); do
-        tok=${TOKENS[i]}
-        case "$tok" in
-            -C) base=$(resolve_dir "$base" "${TOKENS[i + 1]:-.}"); i=$((i + 2)) ;;
-            -c) configs+=("${TOKENS[i + 1]:-}"); i=$((i + 2)) ;;
-            # --config-env names an environment variable the hook cannot read, so only its key is kept.
-            --config-env) configs+=("${TOKENS[i + 1]%%=*}"); i=$((i + 2)) ;;
-            --config-env=*) tok=${tok#--config-env=}; configs+=("${tok%%=*}"); i=$((i + 1)) ;;
-            --git-dir|--work-tree|--namespace|--super-prefix|--attr-source) i=$((i + 2)) ;;
-            -*) i=$((i + 1)) ;;
-            *) break ;;
-        esac
-    done
+    OPT_WORDS=("${TOKENS[@]}")
+    scan_git_options "$i" "$base"
+    i=$GIT_I base=$GIT_BASE alias_name=$GIT_ALIAS
+    configs=(${GIT_CONFIGS[@]+"${GIT_CONFIGS[@]}"})
     # A value that is unknown counts as the widest one: matching mode, or an alias that pushes.
     for cfg in ${configs[@]+"${configs[@]}"}; do
         key=$(printf '%s' "${cfg%%=*}" | tr '[:upper:]' '[:lower:]')
@@ -226,11 +274,6 @@ forced_push_target() {
                 fi
                 ;;
             remote.*.push|remote.*.mirror) matching=1 ;;
-            alias.*)
-                case "$value" in
-                    push*|!*) alias_name=${key#alias.} ;;
-                esac
-                ;;
         esac
     done
     if [[ "${TOKENS[i]:-}" != push ]]; then
@@ -370,12 +413,7 @@ if printf '%s\n' "$PUSH_TEXT" | grep -qE 'git.*push.*[[:space:]](--for|--m|-[[:a
     while IFS= read -r SEGMENT; do
         TOKENS=()
         read -r -a TOKENS <<< "$SEGMENT" || true
-        K=0
-        while (( K < ${#TOKENS[@]} )); do
-            WORD=${TOKENS[K]##*[\(\`]}
-            TOKENS[K]=${WORD%%[\)\`]*}
-            K=$((K + 1))
-        done
+        normalize_tokens
         if [[ "${TOKENS[0]:-}" == cd ]]; then
             BASE_DIR=$(resolve_dir "$BASE_DIR" "${TOKENS[1]:-$HOME}")
             continue
@@ -411,28 +449,27 @@ if [[ -n "$AGENT_ID" && "${SDD_KIT_ALLOW_AGENT_PUSH:-}" != 1 ]] && printf '%s\n'
     while IFS= read -r SEGMENT; do
         TOKENS=()
         read -r -a TOKENS <<< "$SEGMENT" || true
+        # Option words are read raw, so an option value holding $(...) or backticks stays one option word;
+        # the normalised words only locate git and the subcommand.
+        RAW=(${TOKENS[@]+"${TOKENS[@]}"})
+        normalize_tokens
         K=0
         while (( K < ${#TOKENS[@]} )); do
-            WORD=${TOKENS[K]##*[\(\`]}
-            if [[ "${WORD##*/}" == git ]]; then
-                J=$((K + 1))
-                while (( J < ${#TOKENS[@]} )); do
-                    case "${TOKENS[J]}" in
-                        -c)
-                            # An inline alias that expands to push is a push.
-                            [[ "${TOKENS[J + 1]:-}" == alias.*=push* ]] && AGENT_PUSH=1
-                            J=$((J + 2)) ;;
-                        -C|--config-env|--git-dir|--work-tree|--namespace) J=$((J + 2)) ;;
-                        -*) J=$((J + 1)) ;;
-                        *) break ;;
-                    esac
-                done
-                PUSH_WORD=${TOKENS[J]:-}
-                PUSH_WORD=${PUSH_WORD%%[\)\`]*}
-                if [[ "$PUSH_WORD" == push ]]; then
+            if [[ "${TOKENS[K]##*/}" == git ]]; then
+                OPT_WORDS=(${RAW[@]+"${RAW[@]}"})
+                scan_git_options $((K + 1)) .
+                J=$GIT_I
+                if [[ -n "$GIT_ALIAS" ]]; then
                     AGENT_PUSH=1
                 fi
-                break
+                if [[ "${TOKENS[J]:-}" == push ]]; then
+                    AGENT_PUSH=1
+                fi
+                # A plain subcommand ends this git command; later git words are its arguments (a commit
+                # message). A computed subcommand, such as $(git push), leaves the rest to be scanned.
+                if [[ "${RAW[J]:-}" =~ ^[A-Za-z][A-Za-z0-9-]*$ ]]; then
+                    break
+                fi
             fi
             K=$((K + 1))
         done
