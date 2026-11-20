@@ -84,6 +84,10 @@ brs: [BR-30, BR-31]                    # product-brief rule ids the ACs enforce;
 ## Decisions *(when needed — otherwise decisions.md for M/L)*
 1. <!-- decision — rationale -->
 
+## Deviations *(written by ship-feature after a build)*
+<!-- Each Build assumption and each Converge gap task, as "- T<id>: <text>", or "none". Leave empty before the build.
+     Example items: "- T2: <Build assumption>", "- T5: <Converge gap task title>". -->
+
 ## Open questions
 <!-- Filled by the clarity gate. The spec cannot be approved while any item is unresolved.
      Resolve each by answering it (fold the answer into the spec) or accepting it as an assumption. -->

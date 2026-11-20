@@ -3,7 +3,7 @@
 
 iOS/Swift add-on: ios-mobile-dev agent, ios-native (with SwiftUI code templates in its assets) and swift-testing skills.
 
-- Version: 4.2.1
+- Version: 4.3.0
 - Keywords: ios, swift, swiftui
 
 ## Install
@@ -16,4 +16,4 @@ iOS/Swift add-on: ios-mobile-dev agent, ios-native (with SwiftUI code templates 
 ## Learn more
 
 - [Interactive guide](https://stasmarkov.github.io/sdd-kit/)
-- [Worked example: Hireboard](https://github.com/stasmarkov/sdd-kit/blob/v4.2.1/docs/examples/job-board/README.md)
+- [Worked example: Hireboard](https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/docs/examples/job-board/README.md)

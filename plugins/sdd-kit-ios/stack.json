@@ -44,6 +44,28 @@
   "sourceDirs": [
     "Sources/"
   ],
+  "testIntegrity": {
+    "testPaths": [
+      "Tests?/"
+    ],
+    "skipMarkers": [
+      "XCTSkip(",
+      "XCTSkipIf(",
+      "XCTSkipUnless("
+    ]
+  },
+  "security": {
+    "skills": [
+      "api-security"
+    ],
+    "riskPaths": [
+      "\\.entitlements$",
+      "(^|/)Info\\.plist$",
+      "(^|/)Keychain",
+      "(^|/)Podfile(\\.lock)?$",
+      "(^|/)Package\\.resolved$"
+    ]
+  },
   "visual": "simulator",
   "acceptance": "boot a simulator (xcrun simctl boot), install & launch the app, assert via a UI test or an xcrun simctl screenshot",
   "markers": [

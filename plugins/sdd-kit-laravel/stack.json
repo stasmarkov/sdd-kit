@@ -30,6 +30,12 @@
       "name": "Pest/PHPUnit",
       "command": "php artisan test",
       "kind": "test"
+    },
+    {
+      "name": "composer audit",
+      "command": "composer audit",
+      "kind": "security",
+      "requires": "composer.lock"
     }
   ],
   "debugPatterns": [
@@ -42,6 +48,40 @@
     "routes/",
     "database/"
   ],
+  "docImpact": {
+    "endpoint": [
+      "(^|/)routes/",
+      "(^|/)openapi[^/]*\\.(ya?ml|json)$"
+    ],
+    "schema": [
+      "(^|/)database/migrations/",
+      "\\.sql$"
+    ]
+  },
+  "testIntegrity": {
+    "testPaths": [
+      "^tests/"
+    ],
+    "skipMarkers": [
+      "->skip(",
+      "->only(",
+      "->todo(",
+      "markTestSkipped(",
+      "markTestIncomplete("
+    ]
+  },
+  "security": {
+    "skills": [
+      "api-security",
+      "oauth2-passport"
+    ],
+    "riskPaths": [
+      "(^|/)app/(Policies|Http/(Middleware|Controllers))/",
+      "(^|/)routes/",
+      "(^|/)config/(auth|sanctum|cors|session)\\.php$",
+      "(^|/)composer\\.(json|lock)$"
+    ]
+  },
   "acceptance": "exercise the API routes over HTTP (curl / php artisan test)",
   "execWrapper": {
     "when": ".ddev/config.yaml",

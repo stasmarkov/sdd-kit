@@ -1551,8 +1551,16 @@ window.CATALOG = {
           "detail": "Run the detected quality tooling per repo, auto-fix until green"
         },
         {
+          "title": "Review",
+          "detail": "Review the fix diff on correctness and security; every finding gets two verify votes; one fix round for confirmed critical or major findings, then gates and re-verify"
+        },
+        {
           "title": "Acceptance",
           "detail": "Trace the ORIGINAL reported scenario end-to-end; confirm the symptom is gone and Must-NOT-change behavior is identical"
+        },
+        {
+          "title": "Docs",
+          "detail": "Update the existing docs that describe the behavior the fix changed; skipped when none does"
         },
         {
           "title": "Report",
@@ -1590,12 +1598,20 @@ window.CATALOG = {
           "detail": "Assert the scaffold builds and the slice passes the tooling"
         },
         {
+          "title": "Review",
+          "detail": "Review the slice diff on correctness and security; every finding gets two verify votes"
+        },
+        {
           "title": "Acceptance",
           "detail": "Trace the first-slice journey end-to-end"
         },
         {
           "title": "Handoff",
-          "detail": "getting-started.md, architecture.md (ADR), manual-test.md"
+          "detail": "docs/getting-started.md, docs/context/architecture.md, docs/adr/ (one ADR)"
+        },
+        {
+          "title": "TestPlan",
+          "detail": "Write copy-paste manual QA steps for the first slice and check them against the brief rules"
         },
         {
           "title": "Report",
@@ -1703,6 +1719,14 @@ window.CATALOG = {
           "detail": "Decompose into ordered tasks and persist to .ai/specs"
         },
         {
+          "title": "Rules",
+          "detail": "Load the business rules the spec cites, read-only"
+        },
+        {
+          "title": "Clarify",
+          "detail": "Fresh-context clarity gate on an inline spec; unanswered questions keep it draft"
+        },
+        {
           "title": "Prepare",
           "detail": "Leave a protected branch for a feature branch per repo and mark an approved spec in progress"
         },
@@ -1741,6 +1765,10 @@ window.CATALOG = {
         {
           "title": "TestPlan",
           "detail": "Write copy-paste manual QA steps for a human to verify"
+        },
+        {
+          "title": "Close",
+          "detail": "Set the spec done and the backlog slice shipped when the run is shippable, fill the Traceability cells"
         },
         {
           "title": "Report",

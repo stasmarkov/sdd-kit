@@ -8,6 +8,18 @@
     "name": "general-purpose"
   },
   "conventions": [],
+  "docImpact": {
+    "endpoint": [
+      "(^|/)routes?/",
+      "(^|/)openapi[^/]*\\.(ya?ml|json)$",
+      "(^|/)swagger[^/]*\\.(ya?ml|json)$"
+    ],
+    "schema": [
+      "(^|/)migrations?/",
+      "\\.sql$",
+      "(^|/)schema\\.[^/]+$"
+    ]
+  },
   "gates": [],
   "gateTemplates": [
     {

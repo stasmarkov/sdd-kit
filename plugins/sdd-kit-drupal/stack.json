@@ -119,6 +119,12 @@
         ],
         "vendor/bin/phpunit"
       ]
+    },
+    {
+      "name": "composer audit",
+      "command": "composer audit",
+      "kind": "security",
+      "requires": "composer.lock"
     }
   ],
   "debugPatterns": [
@@ -134,6 +140,27 @@
     "docroot/themes/custom/",
     "modules/"
   ],
+  "testIntegrity": {
+    "testPaths": [
+      "(^|/)tests/"
+    ],
+    "skipMarkers": [
+      "markTestSkipped(",
+      "markTestIncomplete("
+    ]
+  },
+  "security": {
+    "skills": [
+      "api-security",
+      "drupal-11"
+    ],
+    "riskPaths": [
+      "\\.(routing|permissions)\\.yml$",
+      "(^|/)src/(Access|Controller|Form)/",
+      "(^|/)composer\\.(json|lock)$",
+      "(^|/)settings(\\.[a-z]+)?\\.php$"
+    ]
+  },
   "acceptance": "exercise the routes/controllers over HTTP",
   "execWrapper": {
     "when": ".ddev/config.yaml",
@@ -166,6 +193,19 @@
     "composer": [
       "drupal/core",
       "drupal/core-recommended"
+    ]
+  },
+  "docImpact": {
+    "endpoint": [
+      "\\.routing\\.yml$"
+    ],
+    "schema": [
+      "\\.install$",
+      "(^|/)config/schema/"
+    ],
+    "config": [
+      "(^|/)config/(sync|install|optional)/",
+      "\\.settings\\.php$"
     ]
   }
 }

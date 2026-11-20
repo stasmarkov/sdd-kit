@@ -7,6 +7,44 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [4.3.0] - 2026-11-20
+
+The building workflows now prove their verdicts: every check the verdict depends on is recorded in an assurance ledger, and a check that did not run or did not return blocks SHIP or FIXED. Build agents get the full criteria they are held to, business rules and security are reviewed on the real diff, and docs, the test plan and closing the spec are checked steps.
+
+**Upgrade note:** verdicts only get stricter. A run that used to report SHIP or FIXED although a review, gate, converge or acceptance step did not run now reports FIX-FIRST or NOT-RESOLVED and names the check in the new Assurance table. ship-feature builds only `approved` or `in-progress` specs without unchecked open questions, and an inline run without `{ spec }` stops as a draft when its clarity gate raises a question. New ADRs keep the `NNNN-<slug>.md` names.
+
+### Added
+
+- ship-feature, fix-bug and greenfield-build write the manual test plan through one TestPlan step: to the spec folder's `manual-test.md`, otherwise to `.ai/reports/test-plan-<slug>-<timestamp>.md` (fix-bug's plan moves there), with every step tagged with the id it verifies and the coverage checked in script.
+- ship-feature has a separate Close step after TestPlan that sets the spec to `done` and the backlog slice to shipped only for a shippable run, and a docs check: a doc-impact list, owner mapping and a link grader; fix-bug gains a Docs phase.
+- A fault-injection suite (`tools/test/workflow-fault-injection.test.mjs`) silences one phase at a time in ship-feature, fix-bug and greenfield-build and asserts that no run ends in SHIP, FIXED or SHIP-SLICE. A Detect call that returned nothing, a missing constitution, handoff, docs, report or close result now record an unavailable entry in the assurance ledger.
+- ship-feature writes a Deviations section into spec-lite.md, create-spec turns each missing doc into a task, and fix-bug names its `fix/` branch in script from the ticket key and the bug text, so the agent no longer chooses the slug.
+- Workflow assurance ledger: ship-feature, fix-bug and greenfield-build record one entry per check and derive the verdict from it, so a check that did not run can no longer pass. Results gain an `assurance` key and the report an Assurance table.
+- greenfield-build checks the scaffold with a separate read-only agent for committed secrets, real environment values, default credentials and debug on by default; confirmed findings go back to the scaffold agent once, and a finding that remains stops the run before the scaffold is put into git.
+
+### Changed
+
+- Docs agents write only Markdown and OpenAPI paths, are graded on the sections they report as changed, and a repair round is merged into the first result; a silent doc owner mapper is recorded as `unavailable`; a `{ spec }` reference that is not a plain folder name or id is rejected before any agent runs; a Traceability row proves a test only when its file was built or changed in the run; fix-bug names a fixed branch for a bug text with no ASCII letters and switches to its fix branch when an earlier run left it.
+- tech-research and greenfield-build name a new ADR `<NNNN>-<slug>.md` (the next free number, the doc-hygiene convention) with a slug computed in script and a no-overwrite write that takes the next number on a clash; existing ADRs keep their names. qa-and-docs resolves `{ spec }` with the ship-feature reference rule, from one shared lookup text.
+- ship-feature, fix-bug, greenfield-build, qa-and-docs and tech-research return `questions` and `assumptions` and take `args.answers`; a question never stops a run.
+- ship-feature builds a `type: bug` or `type: improvement` spec that has Must NOT change items guard-first: guard tests are written and run green on the unchanged code before any task, and a failing guard stops the run with the mismatch. Feature and refactor specs build as before.
+- ship-feature fails closed: unavailable reviewers, unverified blocking findings, a budget-stopped Converge and unresolved visual findings hold the verdict at FIX-FIRST; with no `{ spec }` it stops on an unclear draft spec. Its result gains an `unverifiedFindings` key listing the findings no verifier answered for.
+- fix-bug runs a second root-cause round and stops with NEEDS-INFO when neither confirms; FIXED needs a red regression test with a valid checkpoint.
+- fix-bug and greenfield-build review their diff on correctness and security with the same two-vote verify as ship-feature; a confirmed critical or major finding gives NOT-RESOLVED or keeps greenfield-build from SHIP-SLICE. Their results carry `securityReview`. greenfield-build checks the scaffold for secrets, real environment values, default credentials and debug mode before its commit.
+- create-spec turns each rule needing validation into an unchecked open question.
+- ship-feature runs its security review on the security-auditor agent with the stack manifest's security skills and a checklist, runs a second security pass when the diff touches a risk area, and returns `securityReview`.
+- ship-feature takes the files a run changed from git for tracked repos and points each reviewer at `git diff <base>`.
+- ship-feature checks the tests after the E2E step, so test files changed in Acceptance are covered: a test file that existed at the base and was deleted, a modified one no built task names, or an added skip or focus marker from the stack manifest's new `testIntegrity` field (shipped as `testIntegrity.testPaths` and `testIntegrity.skipMarkers`, with the security skills in `security.skills`, not the `tests.*` and `skills.security` names the spec first used) fails the `test-integrity` ledger entry and holds the verdict.
+- ship-feature runs one second review of the files changed after Review (Fix rounds, the E2E test) on correctness and security (and tests when a test file changed); the scope is every file that is new or whose content hash differs from Review start, including gate-fix changes; a confirmed critical or major finding fails the `second-review` ledger entry and holds the verdict.
+- ship-feature reviews the tests as a fifth dimension: a test that cannot fail, a test that does not exercise the criterion it is named after, an assertion weakened to pass, a missing negative case for an authorization or validation criterion. A finding without a file and an integer line is dropped.
+
+### Fixed
+
+- Workflow review follow-ups: the test-plan coverage check counts a criterion by its leading id and a step only by a tag; the coverage rewrite updates the file the first round wrote; ship-feature and fix-bug grade every doc the Docs entries report, build the doc-impact list from the files changed up to Docs, and fix-bug and greenfield-build write no test plan when nothing was fixed or built.
+- The core doc-impact defaults cover configuration and agent instruction files only; the stack manifests (and the `other` fallback) declare where endpoints and schema changes live.
+- ship-feature undoes Close when the report cannot be written, reports a guard step that returned nothing or handed back an owner step as unavailable rather than failing, checks from git that the guard step changed no production code, and resolves business rules against the project rules file for every id.
+- greenfield-build stops before Scaffold as unavailable when no architecture vote returns, keeps concern questions on a relaunch, and skips the docs grade when acceptance failed; fix-bug skips its gate baseline on a low budget; a gate baseline keeps the command it ran with.
+
 ## [4.2.1] - 2026-11-18
 
 Review follow-ups to 4.2.0: the gate-fix report, the push guard and the owner-step handling lose their remaining edge cases.

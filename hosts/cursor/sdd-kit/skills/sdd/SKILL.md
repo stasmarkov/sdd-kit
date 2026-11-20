@@ -74,12 +74,12 @@ Then show the exact call and note that it runs many agents in the background. La
 | Route | Required inputs | Launch | Output | Done when |
 |---|---|---|---|---|
 | `trivial` | the change | `Skill("simple-task", "<request>")` | diff + gate results | gates green |
-| `bug` | symptom, repro steps, expected vs actual, **must-not-change** behavior (what nearby must stay identical) | `Workflow({ name: "fix-bug", args: { bug, mustNotChange, repos, url } })` | root cause, regression test, fix, manual test steps | verdict `FIXED`: regression test red → green, guard tests green, gates green, original report re-walked |
+| `bug` | symptom, repro steps, expected vs actual, **must-not-change** behavior (what nearby must stay identical) | `Workflow({ name: "fix-bug", args: { bug, mustNotChange, repos, url } })` | root cause, regression test, fix, manual test steps | verdict `FIXED`: regression test red → green, guard tests green, gates green, original report re-walked, `securityReview.ran` true, no confirmed critical or major review finding, every Assurance entry passing |
 | `audit` | scope, profile, outputDir, a cap (maxUnits, budget or both) | `Workflow({ name: "security-audit", args: { scope, profile, budget, maxUnits, outputDir, repo } })` | validated coverage ledger, findings.json, report files in outputDir, summary in `.ai/reports/` | run `complete`: both validators pass and every retained finding was verified; otherwise `incomplete` with the reason |
 | `decision` | question, candidate options, criteria (weighted if known) | `Workflow({ name: "tech-research", args: { question, options, criteria, repos } })` | ADR with sourced claims | ADR written **and** signed off by a human |
 | `feature` | see 4a / 4b | — | spec folder, then shipped feature | see 4b |
 | `shipped` | scope: spec id, paths, or git range | `Workflow({ name: "qa-and-docs", args: { spec \| paths \| gitRange, repos } })` | traceable QA plan + docs | grader passes coverage and phantom-link gates |
-| `new app` | idea, stack, repo paths, product brief (see 4c) | `Workflow({ name: "greenfield-build", args: { idea, stack, repos, url, brief } })` | scaffold + CI + one vertical slice + handoff docs, next slices appended to `backlog.md` | slice passes gates and acceptance |
+| `new app` | idea, stack, repo paths, product brief (see 4c) | `Workflow({ name: "greenfield-build", args: { idea, stack, repos, url, brief } })` | scaffold + CI + one vertical slice + handoff docs, next slices appended to `backlog.md` | slice passes gates, review and acceptance (`securityReview.ran` true) |
 
 When there is a ticket, start the free-text input (`bug`, `question`, `idea`, or the spec request) with the key, e.g. `"PROJ-123: refund button returns 500 for top-ups"`, so it appears in every report.
 
@@ -127,8 +127,10 @@ Route:    feature (confirmed)
 Ticket:   PROJ-123
 Spec:     .ai/specs/spec-PROJ-123-refund-guard/ (approved by Jane Doe, 2026-10-18T09:12:00Z)
 Launched: ship-feature — runs in the background; watch with /workflows
-Done when: SHIP — gates green, converge finds no gaps, no critical review finding, acceptance re-walks the ticket's scenario
+Done when: SHIP — gates green, converge finds no gaps, no critical review finding, `securityReview.ran`, acceptance re-walks the ticket's scenario
 ```
+
+ship-feature, fix-bug, greenfield-build, qa-and-docs and tech-research return `questions` (`[{ id, question, why, blocking }]`) and `assumptions` (`[{ id, text, source }]`, `source` naming the phase or `build:t<id>`); create-spec keeps its own step in `/write-spec`. When a workflow result has a non-empty `questions` list, ask them with `AskUserQuestion`, batched, at most four per round. A blocking question is asked before any next step is listed. Then offer to relaunch the same workflow with the same args plus `answers` (`{ <question id>: <answer> }`); a question the user leaves unanswered is not sent. For a non-blocking question offer **Accept the run's assumption** (nothing is sent) and **Answer** (the user's text). A blocking question has no assumption, because the run ended on it: offer **Answer** and **Stop**, since a relaunch without its answer stops at the same phase. When asking without `AskUserQuestion` (the tool is unavailable), print the questions as a numbered plain-text list and read the replies the same way. List the result's `assumptions` in the hand-off so the user can correct them.
 
 When the workflow later reports **SHIP** (ship-feature) or **FIXED** (fix-bug), list the next steps:
 

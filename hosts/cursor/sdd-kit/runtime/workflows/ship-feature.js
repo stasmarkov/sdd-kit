@@ -6,6 +6,8 @@ export const meta = {
     { title: 'Detect', detail: 'Identify stack(s) and repo layout', model: 'sonnet' },
     { title: 'Investigate', detail: 'Deep-read codebase + docs per repo', model: 'opus' },
     { title: 'Spec', detail: 'Decompose into ordered tasks and persist to .ai/specs', model: 'opus' },
+    { title: 'Rules', detail: 'Load the business rules the spec cites, read-only', model: 'sonnet' },
+    { title: 'Clarify', detail: 'Fresh-context clarity gate on an inline spec; unanswered questions keep it draft', model: 'opus' },
     { title: 'Prepare', detail: 'Leave a protected branch for a feature branch per repo and mark an approved spec in progress', model: 'haiku' },
     { title: 'Build', detail: 'Implement each task with the right specialist, tick progress', model: 'sonnet' },
     { title: 'Gates', detail: 'Run the detected quality tooling per repo, auto-fix until green', model: 'sonnet' },
@@ -16,6 +18,7 @@ export const meta = {
     { title: 'Acceptance', detail: 'Trace the reported scenario end-to-end; confirm the original problem resolves; write the E2E regression test', model: 'opus' },
     { title: 'Docs', detail: 'Update affected docs to reflect shipped behavior', model: 'opus' },
     { title: 'TestPlan', detail: 'Write copy-paste manual QA steps for a human to verify', model: 'sonnet' },
+    { title: 'Close', detail: 'Set the spec done and the backlog slice shipped when the run is shippable, fill the Traceability cells', model: 'haiku' },
     { title: 'Report', detail: 'Synthesize the result', model: 'opus' },
   ],
 }
@@ -26,7 +29,7 @@ export const meta = {
 // `stack` enum, the specialist-agent map, the Detect-phase catalog and the
 // debug scan all derive from STACKS. A project never gets a
 // specialist for a stack it does not use, because the agent is looked up per detected stack.
-const STACK_SCHEMA = {"oneOf":[{"type":"object","required":["name","order","role","detect","agent","conventions","gates","debugPatterns","acceptance"],"additionalProperties":false,"properties":{"$schema":{"type":"string"},"name":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"},"order":{"type":"integer"},"role":{"type":"string","enum":["backend","frontend","fullstack","mobile"]},"detect":{"type":"string"},"agent":{"type":"object","required":["name"],"additionalProperties":false,"properties":{"name":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"},"plugin":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"}}},"conventions":{"type":"array","items":{"type":"string"}},"gates":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"},"skipWhenScaffolded":{"type":"boolean","enum":[true]},"kind":{"type":"string","enum":["format","lint","types","test","e2e","build","other"]},"unless":{"type":"array","items":{"type":"string"}},"requires":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"}}]}}]},"lintFix":{"type":"object","required":["flag","fallback"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-[A-Za-z0-9=_-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}},"scriptFallback":{"type":"object","required":["dependency","manifest","minMajor","contains","fallback"],"additionalProperties":false,"properties":{"dependency":{"type":"string","pattern":"^[A-Za-z0-9@_./-]+$"},"manifest":{"type":"string","pattern":"^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$"},"minMajor":{"type":"integer"},"contains":{"type":"string","pattern":"^[A-Za-z0-9 _./:=-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}}}}},"debugPatterns":{"type":"array","items":{"type":"string"}},"acceptance":{"type":"string"},"notes":{"type":"string"},"devUrl":{"type":"string"},"visual":{"type":"string"},"buildGateGuard":{"type":"string"},"execWrapper":{"type":"object","required":["when","command"],"additionalProperties":false,"properties":{"when":{"type":"string","pattern":"^[A-Za-z0-9._][A-Za-z0-9._/-]*$"},"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"requiresRunning":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},{"type":"object","required":["command","jsonField","equals"],"additionalProperties":false,"properties":{"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"jsonField":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"},"equals":{"type":"string","pattern":"^[A-Za-z0-9._-]+$"},"devUrlFields":{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"}}}}]},"workdir":{"type":"object","required":["flag","root"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-{1,2}[A-Za-z][A-Za-z0-9-]*$"},"root":{"type":"string","pattern":"^(/(?!\\.{1,2}(/|$))[A-Za-z0-9._-]+)+$"}}}}},"contractSync":{"type":"object","additionalProperties":false,"properties":{"routeListCommand":{"type":"string"},"consumer":{"type":"boolean","enum":[true]},"template":{"type":"string"}}},"skills":{"type":"object","additionalProperties":false,"properties":{"conventions":{"type":"array","items":{"type":"string"}},"testing":{"type":"array","items":{"type":"string"}},"scaffold":{"type":"array","items":{"type":"string"}}}},"packageManagers":{"type":"array","items":{"type":"object","required":["name","lockfiles","run"],"additionalProperties":false,"properties":{"name":{"type":"string"},"lockfiles":{"type":"array","items":{"type":"string"}},"run":{"type":"string"},"exec":{"type":"string"}}}},"scaffold":{"type":"object","additionalProperties":false,"properties":{"command":{"type":"string"},"tooling":{"type":"array","items":{"type":"string"}}}},"ci":{"type":"object","additionalProperties":false,"properties":{"services":{"type":"array","items":{"type":"string"}},"setup":{"type":"array","items":{"type":"string"}}}},"e2e":{"type":"object","required":["configGlob","run","convention"],"additionalProperties":false,"properties":{"configGlob":{"type":"string"},"run":{"type":"string"},"convention":{"type":"string"},"seed":{"type":"string"},"file":{"type":"string"}}},"migrations":{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string"},"run":{"type":"string"},"fresh":{"type":"string"}}},"audit":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"}}}},"markers":{"type":"array","items":{"type":"string"}},"packages":{"type":"object","additionalProperties":false,"properties":{"composer":{"type":"array","items":{"type":"string"}},"npm":{"type":"array","items":{"type":"string"}}}},"e2eBackend":{"type":"object","required":["convention"],"additionalProperties":false,"properties":{"convention":{"type":"string"},"seed":{"type":"string"}}},"sourceDirs":{"type":"array","items":{"type":"string"}},"gateTemplates":{"type":"array","items":{"type":"object","required":["evidence","command"],"additionalProperties":false,"properties":{"evidence":{"type":"string"},"command":{"type":"string","pattern":"\\{script\\}"}}}},"devUrlHosts":{"type":"array","items":{"type":"string","pattern":"^[a-z0-9-]+(\\.[a-z0-9-]+)+$"}},"extends":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"}}},{"type":"array","items":{"type":"object","required":["name","order","role","detect","agent","conventions","gates","debugPatterns","acceptance"],"additionalProperties":false,"properties":{"$schema":{"type":"string"},"name":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"},"order":{"type":"integer"},"role":{"type":"string","enum":["backend","frontend","fullstack","mobile"]},"detect":{"type":"string"},"agent":{"type":"object","required":["name"],"additionalProperties":false,"properties":{"name":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"},"plugin":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"}}},"conventions":{"type":"array","items":{"type":"string"}},"gates":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"},"skipWhenScaffolded":{"type":"boolean","enum":[true]},"kind":{"type":"string","enum":["format","lint","types","test","e2e","build","other"]},"unless":{"type":"array","items":{"type":"string"}},"requires":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"}}]}}]},"lintFix":{"type":"object","required":["flag","fallback"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-[A-Za-z0-9=_-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}},"scriptFallback":{"type":"object","required":["dependency","manifest","minMajor","contains","fallback"],"additionalProperties":false,"properties":{"dependency":{"type":"string","pattern":"^[A-Za-z0-9@_./-]+$"},"manifest":{"type":"string","pattern":"^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$"},"minMajor":{"type":"integer"},"contains":{"type":"string","pattern":"^[A-Za-z0-9 _./:=-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}}}}},"debugPatterns":{"type":"array","items":{"type":"string"}},"acceptance":{"type":"string"},"notes":{"type":"string"},"devUrl":{"type":"string"},"visual":{"type":"string"},"buildGateGuard":{"type":"string"},"execWrapper":{"type":"object","required":["when","command"],"additionalProperties":false,"properties":{"when":{"type":"string","pattern":"^[A-Za-z0-9._][A-Za-z0-9._/-]*$"},"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"requiresRunning":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},{"type":"object","required":["command","jsonField","equals"],"additionalProperties":false,"properties":{"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"jsonField":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"},"equals":{"type":"string","pattern":"^[A-Za-z0-9._-]+$"},"devUrlFields":{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"}}}}]},"workdir":{"type":"object","required":["flag","root"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-{1,2}[A-Za-z][A-Za-z0-9-]*$"},"root":{"type":"string","pattern":"^(/(?!\\.{1,2}(/|$))[A-Za-z0-9._-]+)+$"}}}}},"contractSync":{"type":"object","additionalProperties":false,"properties":{"routeListCommand":{"type":"string"},"consumer":{"type":"boolean","enum":[true]},"template":{"type":"string"}}},"skills":{"type":"object","additionalProperties":false,"properties":{"conventions":{"type":"array","items":{"type":"string"}},"testing":{"type":"array","items":{"type":"string"}},"scaffold":{"type":"array","items":{"type":"string"}}}},"packageManagers":{"type":"array","items":{"type":"object","required":["name","lockfiles","run"],"additionalProperties":false,"properties":{"name":{"type":"string"},"lockfiles":{"type":"array","items":{"type":"string"}},"run":{"type":"string"},"exec":{"type":"string"}}}},"scaffold":{"type":"object","additionalProperties":false,"properties":{"command":{"type":"string"},"tooling":{"type":"array","items":{"type":"string"}}}},"ci":{"type":"object","additionalProperties":false,"properties":{"services":{"type":"array","items":{"type":"string"}},"setup":{"type":"array","items":{"type":"string"}}}},"e2e":{"type":"object","required":["configGlob","run","convention"],"additionalProperties":false,"properties":{"configGlob":{"type":"string"},"run":{"type":"string"},"convention":{"type":"string"},"seed":{"type":"string"},"file":{"type":"string"}}},"migrations":{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string"},"run":{"type":"string"},"fresh":{"type":"string"}}},"audit":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"}}}},"markers":{"type":"array","items":{"type":"string"}},"packages":{"type":"object","additionalProperties":false,"properties":{"composer":{"type":"array","items":{"type":"string"}},"npm":{"type":"array","items":{"type":"string"}}}},"e2eBackend":{"type":"object","required":["convention"],"additionalProperties":false,"properties":{"convention":{"type":"string"},"seed":{"type":"string"}}},"sourceDirs":{"type":"array","items":{"type":"string"}},"gateTemplates":{"type":"array","items":{"type":"object","required":["evidence","command"],"additionalProperties":false,"properties":{"evidence":{"type":"string"},"command":{"type":"string","pattern":"\\{script\\}"}}}},"devUrlHosts":{"type":"array","items":{"type":"string","pattern":"^[a-z0-9-]+(\\.[a-z0-9-]+)+$"}},"extends":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"}}}}]}
+const STACK_SCHEMA = {"oneOf":[{"type":"object","required":["name","order","role","detect","agent","conventions","gates","debugPatterns","acceptance"],"additionalProperties":false,"properties":{"$schema":{"type":"string"},"name":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"},"order":{"type":"integer"},"role":{"type":"string","enum":["backend","frontend","fullstack","mobile"]},"detect":{"type":"string"},"agent":{"type":"object","required":["name"],"additionalProperties":false,"properties":{"name":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"},"plugin":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"}}},"conventions":{"type":"array","items":{"type":"string"}},"gates":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"},"skipWhenScaffolded":{"type":"boolean","enum":[true]},"kind":{"type":"string","enum":["format","lint","types","test","e2e","build","security","other"]},"unless":{"type":"array","items":{"type":"string"}},"requires":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"}}]}}]},"lintFix":{"type":"object","required":["flag","fallback"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-[A-Za-z0-9=_-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}},"scriptFallback":{"type":"object","required":["dependency","manifest","minMajor","contains","fallback"],"additionalProperties":false,"properties":{"dependency":{"type":"string","pattern":"^[A-Za-z0-9@_./-]+$"},"manifest":{"type":"string","pattern":"^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$"},"minMajor":{"type":"integer"},"contains":{"type":"string","pattern":"^[A-Za-z0-9 _./:=-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}}}}},"debugPatterns":{"type":"array","items":{"type":"string"}},"acceptance":{"type":"string"},"notes":{"type":"string"},"devUrl":{"type":"string"},"visual":{"type":"string"},"buildGateGuard":{"type":"string"},"execWrapper":{"type":"object","required":["when","command"],"additionalProperties":false,"properties":{"when":{"type":"string","pattern":"^[A-Za-z0-9._][A-Za-z0-9._/-]*$"},"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"requiresRunning":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},{"type":"object","required":["command","jsonField","equals"],"additionalProperties":false,"properties":{"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"jsonField":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"},"equals":{"type":"string","pattern":"^[A-Za-z0-9._-]+$"},"devUrlFields":{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"}}}}]},"workdir":{"type":"object","required":["flag","root"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-{1,2}[A-Za-z][A-Za-z0-9-]*$"},"root":{"type":"string","pattern":"^(/(?!\\.{1,2}(/|$))[A-Za-z0-9._-]+)+$"}}}}},"contractSync":{"type":"object","additionalProperties":false,"properties":{"routeListCommand":{"type":"string"},"consumer":{"type":"boolean","enum":[true]},"template":{"type":"string"}}},"skills":{"type":"object","additionalProperties":false,"properties":{"conventions":{"type":"array","items":{"type":"string"}},"testing":{"type":"array","items":{"type":"string"}},"scaffold":{"type":"array","items":{"type":"string"}}}},"packageManagers":{"type":"array","items":{"type":"object","required":["name","lockfiles","run"],"additionalProperties":false,"properties":{"name":{"type":"string"},"lockfiles":{"type":"array","items":{"type":"string"}},"run":{"type":"string"},"exec":{"type":"string"},"audit":{"type":"string"}}}},"scaffold":{"type":"object","additionalProperties":false,"properties":{"command":{"type":"string"},"tooling":{"type":"array","items":{"type":"string"}}}},"ci":{"type":"object","additionalProperties":false,"properties":{"services":{"type":"array","items":{"type":"string"}},"setup":{"type":"array","items":{"type":"string"}}}},"e2e":{"type":"object","required":["configGlob","run","convention"],"additionalProperties":false,"properties":{"configGlob":{"type":"string"},"run":{"type":"string"},"convention":{"type":"string"},"seed":{"type":"string"},"file":{"type":"string"}}},"migrations":{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string"},"run":{"type":"string"},"fresh":{"type":"string"}}},"audit":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"}}}},"markers":{"type":"array","items":{"type":"string"}},"packages":{"type":"object","additionalProperties":false,"properties":{"composer":{"type":"array","items":{"type":"string"}},"npm":{"type":"array","items":{"type":"string"}}}},"e2eBackend":{"type":"object","required":["convention"],"additionalProperties":false,"properties":{"convention":{"type":"string"},"seed":{"type":"string"}}},"sourceDirs":{"type":"array","items":{"type":"string"}},"docImpact":{"type":"object","additionalProperties":false,"properties":{"endpoint":{"type":"array","items":{"type":"string"}},"schema":{"type":"array","items":{"type":"string"}},"business-rule":{"type":"array","items":{"type":"string"}},"config":{"type":"array","items":{"type":"string"}},"agent-instructions":{"type":"array","items":{"type":"string"}}}},"testIntegrity":{"type":"object","additionalProperties":false,"properties":{"testPaths":{"type":"array","items":{"type":"string"}},"skipMarkers":{"type":"array","items":{"type":"string"}}}},"security":{"type":"object","additionalProperties":false,"properties":{"skills":{"type":"array","items":{"type":"string"}},"riskPaths":{"type":"array","items":{"type":"string"}}}},"gateTemplates":{"type":"array","items":{"type":"object","required":["evidence","command"],"additionalProperties":false,"properties":{"evidence":{"type":"string"},"command":{"type":"string","pattern":"\\{script\\}"}}}},"devUrlHosts":{"type":"array","items":{"type":"string","pattern":"^[a-z0-9-]+(\\.[a-z0-9-]+)+$"}},"extends":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"}}},{"type":"array","items":{"type":"object","required":["name","order","role","detect","agent","conventions","gates","debugPatterns","acceptance"],"additionalProperties":false,"properties":{"$schema":{"type":"string"},"name":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"},"order":{"type":"integer"},"role":{"type":"string","enum":["backend","frontend","fullstack","mobile"]},"detect":{"type":"string"},"agent":{"type":"object","required":["name"],"additionalProperties":false,"properties":{"name":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"},"plugin":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"}}},"conventions":{"type":"array","items":{"type":"string"}},"gates":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"},"skipWhenScaffolded":{"type":"boolean","enum":[true]},"kind":{"type":"string","enum":["format","lint","types","test","e2e","build","security","other"]},"unless":{"type":"array","items":{"type":"string"}},"requires":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"}}]}}]},"lintFix":{"type":"object","required":["flag","fallback"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-[A-Za-z0-9=_-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}},"scriptFallback":{"type":"object","required":["dependency","manifest","minMajor","contains","fallback"],"additionalProperties":false,"properties":{"dependency":{"type":"string","pattern":"^[A-Za-z0-9@_./-]+$"},"manifest":{"type":"string","pattern":"^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$"},"minMajor":{"type":"integer"},"contains":{"type":"string","pattern":"^[A-Za-z0-9 _./:=-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}}}}},"debugPatterns":{"type":"array","items":{"type":"string"}},"acceptance":{"type":"string"},"notes":{"type":"string"},"devUrl":{"type":"string"},"visual":{"type":"string"},"buildGateGuard":{"type":"string"},"execWrapper":{"type":"object","required":["when","command"],"additionalProperties":false,"properties":{"when":{"type":"string","pattern":"^[A-Za-z0-9._][A-Za-z0-9._/-]*$"},"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"requiresRunning":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},{"type":"object","required":["command","jsonField","equals"],"additionalProperties":false,"properties":{"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"jsonField":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"},"equals":{"type":"string","pattern":"^[A-Za-z0-9._-]+$"},"devUrlFields":{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"}}}}]},"workdir":{"type":"object","required":["flag","root"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-{1,2}[A-Za-z][A-Za-z0-9-]*$"},"root":{"type":"string","pattern":"^(/(?!\\.{1,2}(/|$))[A-Za-z0-9._-]+)+$"}}}}},"contractSync":{"type":"object","additionalProperties":false,"properties":{"routeListCommand":{"type":"string"},"consumer":{"type":"boolean","enum":[true]},"template":{"type":"string"}}},"skills":{"type":"object","additionalProperties":false,"properties":{"conventions":{"type":"array","items":{"type":"string"}},"testing":{"type":"array","items":{"type":"string"}},"scaffold":{"type":"array","items":{"type":"string"}}}},"packageManagers":{"type":"array","items":{"type":"object","required":["name","lockfiles","run"],"additionalProperties":false,"properties":{"name":{"type":"string"},"lockfiles":{"type":"array","items":{"type":"string"}},"run":{"type":"string"},"exec":{"type":"string"},"audit":{"type":"string"}}}},"scaffold":{"type":"object","additionalProperties":false,"properties":{"command":{"type":"string"},"tooling":{"type":"array","items":{"type":"string"}}}},"ci":{"type":"object","additionalProperties":false,"properties":{"services":{"type":"array","items":{"type":"string"}},"setup":{"type":"array","items":{"type":"string"}}}},"e2e":{"type":"object","required":["configGlob","run","convention"],"additionalProperties":false,"properties":{"configGlob":{"type":"string"},"run":{"type":"string"},"convention":{"type":"string"},"seed":{"type":"string"},"file":{"type":"string"}}},"migrations":{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string"},"run":{"type":"string"},"fresh":{"type":"string"}}},"audit":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"}}}},"markers":{"type":"array","items":{"type":"string"}},"packages":{"type":"object","additionalProperties":false,"properties":{"composer":{"type":"array","items":{"type":"string"}},"npm":{"type":"array","items":{"type":"string"}}}},"e2eBackend":{"type":"object","required":["convention"],"additionalProperties":false,"properties":{"convention":{"type":"string"},"seed":{"type":"string"}}},"sourceDirs":{"type":"array","items":{"type":"string"}},"docImpact":{"type":"object","additionalProperties":false,"properties":{"endpoint":{"type":"array","items":{"type":"string"}},"schema":{"type":"array","items":{"type":"string"}},"business-rule":{"type":"array","items":{"type":"string"}},"config":{"type":"array","items":{"type":"string"}},"agent-instructions":{"type":"array","items":{"type":"string"}}}},"testIntegrity":{"type":"object","additionalProperties":false,"properties":{"testPaths":{"type":"array","items":{"type":"string"}},"skipMarkers":{"type":"array","items":{"type":"string"}}}},"security":{"type":"object","additionalProperties":false,"properties":{"skills":{"type":"array","items":{"type":"string"}},"riskPaths":{"type":"array","items":{"type":"string"}}}},"gateTemplates":{"type":"array","items":{"type":"object","required":["evidence","command"],"additionalProperties":false,"properties":{"evidence":{"type":"string"},"command":{"type":"string","pattern":"\\{script\\}"}}}},"devUrlHosts":{"type":"array","items":{"type":"string","pattern":"^[a-z0-9-]+(\\.[a-z0-9-]+)+$"}},"extends":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"}}}}]}
 const STACK_LIMITS = { maxString: 500, maxItems: 32, maxEntries: 8, maxRawLength: 65536 }
 const STACKS = {
   laravel: {
@@ -38,6 +41,7 @@ const STACKS = {
       { name: 'Pint', command: './vendor/bin/pint --test' },
       { name: 'PHPStan', command: './vendor/bin/phpstan analyse --no-progress' },
       { name: 'Pest/PHPUnit', command: 'php artisan test' },
+      { name: 'composer audit', command: 'composer audit' },
     ],
     debugPatterns: ['dd(', 'dump(', 'ray('],
     acceptance: 'exercise the API routes over HTTP (curl / php artisan test)',
@@ -55,6 +59,7 @@ const STACKS = {
       { name: 'PHPUnit', command: './vendor/bin/phpunit -c web/core --fail-on-empty-test-suite web/modules/custom' },
       { name: 'PHPUnit (docroot)', command: './vendor/bin/phpunit -c docroot/core --fail-on-empty-test-suite docroot/modules/custom' },
       { name: 'PHPUnit (project config)', command: './vendor/bin/phpunit --fail-on-empty-test-suite' },
+      { name: 'composer audit', command: 'composer audit' },
     ],
     debugPatterns: ['dd(', 'dump(', 'kint(', 'var_dump('],
     acceptance: 'exercise the routes/controllers over HTTP',
@@ -73,6 +78,7 @@ const STACKS = {
       { name: 'Vitest', command: '<pmx> vitest run' },
       { name: 'Playwright', command: '<pmx> playwright test' },
       { name: 'tests', command: '<pm> test' },
+      { name: 'package audit', command: '<pm-audit>' },
     ],
     debugPatterns: ['console.log(', 'debugger'],
     devUrl: 'http://localhost:3000',
@@ -154,6 +160,7 @@ const STACK_EXTRAS = {
       Pint: { kind: 'format', requires: 'vendor/bin/pint' },
       PHPStan: { kind: 'types' },
       'Pest/PHPUnit': { kind: 'test' },
+      'composer audit': { kind: 'security', requires: 'composer.lock' },
     },
     skills: {
       conventions: ['service-repository', 'dto-first', 'api-design', 'schema-first'],
@@ -182,6 +189,18 @@ const STACK_EXTRAS = {
     ],
     markers: ['artisan'],
     sourceDirs: ['app/', 'routes/', 'database/'],
+    docImpact: {
+      endpoint: ['(^|/)routes/', '(^|/)openapi[^/]*\\.(ya?ml|json)$'],
+      schema: ['(^|/)database/migrations/', '\\.sql$'],
+    },
+    testIntegrity: {
+      testPaths: ['^tests/'],
+      skipMarkers: ['->skip(', '->only(', '->todo(', 'markTestSkipped(', 'markTestIncomplete('],
+    },
+    security: {
+      skills: ['api-security', 'oauth2-passport'],
+      riskPaths: ['(^|/)app/(Policies|Http/(Middleware|Controllers))/', '(^|/)routes/', '(^|/)config/(auth|sanctum|cors|session)\\.php$', '(^|/)composer\\.(json|lock)$'],
+    },
   },
   drupal: {
     gates: {
@@ -226,11 +245,22 @@ const STACK_EXTRAS = {
           'vendor/bin/phpunit',
         ],
       },
+      'composer audit': { kind: 'security', requires: 'composer.lock' },
     },
     skills: { conventions: ['drupal-11'] },
     markers: ['core/lib/Drupal.php', 'web/core/lib/Drupal.php', 'docroot/core/lib/Drupal.php'],
     packages: { composer: ['drupal/core', 'drupal/core-recommended'] },
     sourceDirs: ['web/modules/custom/', 'web/themes/custom/', 'docroot/modules/custom/', 'docroot/themes/custom/', 'modules/'],
+    docImpact: {
+      endpoint: ['\\.routing\\.yml$'],
+      schema: ['\\.install$', '(^|/)config/schema/'],
+      config: ['(^|/)config/(sync|install|optional)/', '\\.settings\\.php$'],
+    },
+    testIntegrity: { testPaths: ['(^|/)tests/'], skipMarkers: ['markTestSkipped(', 'markTestIncomplete('] },
+    security: {
+      skills: ['api-security', 'drupal-11'],
+      riskPaths: ['\\.(routing|permissions)\\.yml$', '(^|/)src/(Access|Controller|Form)/', '(^|/)composer\\.(json|lock)$', '(^|/)settings(\\.[a-z]+)?\\.php$'],
+    },
   },
   nextjs: {
     gates: {
@@ -250,6 +280,12 @@ const STACK_EXTRAS = {
       Vitest: { kind: 'test' },
       Playwright: { kind: 'e2e' },
       tests: { kind: 'test', unless: ['vitest.config.*', 'playwright.config.*'] },
+      'package audit': {
+        kind: 'security',
+        requires: [
+          ['package-lock.json', 'pnpm-lock.yaml', 'yarn.lock', 'bun.lockb', 'bun.lock'],
+        ],
+      },
     },
     skills: {
       conventions: ['nextjs-15', 'typescript', 'tailwind-4', 'accessibility'],
@@ -274,11 +310,24 @@ const STACK_EXTRAS = {
     markers: ['next.config.*'],
     packageManagers: [
       { name: 'pnpm', lockfiles: ['pnpm-lock.yaml'], run: 'pnpm', exec: 'pnpm exec' },
-      { name: 'yarn', lockfiles: ['yarn.lock'], run: 'yarn', exec: 'yarn' },
+      { name: 'yarn', lockfiles: ['yarn.lock'], run: 'yarn', exec: 'yarn', audit: 'yarn npm audit' },
       { name: 'bun', lockfiles: ['bun.lockb', 'bun.lock'], run: 'bun', exec: 'bunx' },
       { name: 'npm', lockfiles: ['package-lock.json'], run: 'npm', exec: 'npx' },
     ],
     sourceDirs: ['app/', 'src/', 'components/', 'lib/'],
+    docImpact: {
+      endpoint: ['(^|/)app/(.*/)?route\\.[jt]sx?$', '(^|/)pages/api/', '(^|/)openapi[^/]*\\.(ya?ml|json)$'],
+      schema: ['(^|/)prisma/', '(^|/)migrations?/', '\\.sql$'],
+      config: ['(^|/)next\\.config\\.[cm]?[jt]s$'],
+    },
+    testIntegrity: {
+      testPaths: ['\\.(test|spec)\\.[jt]sx?$', '(^|/)__tests__/', '(^|/)e2e/'],
+      skipMarkers: ['.skip(', '.only(', 'xit(', 'xdescribe(', 'fit(', 'fdescribe(', 'test.todo('],
+    },
+    security: {
+      skills: ['api-security', 'nextjs-auth'],
+      riskPaths: ['(^|/)middleware\\.[jt]s$', '(^|/)(app|pages)/api/', '(^|/)route\\.[jt]s$', '(^|/)next\\.config\\.[jt]s$', '(^|/)package(-lock)?\\.json$', '(^|/)(pnpm-lock\\.yaml|yarn\\.lock)$'],
+    },
   },
   nuxt: {
     gates: {
@@ -288,11 +337,23 @@ const STACK_EXTRAS = {
     markers: ['nuxt.config.*'],
     packageManagers: [
       { name: 'pnpm', lockfiles: ['pnpm-lock.yaml'], run: 'pnpm', exec: 'pnpm exec' },
-      { name: 'yarn', lockfiles: ['yarn.lock'], run: 'yarn', exec: 'yarn' },
+      { name: 'yarn', lockfiles: ['yarn.lock'], run: 'yarn', exec: 'yarn', audit: 'yarn npm audit' },
       { name: 'bun', lockfiles: ['bun.lockb', 'bun.lock'], run: 'bun', exec: 'bunx' },
       { name: 'npm', lockfiles: ['package-lock.json'], run: 'npm', exec: 'npx' },
     ],
     sourceDirs: ['app/', 'src/', 'components/', 'pages/', 'composables/', 'server/'],
+    docImpact: {
+      endpoint: ['(^|/)server/(api|routes)/', '(^|/)openapi[^/]*\\.(ya?ml|json)$'],
+      schema: ['(^|/)migrations?/', '\\.sql$'],
+    },
+    testIntegrity: {
+      testPaths: ['\\.(test|spec)\\.[jt]sx?$', '(^|/)__tests__/', '(^|/)e2e/'],
+      skipMarkers: ['.skip(', '.only(', 'xit(', 'xdescribe(', 'fit(', 'fdescribe(', 'test.todo('],
+    },
+    security: {
+      skills: ['api-security', 'nextjs-auth'],
+      riskPaths: ['(^|/)middleware\\.[jt]s$', '(^|/)(app|pages)/api/', '(^|/)route\\.[jt]s$', '(^|/)next\\.config\\.[jt]s$', '(^|/)package(-lock)?\\.json$', '(^|/)(pnpm-lock\\.yaml|yarn\\.lock)$'],
+    },
   },
   ios: {
     gates: {
@@ -303,8 +364,17 @@ const STACK_EXTRAS = {
     },
     markers: ['*.xcodeproj', 'Package.swift'],
     sourceDirs: ['Sources/'],
+    testIntegrity: { testPaths: ['Tests?/'], skipMarkers: ['XCTSkip(', 'XCTSkipIf(', 'XCTSkipUnless('] },
+    security: {
+      skills: ['api-security'],
+      riskPaths: ['\\.entitlements$', '(^|/)Info\\.plist$', '(^|/)Keychain', '(^|/)Podfile(\\.lock)?$', '(^|/)Package\\.resolved$'],
+    },
   },
   other: {
+    docImpact: {
+      endpoint: ['(^|/)routes?/', '(^|/)openapi[^/]*\\.(ya?ml|json)$', '(^|/)swagger[^/]*\\.(ya?ml|json)$'],
+      schema: ['(^|/)migrations?/', '\\.sql$', '(^|/)schema\\.[^/]+$'],
+    },
     gateTemplates: [
       { evidence: 'package.json', command: 'npm run {script}' },
       { evidence: 'package.json', command: 'pnpm run {script}' },
@@ -333,17 +403,17 @@ const FIRST_PARTY_PLUGINS = [
   'sdd-kit-drupal', 'sdd-kit-ios', 'sdd-kit-laravel', 'sdd-kit-nextjs',
 ]
 const FIRST_PARTY_HASHES = {
-  drupal: 'f24249d79bc168f22609330abe015771d6066d413057c0f2a22e251acac31eed',
-  ios: '9da615defa84b98b3c85cbb8041df8e4885249d750a5dfcdf3e2148a5d48ebb4',
-  laravel: 'cbfa94fddbb6574cd56e67113e947398b288a81caacaca420cb25d864eebb3f2',
-  nextjs: 'ba420bc2f4053d58c9fa8dd82bbbf36836e3811cb599ffa2926ec21c1232b476',
-  nuxt: '05cc03e90cd8df462339fec8b168f8f167f5a3438b5a5ef55c4e40ab31f6ab24',
+  drupal: 'b3715351ec36282dbbab59a31f897c1df85f178ea06f1c862ad2e43fc246d4da',
+  ios: '5d0c6a57a8da31bd811e2e14e264ff3252ec789f1d450d7fb1c6c42ba11f59c5',
+  laravel: '36f779dad887cc62f4272cb0ff2fa552ce83818e60f7e341f0afc6f4f9d88393',
+  nextjs: '7a3b6b0b298e48870ca3934ccb1da82e6848a8505c3f9be5a674ed35b8e0bd24',
+  nuxt: 'fec759b91ee44eec49a4c4c1b50493770856c54a155d0ff367a1dddec013ed19',
 }
 const FIRST_PARTY_FILE_HASHES = {
-  drupal: 'f24249d79bc168f22609330abe015771d6066d413057c0f2a22e251acac31eed',
-  ios: '9da615defa84b98b3c85cbb8041df8e4885249d750a5dfcdf3e2148a5d48ebb4',
-  laravel: 'cbfa94fddbb6574cd56e67113e947398b288a81caacaca420cb25d864eebb3f2',
-  nextjs: 'cdc5364db9510ad7f02446986ab01dbaa66a1e8b33fd5cb2aa0e45b3ef4f2796',
+  drupal: 'b3715351ec36282dbbab59a31f897c1df85f178ea06f1c862ad2e43fc246d4da',
+  ios: '5d0c6a57a8da31bd811e2e14e264ff3252ec789f1d450d7fb1c6c42ba11f59c5',
+  laravel: '36f779dad887cc62f4272cb0ff2fa552ce83818e60f7e341f0afc6f4f9d88393',
+  nextjs: 'f744d000c0b06f7d6d208e1491aa6f67f56a53aa10172f9981d4757bdc8c8b53',
 }
 const DEV_URL_HOSTS = [
   'ddev.site',
@@ -667,9 +737,9 @@ function packageManagerFor(repo, fallbackToDefault) {
   return fallbackToDefault === false ? null : pms[pms.length - 1] || null
 }
 
-// Fills <pm> and <pmx> in a manifest command; unchanged when there is no package manager.
+// Fills <pm>, <pmx> and <pm-audit> in a manifest command; unchanged when there is no package manager.
 function fillPackageManager(command, pm) {
-  return pm ? command.split('<pmx>').join(pm.exec || pm.run).split('<pm>').join(pm.run) : command
+  return pm ? command.split('<pm-audit>').join(pm.audit || `${pm.run} audit`).split('<pmx>').join(pm.exec || pm.run).split('<pm>').join(pm.run) : command
 }
 
 // Prompt sentence telling an agent how <pm>/<pmx> expand for a stack; '' when the stack declares no package managers.
@@ -916,6 +986,259 @@ function mergeAcceptancePasses(targets, results) {
 // Prompt fragment for the app URL: the URL, or the instruction to discover and probe one.
 function appUrlLine(devUrl) {
   return devUrl || `none declared — discover the dev server URL (the repo's dev script, its config) and probe it; if nothing responds, report the browser check as ${NO_APP_URL}`
+}
+
+// Copy-paste manual QA the human runs to confirm a change by hand. Every step names the ids it verifies.
+const TEST_PLAN_SCHEMA = {
+  type: 'object',
+  required: ['steps'],
+  properties: {
+    path: { type: 'string' },
+    preconditions: { type: 'array', items: { type: 'string' } },
+    testData: { type: 'array', items: { type: 'string' } },
+    steps: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['action', 'expected'],
+        properties: {
+          action: { type: 'string' },
+          expected: { type: 'string' },
+          covers: { type: 'array', items: { type: 'string' } },
+        },
+      },
+    },
+    mustNotChange: { type: 'array', items: { type: 'string' } },
+    rollback: { type: 'string' },
+  },
+}
+
+const TEST_PLAN_SECTIONS = ['Preconditions', 'Test data', 'Steps', 'Must NOT change checks', 'Rollback']
+
+// Lowercase, hyphenated file-name part of at most five words; 'change' when the text has no letters or digits.
+function testPlanSlug(text) {
+  const words = String(text || '').toLowerCase().match(/[a-z0-9]+/g) || []
+  return words.slice(0, 5).join('-') || 'change'
+}
+
+// Where the manual test plan goes: beside the spec when there is a (plainly named) spec folder, else beside the run report.
+// The timestamp is a shell substitution the writer agent resolves, because workflow scripts cannot read the clock.
+function testPlanPath(specFolder, slug) {
+  const folder = typeof specFolder === 'string' ? specFolder.replace(/\/+$/, '') : ''
+  if (folder && /^[A-Za-z0-9._][A-Za-z0-9._\/-]*$/.test(folder) && !folder.split('/').includes('..')) return `${folder}/manual-test.md`
+  return `.ai/reports/test-plan-${testPlanSlug(slug)}-$(date +%Y%m%d-%H%M).md`
+}
+
+/**
+ * A plan path an agent returned, when it is plain enough to name in a later prompt: a .md file of path
+ * characters only, with no ".." segment and no shell substitution left in it.
+ * @param {unknown} p
+ * @returns {string} the path, or '' when it is not usable
+ */
+function plainPlanPath(p) {
+  const text = typeof p === 'string' ? p.trim() : ''
+  return /^\/?[A-Za-z0-9._][A-Za-z0-9._\/-]*\.md$/.test(text) && !text.split('/').includes('..') ? text : ''
+}
+
+/**
+ * The one TestPlan prompt of ship-feature, fix-bug and greenfield-build.
+ * @param {object} o
+ * @param {string} o.subject what is verified, e.g. "this feature"
+ * @param {string} [o.specFolder] spec folder; the plan is written to its manual-test.md
+ * @param {string} [o.slug] words naming the change, used for the file name when there is no spec folder
+ * @param {string} [o.context] prompt lines describing the change (repos, entry points, URLs, changed files)
+ * @param {string[]} [o.ids] AC, MNC, NFR or bug ids (with their text) the plan must cover
+ * @param {{id: (string|number), title: string}[]} [o.manualTasks] Manual: tasks, each given its own step
+ * @param {string} [o.extra] extra instructions appended after the file location
+ * @param {string} [o.path] the file an earlier round already wrote; it replaces the computed location so a
+ *   rewrite updates that file instead of resolving a new timestamp (see plainPlanPath)
+ * @returns {{path: string, prompt: string}}
+ */
+function testPlanPrompt({ subject, specFolder, slug, context = '', ids = [], manualTasks = [], extra = '', path = '' }) {
+  const planPath = plainPlanPath(path) || testPlanPath(specFolder, slug)
+  const hasSpec = planPath.endsWith('/manual-test.md')
+  const manual = manualTasks.length
+    ? `Manual tasks (never built; a person runs them): ${JSON.stringify(manualTasks.map((t) => `${t.id}. ${t.title}`))}. Give each its own step, and end the plan with a "Tick after the manual steps pass" line naming the task ids ${manualTasks.map((t) => t.id).join(', ')}${hasSpec ? ` (their "- [ ] N." lines in ${specFolder}/tasks.md; leave them unchecked yourself)` : ''}.\n`
+    : ''
+  const prompt = `Write a concrete, copy-paste manual test plan a human runs to verify ${subject} by hand — no AI/agent jargon, real values they can paste. Verify each step against the actual implementation; do not invent endpoints or URLs.
+${context ? `${context}\n` : ''}${manual}The plan has these sections, in this order: ${TEST_PLAN_SECTIONS.map((x) => `"${x}"`).join(', ')}. Each step is a precise action (exact URL to open / command to run / button to click with real example data) and the exact expected result (status code, redirect target, on-screen text), and carries a tag naming the id it verifies, for example "[AC-2]", "[MNC-1]", "[NFR-1]" or "[BUG-1]". Cover the happy path AND the originally-reported failing case (it must now pass). Under "Must NOT change checks" give each behavior that must stay identical its own check. Under "Rollback" say how to undo the change; write "none needed" when it is not risky. A section with nothing to say reads "none"; never leave a heading empty.${ids.length ? ` Give each of these a step, or point at the automated test that proves it: ${JSON.stringify(ids)}.` : ''}${extra ? ` ${extra}` : ''}
+
+${hasSpec ? `If "${planPath}" already exists, update it in place instead of rewriting it: keep every step a person already ticked ("- [x]") with its tick, keep their notes, and change only the steps the current run affects.\n` : ''}Write the plan to "${planPath}" as markdown (lowercase filename, human-authored tone, no AI-marker comments${hasSpec ? '' : planPath.includes('$(date') ? '; resolve the $(date ...) part of the name in the shell and create .ai/reports first' : '; it already exists, so update it in place'}). Set path to that file.`
+  return { path: planPath, prompt }
+}
+
+const COVERAGE_ID = /\b(?:(?:AC|MNC|NFR|BUG|BR)-\d+|SLICE)\b/gi
+
+/**
+ * The ids (AC-1, MNC-2, NFR-1, BUG-1, BR-1, SLICE) named in a list of strings, upper-cased, first occurrence kept.
+ * @param {(string|number)[]} items criterion texts such as "AC-1: ..." or bare ids
+ * @returns {string[]}
+ */
+function coverageIds(items) {
+  const found = []
+  for (const item of Array.isArray(items) ? items : []) {
+    for (const m of String(item).match(COVERAGE_ID) || []) if (!found.includes(m.toUpperCase())) found.push(m.toUpperCase())
+  }
+  return found
+}
+
+// Markdown a spec may wrap around a leading criterion id: list markers, bold or italic, as in "- **AC-2**: ...".
+const CRITERION_LEAD = /^[\s>*_-]*((?:AC|MNC|NFR|BUG|BR)-\d+|SLICE)[*_]*(?=[\s:(]|$)/i
+
+/**
+ * The id a criterion text starts with, upper-cased, or '' when it starts with none. Ids named later in the
+ * text (a cited rule, a reference to another criterion) are not the criterion's id.
+ * @param {string|number} text
+ * @returns {string}
+ * @example leadingId('**AC-2** (BR-31): totals round down')  // 'AC-2'
+ * @example leadingId('see AC-2')                            // ''
+ */
+function leadingId(text) {
+  const m = CRITERION_LEAD.exec(String(text == null ? '' : text))
+  return m ? m[1].toUpperCase() : ''
+}
+
+/**
+ * The ids of a run's criteria: the leading id of each text, first occurrence kept.
+ * @param {(string|number)[]} items criterion texts such as "AC-1: ..." or bare ids
+ * @returns {string[]}
+ */
+function criterionIds(items) {
+  const found = []
+  for (const item of Array.isArray(items) ? items : []) {
+    const id = leadingId(item)
+    if (id && !found.includes(id)) found.push(id)
+  }
+  return found
+}
+
+/**
+ * The full text of the criterion with the given id, matched on its leading id, so a bold or listed
+ * criterion ("**AC-1**: ...") is found as well as a plain one.
+ * @param {string} id  e.g. "AC-1"
+ * @param {(string|number)[]} texts criterion texts
+ * @returns {string|undefined}
+ */
+function criterionText(id, texts) {
+  const want = String(id || '').trim().toUpperCase()
+  return want ? (Array.isArray(texts) ? texts : []).map(String).find((t) => leadingId(t) === want) : undefined
+}
+
+// A step proves an id only through a tag: "[AC-2]", "[AC-2, MNC-1]", or a trailing "(AC-2, MNC-1)" id list.
+const STEP_TAG = /\[([^\]]*)\]|\(((?:\s*(?:(?:AC|MNC|NFR|BUG|BR)-\d+|SLICE)\s*,?)+)\)\s*$/gi
+
+/**
+ * The ids a plan step or check text tags. A bare mention ("unlike AC-3") is not a tag.
+ * @param {string} text
+ * @returns {string[]}
+ */
+function taggedIds(text) {
+  const found = []
+  for (const m of String(text || '').matchAll(STEP_TAG)) {
+    const inner = m[1] !== undefined ? m[1] : m[2]
+    const ids = coverageIds([inner])
+    // A bracket holds tags only: "[see AC-3 later]" is prose, not a tag.
+    if (!ids.length || inner.replace(COVERAGE_ID, '').replace(/[\s,]/g, '') !== '') continue
+    for (const id of ids) if (!found.includes(id)) found.push(id)
+  }
+  return found
+}
+
+const TEST_FILE_REF = /[\w./-]+\.(?!md\b)[a-z]{1,5}\b/i
+
+/**
+ * The ids whose Traceability row names a test file in its "Verified by" cell. Manual steps
+ * ("manual-test.md#step-2") and empty cells do not count.
+ * @param {string[]} rows rows of the tasks.md Traceability table: | ID | Criterion | Verified by | Kind | Task |
+ * @param {string[]} [known] files this run built or changed; when given, a row counts only if it names one of them,
+ *   because a planned name in a spec is not proof that the file exists
+ * @returns {string[]}
+ */
+function tracedTestIds(rows, known) {
+  const knownFiles = Array.isArray(known) ? known.map((f) => String(f).replace(/^\.\//, '')) : null
+  const names = (cell) => (cell.match(new RegExp(TEST_FILE_REF.source, 'gi')) || []).map((r) => r.replace(/^\.\//, ''))
+  const exists = (cell) => !knownFiles || names(cell).some((r) => knownFiles.some((f) => f === r || f.endsWith(`/${r}`)))
+  const ids = []
+  for (const row of Array.isArray(rows) ? rows : []) {
+    const cells = String(row).split('|').map((c) => c.trim())
+    if (cells[0] === '') cells.shift()
+    const [id, , verifiedBy = ''] = cells
+    if (!coverageIds([id]).length || /manual-test\.md/i.test(verifiedBy) || !TEST_FILE_REF.test(verifiedBy) || !exists(verifiedBy)) continue
+    for (const found of coverageIds([id])) if (!ids.includes(found)) ids.push(found)
+  }
+  return ids
+}
+
+/**
+ * The ids a test plan leaves without proof: not named by an automated test (`tested`) and not carried by any
+ * plan step (covers list or an "[ID]" tag in its action or expected text) or by a "Must NOT change" check that
+ * starts with or tags the id. An id only mentioned in passing proves nothing.
+ * @param {{steps?: {action?: string, expected?: string, covers?: string[]}[], mustNotChange?: string[]}|null} plan
+ * @param {(string|number)[]} ids criteria of the run, with or without their text; each counts by its leading id
+ * @param {(string|number)[]} [tested] ids with an automated test or build result
+ * @returns {string[]}
+ */
+function testPlanMissing(plan, ids, tested = []) {
+  const proven = new Set(coverageIds(tested))
+  for (const step of (plan && Array.isArray(plan.steps) ? plan.steps : [])) {
+    for (const id of [...coverageIds(Array.isArray(step.covers) ? step.covers : []), ...taggedIds(step.action), ...taggedIds(step.expected)]) proven.add(id)
+  }
+  for (const check of (plan && Array.isArray(plan.mustNotChange) ? plan.mustNotChange : [])) {
+    for (const id of [leadingId(check), ...taggedIds(check)].filter(Boolean)) proven.add(id)
+  }
+  return criterionIds(ids).filter((id) => !proven.has(id))
+}
+
+/**
+ * Checks the plan against the run's ids in script. Ids with neither an automated test nor a tagged step go
+ * back to the plan writer once; whatever is still missing after that is returned as `missing`.
+ * @param {object} o
+ * @param {object|null} o.plan the plan the writer returned
+ * @param {(string|number)[]} o.ids
+ * @param {(string|number)[]} [o.tested]
+ * @param {(missing: string[]) => Promise<object|null>} o.rewrite asks the writer to add steps for the missing ids; returns the new plan
+ * @returns {Promise<{plan: object|null, missing: string[], repaired: boolean}>}
+ */
+async function checkTestPlanCoverage({ plan, ids, tested = [], rewrite }) {
+  const missing = testPlanMissing(plan, ids, tested)
+  if (!plan || !missing.length) return { plan, missing, repaired: false }
+  const next = await rewrite(missing)
+  if (!next) return { plan, missing, repaired: false }
+  return { plan: next, missing: testPlanMissing(next, ids, tested), repaired: true }
+}
+
+/**
+ * The shared TestPlan step: writes the plan, checks its coverage in script, and sends the ids without proof
+ * back to the writer once. The rewrite names the file the first round wrote, so it updates that file
+ * instead of creating a second one with a new timestamp.
+ * @param {object} o
+ * @param {object} o.request the testPlanPrompt options (subject, specFolder, slug, context, ids, manualTasks, extra)
+ * @param {(string|number)[]} [o.tested] ids an automated test or build result proves
+ * @param {(prompt: string) => Promise<object|null>} o.write runs the plan writer agent on a prompt
+ * @returns {Promise<{plan: object|null, missing: string[], repaired: boolean}>}
+ */
+async function writeCheckedTestPlan({ request, tested = [], write }) {
+  const first = await write(testPlanPrompt(request).prompt)
+  return checkTestPlanCoverage({
+    plan: first,
+    ids: request.ids || [],
+    tested,
+    rewrite: (missing) => {
+      const again = testPlanPrompt({ ...request, path: plainPlanPath(first && first.path) || request.path || '' })
+      return write(`${again.prompt} The previous plan has no tagged step for ${missing.join(', ')}: rewrite the same file with a step tagged for each of them.`)
+    },
+  })
+}
+
+/**
+ * The ledger entry of the test-plan check.
+ * @param {string[]} missing ids still without proof after the repair round
+ * @param {boolean} planWritten whether a plan came back at all
+ * @returns {{check: string, status: string, reason: string}}
+ */
+function testPlanAssurance(missing, planWritten = true) {
+  if (!planWritten) return assure('test-plan', 'unavailable', 'the plan writer returned nothing')
+  return missing.length ? assure('test-plan', 'fail', `no test or plan step for ${missing.join(', ')}`) : assure('test-plan', 'pass')
 }
 
 // Renders the Detect-phase catalog straight from the registry so the detector
@@ -1647,7 +1970,7 @@ function firstPartyEntry(key) {
 }
 
 // Optional manifest blocks copied unchanged into STACK_EXTRAS.
-const MANIFEST_EXTRA_FIELDS = ['skills', 'scaffold', 'ci', 'e2e', 'e2eBackend', 'migrations', 'audit', 'markers', 'packages', 'packageManagers', 'sourceDirs', 'gateTemplates']
+const MANIFEST_EXTRA_FIELDS = ['skills', 'scaffold', 'ci', 'e2e', 'e2eBackend', 'migrations', 'audit', 'markers', 'packages', 'packageManagers', 'sourceDirs', 'docImpact', 'testIntegrity', 'security', 'gateTemplates']
 
 /**
  * The one projection of a manifest entry onto the registry: its STACKS row plus the trait and extra
@@ -1961,6 +2284,104 @@ function isRepoPath(p, roots) {
  */
 function ticketKey(value) {
   return typeof value === 'string' && value.length <= 64 && /^[A-Z][A-Z0-9_]+-\d+$/.test(value) ? value : ''
+}
+
+/**
+ * How a workflow resolves a spec reference to one folder under .ai/specs/: the rule the ship-feature loader
+ * and qa-and-docs share, as prompt text with the lookup command.
+ * @param {string} ref a reference that passed specRefValue, so it is safe inside the double-quoted shell value
+ * @returns {string}
+ */
+function specRefLookupText(ref) {
+  return `Accept: a full folder name or path; a legacy numeric id ("0042", "spec-0042", "14" → folders spec-0042-* or 14-*, leading zeros ignored); a ticket key ("PROJ-123" → spec-PROJ-123-*, case-insensitive); a timestamp id ("20261018-1430" → spec-20261018-1430-*). E.g.:
+   REF="${ref}"; REF="\${REF#.ai/specs/}"; REF="\${REF%/}"; KEY="\${REF#spec-}"
+   [ -d ".ai/specs/$REF" ] || { echo "$KEY" | grep -qE '^[0-9]+$' && ls -d .ai/specs/*/ | grep -E "/(spec-)?0*$((10#$KEY))-" || ls -d .ai/specs/*/ | grep -iE "/(spec-)?$KEY-"; }`
+}
+
+/**
+ * A spec reference (folder name or path, numeric id, ticket key or timestamp id) that is safe to place in
+ * shell text: letters, digits, ".", "_", "-" and "/" (128 characters after an optional ".ai/specs/" prefix),
+ * starting with a letter or digit, with no ".." segment. Anything else gives ''.
+ * @param {unknown} value the caller's { spec }
+ * @returns {string} the reference, or '' when it is not safe
+ * @example specRefValue('20261018-1430') // '20261018-1430'
+ * @example specRefValue('x"; touch /tmp/pwn; "') // ''
+ */
+function specRefValue(value) {
+  const text = typeof value === 'number' ? String(value) : value
+  return typeof text === 'string' && /^(?:\.ai\/specs\/)?[A-Za-z0-9][A-Za-z0-9._/-]{0,127}$/.test(text) && !text.split('/').includes('..') ? text : ''
+}
+
+/**
+ * A file-name or branch slug computed in script: lowercase, every run of other characters turned into "-",
+ * cut to `max` characters at a hyphen.
+ * @param {string} text
+ * @param {number} [max]
+ * @returns {string} '' when the text has no letters or digits
+ * @example toSlug('Postgres vs. Mongo?')  // 'postgres-vs-mongo'
+ */
+function toSlug(text, max = 40) {
+  let slug = String(text == null ? '' : text).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+  if (slug.length > max) {
+    const cut = slug.slice(0, max)
+    slug = slug[max] === '-' || cut.lastIndexOf('-') === -1 ? cut : cut.slice(0, cut.lastIndexOf('-'))
+    slug = slug.replace(/-+$/, '')
+  }
+  return slug
+}
+
+/**
+ * The one ADR-naming instruction of every workflow that writes an ADR: the next free four-digit number (the
+ * doc-hygiene ordered.adr convention), a slug the script computes, and a no-overwrite write.
+ * @param {string} dir the ADR directory, or a placeholder the prompt defines
+ * @param {string} topic text the slug is made from (the decision question or the project idea)
+ * @returns {string}
+ */
+function adrNamingInstruction(dir, topic) {
+  const slug = toSlug(topic) || 'decision'
+  return `Name: NNNN = the highest four-digit number among the existing ${dir}/NNNN-*.md files plus one, zero-padded to four digits (0001 when there is none). SLUG=${slug} (use it exactly as given). DATE=$(date +%Y-%m-%d); existing ADR files keep their names and ids.
+File: ${dir}/$NNNN-$SLUG.md (lowercase). Create it with a no-overwrite write (set -o noclobber; cat > "$FILE" <<'EOF' ... EOF, or open with O_EXCL); when another ADR already took that number, take the next number and retry. Never overwrite or renumber an existing file.
+Heading: the first line is "# ADR <id>: <title>", where <id> is $NNNN and <title> is the decision in a few words.`
+}
+
+/**
+ * The work branch a run switches to when it starts on a protected branch. Computed in script, never by an
+ * agent, so no agent text reaches a git argument.
+ *
+ * The slug is the spec folder name without "spec-", the YYYYMMDD-HHMM- timestamp and a leading
+ * ticket key, lowercased, with every run of other characters turned into "-", and cut to 40
+ * characters at a hyphen. Without a folder, the same rule runs on the fallback text.
+ *
+ * @param {'feature'|'fix'} prefix  branch prefix
+ * @param {string|null} folder      spec folder path or name; null when there is none
+ * @param {string|null} key         ticket key; used only when it matches PROJ-123 form
+ * @param {string} [fallback]       text to slug when there is no folder (the feature or bug description)
+ * @returns {string|null}  "<prefix>/<KEY>-<slug>", "<prefix>/<slug>", or null when nothing usable is left
+ * @example workBranchName('feature', '.ai/specs/spec-20261112-1058-kit-limits', 'PROJ-7')  // 'feature/PROJ-7-kit-limits'
+ * @example workBranchName('fix', null, 'PROJ-7', 'Cart total is wrong')                    // 'fix/PROJ-7-cart-total-is-wrong'
+ */
+function workBranchName(prefix, folder, key, fallback) {
+  const validKey = ticketKey(key)
+  let base = folder ? String(folder).split('/').filter(Boolean).pop() || '' : String(fallback || '')
+  if (folder) base = base.replace(/^spec-/, '').replace(/^\d{8}-\d{4}-/, '')
+  let slug = toSlug(base, Infinity)
+  const keySlug = validKey ? `${toSlug(validKey, Infinity)}-` : ''
+  if (keySlug && slug.startsWith(keySlug)) slug = slug.slice(keySlug.length)
+  slug = toSlug(slug)
+  const name = validKey ? (slug ? `${prefix}/${validKey}-${slug}` : `${prefix}/${validKey}`) : slug ? `${prefix}/${slug}` : null
+  return name && new RegExp(`^${prefix}/[A-Za-z0-9._-]+$`).test(name) ? name : null
+}
+
+/**
+ * The feature branch of ship-feature.
+ * @param {string|null} folder  spec folder path or name; null when no spec was persisted
+ * @param {string|null} key     ticket key
+ * @param {string} [fallback]   text to slug when there is no folder
+ * @returns {string|null}
+ * @example featureBranchName('.ai/specs/spec-PROJ-7-kit-limits', 'PROJ-7') // 'feature/PROJ-7-kit-limits'
+ */
+function featureBranchName(folder, key, fallback) {
+  return workBranchName('feature', folder, key, fallback)
 }
 
 // The repo roots a caller passed (args.repos as an object or array of paths), limited to the path characters.
@@ -2416,6 +2837,119 @@ const NO_VCS_WRITES = 'Do not commit, push, merge, tag or open a pull request. I
 /** How a Build agent reports an owner step so isOwnerStep can recognise it; follows NO_VCS_WRITES in Build prompts. */
 const OWNER_STEP_NOTE = 'When you leave a task undone as an owner step, return completed=false and start notes with "owner-step:" followed by what the owner must do.'
 
+/**
+ * The question and assumption contract shared by ship-feature, fix-bug, greenfield-build, qa-and-docs and
+ * tech-research. A workflow never waits for input (the Workflow tool has no input channel): a planning agent
+ * returns the questions it could not settle and the assumptions it made, the run goes on, and both lists come
+ * back in the result for the caller to ask. The caller answers with `args.answers` ({ <question id>: <answer> })
+ * on a later run; the first planning prompt receives them.
+ */
+const ANSWERS_ARG = (() => {
+  const given = typeof args !== 'undefined' && args && typeof args === 'object' ? args.answers : null
+  return given && typeof given === 'object' && !Array.isArray(given) ? given : {}
+})()
+
+const QUESTION_ITEM_SCHEMA = {
+  type: 'object',
+  required: ['id', 'question', 'why', 'blocking'],
+  properties: {
+    id: { type: 'string' },
+    question: { type: 'string' },
+    why: { type: 'string' },
+    blocking: { type: 'boolean' },
+  },
+}
+
+const ASSUMPTION_ITEM_SCHEMA = {
+  type: 'object',
+  required: ['id', 'text', 'source'],
+  properties: {
+    id: { type: 'string' },
+    text: { type: 'string' },
+    source: { type: 'string' },
+  },
+}
+
+/** Schema properties a planning phase adds to its result schema to take part in the contract. */
+const ASK_SCHEMA_PROPS = {
+  questions: { type: 'array', items: QUESTION_ITEM_SCHEMA },
+  assumptions: { type: 'array', items: ASSUMPTION_ITEM_SCHEMA },
+}
+
+/** Prompt text for a planning phase: the owner's answers when there are any, and how to report what is still open. */
+function askPromptBlock() {
+  const answered = Object.keys(ANSWERS_ARG).length ? `Answers the owner already gave (question id to answer; treat as settled, do not ask again): ${JSON.stringify(ANSWERS_ARG)}\n` : ''
+  return `${answered}Do not wait for input. Return in questions every point you could not settle from the code, docs and answers above ({ id, question, why it matters, blocking: true when the work cannot be right without it }), and in assumptions every choice you made where the request was silent ({ id, text, source: where you looked }). Use empty lists when there are none.`
+}
+
+const askedQuestions = []
+const assumedChoices = []
+
+const askCounters = {}
+
+/**
+ * Collects the questions and assumptions of one planning result. Ids are assigned here
+ * (`Q-<scope>-<n>`, `<scope>-A<n>`, in the order returned, counted per scope) and the agent's own ids are
+ * ignored, so two phases or repos that both call a question "Q1" never collide and an owner's answer
+ * matches the id the run assigned. A question whose assigned id has an answer, or whose text was already
+ * asked, is skipped.
+ */
+function collectAsk(result, scope) {
+  const tag = scope ? `${scope}-` : ''
+  const next = (kind) => {
+    const key = `${kind}:${tag}`
+    askCounters[key] = (askCounters[key] || 0) + 1
+    return askCounters[key]
+  }
+  for (const q of (result && Array.isArray(result.questions) && result.questions) || []) {
+    const id = `Q-${tag}${next('Q')}`
+    const text = String((q && q.question) || '')
+    if (Object.prototype.hasOwnProperty.call(ANSWERS_ARG, id)) continue
+    if (askedQuestions.some((k) => k.id === id || (text && k.question === text))) continue
+    askedQuestions.push({ id, question: text, why: String((q && q.why) || ''), blocking: !!(q && q.blocking) })
+  }
+  for (const a of (result && Array.isArray(result.assumptions) && result.assumptions) || []) {
+    const text = typeof a === 'string' ? a : a && a.text ? String(a.text) : ''
+    if (!text) continue
+    const id = `${tag}A${next('A')}`
+    if (assumedChoices.some((k) => k.id === id || k.text === text)) continue
+    assumedChoices.push({ id, text, source: typeof a === 'string' ? scope || '' : String(a.source || scope || '') })
+  }
+}
+
+/** True when a question the work cannot be right without is still open; the caller ends the run and returns it. */
+function blockingQuestionOpen() {
+  return askedQuestions.some((q) => q.blocking)
+}
+
+// Bounds on what one Build agent reply adds to the run's assumptions, so a runaway reply cannot flood the report.
+const MAX_BUILD_ASSUMPTIONS = 20
+const MAX_ASSUMPTION_TEXT = 300
+
+/**
+ * Contract items ({ id, text, source }) for the assumption strings one Build reply returned. At most
+ * MAX_BUILD_ASSUMPTIONS are kept, each cut to MAX_ASSUMPTION_TEXT characters; when more came back, one last
+ * item says how many were left out, so the report still accounts for every one.
+ * @param {unknown} raw the reply's assumptions (strings; an object's text is used)
+ * @param {{ prefix: string, source: string, start?: number }} o ids are `${prefix}${n}`, numbered from start + 1
+ * @returns {{ id: string, text: string, source: string }[]}
+ * @example buildAssumptionItems(['uses UTC'], { prefix: 'T3-A', source: 'build:t3' })  // [{ id: 'T3-A1', text: 'uses UTC', source: 'build:t3' }]
+ */
+function buildAssumptionItems(raw, { prefix, source, start = 0 }) {
+  const texts = (Array.isArray(raw) ? raw : [])
+    .map((a) => (typeof a === 'string' ? a : a && typeof a.text === 'string' ? a.text : ''))
+    .map((t) => t.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+  const kept = texts.slice(0, MAX_BUILD_ASSUMPTIONS).map((t) => (t.length > MAX_ASSUMPTION_TEXT ? `${t.slice(0, MAX_ASSUMPTION_TEXT - 1)}…` : t))
+  if (texts.length > MAX_BUILD_ASSUMPTIONS) kept.push(`${texts.length - MAX_BUILD_ASSUMPTIONS} more assumption(s) not listed (the reply returned ${texts.length})`)
+  return kept.map((text, i) => ({ id: `${prefix}${start + i + 1}`, text, source }))
+}
+
+/** The contract keys of a workflow result: `questions` and `assumptions`, empty lists when there are none. */
+function askResult(extraAssumptions) {
+  return { questions: askedQuestions.slice(), assumptions: [...assumedChoices, ...(extraAssumptions || [])] }
+}
+
 const GATE_FIX_SCHEMA = {
   type: 'object',
   required: ['changedFiles', 'causes'],
@@ -2641,6 +3175,1370 @@ async function runRepoGates(repo, instructionsFor, runOpts) {
   })
   return { ...result, repo: repo.path, gates: [...reported, ...plan.fixed] }
 }
+
+const normalFile = (f) => String(f || '').trim().replace(/^(\.\/)+/, '')
+
+/** Whether two reported paths name the same file; one may carry a longer prefix (an absolute or container path). */
+function sameFile(a, b) {
+  return a === b || a.endsWith(`/${b}`) || b.endsWith(`/${a}`)
+}
+
+// Lint and format violations can sit in files the run never touched; types, test, build and e2e failures can
+// come from a change in another file, so they always block.
+const SCOPED_GATE_KINDS = ['lint', 'format']
+
+/**
+ * Passes a failing lint or format gate whose reported files all lie outside the run's changed files.
+ * The kind comes from the stack manifest by gate name; a gate without files, of another kind or of an
+ * unknown kind stays as reported, so the check fails closed.
+ * @param {{ allPassed: boolean, gates?: object[] }|null} result  one repo's gate result
+ * @param {string} stack  the repo's stack
+ * @param {string[]} changed  the repo's changed files, repo-relative
+ * @returns {object|null}  the result, with allPassed recomputed when a gate was passed
+ * @example
+ * // The stack's manifest declares a gate "Lint" of kind lint; it fails only in legacy/old.js, which the run did not change:
+ * scopeLintFailures({ allPassed: false, gates: [{ name: 'Lint', status: 'fail', files: ['legacy/old.js'] }] }, stack, ['src/page.js'])
+ * // -> { allPassed: true, gates: [{ name: 'Lint', status: 'pass', details: 'pre-existing violations only: 1 file(s) this run did not change (not in scope)', ... }] }
+ */
+function scopeLintFailures(result, stack, changed) {
+  if (!result || !Array.isArray(result.gates)) return result
+  const kinds = extrasFor(stack).gates || {}
+  const inRun = (changed || []).map(normalFile).filter(Boolean)
+  let passed = 0
+  const gates = result.gates.map((g) => {
+    const kind = g && hasOwn(kinds, g.name) ? kinds[g.name].kind : null
+    if (!g || g.status !== 'fail' || !SCOPED_GATE_KINDS.includes(kind)) return g
+    const files = Array.from(new Set((Array.isArray(g.files) ? g.files : []).map(normalFile).filter(Boolean)))
+    if (!files.length || files.some((f) => inRun.some((c) => sameFile(f, c)))) return g
+    passed++
+    return { ...g, status: 'pass', details: `pre-existing violations only: ${files.length} file(s) this run did not change (not in scope)` }
+  })
+  if (!passed) return result
+  return { ...result, gates, allPassed: gates.every((g) => g && (g.status === 'pass' || g.status === 'skip')) }
+}
+
+/** The stable failure ids a gate reported (test names, `file:rule`, advisory ids), trimmed and de-duplicated. */
+function gateFailureIds(gate) {
+  const ids = gate && Array.isArray(gate.failures) ? gate.failures : []
+  return Array.from(new Set(ids.map((id) => String(id == null ? '' : id).trim()).filter(Boolean)))
+}
+
+/**
+ * Compares one repo's failing gates with the gate baseline taken before the build. A failing gate is
+ * `pre-existing` only when the baseline run of the same gate (repo, name, plan command) also failed and every
+ * failure id it reports now was already in the baseline. A new id, a failing gate with no ids, a gate that
+ * passed or was absent in the baseline, and a gate unreachable in the baseline all stay failing, so they block.
+ * A pre-existing gate is passed with `preExisting: true`, so it is not sent to a fix agent and does not block.
+ * @param {{ repo: string, allPassed: boolean, gates?: object[] }|null} result  one repo's gate result
+ * @param {object[]|null} baseline  the allGates of the baseline run, or null when none was taken
+ * @returns {object|null}  the result, with allPassed recomputed when a gate was classified pre-existing
+ * @example
+ * // Baseline: the test gate failed with ['FooTest']. Now it fails with ['FooTest'] only: pre-existing. With ['FooTest', 'BarTest']: a regression.
+ */
+function classifyAgainstBaseline(result, baseline) {
+  if (!result || !Array.isArray(result.gates) || !Array.isArray(baseline) || !baseline.length) return result
+  // A baseline from gateBaselineOf carries the signature of the command that ran then; a changed plan command no longer matches.
+  const before = new Map(baseline.filter((g) => g && g.status === 'fail').map((g) => [g.signature || gateSignature(g), gateFailureIds(g)]))
+  let classified = 0
+  const gates = result.gates.map((g) => {
+    if (!g || g.status !== 'fail') return g
+    const now = gateFailureIds(g)
+    const known = before.get(gateSignature({ ...g, repo: result.repo }))
+    if (!known || !now.length || !now.every((id) => known.includes(id))) return g
+    classified++
+    return { ...g, status: 'pass', preExisting: true, details: `pre-existing: failed the same way before this run (${now.length} known failure(s)); not a regression` }
+  })
+  if (!classified) return result
+  return { ...result, gates, allPassed: gates.every((g) => g && (g.status === 'pass' || g.status === 'skip')) }
+}
+
+/**
+ * The gate baseline as kept for later comparison: each gate with the signature of the plan command it ran
+ * with, recorded now, so a gate whose command changes before the later run is not matched to it.
+ * @param {object[]} allGates the allGates of the baseline run
+ * @returns {object[]}
+ */
+function gateBaselineOf(allGates) {
+  return (Array.isArray(allGates) ? allGates : []).map((g) => ({ ...g, signature: gateSignature(g) }))
+}
+
+/**
+ * Runs the gates of every repo in parallel, plus any extra jobs (such as a contract-sync gate).
+ * @param {object} opts
+ * @param {object[]} opts.repos  the repos to run gates in
+ * @param {(repo: object) => Promise<object|null>} opts.runRepo  runs one repo's gates (normally runRepoGates)
+ * @param {(repo: object) => string[]} [opts.changedIn]  a repo's changed files; when given, lint and format failures outside them are passed
+ * @param {object[]|null} [opts.baseline]  the allGates of a run taken before the build; failures it already had are classified pre-existing
+ * @param {Array<() => Promise<object|null>>} [opts.extraJobs]  further gate jobs, each returning a { repo, gates, allPassed } result
+ * @returns {Promise<{ results: object[], allGates: object[], allPassed: boolean }>}
+ */
+async function runGateSet({ repos, runRepo, changedIn = null, baseline = null, extraJobs = [] }) {
+  const jobs = repos.map((r) => async () => {
+    const result = await runRepo(r)
+    return classifyAgainstBaseline(changedIn ? scopeLintFailures(result, r.stack, changedIn(r)) : result, baseline)
+  })
+  const results = (await parallel([...jobs, ...extraJobs])).filter(Boolean)
+  const allGates = results.flatMap((g) => (g.gates || []).map((x) => ({ ...x, repo: g.repo })))
+  return { results, allGates, allPassed: results.length > 0 && results.every((g) => g.allPassed) }
+}
+
+/**
+ * Whether a failing gate is of kind security in its repo's stack manifest. The kind comes from the manifest
+ * by gate name; a gate of an untrusted manifest or of an unknown kind is not security.
+ * @param {{ name?: string, repo?: string }} gate
+ * @param {Array<{ path: string, stack: string }>} repos
+ * @returns {boolean}
+ */
+function isSecurityGate(gate, repos) {
+  const repo = repos.find((r) => r.path === gate.repo)
+  const kinds = repo ? extrasFor(repo.stack).gates || {} : {}
+  return hasOwn(kinds, gate.name) && kinds[gate.name].kind === 'security'
+}
+
+/**
+ * Runs the gates and lets a fix agent repair failures, up to 3 rounds. A round stops the loop when nothing is
+ * left to fix, the budget is low, no repo has changed files (with changedIn), or no fix agent changed a file.
+ * Failures a round left stuck (no file changed, or an environment or pre-existing cause) are recorded in `stuck`
+ * and not sent to a fix agent again.
+ * @param {object} opts
+ * @param {object[]} opts.repos  the repos a fix may target
+ * @param {Map<string, object>} opts.stuck  stuck-gate bookkeeping, shared with environmentIssues in the report
+ * @param {() => Promise<{ results: object[], allGates: object[], allPassed: boolean }>} opts.runGates  one gate run
+ * @param {(repo: object, failing: object[], round: number) => Promise<object|null>} opts.fixRepo  runs the fix agent for one repo; builds its own prompt
+ * @param {(repo: object) => string[]} [opts.changedIn]  a repo's changed files; a repo without any gets no fix call, its failures are pre-existing
+ * @returns {Promise<{ results: object[], allGates: object[], allPassed: boolean }>}  the last gate run
+ */
+async function gateFixLoop({ repos, stuck, runGates, fixRepo, changedIn = null }) {
+  let current = await runGates()
+  let fixRounds = 0
+  while (!current.allPassed && fixRounds < 3) {
+    current.allGates.filter((g) => g.status === 'fail' && isSecurityGate(g, repos)).forEach((g) => {
+      const sig = gateSignature(g, GATE_PLAN_COMMANDS)
+      if (stuck.has(sig)) return
+      const command = GATE_PLAN_COMMANDS.get(gatePlanKey(g.repo, g.name))
+      stuck.set(sig, `Review the security finding(s) from ${command ? `\`${command}\`` : g.name} and fix or accept them; the fix loop does not change security findings`)
+      log(`Gates: ${g.name} is a security gate — not sent to a fix agent; it blocks until the owner acts`)
+    })
+    const failing = gatesToFix(current.allGates, stuck)
+    if (!failing.length) {
+      log('Gates not all green but nothing actionable to fix — stopping loop.')
+      break
+    }
+    if (budget.total && budget.remaining() < 60_000) {
+      log(`Gates failing but budget low (${Math.round(budget.remaining() / 1000)}k left) — stopping fix loop.`)
+      break
+    }
+    // Fix per repo so the right specialist edits the right tree.
+    const byRepo = repos.filter((r) => failing.some((f) => f.repo === r.path))
+    const targets = byRepo.length ? byRepo : repos
+    if (changedIn) targets.filter((r) => !changedIn(r).length).forEach((r) => log(`Gates: ${r.path} failures are pre-existing (this run changed no file there) — not fixed`))
+    const scoped = changedIn ? targets.filter((r) => changedIn(r).length) : targets
+    if (!scoped.length) break
+    fixRounds++
+    log(`Gates round ${fixRounds}: fixing ${failing.length} failing gate(s)`)
+    const round = fixRounds
+    const replies = await parallel(
+      scoped.map((r) => async () => {
+        const repoFailing = failing.filter((f) => !f.repo || f.repo === r.path)
+        const fixed = await fixRepo(r, repoFailing, round)
+        if (recordGateFix(stuck, repoFailing, fixed)) log(`Gates: the ${r.role} fix round changed no file or reported an environment cause — those failures are not sent to a fix agent again`)
+        return fixed
+      })
+    )
+    if (gateRoundIdle(replies)) {
+      log('Gates: no fix agent changed a file — not re-running the gates.')
+      break
+    }
+    current = await runGates()
+  }
+  return current
+}
+
+// --- Base revision ---------------------------------------------------------
+// The revision a run starts from and the files already modified or untracked then, per tracked repo.
+// Later steps diff against the sha, so it is accepted only as a full hex revision id: it ends up inside
+// git commands the script builds, never text from an agent.
+const HASHES_SCHEMA = {
+  type: 'array',
+  items: {
+    type: 'object',
+    required: ['path', 'hash'],
+    properties: { path: { type: 'string' }, hash: { type: 'string' } },
+  },
+}
+
+const BASE_SCHEMA = {
+  type: 'object',
+  required: ['sha', 'dirty'],
+  properties: {
+    sha: { type: 'string' },
+    dirty: { type: 'array', items: { type: 'string' } },
+    hashes: HASHES_SCHEMA,
+  },
+}
+
+/**
+ * Whether a value is a full git revision id (sha-1 or sha-256), lower-case hex.
+ * @param {unknown} value
+ * @returns {boolean}
+ * @example isCommitSha('0123456789abcdef0123456789abcdef01234567') // true
+ * @example isCommitSha('HEAD; rm -rf ~') // false
+ */
+function isCommitSha(value) {
+  return typeof value === 'string' && /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/.test(value)
+}
+
+/**
+ * Whether a repo-relative path is plain enough to be named inside a git command the script builds.
+ * @param {string} file
+ * @returns {boolean}
+ */
+function isHashablePath(file) {
+  return /^[A-Za-z0-9._@+\/-]+$/.test(file) && !file.split('/').includes('..') && !file.startsWith('-')
+}
+
+/**
+ * Turns an agent's hash list into a path to content-hash map. A hash is a hex object id, or '' for a
+ * file that no longer exists; anything else is dropped.
+ * @param {unknown} raw
+ * @returns {Record<string, string>}
+ */
+function acceptHashes(raw) {
+  const out = {}
+  for (const item of Array.isArray(raw) ? raw : []) {
+    if (!item || typeof item.path !== 'string' || typeof item.hash !== 'string') continue
+    const file = normalFile(item.path)
+    const hash = item.hash.trim()
+    if (file && isHashablePath(file) && (hash === '' || isCommitSha(hash))) out[file] = hash
+  }
+  return out
+}
+
+/**
+ * The content-hash lines of a prompt: one read-only `git hash-object` per already-dirty path.
+ * @param {string} dir a validated repo path
+ * @param {string[]} paths dirty paths, filtered through isHashablePath
+ * @returns {string}
+ */
+function hashStepText(dir, paths) {
+  const list = paths.filter(isHashablePath)
+  if (!list.length) return ''
+  return `   Run \`git -C "${dir}" hash-object -- <file> ...\` once, naming every one of these files that still exists (a missing file gets hash ''): ${list.join(', ')}. hashes = one {path, hash} per file; hash is '' when the file no longer exists.\n`
+}
+
+/**
+ * The read-only steps that capture a repo's base revision and dirty-file list. Two git commands, no
+ * stash or reset, and no commits, so the user's changes are never touched to take a baseline.
+ * @param {string} dir a validated repo path
+ * @returns {string}
+ */
+function baseStepText(dir) {
+  return `Base revision. Run exactly these two read-only git commands, one at a time, and no other git command:
+   git -C "${dir}" rev-parse HEAD
+   git -C "${dir}" status --porcelain --untracked-files=all
+   sha = the first command's output. dirty = the repo-relative path of every line of the second command's output (modified, staged, deleted or untracked; for a rename, the new path). dirty is [] when the output is empty. After those two commands, run \`git -C "${dir}" hash-object -- <path> ...\` once with every dirty path that still exists, and return hashes = one {path, hash} per dirty path (hash is '' when the file no longer exists; skip a path that starts with "-" or holds a space or quote). Never stash, reset, checkout, clean or make commits.`
+}
+
+/**
+ * Turns one agent answer into a base entry, or null when the sha is not a full revision id.
+ * @param {{ path: string, role?: string }} repo
+ * @param {{ sha?: unknown, dirty?: unknown }|null} raw
+ * @returns {{ repo: string, role: string, sha: string, dirty: string[] }|null}
+ */
+function acceptBase(repo, raw) {
+  const sha = raw && typeof raw.sha === 'string' ? raw.sha.trim() : ''
+  if (!isCommitSha(sha)) return null
+  const dirty = (Array.isArray(raw.dirty) ? raw.dirty : []).map((f) => normalFile(f)).filter((f) => f && !/[\r\n]/.test(f))
+  const entry = { repo: repo.path, role: repo.role, sha, dirty: [...new Set(dirty)] }
+  const hashes = acceptHashes(raw.hashes)
+  if (Object.keys(hashes).length) entry.hashes = hashes
+  return entry
+}
+
+/**
+ * The base entry of one repo from an agent answer: the accepted base, or a skipped entry that says why.
+ * A repo with tracked !== true has no git history to diff against, and an unsafe path or a sha that is
+ * not a revision id is never trusted.
+ * @param {{ path: string, role: string, tracked?: boolean }} repo
+ * @param {object|null} raw the agent answer (sha, dirty)
+ * @param {Set<string>} [roots] caller repo roots (callerRoots)
+ * @returns {{ repo: string, role: string, sha?: string, dirty?: string[], skipped?: string }}
+ */
+function baseEntry(repo, raw, roots) {
+  const skip = (reason) => ({ repo: repo.path, role: repo.role, skipped: reason })
+  if (repo.tracked !== true) return skip('untracked: no git history to diff against')
+  if (!isRepoPath(repo.path, roots)) return skip('unsafe repo path')
+  return acceptBase(repo, raw) || skip('no valid revision sha reported')
+}
+
+/**
+ * Records the base revision of every repo. A repo with tracked !== true has no git history to diff
+ * against: it is recorded as skipped and the run goes on. A rejected sha is recorded as skipped too.
+ * @param {Array<{ path: string, role: string, tracked?: boolean }>} repoList
+ * @param {{ roots?: Set<string>, run: (prompt: string, repo: object) => Promise<object|null> }} opts
+ * @returns {Promise<Array<{ repo: string, role: string, sha?: string, dirty?: string[], skipped?: string }>>}
+ */
+async function recordBases(repoList, opts) {
+  return Promise.all(repoList.map(async (repo) => {
+    if (repo.tracked !== true || !isRepoPath(repo.path, opts.roots)) return baseEntry(repo, null, opts.roots)
+    const raw = await opts.run(`Record the starting point of the ${repo.role} repo at "${repo.path}". Use Bash. Change nothing.\n1. ${baseStepText(repo.path)}\nReturn sha, dirty and hashes.`, repo)
+    return baseEntry(repo, raw, opts.roots)
+  }))
+}
+
+/** Logs one line per base entry: the short sha and dirty count, or why it was skipped. */
+function logBases(bases) {
+  bases.forEach((b) => log(b.skipped ? `Base: ${b.role} skipped (${b.skipped})` : `Base: ${b.role} at ${b.sha.slice(0, 10)}, ${b.dirty.length} file(s) already changed`))
+}
+
+// --- Changed files from git -----------------------------------------------
+// For a tracked repo with a recorded base, the files a run changed come from git (the diff from the
+// base plus untracked files, minus the files already dirty at the start), not from what agents report.
+const CHANGED_SCHEMA = {
+  type: 'object',
+  required: ['files'],
+  properties: { files: { type: 'array', items: { type: 'string' } }, hashes: HASHES_SCHEMA },
+}
+
+/**
+ * The read-only steps that list what changed since the base revision.
+ * @param {string} dir a validated repo path
+ * @param {string} sha a validated revision id (isCommitSha)
+ * @param {string[]} [hashed] already-dirty paths whose content hash is read again
+ * @returns {string}
+ */
+function changedStepText(dir, sha, hashed = []) {
+  return `Changed files. Run exactly these two read-only git commands, one at a time, and no other git command:
+   git -C "${dir}" diff --name-only ${sha}
+   git -C "${dir}" ls-files --others --exclude-standard
+   files = the repo-relative path of every line of both outputs, once each. files is [] when both are empty.
+${hashStepText(dir, hashed)}   Never stash, reset, checkout, clean or make commits.`
+}
+
+/**
+ * The files a run changed in one repo: the agent's git listing without spec files and without the
+ * files that were already dirty at the base, except a dirty file whose content hash differs from the
+ * one recorded at the base (the run changed it again).
+ * @param {{ files?: unknown }|null} raw the agent answer
+ * @param {{ dirty?: string[] }} base the repo's base entry
+ * @returns {string[]|null} null when the answer holds no file list
+ */
+function acceptChanged(raw, base) {
+  if (!raw || !Array.isArray(raw.files)) return null
+  const dirty = (base.dirty || []).map((f) => normalFile(f))
+  const before = base.hashes || {}
+  const now = acceptHashes(raw.hashes)
+  const files = raw.files.map((f) => normalFile(f)).filter((f) => f && !/[\r\n]/.test(f) && !/(^|\/)\.ai\/specs\//.test(f))
+  // A dirty file the hashes cannot judge (no hash at the base or now) counts as changed.
+  const touched = (f) => !(hasOwn(before, f) && hasOwn(now, f)) || before[f] !== now[f]
+  return [...new Set(files.filter((f) => !dirty.includes(f) || touched(f)))]
+}
+
+/**
+ * The changed files per repo. A tracked repo with a valid base is read from git; an untracked repo, a
+ * repo without a base, or a git listing the agent did not return falls back to the files agents reported.
+ * @param {Array<{ path: string, role: string, tracked?: boolean }>} repoList
+ * @param {Array<{ repo: string, sha?: string, dirty?: string[] }>} bases
+ * @param {{ roots?: Set<string>, run: (prompt: string, repo: object) => Promise<object|null>, reported: (repo: object) => string[] }} opts
+ * @returns {Promise<Array<{ repo: string, role: string, files: string[], source: 'git'|'reported' }>>}
+ */
+async function collectChanged(repoList, bases, opts) {
+  return Promise.all(repoList.map(async (repo) => {
+    const base = bases.find((b) => b.repo === repo.path)
+    const fallback = { repo: repo.path, role: repo.role, files: opts.reported(repo), source: 'reported' }
+    if (repo.tracked !== true || !isRepoPath(repo.path, opts.roots) || !base || !isCommitSha(base.sha)) return fallback
+    const raw = await opts.run(`List what changed in the ${repo.role} repo at "${repo.path}" since the run started. Use Bash. Change nothing.\n1. ${changedStepText(repo.path, base.sha, Object.keys(base.hashes || {}))}\nReturn files and hashes.`, repo)
+    const files = acceptChanged(raw, base)
+    return files ? { repo: repo.path, role: repo.role, files, source: 'git' } : fallback
+  }))
+}
+
+const HASHED_SCHEMA = {
+  type: 'object',
+  required: ['hashes'],
+  properties: { hashes: HASHES_SCHEMA },
+}
+
+/**
+ * Content hashes of the files a run has changed so far, for a later comparison. One read-only step per
+ * tracked repo with a valid base; an untracked repo, a repo without a base, or an answer without a hash
+ * list leaves no entry for it, so the caller falls back to what agents reported.
+ * @param {Array<{ path: string, role: string, tracked?: boolean }>} repoList
+ * @param {Array<{ repo: string, sha?: string }>} bases
+ * @param {(repo: object) => string[]} listOf the changed files of a repo, repo-relative
+ * @param {{ roots?: Set<string>, run: (prompt: string, repo: object) => Promise<object|null> }} opts
+ * @returns {Promise<Map<string, { files: string[], hashes: Record<string, string> }>>}
+ */
+async function hashChanged(repoList, bases, listOf, opts) {
+  const out = new Map()
+  await Promise.all(repoList.map(async (repo) => {
+    const base = bases.find((b) => b.repo === repo.path)
+    if (repo.tracked !== true || !isRepoPath(repo.path, opts.roots) || !base || !isCommitSha(base.sha)) return
+    const files = listOf(repo).map((f) => normalFile(f)).filter(Boolean)
+    const hashable = files.filter(isHashablePath)
+    if (!hashable.length) {
+      out.set(repo.path, { files, hashes: {} })
+      return
+    }
+    const raw = await opts.run(`Read the content hashes of the files changed so far in the ${repo.role} repo at "${repo.path}". Use Bash. Change nothing.\n1.${hashStepText(repo.path, hashable).replace(/^ +/, ' ')}Return hashes.`, repo)
+    if (!raw || !Array.isArray(raw.hashes)) return
+    out.set(repo.path, { files, hashes: acceptHashes(raw.hashes) })
+  }))
+  return out
+}
+
+/**
+ * The files of a later changed list that are new, or whose content hash differs from the snapshot taken
+ * earlier. A file the hashes cannot judge (no hash in either snapshot) counts as changed.
+ * @param {{ files: string[], hashes: Record<string, string> }} before
+ * @param {{ files: string[], hashes: Record<string, string> }} after
+ * @returns {string[]}
+ */
+function changedSinceSnapshot(before, after) {
+  return after.files.filter((f) => {
+    if (!before.files.includes(f)) return true
+    const known = hasOwn(before.hashes, f) && hasOwn(after.hashes, f)
+    return !known || before.hashes[f] !== after.hashes[f]
+  })
+}
+
+/**
+ * The lines a reviewer prompt carries so the reviewer reads the real diff: per repo with a base, the
+ * exact diff command and the new-files command; for any other repo, the files agents reported.
+ * @param {Array<{ path: string, role: string }>} repoList
+ * @param {Array<{ repo: string, sha?: string }>} bases
+ * @param {(repo: object) => string[]} reported
+ * @param {(repo: object) => string[]} [scope] files to limit the diff to; the whole run diff when absent
+ * @returns {string}
+ */
+function reviewDiffLines(repoList, bases, reported, scope) {
+  const lines = repoList.map((repo) => {
+    const base = bases.find((b) => b.repo === repo.path)
+    if (base && isCommitSha(base.sha)) {
+      const earlier = reported(repo).filter((f) => (base.dirty || []).includes(f))
+      const note = earlier.length ? ` Already changed before the run and changed again, so their diff may include earlier changes: ${earlier.join(', ')}.` : ''
+      const only = scope ? scope(repo) || [] : []
+      const spec = only.length && only.every(isHashablePath) ? ` -- ${only.map((f) => `"${f}"`).join(' ')}` : ''
+      return `- ${repo.role} (${repo.path}): read the changes with \`git -C "${repo.path}" diff ${base.sha}${spec}\`; new files with \`git -C "${repo.path}" ls-files --others --exclude-standard\`.${note}`
+    }
+    const files = reported(repo)
+    return `- ${repo.role} (${repo.path}): no git base recorded; changed files: ${files.join(', ') || '(inspect the working tree)'}.`
+  })
+  return lines.join('\n')
+}
+
+// --- Review: findings, verify votes and the diff review shared by the workflows ---------------
+const FINDINGS_SCHEMA = {
+  type: 'object',
+  required: ['findings'],
+  properties: {
+    findings: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['title', 'severity'],
+        properties: {
+          title: { type: 'string' },
+          file: { type: 'string' },
+          line: { type: 'integer' },
+          severity: { type: 'string', enum: ['critical', 'major', 'minor'] },
+          description: { type: 'string' },
+          convention: { type: 'string' },
+        },
+      },
+    },
+  },
+}
+
+const REVIEW_VERDICT_SCHEMA = {
+  type: 'object',
+  required: ['real', 'reason'],
+  properties: {
+    real: { type: 'boolean' },
+    reason: { type: 'string' },
+    fixSize: { type: 'string', enum: ['trivial', 'small', 'large'] },
+  },
+}
+
+const VERIFY_LENSES = {
+  correctness: 'does the cited code really behave the way the finding claims?',
+  reproducibility: 'can you name a concrete input, state or call path in this code that triggers it?',
+  severity: 'this vote breaks a tie: weigh the evidence both ways and decide whether its impact makes it a real defect in this code',
+}
+
+/**
+ * Tallies the verifier votes that returned for one finding.
+ * @param {object[]} votes  verdict replies, nulls already removed
+ * @param {number} needed  votes that decide the finding either way (2, or 1 for a minor design finding)
+ * @returns {{confirmed: boolean, refuted: boolean, fixSize?: string, reasons: string[]}}
+ *   refuted = at least `needed` votes returned real=false; fixSize is 'trivial' only when every yes vote says so
+ */
+function tallyVotes(votes, needed) {
+  const yes = votes.filter((v) => v.real === true)
+  const confirmed = yes.length >= needed
+  const refuted = votes.filter((v) => v.real === false).length >= needed
+  const out = { confirmed, refuted, reasons: yes.map((v) => v.reason).filter(Boolean) }
+  if (confirmed) {
+    const sizes = yes.map((v) => v.fixSize)
+    out.fixSize = sizes.every((z) => z === 'trivial') ? 'trivial' : sizes.includes('large') ? 'large' : 'small'
+  }
+  return out
+}
+
+/**
+ * Builds the verifier of a review: two votes (one for a minor design finding) and a severity tie-break
+ * only when they split or one is missing. The lens line goes last so every vote on one finding shares its
+ * prompt prefix up to it. In the Fix stage the same votes re-check a finding the agent reports fixed.
+ * @param {{ subject: string, models: object }} ctx  subject = what is reviewed; models = the workflow's phase models
+ * @returns {(f: object, dim: { key: string }, stage?: string) => Promise<object>}
+ */
+function makeFindingVerifier({ subject, models }) {
+  const vote = (f, dim, lens, stage) =>
+    runAgent(
+      `You verify one finding from an adversarial code review of ${subject}. Try to REFUTE it: read the cited file and line in the actual code, and default real=false if you cannot confirm it there. Do not re-rate its severity. When it is real, set fixSize: trivial (a local change of a line or two), small (within one function or file) or large (several files, or a design change).${stage === 'Fix' ? ' A fix for it has just been applied: judge the code as it stands now.' : ''}
+Finding (${dim.key}): "${f.title}" in ${f.file || '?'}${f.line ? ':' + f.line : ''}
+${f.description || ''}${f.convention ? `\nConvention: ${f.convention}` : ''}
+Lens: ${lens} — ${VERIFY_LENSES[lens]}`,
+      { label: `${stage === 'Fix' ? 'reverify' : 'verify'}:${dim.key}`, phase: stage, schema: REVIEW_VERDICT_SCHEMA, ...models.verify }
+    )
+  return async function verifyFinding(f, dim, stage = 'Review') {
+    const single = dim.key === 'design' && f.severity === 'minor'
+    const first = single
+      ? [await vote(f, dim, 'correctness', stage)]
+      : await parallel([() => vote(f, dim, 'correctness', stage), () => vote(f, dim, 'reproducibility', stage)])
+    const votes = first.filter(Boolean)
+    const label = stage === 'Fix' ? 'reverify' : 'verify'
+    if (!votes.length) {
+      log(`${label}:${dim.key} unavailable for "${f.title}"`)
+      return { confirmed: false, refuted: false, unverified: true, reasons: [] }
+    }
+    if (!single && (votes.length === 1 || votes[0].real !== votes[1].real)) {
+      const tie = await vote(f, dim, 'severity', stage)
+      if (tie) votes.push(tie)
+    }
+    const tally = tallyVotes(votes, single ? 1 : 2)
+    // A fix counts only when the votes refute the finding; missing or undecided votes leave it open.
+    if (!tally.confirmed && !tally.refuted) {
+      if (stage === 'Fix') log(`${label}:${dim.key} unavailable for "${f.title}"`)
+      else return { ...tally, unverified: true }
+    }
+    return tally
+  }
+}
+
+/** Whether a finding's severity blocks the shipping verdict: critical or major. */
+function isBlockingFinding(f) {
+  return !!f && (f.severity === 'critical' || f.severity === 'major')
+}
+
+const SHARED_REVIEW_DIMENSIONS = [
+  { key: 'correctness', prompt: 'logic errors, edge cases, off-by-one, null handling, incorrect business rules' },
+  { key: 'security', prompt: 'auth/authz gaps, injection, mass assignment, sensitive data exposure, missing validation' },
+]
+
+/**
+ * The second, independent security pass over the risk areas a diff touches, on the read-only security-hunter.
+ * Its findings go through the same verify as the reviewers'.
+ * @param {object} o
+ * @param {string} o.subject  what is reviewed, for the prompt
+ * @param {{ repo: object, files: string[] }[]} o.riskScope  from riskFiles
+ * @param {object[]} o.bases  base revisions from recordBases
+ * @param {(repo: object) => string[]} o.changed  a repo's changed files
+ * @param {object} o.models  the workflow's phase models (review)
+ * @param {string} o.phase  phase label of the agent calls
+ * @param {Function} o.verify  from makeFindingVerifier
+ * @returns {Promise<{ unavailable: boolean, reviewed: object[] }>}
+ */
+async function runDeepSecurity({ subject, riskScope, bases, changed, models, phase, verify }) {
+  const deep = await runAgent(
+    `Run a second, independent security review of ${subject}, limited to the risk areas the changes touch. Do not rely on any earlier review; read the code yourself.
+Read the changes from git, per repo:
+${reviewDiffLines(riskScope.map((x) => x.repo), bases, changed, (r) => (riskScope.find((x) => x.repo === r) || {}).files)}
+Risk files:
+${riskScope.map((x) => `- ${x.repo.path}: ${x.files.join(', ')}`).join('\n')}
+${securityReviewText(riskScope.map((x) => x.repo))}
+Report concrete findings only, with file and line.`,
+    { label: 'review:security-deep', phase, schema: FINDINGS_SCHEMA, agentType: DEEP_SECURITY_AGENT, ...models.review }
+  )
+  if (!deep) {
+    log('review:security-deep unavailable')
+    return { unavailable: true, reviewed: [] }
+  }
+  const secDim = { key: 'security' }
+  const reviewed = await parallel((deep.findings || []).map((f) => () => verify(f, secDim, phase).then((v) => ({ ...f, dimension: 'security', deepPass: true, ...v }))))
+  return { unavailable: false, reviewed }
+}
+
+/**
+ * Reviews the diff of a run on correctness and security: each dimension on its reviewer, a second security
+ * pass when the diff touches a risk area, and every finding through the two-vote verify.
+ * A dimension whose reviewer returned nothing is `unavailable`, never clean. A finding no verifier answered for
+ * is `unverified` and stays open.
+ * @param {object} o
+ * @param {string} o.subject  what is reviewed, for the prompts
+ * @param {object[]} o.repos  repos in the review
+ * @param {object[]} o.bases  base revisions from recordBases
+ * @param {(repo: object) => string[]} o.changed  a repo's changed files
+ * @param {object} o.models  the workflow's phase models (review, verify)
+ * @param {string} [o.phase]  phase label of the agent calls
+ * @param {{ key: string, prompt: string }[]} [o.dims]  review dimensions
+ * @param {ReturnType<typeof makeFindingVerifier>} [o.verify]  the workflow's verifier, when it reuses one after the review
+ * @param {string} [o.context]  one extra line for every reviewer prompt, e.g. the changed files
+ * @param {(dim: { key: string }) => object} [o.schemaFor]  the reply schema of a dimension (FINDINGS_SCHEMA by default)
+ * @param {(review: object, dim: { key: string }) => object[]} [o.findingsOf]  the findings to verify from a dimension's reply (all of its findings by default); the place for per-dimension verdict handling and filters
+ * @returns {Promise<{ confirmed: object[], unverified: object[], unavailable: string[], securityReview: { ran: boolean, deep: 'ran'|'skipped'|'unavailable', findings: number }, noChanges: boolean, deep: { files: number, unavailable: boolean, blocking: number } }>}
+ */
+async function reviewDiff({ subject, repos, bases, changed, models, phase = 'Review', dims = SHARED_REVIEW_DIMENSIONS, verify = makeFindingVerifier({ subject, models }), context = '', schemaFor = () => FINDINGS_SCHEMA, findingsOf = (review) => review.findings || [] }) {
+  const unavailable = []
+  const riskScope = riskFiles(repos, changed)
+  // The deep pass starts with the dimension reviewers; it reads the code itself and needs none of their output.
+  const deepRun = riskScope.length ? runDeepSecurity({ subject, riskScope, bases, changed, models, phase, verify }) : Promise.resolve({ unavailable: false, reviewed: [] })
+  const reviewed = await parallel(dims.map((dim) => async () => {
+    const review = await runAgent(
+      `Adversarially review the changes for ${subject} on the ${dim.key} dimension. Look specifically for: ${dim.prompt}.
+Read the changes from git, per repo:
+${reviewDiffLines(repos, bases, changed)}${context ? `\n${context}` : ''}
+Question every pattern — do not assume correctness. Report concrete findings only, with file and line where possible.${dim.key === 'security' ? `\n${securityReviewText(repos)}` : ''}`,
+      { label: `review:${dim.key}`, phase, schema: schemaFor(dim), ...(dim.key === 'security' ? { agentType: SECURITY_AGENT } : {}), ...models.review }
+    )
+    if (!review) {
+      unavailable.push(dim.key)
+      log(`review:${dim.key} unavailable`)
+      return []
+    }
+    return parallel(findingsOf(review, dim).map((f) => () => verify(f, dim, phase).then((v) => ({ ...f, dimension: dim.key, ...v }))))
+  }))
+  const { unavailable: deepUnavailable, reviewed: deepReviewed } = await deepRun
+  const all = [...reviewed.flat(), ...deepReviewed].filter(Boolean)
+  const confirmed = all.filter((f) => f.confirmed).map((f, i) => ({ id: `F${i + 1}`, ...f }))
+  const unverified = all.filter((f) => f.unverified).map((f, i) => ({ id: `U${i + 1}`, ...f }))
+  return {
+    confirmed,
+    unverified,
+    unavailable,
+    securityReview: securityReviewResult({
+      ran: !unavailable.includes('security'),
+      deep: deepState(riskScope.length, deepUnavailable),
+      findings: confirmed.filter((f) => f.dimension === 'security').length,
+    }),
+    noChanges: !repos.some((r) => changed(r).length),
+    deep: { files: riskScope.length, unavailable: deepUnavailable, blocking: [...confirmed, ...unverified].filter((f) => f.deepPass && isBlockingFinding(f)).length },
+  }
+}
+
+/**
+ * The ledger entries a diff review adds: one per dimension, the security-ran entry and the second security pass.
+ * @param {Awaited<ReturnType<typeof reviewDiff>>} review
+ * @param {{ key: string }[]} [dims]
+ * @returns {object[]}
+ */
+function reviewEntries(review, dims = SHARED_REVIEW_DIMENSIONS) {
+  const open = [...review.confirmed, ...review.unverified].filter(isBlockingFinding)
+  return [
+    ...dims.map((d) =>
+      review.unavailable.includes(d.key)
+        ? assure(`review:${d.key}`, 'unavailable', 'the reviewer returned nothing')
+        : open.some((f) => f.dimension === d.key)
+          ? assure(`review:${d.key}`, 'fail', `${open.filter((f) => f.dimension === d.key).length} critical or major finding(s)`)
+          : assure(`review:${d.key}`, 'pass')
+    ),
+    securityRanEntry(review.securityReview, review.noChanges),
+    securityDeepEntry(review.deep),
+  ]
+}
+
+// --- Test integrity ---------------------------------------------------------
+// A run must not make its tests pass by deleting or rewriting them. Test paths and skip or focus
+// markers come from the stack manifest; the agent only reports what git shows.
+const TEST_INTEGRITY_SCHEMA = {
+  type: 'object',
+  required: ['files', 'markers'],
+  properties: {
+    files: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['file', 'status'],
+        properties: { file: { type: 'string' }, status: { type: 'string', enum: ['deleted', 'modified', 'added'] } },
+      },
+    },
+    markers: {
+      type: 'array',
+      items: { type: 'object', required: ['file', 'marker'], properties: { file: { type: 'string' }, marker: { type: 'string' } } },
+    },
+  },
+}
+
+/**
+ * The read-only steps that show how a run changed the tests of one repo.
+ * @param {string} dir a validated repo path
+ * @param {string} sha a validated revision id (isCommitSha)
+ * @param {string[]} skipMarkers the manifest's skip and focus markers
+ * @param {string[]} [testPaths] the manifest's test-path patterns
+ * @returns {string}
+ */
+function testIntegrityStepText(dir, sha, skipMarkers, testPaths) {
+  const paths = JSON.stringify(Array.isArray(testPaths) ? testPaths : [])
+  return `Test integrity. Run exactly these read-only git commands and no other git command:
+   git -C "${dir}" diff --name-status ${sha}
+   git -C "${dir}" ls-files --others --exclude-standard
+   files = one entry per line of the first command: status "deleted" for D (and for the old path of a rename), "modified" for M, "added" for A.
+   Test files are the files whose path matches one of these regular expressions: ${paths}. Look only at test files; ignore every other file.
+   For the markers, run \`git -C "${dir}" diff -U0 ${sha} -- <test files>\` once, naming only the changed test files (and read only the untracked test files from the second command).
+   markers = every added line ("+" lines of that diff, and the lines of the untracked test files) that contains one of these exact markers: ${JSON.stringify(skipMarkers)}. Give the test file and the marker it contains.
+   Never stash, reset, checkout, clean or make commits.`
+}
+
+/**
+ * Whether a built task names a file, in its files list or anywhere in its text.
+ * @param {Array<{ title?: string, files?: string[], approach?: string, verify?: string }>} tasks the built tasks
+ * @param {string} file repo-relative path
+ * @returns {boolean}
+ */
+function namedByTask(tasks, file) {
+  const target = normalFile(file)
+  return (tasks || []).some((t) =>
+    (Array.isArray(t.files) ? t.files : []).some((f) => normalFile(f) === target) ||
+    [t.title, t.approach, t.verify].some((text) => typeof text === 'string' && text.includes(target)))
+}
+
+/** Test-path patterns from a manifest as regular expressions; an invalid pattern is dropped. */
+function testPathMatchers(patterns) {
+  return (Array.isArray(patterns) ? patterns : []).flatMap((p) => {
+    try { return [new RegExp(p)] } catch { return [] }
+  })
+}
+
+/**
+ * Judges one repo's test-integrity answer against the manifest data. A deleted test file, a modified
+ * one no built task names, and an added marker the manifest lists fail. Files that were already dirty at
+ * the base, added files and files outside the manifest's test paths are not judged; a marker the manifest
+ * does not list is dropped, so the agent cannot invent a failure.
+ * @param {object|null} raw the agent answer (files, markers)
+ * @param {{ dirty?: string[] }} base the repo's base entry
+ * @param {{ testPaths?: string[], skipMarkers?: string[] }} rules the manifest's test-integrity data
+ * @param {(file: string) => boolean} named whether a built task names the file
+ * @returns {{ status: string, reason: string, deleted: string[], modified: string[], markers: object[] }}
+ */
+function judgeTestIntegrity(raw, base, rules, named) {
+  if (!raw || !Array.isArray(raw.files) || !Array.isArray(raw.markers)) {
+    return { status: 'unavailable', reason: 'the test-integrity check did not return', deleted: [], modified: [], markers: [] }
+  }
+  const matchers = testPathMatchers(rules.testPaths)
+  const markerList = Array.isArray(rules.skipMarkers) ? rules.skipMarkers : []
+  const dirty = (base.dirty || []).map((f) => normalFile(f))
+  const isTest = (f) => matchers.some((m) => m.test(f))
+  const entries = raw.files
+    .map((e) => ({ file: normalFile(e && e.file), status: e && e.status }))
+    .filter((e) => e.file && isTest(e.file) && !dirty.includes(e.file))
+  const deleted = [...new Set(entries.filter((e) => e.status === 'deleted').map((e) => e.file))]
+  const modified = [...new Set(entries.filter((e) => e.status === 'modified').map((e) => e.file))].filter((f) => !named(f))
+  const seen = new Set()
+  const markers = raw.markers
+    .map((m) => ({ file: normalFile(m && m.file), marker: m && m.marker }))
+    .filter((m) => m.file && isTest(m.file) && !dirty.includes(m.file) && markerList.includes(m.marker))
+    .filter((m) => !seen.has(`${m.file}\n${m.marker}`) && seen.add(`${m.file}\n${m.marker}`))
+  const problems = [
+    deleted.length ? `deleted: ${deleted.join(', ')}` : '',
+    modified.length ? `modified without a task naming it: ${modified.join(', ')}` : '',
+    markers.length ? `added ${markers.map((m) => `${m.marker} in ${m.file}`).join(', ')}` : '',
+  ].filter(Boolean)
+  return { status: problems.length ? 'fail' : 'pass', reason: problems.join('; '), deleted, modified, markers }
+}
+
+/**
+ * Runs the test-integrity check for every repo. A repo with tracked !== true, without a valid base, or
+ * whose manifest declares neither test paths nor markers is skipped and runs no step.
+ * @param {Array<{ path: string, role: string, stack?: string, tracked?: boolean }>} repoList
+ * @param {Array<{ repo: string, sha?: string, dirty?: string[] }>} bases
+ * @param {{ roots?: Set<string>, run: (prompt: string, repo: object) => Promise<object|null>, rulesFor: (repo: object) => { testPaths?: string[], skipMarkers?: string[] }, named: (file: string, repo: object) => boolean }} opts
+ * @returns {Promise<Array<{ repo: string, status: string, reason: string, deleted?: string[], modified?: string[], markers?: object[] }>>}
+ */
+async function checkTestIntegrity(repoList, bases, opts) {
+  return Promise.all(repoList.map(async (repo) => {
+    const skip = (reason) => ({ repo: repo.path, role: repo.role, status: 'skipped', reason })
+    const base = bases.find((b) => b.repo === repo.path)
+    if (repo.tracked !== true || !isRepoPath(repo.path, opts.roots) || !base || !isCommitSha(base.sha)) return skip('no git base to compare against')
+    const rules = opts.rulesFor(repo) || {}
+    const markerList = Array.isArray(rules.skipMarkers) ? rules.skipMarkers.filter((m) => typeof m === 'string' && m && !/[\r\n]/.test(m)) : []
+    if (!testPathMatchers(rules.testPaths).length && !markerList.length) return skip('the stack manifest declares no test paths or markers')
+    const raw = await opts.run(`Check the tests of the ${repo.role} repo at "${repo.path}" against the run's starting point. Use Bash. Change nothing.\n1. ${testIntegrityStepText(repo.path, base.sha, markerList, rules.testPaths)}\nReturn files and markers.`, repo)
+    return { repo: repo.path, role: repo.role, ...judgeTestIntegrity(raw, base, { ...rules, skipMarkers: markerList }, (f) => opts.named(f, repo)) }
+  }))
+}
+
+/**
+ * The one assurance entry of the check: fail on any failed repo, unavailable when one did not return,
+ * skipped when no repo was checked, else pass.
+ * @param {Array<{ repo: string, status: string, reason: string }>} results
+ * @returns {{ check: string, status: string, reason: string }}
+ */
+function testIntegrityEntry(results) {
+  const list = Array.isArray(results) ? results : []
+  const failed = list.filter((r) => r.status === 'fail')
+  if (failed.length) return assure('test-integrity', 'fail', failed.map((r) => `${r.repo}: ${r.reason}`).join(' | '))
+  const missing = list.filter((r) => r.status === 'unavailable')
+  if (missing.length) return assure('test-integrity', 'unavailable', missing.map((r) => `${r.repo}: ${r.reason}`).join(' | '))
+  if (!list.some((r) => r.status === 'pass')) return assure('test-integrity', 'skipped', list.map((r) => r.reason).find(Boolean) || 'no repo to check')
+  return assure('test-integrity', 'pass')
+}
+
+// --- Security review ----------------------------------------------------------
+// The security dimension runs on the security-auditor agent. A diff that touches a risk area also gets a
+// second, independent pass. Risk paths are neutral defaults plus the stack manifest's own patterns.
+const SECURITY_AGENT = 'security-auditor'
+// The read-only analyst for the second, independent security pass; resolved through runAgent.
+const DEEP_SECURITY_AGENT = 'security-hunter'
+const SECURITY_CHECKLIST = 'authorization per role (every route, action and query checks who may do it, and a user cannot reach another user\'s data), input validation, injection (query, command, template, path), mass assignment, secrets (none committed, none logged), file handling (type, size, storage path, serving) and data exposure (responses, logs, errors)'
+const NEUTRAL_RISK_PATHS = [
+  '(^|/)(auth|authn|authz|login|logout|signin|signup|password|passwords|permission|permissions|policy|policies|acl|oauth|jwt|session|sessions|guards?)([/._-]|$)',
+  '(^|/)(routes?|controllers?|middleware|api)([/._-]|$)',
+  '(^|/)migrations?/',
+  '(^|/)(uploads?|attachments?|storage)([/._-]|$)',
+  '(^|/)(payments?|billing|checkout|invoices?)([/._-]|$)',
+  '\\.lock$',
+  '(^|/)([a-z-]*-lock\\.(json|ya?ml)|go\\.sum|package\\.json|pyproject\\.toml|Gemfile|go\\.mod|Cargo\\.toml)$',
+  '(^|/)\\.env([._-][^/]*)?$',
+  '(^|/)\\.github/workflows/',
+  '(^|/)\\.gitlab-ci\\.ya?ml$',
+  '(^|/)(bitbucket-pipelines\\.ya?ml|azure-pipelines\\.ya?ml|Jenkinsfile)$',
+  '(^|/)\\.circleci/',
+  '(^|/)(Dockerfile|docker-compose[^/]*\\.ya?ml)$',
+]
+
+/**
+ * Skill names the stack manifest lists for the security reviewer; empty for an untrusted overlay.
+ * @param {string} stack Stack key.
+ * @returns {string[]}
+ */
+function securitySkillsFor(stack) {
+  const s = extrasFor(stack).security
+  return s && Array.isArray(s.skills) ? s.skills : []
+}
+
+/**
+ * The risk patterns for a stack: neutral defaults, then the manifest's riskPaths.
+ * @param {string} stack Stack key.
+ * @returns {string[]}
+ */
+function riskPathsFor(stack) {
+  const s = extrasFor(stack).security
+  return NEUTRAL_RISK_PATHS.concat(s && Array.isArray(s.riskPaths) ? s.riskPaths : [])
+}
+
+// --- doc impact: begin ---
+const DOC_IMPACT_KINDS = ['endpoint', 'schema', 'business-rule', 'config', 'agent-instructions']
+const DOC_IMPACT_STATUSES = ['updated', 'created', 'not-affected']
+const DOC_IMPACT_NONE = 'none found'
+const DOC_DEFAULT_PATHS = ['docs/context', 'docs/api']
+const DOC_IMPACT_NONE_RULE = `For an item marked "${DOC_IMPACT_NONE}": return status not-affected with the reason "no doc owns this", or, when the project uses the default doc paths (${DOC_DEFAULT_PATHS.map((d) => `${d}/`).join(', ')}), create the default doc for that kind and return status created.`
+// Neutral defaults cover configuration and agent instruction files only; where a stack keeps its endpoints
+// and schema changes is stack knowledge, so those patterns come from the stack manifests' docImpact.
+const DOC_IMPACT_DEFAULTS = {
+  endpoint: [],
+  schema: [],
+  'business-rule': ['(^|/)business-rules[^/]*$'],
+  config: ['(^|/)\\.env[^/]*$', '(^|/)config/'],
+  'agent-instructions': ['(^|/)(CLAUDE|AGENTS)\\.md$', '(^|/)\\.claude/'],
+}
+
+/**
+ * The path patterns of each doc-impact kind: the neutral defaults plus what the stack manifests add.
+ * A kind outside DOC_IMPACT_KINDS and a pattern that is not a valid regular expression are dropped.
+ * @param {object} [manifest] kind -> patterns, as merged from the stack manifests
+ * @returns {Object<string, string[]>}
+ */
+function docImpactRules(manifest) {
+  const extra = manifest && typeof manifest === 'object' ? manifest : {}
+  const valid = (p) => {
+    if (typeof p !== 'string' || !p) return false
+    try {
+      new RegExp(p, 'i')
+      return true
+    } catch (e) {
+      return false
+    }
+  }
+  const rules = {}
+  for (const kind of DOC_IMPACT_KINDS) {
+    const added = hasOwn(extra, kind) && Array.isArray(extra[kind]) ? extra[kind].filter(valid) : []
+    rules[kind] = [...new Set([...DOC_IMPACT_DEFAULTS[kind], ...added])]
+  }
+  return rules
+}
+
+/**
+ * The doc-impact patterns the repos' stack manifests declare, merged per kind.
+ * @param {Array<{ stack: string }>} repoList
+ * @returns {Object<string, string[]>}
+ */
+function docImpactManifestFor(repoList) {
+  const merged = {}
+  for (const repo of repoList) {
+    const declared = extrasFor(repo.stack).docImpact
+    if (!declared || typeof declared !== 'object') continue
+    for (const kind of Object.keys(declared)) {
+      if (Array.isArray(declared[kind])) merged[kind] = (merged[kind] || []).concat(declared[kind])
+    }
+  }
+  return merged
+}
+
+/**
+ * One item per kind found in the changed files, with the doc that owns it. The owner is the first
+ * investigation doc tagged with that kind; DOC_IMPACT_NONE when no doc was named.
+ * @param {string[]} files changed files
+ * @param {Object<string, string[]>} rules from docImpactRules
+ * @param {Array<{ path: string, kind?: string }>} [docs] docs the investigation flagged
+ * @returns {Array<{ kind: string, files: string[], target: string }>}
+ */
+function docImpactItems(files, rules, docs = []) {
+  const list = (Array.isArray(files) ? files : []).map(normalFile)
+  return DOC_IMPACT_KINDS.flatMap((kind) => {
+    const res = (rules[kind] || []).map((p) => new RegExp(p, 'i'))
+    const hit = [...new Set(list.filter((f) => res.some((re) => re.test(f))))]
+    if (!hit.length) return []
+    const owner = (Array.isArray(docs) ? docs : []).find((d) => d && d.kind === kind && isDocPath(d.path))
+    return [{ kind, files: hit, target: owner ? owner.path : DOC_IMPACT_NONE }]
+  })
+}
+
+/**
+ * Matches the Docs agent's entries to the impact items. An entry counts only with one of the three
+ * statuses; it answers an item by kind, or by target when the kind is missing.
+ * @param {Array<{ kind: string, target: string }>} items
+ * @param {Array<{ kind?: string, target?: string, status?: string, reason?: string }>} entries
+ * @returns {{ entries: object[], missing: string[] }} missing = kinds of the items with no entry
+ */
+function docImpactResults(items, entries) {
+  const valid = (Array.isArray(entries) ? entries : []).filter((e) => e && typeof e.target === 'string' && DOC_IMPACT_STATUSES.includes(e.status))
+  const answered = (item) => valid.some((e) => (e.kind ? e.kind === item.kind : item.target !== DOC_IMPACT_NONE && e.target === item.target))
+  return { entries: valid, missing: items.filter((i) => !answered(i)).map((i) => i.kind) }
+}
+
+/**
+ * The ledger entry of the docs check: unavailable when an impact item has no entry.
+ * @param {string[]} missing kinds without an entry
+ * @returns {{check: string, status: string, reason: string}}
+ */
+function docsAssurance(missing) {
+  return missing.length ? assure('docs', 'unavailable', `no docs entry for ${missing.join(', ')}`) : assure('docs', 'pass')
+}
+/**
+ * Ledger entries for a Detect call that returned nothing: the run then works on the fallback repo, which
+ * is a guess, not a verified layout.
+ * @param {object|null} project the Detect result
+ * @param {string|null} [failure] the message when the Detect call threw
+ * @returns {{check: string, status: string, reason: string}[]} empty when Detect answered
+ */
+function detectAssurance(project, failure) {
+  return project && typeof project === 'object' && !failure ? [] : [assure('detect', 'unavailable', failure || 'Detect returned no result')]
+}
+/** Grader result shared by the docs check and qa-and-docs; phantomLinks are claims that resolve to no real code. */
+const GRADE_SCHEMA = {
+  type: 'object',
+  required: ['verdict'],
+  properties: {
+    completeness: { type: 'integer' },
+    helpfulness: { type: 'integer' },
+    truthfulness: { type: 'integer' },
+    phantomLinks: { type: 'array', items: { type: 'string' } },
+    uncoveredCriteria: { type: 'array', items: { type: 'string' } },
+    verdict: { type: 'string', enum: ['PASS', 'CHANGES_REQUIRED'] },
+    notes: { type: 'string' },
+  },
+}
+
+/**
+ * Prompt of the one grader call that checks the written docs against the code.
+ * @param {string} feature label of the shipped work
+ * @param {string[]} docPaths updated and created docs
+ * @param {Array<{ doc: string, heading: string }>} [sections] sections the Docs agent reports it changed; the grade is limited to them
+ * @returns {string}
+ */
+function docsGradePrompt(feature, docPaths, sections = []) {
+  const scoped = (Array.isArray(sections) ? sections : []).filter((x) => x && typeof x.doc === 'string' && typeof x.heading === 'string')
+  const scope = scoped.length
+    ? `\nChanged sections: ${JSON.stringify(scoped)}\nCheck only those sections of the docs they name; a doc with no section listed was created by this run, so check it whole. Do not report claims outside that scope, even stale ones.`
+    : ''
+  return `Act as a strict Verifier. Check each of these docs against the ACTUAL code. Read the code; do not trust the docs.
+Feature: ${feature}
+Docs: ${JSON.stringify(docPaths)}${scope}
+
+phantomLinks = every claim in ${scoped.length ? 'that scope' : 'these docs'} (endpoint, route, class, function, command, config key, file path) that does NOT resolve to real code, one string per claim naming the doc. verdict = CHANGES_REQUIRED if there is any phantom link, else PASS.`
+}
+
+/**
+ * Prompt that sends phantom links back for one repair round.
+ * @param {string[]} phantoms claims that did not resolve
+ * @param {{ docs?: string[], entries?: object[] }} [prior] the docs written so far and their impact entries
+ * @returns {string}
+ */
+function docsRepairPrompt(phantoms, prior = {}) {
+  const docs = Array.isArray(prior.docs) ? prior.docs : []
+  const entries = Array.isArray(prior.entries) ? prior.entries : []
+  return `A check of the docs you just wrote found claims that do not resolve to real code (phantom links):
+${phantoms.map((p) => `- ${p}`).join('\n')}
+Fix each one in the docs: correct it to what the code does, or remove it. Touch nothing else. Edit only docs, never code.${docs.length ? `\nDocs written so far: ${JSON.stringify(docs)}` : ''}${entries.length ? `\nImpact entries so far: ${JSON.stringify(entries)}` : ''}
+Return the docs you changed in this round, with their changed sections; keep the entries above unless a fix changes one.`
+}
+
+const DOC_FILE_RE = /\.mdx?$/i
+const OPENAPI_RE = /^docs\/(?:.*\/)?(?:openapi|swagger)[^/]*\.(?:ya?ml|json)$/i
+
+/**
+ * True for a path the Docs agent may write: a plain relative Markdown file, or an OpenAPI file under docs/,
+ * outside .git/, .github/ and the Claude settings files.
+ * @param {string} p
+ * @returns {boolean}
+ */
+function isDocPath(p) {
+  if (typeof p !== 'string' || !p.trim() || /[\n\0]/.test(p) || p.startsWith('/')) return false
+  const parts = p.trim().replace(/^\.\//, '').split(/[\\/]/)
+  if (parts.includes('..') || parts.includes('.git') || parts.includes('.github')) return false
+  const at = parts.indexOf('.claude')
+  if (at >= 0 && /^settings/i.test(parts[at + 1] || '')) return false
+  return DOC_FILE_RE.test(p) || OPENAPI_RE.test(parts.join('/'))
+}
+
+/**
+ * The files the Docs phase changed that are not doc files (see isDocPath), so code or config edited by a
+ * Docs agent is not shipped unreviewed.
+ * @param {string[]} changed files changed since the snapshot taken before Docs
+ * @returns {string[]}
+ */
+function nonDocChanges(changed) {
+  return [...new Set((Array.isArray(changed) ? changed : []).map((f) => normalFile(f)).filter((f) => f && !isDocPath(f)))]
+}
+
+/**
+ * Ledger entry of the Docs-only rule: fail when a file other than a doc changed during Docs.
+ * @param {string[]} offending result of nonDocChanges
+ * @returns {{check: string, status: string, reason: string}|null} null when nothing outside the docs changed
+ */
+function docsScopeAssurance(offending) {
+  return offending.length ? assure('docs', 'fail', `the Docs phase changed file(s) that are not docs: ${offending.join(', ')}`) : null
+}
+
+/**
+ * Folds a repair round into the Docs result: doc lists are united, entries and sections come from the
+ * repair when it returned any, else stay as they were.
+ * @param {object|null} prev result of the first Docs call
+ * @param {object|null} repair result of the repair call
+ * @returns {object|null}
+ */
+function mergeDocsResult(prev, repair) {
+  if (!prev || !repair) return prev || repair
+  const list = (o, key) => (Array.isArray(o[key]) ? o[key] : [])
+  const merged = { ...prev, ...repair }
+  for (const key of ['updatedDocs', 'newDocs', 'skipped', 'files', 'runCommands']) {
+    if (key in prev || key in repair) merged[key] = [...new Set([...list(prev, key), ...list(repair, key)])]
+  }
+  if ('changedSections' in prev || 'changedSections' in repair) merged.changedSections = [...list(prev, 'changedSections'), ...list(repair, 'changedSections')]
+  const entries = Array.isArray(repair.entries) && repair.entries.length ? repair.entries : prev.entries
+  if (entries) merged.entries = entries
+  return merged
+}
+
+/**
+ * Phantom links of a grader result.
+ * @param {{ phantomLinks?: string[] } | null} grade
+ * @returns {string[]}
+ */
+function phantomLinksOf(grade) {
+  return grade && Array.isArray(grade.phantomLinks) ? grade.phantomLinks.filter((p) => typeof p === 'string' && p.trim()) : []
+}
+
+/**
+ * Every doc a Docs result says it wrote: its updated and created lists, the targets of entries marked updated
+ * or created, and the docs of its changed sections. Only plain relative doc paths count (isDocPath).
+ * @param {{ updatedDocs?: string[], newDocs?: string[], entries?: object[], changedSections?: object[] }|null} result
+ * @returns {string[]}
+ */
+function docsWrittenBy(result) {
+  if (!result) return []
+  const list = (key) => (Array.isArray(result[key]) ? result[key] : [])
+  const fromEntries = list('entries').filter((e) => e && (e.status === 'updated' || e.status === 'created')).map((e) => e.target)
+  const fromSections = list('changedSections').map((x) => x && x.doc)
+  return [...new Set([...list('updatedDocs'), ...list('newDocs'), ...fromEntries, ...fromSections].filter((d) => typeof d === 'string' && isDocPath(d)))]
+}
+
+/**
+ * The docs check of a run: one grader call over the docs written, one repair round when it finds phantom links,
+ * and one more grader call after the repair.
+ * @param {object} o
+ * @param {object} o.result the docs agent's result
+ * @param {(result: object) => Promise<object|null>} o.grade runs the grader on the docs of a result
+ * @param {(phantoms: string[], result: object) => Promise<object|null>} o.repair runs the repair round
+ * @param {string} [o.label] log prefix, the phase name
+ * @returns {Promise<{ result: object, entry: {check: string, status: string, reason: string} }>} the result with the repair merged, and the ledger entry
+ */
+async function checkDocs({ result, grade, repair, label = 'Docs' }) {
+  let current = result
+  let graded = await grade(current)
+  let phantoms = phantomLinksOf(graded)
+  if (phantoms.length) {
+    log(`${label}: ${phantoms.length} phantom link(s); one repair round.`)
+    const repaired = await repair(phantoms, current)
+    if (repaired) current = mergeDocsResult(current, repaired)
+    graded = await grade(current)
+    phantoms = phantomLinksOf(graded)
+  }
+  return { result: current, entry: docsGradeAssurance(phantoms, !!graded) }
+}
+
+/**
+ * A file list for a prompt, cut to `max` names with a count of the rest, so a large change does not repeat
+ * hundreds of paths in every prompt. The agent reads the full list from git.
+ * @param {string[]} files
+ * @param {number} [max]
+ * @returns {string} '' when the list is empty
+ * @example fileListText(['a', 'b', 'c'], 2)  // 'a, b and 1 more'
+ */
+function fileListText(files, max = 20) {
+  const list = Array.isArray(files) ? files : []
+  if (list.length <= max) return list.join(', ')
+  return `${list.slice(0, max).join(', ')} and ${list.length - max} more`
+}
+
+/**
+ * Ledger entry of the docs check after the grader and the one repair round.
+ * @param {string[]} remaining phantom links left after the repair round
+ * @param {boolean} graded false when the grader returned nothing
+ * @returns {{check: string, status: string, reason: string}}
+ */
+function docsGradeAssurance(remaining, graded) {
+  if (!graded) return assure('docs', 'unavailable', 'the docs grader returned no result')
+  return remaining.length ? assure('docs', 'fail', `phantom link(s) remain: ${remaining.join('; ')}`) : assure('docs', 'pass')
+}
+const DOC_OWNERS_SCHEMA = {
+  type: 'object',
+  required: ['owners'],
+  properties: {
+    owners: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['kind', 'target'],
+        properties: { kind: { type: 'string', enum: DOC_IMPACT_KINDS }, target: { type: 'string' } },
+      },
+    },
+  },
+}
+
+/**
+ * The business-rule item of a spec that cites rule ids, when the changed files did not already yield one.
+ * @param {Array<{ kind: string, files: string[], target: string }>} items
+ * @param {string[]} [ruleIds] the spec's brs
+ * @returns {Array<{ kind: string, files: string[], target: string }>}
+ */
+function withBusinessRuleItem(items, ruleIds) {
+  const ids = (Array.isArray(ruleIds) ? ruleIds : []).map(String).filter(Boolean)
+  if (!ids.length || items.some((i) => i.kind === 'business-rule')) return items
+  return [...items, { kind: 'business-rule', files: ids, target: DOC_IMPACT_NONE }]
+}
+
+/**
+ * The read-only prompt that maps each impact kind to the doc that owns it.
+ * @param {Array<{ kind: string, files: string[] }>} items
+ * @returns {string}
+ */
+function docOwnersPrompt(items) {
+  return `Find which existing doc owns each kind of change below in this project. Read only; change nothing.
+Kinds: ${items.map((i) => `${i.kind} (${fileListText(i.files, 10)})`).join('; ')}
+Look in this order and stop at the first hit per kind:
+1. The "Always load" list in CLAUDE.md or AGENTS.md: the doc there that covers the kind.
+2. The default doc paths: ${DOC_DEFAULT_PATHS.join(', ')}.
+3. A search of the repo's docs (README files, docs/, OpenAPI files) for the doc that describes that area.
+Return owners: one { kind, target } per kind, target a path that exists, or "${DOC_IMPACT_NONE}" when no doc owns the kind.`
+}
+
+/**
+ * Applies the mapper's answer to the items. A kind outside DOC_IMPACT_KINDS, a kind that is not an item
+ * and a target that is not a plain relative doc path (see isDocPath) are dropped; the item then keeps its target.
+ * @param {Array<{ kind: string, files: string[], target: string }>} items
+ * @param {{ owners?: Array<{ kind?: string, target?: string }> }|null} mapped
+ * @returns {Array<{ kind: string, files: string[], target: string }>}
+ */
+function applyDocOwners(items, mapped) {
+  const owners = mapped && Array.isArray(mapped.owners) ? mapped.owners : []
+  const safe = (t) => isDocPath(t)
+  return items.map((item) => {
+    if (item.target !== DOC_IMPACT_NONE) return item
+    const hit = owners.find((o) => o && o.kind === item.kind && DOC_IMPACT_KINDS.includes(o.kind) && safe(o.target))
+    return hit ? { ...item, target: hit.target.trim() } : item
+  })
+}
+
+/** True when an item has an owning doc, so the Docs agent has something to update. */
+function docImpactOwned(items) {
+  return items.some((i) => i.target !== DOC_IMPACT_NONE)
+}
+// --- doc impact: end ---
+
+/**
+ * The changed files that touch a risk area, per repo. A pattern that is not a valid regular expression
+ * is ignored, so a bad manifest entry cannot stop the run.
+ * @param {Array<{ path: string, stack: string }>} repoList
+ * @param {(repo: object) => string[]} changed changed files of one repo
+ * @returns {Array<{ repo: object, files: string[] }>} only repos with at least one risk file
+ */
+function riskFiles(repoList, changed) {
+  return repoList
+    .map((repo) => {
+      const rules = riskPathsFor(repo.stack).flatMap((p) => {
+        try {
+          return [new RegExp(p, 'i')]
+        } catch (e) {
+          return []
+        }
+      })
+      const files = (changed(repo) || []).filter((f) => rules.some((re) => re.test(normalFile(f))))
+      return { repo, files }
+    })
+    .filter((x) => x.files.length)
+}
+
+/**
+ * The prompt lines that make the security dimension a checklist review with the stack's skills.
+ * @param {Array<{ role: string, stack: string }>} repoList
+ * @returns {string}
+ */
+function securityReviewText(repoList) {
+  const skills = Array.from(new Set(repoList.flatMap((r) => securitySkillsFor(r.stack))))
+  return `Work through this checklist on the changed code: ${SECURITY_CHECKLIST}. Change no file and write nothing to git or memory.${skills.length ? `\nSkills to consult: ${skills.join(', ')}.` : ''}`
+}
+
+/**
+ * The ledger entry for the second security pass.
+ * @param {{ files: number, unavailable: boolean, blocking: number }} facts files = risk files found
+ * @returns {object}
+ */
+function securityDeepEntry(facts) {
+  if (!facts.files) return assure('security:deep', 'skipped', 'no risk area touched')
+  if (facts.unavailable) return assure('security:deep', 'unavailable', 'the second security reviewer returned nothing')
+  if (facts.blocking) return assure('security:deep', 'fail', `${facts.blocking} critical or major finding(s) in a risk area`)
+  return assure('security:deep', 'pass')
+}
+
+const SECURITY_DEEP_STATES = ['ran', 'skipped', 'unavailable']
+
+/**
+ * The securityReview block of a workflow result. `deep` is 'ran' when the second pass returned, 'skipped'
+ * when no risk area was touched and 'unavailable' when it was needed and did not return. `findings` is the
+ * number of confirmed security findings.
+ * @param {{ ran: boolean, deep: 'ran'|'skipped'|'unavailable', findings: number }} facts
+ * @returns {{ ran: boolean, deep: 'ran'|'skipped'|'unavailable', findings: number }}
+ * @throws {Error} when deep is not one of the three states
+ */
+function securityReviewResult(facts) {
+  if (!SECURITY_DEEP_STATES.includes(facts.deep)) throw new Error(`securityReviewResult: unknown deep state ${JSON.stringify(facts.deep)}; use ${SECURITY_DEEP_STATES.join(', ')} (deepState() computes it)`)
+  return { ran: !!facts.ran, deep: facts.deep, findings: facts.findings || 0 }
+}
+
+/**
+ * State of the second security pass.
+ * @param {number} riskFileCount risk files the changes touch
+ * @param {boolean} unavailable the pass was needed and returned nothing
+ * @returns {'ran'|'skipped'|'unavailable'}
+ */
+function deepState(riskFileCount, unavailable) {
+  if (!riskFileCount) return 'skipped'
+  return unavailable ? 'unavailable' : 'ran'
+}
+
+/**
+ * Ledger entry: the shipping verdict requires the security review to have run.
+ * A run that changed no file has nothing to review, so the entry is skipped and holds nothing.
+ * @param {{ ran: boolean }} result
+ * @param {boolean} [noChanges] the run changed no file
+ */
+function securityRanEntry(result, noChanges = false) {
+  if (noChanges) return assure('security-review', 'skipped', 'the run changed no file')
+  return result.ran ? assure('security-review', 'pass') : assure('security-review', 'unavailable', 'the security reviewer did not run')
+}
+
+const ASSURANCE_STATUSES = ['pass', 'fail', 'skipped', 'unavailable']
+const STACK_TRUST_CHECK = 'stack-trust'
+
+/**
+ * Builds one assurance ledger entry.
+ * `skipped` means the check does not apply to this run; `unavailable` means it applied and could not
+ * run or did not return.
+ * @param {string} check name of the check, such as "converge" or "review:security"
+ * @param {'pass'|'fail'|'skipped'|'unavailable'} status
+ * @param {string} [reason] why, or what a passing check left for a person
+ * @returns {{ check: string, status: string, reason: string }}
+ * @throws {Error} when the status is not one of the four
+ */
+function assure(check, status, reason = '') {
+  if (!ASSURANCE_STATUSES.includes(status)) throw new Error(`assure: unknown status ${JSON.stringify(status)} for ${check}; use ${ASSURANCE_STATUSES.join(', ')}`)
+  return { check: String(check), status, reason: String(reason || '') }
+}
+
+/**
+ * Returns a new ledger with the entry added; an earlier entry for the same check is replaced in place.
+ * @param {object[]} ledger
+ * @param {{ check: string, status: string, reason: string }} entry
+ * @returns {object[]}
+ */
+function assureInto(ledger, entry) {
+  const list = Array.isArray(ledger) ? ledger : []
+  return list.some((e) => e.check === entry.check) ? list.map((e) => (e.check === entry.check ? entry : e)) : [...list, entry]
+}
+
+/**
+ * The one verdict of a run: an untrusted manifest blocks, any failed or unavailable check holds, else ship.
+ * @param {object[]} ledger
+ * @param {{ ship: string, hold: string, blocked: string }} names verdict names of the workflow
+ * @returns {string}
+ */
+function assuranceVerdict(ledger, names) {
+  const list = Array.isArray(ledger) ? ledger : []
+  if (list.some((e) => e.check === STACK_TRUST_CHECK && e.status === 'fail')) return names.blocked
+  return list.some((e) => e.status === 'fail' || e.status === 'unavailable') ? names.hold : names.ship
+}
+
+/**
+ * Markdown table of the ledger, one row per entry, for the report.
+ * @param {object[]} ledger
+ * @returns {string}
+ */
+function assuranceTable(ledger) {
+  const cell = (v) => String(v || '-').replace(/\|/g, '\\|').replace(/\s*\n\s*/g, ' ')
+  const rows = (Array.isArray(ledger) ? ledger : []).map((e) => `| ${cell(e.check)} | ${cell(e.status)} | ${cell(e.reason)} |`)
+  return ['| Check | Status | Reason |', '| --- | --- | --- |', ...rows].join('\n')
+}
+
+const CLARITY_GATE_SCHEMA = {
+  type: 'object',
+  required: ['items'],
+  properties: {
+    items: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['question'],
+        properties: {
+          question: { type: 'string' },
+          kind: { type: 'string', enum: ['assumption', 'ambiguity', 'missing', 'contradiction'] },
+          where: { type: 'string' },
+        },
+      },
+    },
+  },
+}
+
+/**
+ * Prompt of the fresh-context clarity gate. The reviewer sees only the written spec, so it reads the
+ * spec the way an implementer in a new session would.
+ * @param {string} specFolder spec folder, relative to the current directory
+ * @returns {string}
+ */
+function clarityGatePrompt(specFolder) {
+  return `You are reviewing a specification cold. Read ONLY the files inside "${specFolder}" — do not open any other file, do not search the codebase, do not use prior knowledge of the request.
+List every hidden assumption, undefined term, ambiguous or untestable acceptance criterion, contradiction, and missing decision an implementer would have to guess at. Point to where in the spec (section/AC id). Return an empty list only if the spec is genuinely unambiguous.`
+}
 // --- registry: end ---
 
 
@@ -2648,6 +4546,8 @@ const MODELS = phaseModels({
   detect: 'standard',
   investigate: 'deep',
   spec: 'deep',
+  rules: 'standard',
+  clarity: 'deep',
   prepare: 'light',
   build: 'standard',
   gatesFix: 'standard',
@@ -2659,15 +4559,30 @@ const MODELS = phaseModels({
   acceptanceUnchanged: 'standard',
   e2e: 'standard',
   docs: 'deep',
+  docowners: 'light',
+  grade: 'deep',
   testplan: 'standard',
   report: 'deep',
+  close: 'light',
 })
+// What the Close step changed: the spec status, the backlog slice and the Traceability rows it filled.
+const CLOSE_SCHEMA = {
+  type: 'object',
+  required: ['statusSet', 'sliceSet', 'tracedRows'],
+  properties: {
+    statusSet: { type: 'boolean' },
+    sliceSet: { type: 'boolean' },
+    tracedRows: { type: 'integer' },
+  },
+}
+
 const WRITER_AGENT = 'general-purpose'
 const TEST_AGENT = 'test-writer'
 
 const isObj = args && typeof args === 'object'
 const feature = typeof args === 'string' ? args : (isObj && args.feature) || ''
-const specRef = isObj ? args.spec || null : null
+const specArg = isObj ? args.spec || null : null
+const specRef = specArg ? specRefValue(specArg) || null : null
 const repoHints = (isObj && args.repos) || null
 const devUrlHint = (isObj && args.url) || null
 // The key names the spec folder, the feature branch and the report file, so only a safe tracker key is kept.
@@ -2681,9 +4596,14 @@ const e2eArg = isObj && typeof args.e2e === 'boolean' ? args.e2e : null
 const CONVERGE_ROUNDS = 2
 const FIX_ROUNDS = 2
 
+if (specArg && !specRef) {
+  const error = 'spec reference is not a folder name or id. Fix: pass the folder name or id, e.g. { spec: "20261018-1430" }'
+  log(error)
+  return { error, ...askResult() }
+}
 if (!feature && !specRef) {
   log('Provide a feature description (string) or { spec: "<id>" } to execute an existing spec.')
-  return { error: 'missing feature description or spec id' }
+  return { error: 'missing feature description or spec id', ...askResult() }
 }
 
 const PROJECT_SCHEMA = {
@@ -2748,6 +4668,7 @@ const INVESTIGATION_SCHEMA = {
   type: 'object',
   required: ['relevantFiles', 'conventions', 'docsToUpdate', 'existingImplementation', 'userJourney'],
   properties: {
+    ...ASK_SCHEMA_PROPS,
     relevantFiles: {
       type: 'array',
       items: {
@@ -2797,7 +4718,7 @@ const INVESTIGATION_SCHEMA = {
       items: {
         type: 'object',
         required: ['path', 'reason'],
-        properties: { path: { type: 'string' }, reason: { type: 'string' } },
+        properties: { path: { type: 'string' }, reason: { type: 'string' }, kind: { type: 'string', enum: DOC_IMPACT_KINDS } },
       },
     },
     risks: { type: 'array', items: { type: 'string' } },
@@ -2809,12 +4730,24 @@ const SPEC_SCHEMA = {
   type: 'object',
   required: ['tasks', 'acceptanceCriteria'],
   properties: {
+    ...ASK_SCHEMA_PROPS,
     // "AC-n: WHEN ... THE SYSTEM SHALL ..." (EARS) or Given/When/Then.
     acceptanceCriteria: { type: 'array', items: { type: 'string' } },
     // "MNC-n: <existing behavior that must remain identical>".
     mustNotChange: { type: 'array', items: { type: 'string' } },
     // "NFR-n: <attribute>: <requirement with a measurable target>" (authorization per role, p95, WCAG, personal data).
     nfrs: { type: 'array', items: { type: 'string' } },
+    // The spec's Scope and Boundaries sections, persisted and passed to Build.
+    inScope: { type: 'array', items: { type: 'string' } },
+    outOfScope: { type: 'array', items: { type: 'string' } },
+    boundaries: {
+      type: 'object',
+      properties: {
+        always: { type: 'array', items: { type: 'string' } },
+        askFirst: { type: 'array', items: { type: 'string' } },
+        never: { type: 'array', items: { type: 'string' } },
+      },
+    },
     tasks: {
       type: 'array',
       items: {
@@ -2885,11 +4818,26 @@ const SPEC_LOAD_SCHEMA = {
     taskLines: { type: 'array', items: { type: 'string' } },
     // The same lines from tasks-archive.md; [] when the spec has no archive.
     archiveLines: { type: 'array', items: { type: 'string' } },
+    // Rows of the "## Traceability" table of tasks.md, verbatim; [] when the table is absent.
+    traceLines: { type: 'array', items: { type: 'string' } },
     // Frontmatter ticket key, empty when absent; it names the feature branch.
     ticket: { type: 'string' },
     // Items under "In scope" and "Out of scope" in spec-lite.md; converge judges gaps against them.
     inScope: { type: 'array', items: { type: 'string' } },
     outOfScope: { type: 'array', items: { type: 'string' } },
+    // Business-rule ids from the spec frontmatter `brs`; [] when absent.
+    brs: { type: 'array', items: { type: 'string' } },
+    // true when the spec folder holds a business-rules.md.
+    businessRulesFile: { type: 'boolean' },
+    // The spec's Boundaries section; a missing list is [].
+    boundaries: {
+      type: 'object',
+      properties: {
+        always: { type: 'array', items: { type: 'string' } },
+        askFirst: { type: 'array', items: { type: 'string' } },
+        never: { type: 'array', items: { type: 'string' } },
+      },
+    },
   },
 }
 
@@ -2903,8 +4851,26 @@ const PREPARE_SCHEMA = {
     previousBranch: { type: 'string' },
     statusFlipped: { type: 'boolean' },
     protected: { type: 'boolean' },
+    sha: { type: 'string' },
+    dirty: { type: 'array', items: { type: 'string' } },
     // git's message when the switch failed; absent otherwise.
     error: { type: 'string' },
+  },
+}
+
+// The rule set of a spec: one entry per rule with its id, its full text and the file it came from.
+const RULES_SCHEMA = {
+  type: 'object',
+  required: ['rules'],
+  properties: {
+    rules: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['id', 'text', 'source'],
+        properties: { id: { type: 'string' }, text: { type: 'string' }, source: { type: 'string' } },
+      },
+    },
   },
 }
 
@@ -3058,38 +5024,6 @@ function convergeGaps(gaps, nextId) {
   }
 }
 
-const FEATURE_BRANCH = /^feature\/[A-Za-z0-9._-]+$/
-
-/**
- * The feature branch a run works on when it starts on a protected branch. Computed here, never by an
- * agent, so no agent text reaches a git argument.
- *
- * The slug is the spec folder name without "spec-", the YYYYMMDD-HHMM- timestamp and a leading
- * ticket key, lowercased, with every run of other characters turned into "-", and cut to 40
- * characters at a hyphen. Without a folder, the same rule runs on the fallback text.
- *
- * @param {string|null} folder  spec folder path or name; null when no spec was persisted
- * @param {string|null} key     ticket key; used only when it matches PROJ-123 form
- * @param {string} [fallback]   text to slug when there is no folder (the feature description)
- * @returns {string|null}  "feature/<KEY>-<slug>", "feature/<slug>", or null when nothing usable is left
- * @example featureBranchName('.ai/specs/spec-20261112-1058-kit-limits', 'PROJ-7')  // 'feature/PROJ-7-kit-limits'
- * @example featureBranchName('.ai/specs/spec-PROJ-7-kit-limits', 'PROJ-7')        // 'feature/PROJ-7-kit-limits'
- */
-function featureBranchName(folder, key, fallback) {
-  const validKey = ticketKey(key)
-  let base = folder ? String(folder).split('/').filter(Boolean).pop() || '' : String(fallback || '')
-  if (folder) base = base.replace(/^spec-/, '').replace(/^\d{8}-\d{4}-/, '')
-  if (validKey && base.toUpperCase().startsWith(`${validKey.toUpperCase()}-`)) base = base.slice(validKey.length + 1)
-  let slug = base.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
-  if (slug.length > 40) {
-    const cut = slug.slice(0, 40)
-    slug = slug[40] === '-' || cut.lastIndexOf('-') === -1 ? cut : cut.slice(0, cut.lastIndexOf('-'))
-    slug = slug.replace(/-+$/, '')
-  }
-  const name = validKey ? (slug ? `feature/${validKey}-${slug}` : `feature/${validKey}`) : slug ? `feature/${slug}` : null
-  return name && FEATURE_BRANCH.test(name) ? name : null
-}
-
 /**
  * The part of the protected-branch rule that needs no git call: a detached HEAD (""), main, master,
  * develop and release/*. The origin/HEAD target is known only inside the repo, so the Prepare agent
@@ -3103,28 +5037,14 @@ function isProtectedBranch(branch) {
   return b === '' || b === 'main' || b === 'master' || b === 'develop' || b.startsWith('release/')
 }
 
+/** A finding that cites a file and an integer line. */
+function hasFileAndLine(f) {
+  return !!f && typeof f.file === 'string' && !!f.file.trim() && Number.isInteger(f.line)
+}
+
 /** A design finding is verified only when it names the violated convention and cites a file and an integer line. */
 function isConcreteDesignFinding(f) {
   return !!f && typeof f.convention === 'string' && !!f.convention.trim() && typeof f.file === 'string' && !!f.file.trim() && Number.isInteger(f.line)
-}
-
-/**
- * Tallies the verifier votes that returned for one finding.
- * @param {object[]} votes  VERDICT_SCHEMA replies, nulls already removed
- * @param {number} needed  votes that decide the finding either way (2, or 1 for a minor design finding)
- * @returns {{confirmed: boolean, refuted: boolean, fixSize?: string, reasons: string[]}}
- *   refuted = at least `needed` votes returned real=false; fixSize is 'trivial' only when every yes vote says so
- */
-function tallyVotes(votes, needed) {
-  const yes = votes.filter((v) => v.real === true)
-  const confirmed = yes.length >= needed
-  const refuted = votes.filter((v) => v.real === false).length >= needed
-  const out = { confirmed, refuted, reasons: yes.map((v) => v.reason).filter(Boolean) }
-  if (confirmed) {
-    const sizes = yes.map((v) => v.fixSize)
-    out.fixSize = sizes.every((z) => z === 'trivial') ? 'trivial' : sizes.includes('large') ? 'large' : 'small'
-  }
-  return out
 }
 
 /**
@@ -3160,48 +5080,6 @@ function costTable(cost) {
  */
 function normalRepoPath(p) {
   return String(p || '.').replace(/^(\.\/)+/, '').replace(/\/+$/, '') || '.'
-}
-
-/** A reported file path without a leading "./". */
-const normalFile = (f) => String(f || '').trim().replace(/^(\.\/)+/, '')
-
-/** Whether two reported paths name the same file; one may carry a longer prefix (an absolute or container path). */
-function sameFile(a, b) {
-  return a === b || a.endsWith(`/${b}`) || b.endsWith(`/${a}`)
-}
-
-// Lint and format violations can sit in files the run never touched; types, test, build and e2e failures can
-// come from a change in another file, so they always block.
-const SCOPED_GATE_KINDS = ['lint', 'format']
-
-/**
- * Passes a failing lint or format gate whose reported files all lie outside the run's changed files.
- * The kind comes from the stack manifest by gate name; a gate without files, of another kind or of an
- * unknown kind stays as reported, so the check fails closed.
- * @param {{ allPassed: boolean, gates?: object[] }|null} result  one repo's gate result
- * @param {string} stack  the repo's stack
- * @param {string[]} changed  the repo's changed files, repo-relative
- * @returns {object|null}  the result, with allPassed recomputed when a gate was passed
- * @example
- * // The stack's manifest declares a gate "Lint" of kind lint; it fails only in legacy/old.js, which the run did not change:
- * scopeLintFailures({ allPassed: false, gates: [{ name: 'Lint', status: 'fail', files: ['legacy/old.js'] }] }, stack, ['src/page.js'])
- * // -> { allPassed: true, gates: [{ name: 'Lint', status: 'pass', details: 'pre-existing violations only: 1 file(s) this run did not change (not in scope)', ... }] }
- */
-function scopeLintFailures(result, stack, changed) {
-  if (!result || !Array.isArray(result.gates)) return result
-  const kinds = extrasFor(stack).gates || {}
-  const inRun = (changed || []).map(normalFile).filter(Boolean)
-  let passed = 0
-  const gates = result.gates.map((g) => {
-    const kind = g && hasOwn(kinds, g.name) ? kinds[g.name].kind : null
-    if (!g || g.status !== 'fail' || !SCOPED_GATE_KINDS.includes(kind)) return g
-    const files = Array.from(new Set((Array.isArray(g.files) ? g.files : []).map(normalFile).filter(Boolean)))
-    if (!files.length || files.some((f) => inRun.some((c) => sameFile(f, c)))) return g
-    passed++
-    return { ...g, status: 'pass', details: `pre-existing violations only: ${files.length} file(s) this run did not change (not in scope)` }
-  })
-  if (!passed) return result
-  return { ...result, gates, allPassed: gates.every((g) => g && (g.status === 'pass' || g.status === 'skip')) }
 }
 
 /**
@@ -3243,19 +5121,47 @@ function fixStopAfterRound(s) {
  * @returns {'SHIP'|'FIX-FIRST'|'BLOCKED'}
  */
 function shipRecommendation(f) {
-  if (f.blockingManifests) return 'BLOCKED'
-  const fixFirst = f.partialBuild || !f.gatesPassed || f.blockingFindings || f.acceptanceFailed || f.e2eFailed || f.repoWarnings || f.remainingGaps || f.convergeFailed
-  return fixFirst ? 'FIX-FIRST' : 'SHIP'
+  return assuranceVerdict(shipLedger(f), { ship: 'SHIP', hold: 'FIX-FIRST', blocked: 'BLOCKED' })
+}
+
+/**
+ * The assurance ledger of a ship-feature run: one entry per check, built from the same facts as the
+ * recommendation. Owner steps, Manual: tasks and remaining minor findings are not facts here, so they
+ * never lower the verdict.
+ * @param {{ blockingManifests: number, partialBuild: boolean, gatesPassed: boolean, blockingFindings: number, acceptanceFailed: boolean, e2eFailed: boolean, repoWarnings: number, remainingGaps: number, convergeFailed?: boolean, convergeStop?: string|null, e2eRan?: boolean }} f
+ * @returns {{ check: string, status: string, reason: string }[]}
+ */
+function shipLedger(f) {
+  const entry = (check, failed, reason) => assure(check, failed ? 'fail' : 'pass', failed ? reason : '')
+  const budgetSkipped = f.convergeStop === 'budget'
+  const converge = budgetSkipped
+    ? assure('converge', 'unavailable', 'skipped: budget low')
+    : f.convergeStop === 'nothing-built'
+      ? assure('converge', 'skipped', 'nothing was built')
+      : f.convergeStop === 'unavailable'
+        ? assure('converge', 'unavailable', 'the converge audit did not return')
+        : entry('converge', f.remainingGaps || f.convergeFailed, f.convergeFailed ? 'converge audit failed or wrote an owner gate' : `${f.remainingGaps} unbuilt gap(s)`)
+  return [
+    entry(STACK_TRUST_CHECK, f.blockingManifests, `${f.blockingManifests} untrusted stack manifest(s)`),
+    entry('build', f.partialBuild, f.convergeStop === 'nothing-built' ? 'nothing was built' : 'build incomplete'),
+    entry('gates', !f.gatesPassed, 'quality gates not green'),
+    converge,
+    entry('review', f.blockingFindings, `${f.blockingFindings} critical or major finding(s) remain`),
+    entry('acceptance', f.acceptanceFailed, 'acceptance not met or not returned'),
+    f.e2eRan === false && !f.e2eFailed ? assure('e2e', 'skipped', 'the E2E regression test did not run') : entry('e2e', f.e2eFailed, 'E2E regression test failing'),
+    entry('repo-warnings', f.repoWarnings, `${f.repoWarnings} repo warning(s)`),
+  ]
 }
 
 const BUILD_SCHEMA = {
   type: 'object',
-  required: ['summary', 'changedFiles', 'testsAdded'],
+  required: ['summary', 'changedFiles', 'completed', 'testFiles', 'assumptions'],
   properties: {
     summary: { type: 'string' },
     changedFiles: { type: 'array', items: { type: 'string' } },
-    testsAdded: { type: 'boolean' },
     completed: { type: 'boolean' },
+    testFiles: { type: 'array', items: { type: 'string' } },
+    assumptions: { type: 'array', items: { type: 'string' } },
     notes: { type: 'string' },
   },
 }
@@ -3309,9 +5215,11 @@ const GATES_SCHEMA = {
           name: { type: 'string' },
           // 'unreachable' = tooling could not run (NOT a pass); never treat as green.
           status: { type: 'string', enum: ['pass', 'fail', 'skip', 'unreachable'] },
-          details: { type: 'string' },
+          details: { type: 'string', description: 'Failing output. Never quote a secret value: give only its id, file and rule' },
           // Repo-relative files with a violation, reported for a failing lint or format gate.
           files: { type: 'array', items: { type: 'string' } },
+          // Stable ids of what failed (test names, file:rule for lint and types, advisory or secret ids); the baseline comparison keys on them.
+          failures: { type: 'array', items: { type: 'string' }, description: 'For a failing gate: one stable id per thing that failed (a test name, file:rule for lint and type errors, an advisory or secret id), without line numbers or timing' },
         },
       },
     },
@@ -3329,35 +5237,26 @@ const FIX_SCHEMA = {
   },
 }
 
-const FINDINGS_SCHEMA = {
+const RULE_VERDICTS = ['enforced', 'violated', 'not-applicable']
+
+const RULE_REVIEW_SCHEMA = {
   type: 'object',
-  required: ['findings'],
+  required: ['verdicts'],
   properties: {
-    findings: {
+    verdicts: {
       type: 'array',
       items: {
         type: 'object',
-        required: ['title', 'severity'],
+        required: ['id', 'verdict'],
         properties: {
-          title: { type: 'string' },
+          id: { type: 'string' },
+          verdict: { type: 'string', enum: RULE_VERDICTS },
           file: { type: 'string' },
           line: { type: 'integer' },
-          severity: { type: 'string', enum: ['critical', 'major', 'minor'] },
           description: { type: 'string' },
-          convention: { type: 'string' },
         },
       },
     },
-  },
-}
-
-const VERDICT_SCHEMA = {
-  type: 'object',
-  required: ['real', 'reason'],
-  properties: {
-    real: { type: 'boolean' },
-    reason: { type: 'string' },
-    fixSize: { type: 'string', enum: ['trivial', 'small', 'large'] },
   },
 }
 
@@ -3391,6 +5290,23 @@ const DOCS_SCHEMA = {
     updatedDocs: { type: 'array', items: { type: 'string' } },
     newDocs: { type: 'array', items: { type: 'string' } },
     skipped: { type: 'array', items: { type: 'string' } },
+    changedSections: {
+      type: 'array',
+      items: { type: 'object', required: ['doc', 'heading'], properties: { doc: { type: 'string' }, heading: { type: 'string' } } },
+    },
+    entries: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['target', 'status', 'reason'],
+        properties: {
+          kind: { type: 'string', enum: DOC_IMPACT_KINDS },
+          target: { type: 'string' },
+          status: { type: 'string', enum: DOC_IMPACT_STATUSES },
+          reason: { type: 'string' },
+        },
+      },
+    },
     notes: { type: 'string' },
   },
 }
@@ -3430,28 +5346,6 @@ const E2E_SCHEMA = {
     ran: { type: 'boolean' },
     passed: { type: 'boolean' },
     details: { type: 'string' },
-  },
-}
-
-// Copy-paste manual QA the human runs to confirm the feature by hand.
-const TEST_PLAN_SCHEMA = {
-  type: 'object',
-  required: ['steps'],
-  properties: {
-    path: { type: 'string' },
-    preconditions: { type: 'array', items: { type: 'string' } },
-    steps: {
-      type: 'array',
-      items: {
-        type: 'object',
-        required: ['action', 'expected'],
-        properties: {
-          action: { type: 'string' },
-          expected: { type: 'string' },
-        },
-      },
-    },
-    rollback: { type: 'string' },
   },
 }
 
@@ -3495,10 +5389,13 @@ const stackConventions = Array.from(new Set(repos.flatMap((r) => r.conventions |
 const devUrl = resolveDevUrl(devUrlHint, repos)
 const hinted = normalizeRepoHints(repoHints)
 const frontends = frontendTargets(repos, hinted.entries, devUrlHint)
+// The ledger every exit after Detect carries; later stages add their own entries.
+const trustLedger = [blockingUntrusted(untrustedManifests, repos).length ? assure(STACK_TRUST_CHECK, 'fail', 'untrusted stack manifest') : assure(STACK_TRUST_CHECK, 'pass'), ...detectAssurance(project, detection.failure)]
+const stopLedger = (check, status, reason) => assureInto(trustLedger, assure(check, status, reason))
 const runError = hinted.error || frontends.error
 if (runError) {
   log(runError)
-  return { error: runError }
+  return { error: runError, ...askResult(), assurance: stopLedger('repo-warnings', 'fail', runError) }
 }
 const frontendPasses = frontendPassesLine(frontends.targets)
 const backendRepo = repos.find((r) => r.role === 'backend')
@@ -3534,24 +5431,48 @@ Report each gate as pass/fail/skip/unreachable with failing output captured in d
 // The files this run changed, per repo path: what Build, gap-build and Fix agents report, repo-relative,
 // without spec files. Gate fixes are confined to them and lint failures outside them do not block.
 const runChanged = new Map()
-function recordChanged(repo, files) {
-  const key = normalRepoPath(repo.path)
-  const prefix = key === '.' ? '' : `${key}/`
-  const set = runChanged.get(key) || new Set()
-  for (const f of files || []) {
-    const p = normalFile(f)
-    const rel = prefix && p.startsWith(prefix) ? p.slice(prefix.length) : p
-    if (rel && !/(^|\/)\.ai\/specs\//.test(rel)) set.add(rel)
+// Files changed once the Review phase had started (Fix rounds, the E2E test): the second review's scope.
+const lateChanged = new Map()
+function recordChanged(repo, files, into = [runChanged]) {
+  const roots = repos.map((r) => normalRepoPath(r.path)).filter((k) => k !== '.')
+  for (const map of into) {
+    for (const f of files || []) {
+      const p = normalFile(f)
+      // A path qualified with another repo's root belongs to that repo, the same rule frontendChanges applies.
+      const owner = roots.filter((k) => p.startsWith(`${k}/`)).sort((x, y) => y.length - x.length)[0]
+      const key = owner || normalRepoPath(repo.path)
+      const prefix = key === '.' ? '' : `${key}/`
+      const rel = prefix && p.startsWith(prefix) ? p.slice(prefix.length) : p
+      const set = map.get(key) || new Set()
+      if (rel && !/(^|\/)\.ai\/specs\//.test(rel)) set.add(rel)
+      map.set(key, set)
+    }
+    if (!map.has(normalRepoPath(repo.path))) map.set(normalRepoPath(repo.path), new Set())
   }
-  runChanged.set(key, set)
 }
-const changedIn = (repo) => Array.from(runChanged.get(normalRepoPath(repo.path)) || [])
+const reportedIn = (repo) => Array.from(runChanged.get(normalRepoPath(repo.path)) || [])
+// The git-derived list of a tracked repo, once taken; until then, and for an untracked repo, what agents reported.
+const gitChanged = new Map()
+// Files reported after Review started (Fix rounds) are added to the git list, so a file a Fix agent created stays in scope.
+const changedIn = (repo) => (gitChanged.has(repo.path) ? Array.from(new Set([...gitChanged.get(repo.path), ...(lateChanged.get(normalRepoPath(repo.path)) || [])])) : reportedIn(repo))
+async function refreshChanged() {
+  const found = await collectChanged(repos, baseRevisions, {
+    roots: callerRoots(repoHints),
+    reported: reportedIn,
+    run: (prompt) => runAgent(prompt, { phase: 'Converge', label: 'changed-files', schema: CHANGED_SCHEMA, ...MODELS.prepare }),
+  })
+  found.forEach((c) => {
+    if (c.source === 'git') gitChanged.set(c.repo, c.files)
+    else log(`Changed files: ${c.role} read from agent reports (no git base for it)`)
+  })
+}
 
 let investigation = null
 let invFiles = []
 let invConventions = stackConventions
 let invRisks = []
 let docsToUpdate = []
+let specRuleIds = []
 let existingImpl = []
 let brokenLinks = []
 let userJourney = null
@@ -3577,11 +5498,35 @@ let manualTasks = []
 let specMaxTaskId = 0
 // The spec's In scope and Out of scope items, when the loader read them; converge audits against them.
 let specScope = { in: [], out: [] }
+// The spec's Boundaries; null when the spec was not loaded from a folder.
+let specBoundaries = null
 // Task lines of tasks.md as loaded, kept current through converge so gap placement can be checked.
 let specTaskLines = []
+// Traceability rows of tasks.md as loaded; a row that names a test file proves its id.
+let specTraceLines = []
 // Frontmatter status and ticket of a loaded spec; Prepare flips "approved" and names the branch from the ticket.
 let specStatus = null
 let specTicket = ticket
+// The business rules the spec cites or ships: { id, text, source }. Empty means no business-rules handling at all.
+let ruleSet = []
+// Cited rule ids no rules file resolved: never sent to a reviewer as rule text.
+let unresolvedRules = []
+// The rule text as a prompt line, with a leading newline; '' when the spec has no rules.
+// The full text of each AC, MNC and NFR a task covers, found by the criterion's leading id.
+const coveredCriteria = (task) => (task.covers || []).map((id) => criterionText(id, [...acceptanceCriteria, ...mustNotChange, ...nfrs])).filter(Boolean)
+const rulesNote = (task) => {
+  let rules = ruleSet
+  if (task) {
+    // A Build prompt holds only the rules that the criteria its task covers cite in parentheses.
+    const cited = coveredCriteria(task)
+      .flatMap((text) => [...String(text).matchAll(/\(([^)]*)\)/g)].map((m) => m[1]))
+      .join(' ')
+    rules = ruleSet.filter((r) => new RegExp(`(^|[^\\w-])${String(r.id).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w-])`).test(cited))
+  }
+  return rules.length
+    ? `\nBusiness rules (full text; a rule an AC cites by id binds the code that proves that AC): ${rules.map((r) => `${r.id}: ${r.text} [${r.source}]`).join('; ')}`
+    : ''
+}
 
 if (specRef) {
   // --- Execute an existing spec -----------------------------------------
@@ -3589,48 +5534,46 @@ if (specRef) {
   costSnapshot('Spec')
   const loaded = await runAgent(
     `Load the existing specification "${specRef}" so it can be executed. This step is read-only: change no file.
-1. Resolve the reference to ONE folder under .ai/specs/. Accept: a full folder name or path; a legacy numeric id ("0042", "spec-0042", "14" → folders spec-0042-* or 14-*, leading zeros ignored); a ticket key ("PROJ-123" → spec-PROJ-123-*, case-insensitive); a timestamp id ("20261018-1430" → spec-20261018-1430-*). E.g.:
-   REF="${specRef}"; REF="\${REF#.ai/specs/}"; REF="\${REF%/}"; KEY="\${REF#spec-}"
-   [ -d ".ai/specs/$REF" ] || { echo "$KEY" | grep -qE '^[0-9]+$' && ls -d .ai/specs/*/ | grep -E "/(spec-)?0*$((10#$KEY))-" || ls -d .ai/specs/*/ | grep -iE "/(spec-)?$KEY-"; }
+1. Resolve the reference to ONE folder under .ai/specs/. ${specRefLookupText(specRef)}
    No match → return found=false with empty tasks, taskLines and archiveLines. Several matches → return them in candidates with empty tasks (do not guess). Otherwise set found=true.
 2. Read spec-lite.md: frontmatter status (legacy specs without frontmatter → status "legacy"), ticket (empty when absent), type (feature | bug | improvement | refactor; empty when absent) and slice (the backlog slice id, empty when absent), unchecked items under "Open questions", the acceptance criteria (keep AC ids), the "Must NOT change" items (keep MNC ids), the items under "In scope" and "Out of scope" (inScope, outOfScope; empty when the section is absent), the "Quality attributes" rows as nfrs ("NFR-n: <attribute>: <requirement>", keep NFR ids; empty when the section is absent), architecture approach and conventions.
 3. Extract the top-level task lines with exactly this command, run from the spec folder; it removes HTML comment text first, so a commented-out task is dropped and an inline comment does not hide its task:
    awk '{l=$0; o=""; while (l != "") { if (c) { i=index(l, "-->"); if (!i) l=""; else { l=substr(l, i+3); c=0; o=o " " } } else { i=index(l, "<!--"); if (!i) { o=o l; l="" } else { o=o substr(l, 1, i-1) " "; l=substr(l, i+4); c=1 } } } if (o ~ /^- \\[[ xX]\\] [0-9]+\\./) print o}' tasks.md
-   Return every printed line verbatim and in order as taskLines. When tasks-archive.md exists, run the same command on it and return its lines as archiveLines; otherwise archiveLines is []. Never return the text of either file. Owner gates (tasks titled "Gate: ...") and manual tasks ("Manual: ...") are decided from taskLines by the workflow; never tick, skip or reorder one.
+   Return every printed line verbatim and in order as taskLines. When tasks-archive.md exists, run the same command on it and return its lines as archiveLines; otherwise archiveLines is []. Also return the data rows of the "## Traceability" table of tasks.md (lines starting with "|" that name an AC, MNC or NFR id; not the header or separator) verbatim as traceLines; [] when absent. Never return the text of either file. Owner gates (tasks titled "Gate: ...") and manual tasks ("Manual: ...") are decided from taskLines by the workflow; never tick, skip or reorder one.
 4. Parse only the unchecked tasks of tasks.md: integer id, title, any "Verify:" criterion, a stack tag if present and the "Covers:" ids. Return no task bodies.
-Return found, specId (the folder name), the relative specFolder, taskLines, archiveLines, status (as read), ticket, type, openQuestions, acceptanceCriteria, mustNotChange, inScope, outOfScope, nfrs, conventions, and the unchecked tasks.`,
+Return found, specId (the folder name), the relative specFolder, taskLines, archiveLines, status (as read), ticket, type, openQuestions, acceptanceCriteria, mustNotChange, inScope, outOfScope, boundaries (the Always, Ask first and Never items of the "Boundaries" section as always, askFirst and never; empty lists when absent), brs (the ids in the frontmatter \`brs\` list; empty when absent), businessRulesFile (true when business-rules.md exists in the spec folder), nfrs, conventions, and the unchecked tasks.`,
     { phase: 'Spec', schema: SPEC_LOAD_SCHEMA, agentType: 'code-explorer', ...MODELS.spec }
   )
   if (!loaded) {
     const error = `spec loader returned no result for "${specRef}". Fix: re-run; if it repeats, check that the spec folder is readable`
     log(error)
-    return { specRef, error }
+    return { specRef, error, ...askResult(), assurance: stopLedger('spec', 'unavailable', error) }
   }
   if ((loaded.candidates || []).length > 1) {
     log(`Spec reference "${specRef}" is ambiguous: ${loaded.candidates.join(', ')}`)
-    return { specRef, error: 'ambiguous spec reference — pass the full folder name', candidates: loaded.candidates }
+    return { specRef, error: 'ambiguous spec reference — pass the full folder name', candidates: loaded.candidates, ...askResult(), assurance: stopLedger('spec', 'unavailable', 'ambiguous spec reference') }
   }
   if (loaded.found === false) {
     const error = `spec "${specRef}" not found under .ai/specs/. Fix: pass the spec folder name (ls .ai/specs)`
     log(error)
-    return { specRef, error }
+    return { specRef, error, ...askResult(), assurance: stopLedger('spec', 'unavailable', error) }
   }
   const taskLines = (loaded.taskLines || []).map(String)
   if (!taskLines.some((l) => TASK_LINE.test(l))) {
     const error = `${loaded.specFolder}/tasks.md has no task lines ("- [ ] N. Title"). Fix: write tasks in that form (specification-system.md) and run spec-lint on the folder`
     log(error)
-    return { specRef, specId: loaded.specId, error }
+    return { specRef, specId: loaded.specId, error, ...askResult(), assurance: stopLedger('spec', 'fail', error) }
   }
   // Only the owner checks a Gate: task; nothing at or after the first unchecked one is built.
   const gateCut = ownerGateCut(taskLines.join('\n'), (loaded.tasks || []).filter((t) => !t.done))
   if (!gateCut.ok) {
     log(`Owner-gate check could not run: ${gateCut.reason}. Stopping before any build.`)
-    return { specRef, specId: loaded.specId, error: `owner-gate check could not run: ${gateCut.reason}` }
+    return { specRef, specId: loaded.specId, error: `owner-gate check could not run: ${gateCut.reason}`, ...askResult(), assurance: stopLedger('owner-gate', 'unavailable', 'owner-gate check could not run') }
   }
   if (!gateCut.open.length) {
     const error = `all tasks in ${loaded.specId} are complete. Fix: nothing to build; run /open-pr --spec=${loaded.specId}`
     log(error)
-    return { specRef, specId: loaded.specId, error }
+    return { specRef, specId: loaded.specId, error, ...askResult(), assurance: stopLedger('spec', 'fail', error) }
   }
   const beforeGate = gateCut.gate ? gateCut.open.slice(0, gateCut.open.findIndex((t) => t.id === gateCut.gate.id)) : gateCut.open
   const codeOpen = beforeGate.filter((t) => taskKind(t.title) === 'code')
@@ -3639,7 +5582,7 @@ Return found, specId (the folder name), the relative specFolder, taskLines, arch
   if (unparsed.length) {
     const reason = `open task(s) ${unparsed.join(', ')} are missing from the loader's task list`
     log(`Owner-gate check could not run: ${reason}. Stopping before any build.`)
-    return { specRef, specId: loaded.specId, error: `owner-gate check could not run: ${reason}` }
+    return { specRef, specId: loaded.specId, error: `owner-gate check could not run: ${reason}`, ...askResult(), assurance: stopLedger('owner-gate', 'unavailable', 'owner-gate check could not run') }
   }
   if (gateCut.gate) {
     awaitingOwner = gateCut.gate.title
@@ -3650,20 +5593,32 @@ Return found, specId (the folder name), the relative specFolder, taskLines, arch
   }
   if (!codeOpen.length) {
     if (gateCut.gate) {
-      return { specRef, specId: loaded.specId, error: `awaiting owner: ${gateCut.gate.title}`, awaitingOwner, notBuilt: gateCut.cut, resume }
+      return { specRef, specId: loaded.specId, error: `awaiting owner: ${gateCut.gate.title}`, awaitingOwner, notBuilt: gateCut.cut, resume, ...askResult(), assurance: stopLedger('owner-gate', 'unavailable', `awaiting owner: ${gateCut.gate.title}`) }
     }
     const error = `only Manual: tasks remain open in ${loaded.specId} (${beforeGate.map((t) => t.id).join(', ')}). Fix: run manual-test.md and tick them`
     log(error)
-    return { specRef, specId: loaded.specId, error }
+    return { specRef, specId: loaded.specId, error, ...askResult(), assurance: stopLedger('spec', 'fail', error) }
   }
   // Human approval is the gate between spec and build; /sdd records it in the frontmatter.
-  if (loaded.status === 'draft' && !allowDraft) {
+  const loadedStatus = String(loaded.status || '').trim().toLowerCase()
+  if (loadedStatus === 'draft' && !allowDraft) {
     log(`Spec ${loaded.specId} is still draft${(loaded.openQuestions || []).length ? ` with ${loaded.openQuestions.length} open question(s)` : ''} — approve it via /sdd first (or pass allowDraft: true).`)
-    return { specRef, specId: loaded.specId, error: 'spec not approved', status: 'draft', openQuestions: loaded.openQuestions || [] }
+    return { specRef, specId: loaded.specId, error: 'spec not approved', status: 'draft', openQuestions: loaded.openQuestions || [], ...askResult(), assurance: stopLedger('spec-status', 'fail', 'spec is still draft') }
+  }
+  // Only approved and in-progress specs build; in-progress is trusted because only Prepare sets it, from approved.
+  if (loadedStatus !== 'draft' && !['approved', 'in-progress'].includes(loadedStatus)) {
+    const shown = loadedStatus || '(none)'
+    log(`Spec ${loaded.specId} has status ${shown}, which does not build. Fix: set status: approved in spec-lite.md once it is approved via /sdd.`)
+    return { specRef, specId: loaded.specId, error: 'spec status not buildable', status: shown, openQuestions: loaded.openQuestions || [], ...askResult(), assurance: stopLedger('spec-status', 'fail', `status ${shown} does not build`) }
+  }
+  if ((loaded.openQuestions || []).length && !allowDraft) {
+    log(`Spec ${loaded.specId} has ${loaded.openQuestions.length} unchecked open question(s). Fix: answer them via /sdd and tick them (or pass allowDraft: true).`)
+    return { specRef, specId: loaded.specId, error: 'spec has open questions', status: loadedStatus, openQuestions: loaded.openQuestions, ...askResult(), assurance: stopLedger('spec-status', 'fail', `${loaded.openQuestions.length} unchecked open question(s)`) }
   }
   acceptanceCriteria = loaded.acceptanceCriteria || []
   mustNotChange = loaded.mustNotChange || []
   specScope = { in: loaded.inScope || [], out: loaded.outOfScope || [] }
+  specBoundaries = loaded.boundaries || {}
   nfrs = loaded.nfrs || []
   specType = String(loaded.type || 'feature').trim().toLowerCase()
   specId = loaded.specId
@@ -3672,10 +5627,32 @@ Return found, specId (the folder name), the relative specFolder, taskLines, arch
   specTicket = String(loaded.ticket || '').trim()
   slice = loaded.slice || null
   if ((loaded.conventions || []).length) invConventions = loaded.conventions
+  const ruleIds = (loaded.brs || []).map(String)
+  specRuleIds = ruleIds
+  if (ruleIds.length || loaded.businessRulesFile) {
+    phase('Rules')
+    const ruled = await runAgent(
+      `Load the business rules of spec ${specFolder}. This step is read-only: change no file.
+Rule ids cited by the spec (frontmatter brs): ${ruleIds.join(', ') || '(none)'}.
+1. When ${specFolder}/business-rules.md exists, read every rule in it, with its id when it has one, otherwise "<file>#<heading>".
+2. Find the project rules file: the business-rules.md listed under "Always load" in the project's CLAUDE.md or AGENTS.md, by default docs/context/business-rules.md. Look up EVERY id, both the cited ids above and the ids read in step 1, in that file: a rule is found by its id at the start of a heading or list item, and its text runs to the next id or heading.
+3. For each id: when the project rules file holds it, return that text with the project file as source (on the same id the project rules file wins over the spec folder's file); otherwise return the spec folder's text with that file as source. A cited id found in neither is returned with the text "not found" and source "none".
+Return rules as { id, text, source } with the full rule text and the file it was read from, and nothing else.`,
+      { phase: 'Rules', schema: RULES_SCHEMA, agentType: 'code-explorer', ...MODELS.rules }
+    )
+    const loadedRules = (ruled && Array.isArray(ruled.rules) && ruled.rules) || []
+    // A rule counts as loaded only with real text from a named file; "not found", an empty text or source "none" leave its id unresolved.
+    ruleSet = loadedRules.filter((r) => r && typeof r.id === 'string' && r.id.trim() && typeof r.text === 'string' && r.text.trim() && !/^not found\.?$/i.test(r.text.trim()) && typeof r.source === 'string' && r.source.trim() && r.source.trim() !== 'none')
+    // A cited id the loader left out is as unavailable as one it reported as not found.
+    unresolvedRules = ruleIds.filter((id) => !ruleSet.some((r) => r.id === id))
+    if (loaded.businessRulesFile && !ruleSet.length && !unresolvedRules.length) unresolvedRules.push('business-rules.md')
+    log(`Rules: ${ruleSet.length} loaded for ${specId}${ruled ? '' : ' (loader returned no result)'}`)
+  }
   tasks = gateCut.build
   manualTasks = gateCut.manual
   ownerCut = gateCut.cut
   specTaskLines = taskLines
+  specTraceLines = (loaded.traceLines || []).map(String)
   specMaxTaskId = Math.max(gateCut.maxId, maxTaskId(loaded.archiveLines))
   log(`Loaded spec ${specId} (${specFolder}): ${tasks.length} task(s) to build${manualTasks.length ? `; Manual task(s) ${manualTasks.map((t) => t.id).join(', ')} go to the manual test plan` : ''}`)
 } else {
@@ -3688,17 +5665,24 @@ Feature: ${feature}
 
 1. Locate the files, modules, routes, services, components, DTOs, and tests this feature will touch or depend on.
 2. Identify the conventions it must follow${(repo.conventions || []).length ? `: ${repo.conventions.join(', ')}` : ''}.
-3. Find EVERY existing doc that describes behavior this feature will change (READMEs, docs/, API contracts, schema docs, CLAUDE.md, OpenAPI). Each => a docsToUpdate entry with the reason.
+3. Find EVERY existing doc that describes behavior this feature will change (READMEs, docs/, API contracts, schema docs, CLAUDE.md, OpenAPI). Each => a docsToUpdate entry with the reason and, when it owns an endpoint or route, a schema or migration, a business rule, a configuration or environment variable, or an agent instruction file, its kind (endpoint, schema, business-rule, config or agent-instructions).
 4. Surface risks, hidden coupling, open questions.
 5. EXISTING IMPLEMENTATION — before assuming anything must be built, check what already exists for THIS feature. Search routes, controllers, services, components AND recent git history (\`git -C "${repo.path}" log --oneline -20\`, \`git grep\`). For each piece set status complete/partial/missing with the file path and evidence (e.g. "route already committed in <sha>"). The spec must NOT rebuild 'complete' pieces.
 6. USER JOURNEY — trace the reported scenario end-to-end as a real user/request would hit it. List entryPoints (the exact URLs/routes/actions the user starts from), the expectedEndState (what success looks like), and brokenLinks: every target the journey depends on (a route, page, redirect destination, link, API the frontend calls) that does NOT currently resolve. A feature that decodes a link then redirects to a page that 404s is NOT done — record that page as a brokenLink.
 7. PRODUCT BRIEF — look for product-brief.md in "${repo.path}", its parent folder, and the current directory. If one exists, read it and the backlog.md next to it and return brief: path, status and owner from its frontmatter, slice = the backlog slice id (SL-nn) whose outcome this feature is (empty if none matches), and rules = every BR the feature must enforce, as "BR-nn: <rule text>" (the slice's cited BRs plus any other rule it touches; skip retired rules). No brief → omit brief.
-Read the actual code and docs. Tag each relevant file with its repo path.`
+Read the actual code and docs. Tag each relevant file with its repo path.
+${askPromptBlock()}`
 
   const investigations = crossRepo
     ? (await parallel(repos.map((r) => () => runAgent(investigatePrompt(r), { phase: 'Investigate', label: `investigate:${r.role}`, schema: INVESTIGATION_SCHEMA, agentType: 'code-explorer', ...MODELS.investigate })))).filter(Boolean)
     : [await runAgent(investigatePrompt(primaryRepo), { phase: 'Investigate', schema: INVESTIGATION_SCHEMA, agentType: 'code-explorer', ...MODELS.investigate })].filter(Boolean)
 
+  investigations.forEach((i) => collectAsk(i, 'investigate'))
+  if (blockingQuestionOpen()) {
+    log('Investigate: a blocking question is open; ending the run before any spec or code is written')
+    const blockedLedger = stopLedger('questions', 'unavailable', 'a blocking question is open')
+    return { feature, error: 'a blocking question is open', recommendation: assuranceVerdict(blockedLedger, { ship: 'SHIP', hold: 'FIX-FIRST', blocked: 'BLOCKED' }), ...askResult(), assurance: blockedLedger }
+  }
   investigation = {
     relevantFiles: investigations.flatMap((i) => i.relevantFiles || []),
     conventions: Array.from(new Set([...stackConventions, ...investigations.flatMap((i) => i.conventions || [])])),
@@ -3745,12 +5729,19 @@ Investigation:
 - Broken links the feature depends on (each MUST get a task that makes it resolve): ${brokenLinks.map((b) => `${b.target} (${b.reason})`).join('; ') || 'none'}
 ${briefRules.length ? `- Business rules from ${brief.path} (each must be enforced; cite its BR id in the AC that proves it, e.g. "AC-2 (BR-31): ..."): ${briefRules.join('; ')}
 ` : ''}
-Also write acceptanceCriteria ("AC-n: " + EARS "WHEN <trigger> THE SYSTEM SHALL <response>" or Given/When/Then, one observable outcome each) and mustNotChange ("MNC-n: " + existing behavior on the touched code paths that must remain identical). When authorization per role, a latency budget, an accessibility level, or personal-data handling is at stake, also write nfrs ("NFR-n: <attribute>: <requirement with a measurable target>"); otherwise leave nfrs empty.
+Also write acceptanceCriteria ("AC-n: " + EARS "WHEN <trigger> THE SYSTEM SHALL <response>" or Given/When/Then, one observable outcome each) and mustNotChange ("MNC-n: " + existing behavior on the touched code paths that must remain identical). Also write inScope and outOfScope (what this feature does and does not cover) and boundaries (always, askFirst, never: derive them from the conventions and risks). When authorization per role, a latency budget, an accessibility level, or personal-data handling is at stake, also write nfrs ("NFR-n: <attribute>: <requirement with a measurable target>"); otherwise leave nfrs empty.
 Each task needs: integer id, title, the "stack" it targets (one of ${repos.map((r) => r.stack).join('/')}), likely files, an approach, a one-line verify criterion, and covers (the AC/MNC/NFR ids it satisfies). Order so each builds on the previous; group backend-before-frontend where the frontend consumes new backend work.
 Skip tasks for pieces already marked 'complete'. Every broken link above MUST be covered by a task that makes the target resolve end-to-end — a feature that ends at a 404/missing target is not shippable.
-A step only a person can perform (a check on a real device or in a real mailbox, a client sign-off, a production action) is a task whose title starts with "Manual: " (case-sensitive, plain text); it is never built and goes to the manual test plan. Every other task is code and has no prefix. Never write a "Gate: " task: only the owner adds one.`,
+A step only a person can perform (a check on a real device or in a real mailbox, a client sign-off, a production action) is a task whose title starts with "Manual: " (case-sensitive, plain text); it is never built and goes to the manual test plan. Every other task is code and has no prefix. Never write a "Gate: " task: only the owner adds one.
+${askPromptBlock()}`,
     { phase: 'Spec', schema: SPEC_SCHEMA, agentType: 'code-explorer', ...MODELS.spec }
   )
+  collectAsk(spec, 'spec')
+  if (blockingQuestionOpen()) {
+    log('Spec: a blocking question is open; ending the run before any code is written')
+    const blockedLedger = stopLedger('questions', 'unavailable', 'a blocking question is open')
+    return { feature, error: 'a blocking question is open', recommendation: assuranceVerdict(blockedLedger, { ship: 'SHIP', hold: 'FIX-FIRST', blocked: 'BLOCKED' }), ...askResult(), assurance: blockedLedger }
+  }
   const specTasks = ((spec && spec.tasks) || []).filter((t) => taskKind(String(t.title || '').trim()) !== 'gate')
   tasks = specTasks.filter((t) => taskKind(String(t.title || '').trim()) === 'code')
   manualTasks = specTasks.filter((t) => taskKind(String(t.title || '').trim()) === 'manual').map((t) => ({ id: t.id, title: String(t.title).trim() }))
@@ -3759,7 +5750,7 @@ A step only a person can perform (a check on a real device or in a real mailbox,
   nfrs = (spec && spec.nfrs) || []
   if (!tasks.length) {
     log('Spec produced no tasks.')
-    return { feature, project, investigation, error: 'no tasks generated' }
+    return { feature, project, investigation, error: 'no tasks generated', ...askResult(), assurance: stopLedger('spec', 'fail', 'no tasks generated') }
   }
   log(`Spec: ${tasks.length} task(s)${manualTasks.length ? `, plus Manual task(s) ${manualTasks.map((t) => t.id).join(', ')} for the manual test plan` : ''}`)
 
@@ -3776,7 +5767,7 @@ Spec folder (never compute "highest number + 1" — parallel sessions collide):
 - specId = the folder name.
 
 Write (lowercase names, no AI-marker/changelog comments):
-1. spec-lite.md — YAML frontmatter: id (folder name), title, type: feature, size, priority: P2, status: in-progress, ticket: ${ticket || '<blank>'}, stakeholders: [], approved_by: <blank>, approved_at: <blank> (<blank> = key written with no value, e.g. "approved_by:"; never the literal text "<blank>", "(empty)" or "none"), created: $(date +%Y-%m-%d), stacks, slice: ${slice || '<blank>'}, brs: [${briefRules.map((r) => String(r).split(':')[0].trim()).join(', ')}]. Sections: Summary; Context (name ${brief ? brief.path : 'the product brief'} as the rules' source when there is one); Scope (In/Out); Must NOT change; Acceptance criteria;${nfrs.length ? ' Quality attributes (a table: | ID | Attribute | Requirement | Verified by |, one row per NFR);' : ''} Boundaries (Always / Ask first / Never — derive from the conventions and risks); Technical context (relevant files, approach, repos); Open questions (the investigation's open questions as unchecked items${briefDraft && briefRules.length ? `, plus one unchecked "Assumption: <BR-nn> is an unvalidated draft rule (${brief.path}, owner ${brief.owner || 'unnamed'})" per brief rule cited` : ''}); footer "Next: ship-feature {spec:\\"<specId>\\"}".${slice && brief ? `
+1. spec-lite.md — YAML frontmatter: id (folder name), title, type: feature, size, priority: P2, status: draft, ticket: ${ticket || '<blank>'}, stakeholders: [], approved_by: <blank>, approved_at: <blank> (<blank> = key written with no value, e.g. "approved_by:"; never the literal text "<blank>", "(empty)" or "none"), created: $(date +%Y-%m-%d), stacks, slice: ${slice || '<blank>'}, brs: [${briefRules.map((r) => String(r).split(':')[0].trim()).join(', ')}]. Sections: Summary; Context (name ${brief ? brief.path : 'the product brief'} as the rules' source when there is one); Scope (In/Out); Must NOT change; Acceptance criteria;${nfrs.length ? ' Quality attributes (a table: | ID | Attribute | Requirement | Verified by |, one row per NFR);' : ''} Boundaries (Always / Ask first / Never — derive from the conventions and risks); Technical context (relevant files, approach, repos); Open questions (the investigation's open questions as unchecked items${briefDraft && briefRules.length ? `, plus one unchecked "Assumption: <BR-nn> is an unvalidated draft rule (${brief.path}, owner ${brief.owner || 'unnamed'})" per brief rule cited` : ''}); footer "Next: ship-feature {spec:\\"<specId>\\"}".${slice && brief ? `
 3. In the backlog.md next to ${brief.path}, set slice ${slice}'s Spec field to the specId and its Status to specced. Change nothing else in that file.` : ''}
 2. tasks.md — ordered checklist "- [ ] N. {title} ({stack})" each with a "Covers: ..." line and nested "- [ ] N.x **Verify**: {criterion}". Task kinds come from the plain-text title prefix right after "N. " (case-sensitive, no bold or backticks): keep a "Manual: " title exactly as given, so it reads "- [ ] N. Manual: {step}", and give code tasks no prefix; write no "Gate: " task. Then a "## Traceability" heading followed by a table (| ID | Criterion (short) | Verified by | Kind (test/manual) | Task |) with one row per AC, MNC and NFR; then "Verification gates" listing the ACTUAL detected gates (do NOT hardcode commands): ${gatesDoc}; then "Done when".
 
@@ -3786,6 +5777,8 @@ Relevant files: ${JSON.stringify(invFiles.slice(0, 20))}
 Acceptance criteria: ${JSON.stringify(acceptanceCriteria)}
 Must NOT change: ${JSON.stringify(mustNotChange)}
 Quality attributes: ${JSON.stringify(nfrs)}
+Scope — in: ${JSON.stringify(spec.inScope || [])}; out: ${JSON.stringify(spec.outOfScope || [])}
+Boundaries: ${JSON.stringify(spec.boundaries || {})}
 Open questions: ${JSON.stringify(investigations.flatMap((i) => i.openQuestions || []))}
 Tasks: ${JSON.stringify(specTasks)}
 
@@ -3795,9 +5788,46 @@ Return specId (the folder name), specFolder (relative path), and the tasks you w
   if (persisted && persisted.specFolder) {
     specId = persisted.specId
     specFolder = persisted.specFolder
+    specScope = { in: spec.inScope || [], out: spec.outOfScope || [] }
+    specBoundaries = spec.boundaries || {}
     log(`Spec persisted: ${specId} → ${specFolder}`)
   } else {
     log('Spec persistence skipped (write failed) — continuing in-memory.')
+  }
+
+  // --- Clarify: a spec this run wrote is built only when nothing is left open ---
+  phase('Clarify')
+  costSnapshot('Clarify')
+  const clarity = specFolder
+    ? await runAgent(clarityGatePrompt(specFolder), { phase: 'Clarify', schema: CLARITY_GATE_SCHEMA, ...MODELS.clarity })
+    : null
+  // A spec that was not persisted has no gate to read, so the gate did not run.
+  const clarityRan = !!specFolder && clarity !== null && clarity !== undefined
+  const clarityItems = ((clarity && clarity.items) || []).filter((q) => q && q.question)
+  const clarityQuestions = [...clarityItems.map((q) => q.question), ...(clarityRan ? [] : ['clarity gate did not run'])]
+  const briefAssumptions = briefDraft ? briefRules.map((r) => `Assumption: ${String(r).split(':')[0].trim()} is an unvalidated draft rule (${brief.path})`) : []
+  const openQuestions = [
+    ...investigations.flatMap((i) => i.openQuestions || []),
+    ...clarityQuestions,
+    ...briefAssumptions,
+  ]
+  if (specFolder && clarityQuestions.length) {
+    await runAgent(
+      `Record these open questions in "${specFolder}/spec-lite.md" under the "## Open questions" section as unchecked items "- [ ] Q<n>: <question>" (create the section if missing). Keep frontmatter status: draft. Change nothing else.
+Questions: ${JSON.stringify(clarityQuestions.map((question) => ({ question })))}`,
+      { phase: 'Clarify', agentType: WRITER_AGENT, ...MODELS.prepare }
+    )
+  }
+  if (openQuestions.length && !allowDraft) {
+    const clarifyEntry = clarityRan ? assure('clarify', 'fail', `${openQuestions.length} open question(s)`) : assure('clarify', 'unavailable', 'clarity gate did not run')
+    log(`Spec ${specId || '(not persisted)'} stays draft with ${openQuestions.length} open question(s). Fix: answer them via /sdd, approve it, then run ship-feature {spec:"${specId}"} (or pass allowDraft: true).`)
+    return { feature, project, investigation, specId, specFolder, error: 'spec not approved', status: 'draft', openQuestions, ...askResult(), assurance: assureInto(trustLedger, clarifyEntry) }
+  }
+  if (specFolder) {
+    await runAgent(
+      `In "${specFolder}/spec-lite.md" change the frontmatter line "status: draft" to "status: in-progress" with a file edit. Change no other line and no other file.`,
+      { phase: 'Clarify', agentType: WRITER_AGENT, ...MODELS.prepare }
+    )
   }
 }
 
@@ -3806,6 +5836,32 @@ const specTrackNote = specFolder
   ? `When done, tick this task complete in ${specFolder}/tasks.md (its "- [ ] N." and Verify subitem → "- [x]"). Do not alter other tasks.`
   : ''
 
+/**
+ * Text the Build agent is held to for one task: the full text of each covered AC, MNC and NFR id,
+ * the spec's scope and boundaries, and where to read the task body.
+ *
+ * @param {{id: number, covers?: string[]}} task  task being built
+ * @returns {string} prompt lines, empty when there is nothing to add
+ */
+function specContextFor(task) {
+  const covered = coveredCriteria(task)
+  const list = (items) => (items && items.length ? items.join('; ') : 'none stated')
+  const lines = []
+  if (covered.length) lines.push(`Criteria this task covers (full text): ${covered.join(' | ')}`)
+  if (specScope.in.length || specScope.out.length) {
+    lines.push(`In scope: ${list(specScope.in)}`, `Out of scope: ${list(specScope.out)}`)
+  }
+  if (specBoundaries) {
+    lines.push(
+      `Boundaries — Always: ${list(specBoundaries.always)}`,
+      `Ask first: ${list(specBoundaries.askFirst)} — when the task cannot be completed without doing one of these, leave it undone and report it as an owner step.`,
+      `Never: ${list(specBoundaries.never)}`
+    )
+  }
+  if (specFolder) lines.push(`Spec folder: ${specFolder} — read the body of this task in ${specFolder}/tasks.md before writing code.`)
+  return lines.join('\n')
+}
+
 // The repo that holds .ai/specs/<folder>: the spec's repo for Prepare and the report.
 const specRepoPath = specFolder ? specFolder.replace(/\/?\.ai\/specs\/[^/]+\/?$/, '') || '.' : null
 
@@ -3813,6 +5869,7 @@ const specRepoPath = specFolder ? specFolder.replace(/\/?\.ai\/specs\/[^/]+\/?$/
 // One call per tracked repo that gets a code task, plus the spec's repo. Nothing is committed: the
 // user commits on the feature branch. A failed switch stops the run before anything is built.
 const branches = []
+let baseRevisions = []
 const codeTasks = tasks.filter((t) => !String(t.title || '').trim().startsWith('Manual:'))
 const prepareTargets = []
 if (codeTasks.length) {
@@ -3840,7 +5897,7 @@ const branchName = featureBranchName(specFolder, specTicket, feature)
 if (prepareTargets.some((t) => t.switchBranch) && !branchName) {
   const error = `could not name a feature branch for ${specLabel}: its folder name holds no letters or digits. Fix: rename the spec folder, or switch each repo to a feature branch by hand, then re-run`
   log(error)
-  return { specRef, specId, error }
+  return { specRef, specId, error, ...askResult(), assurance: stopLedger('branch', 'fail', error) }
 }
 
 function preparePrompt(t) {
@@ -3857,12 +5914,13 @@ function preparePrompt(t) {
   } else {
     steps.push('Branch. Run no git command here. branch = "", previousBranch = "", created = false, protected = false.')
   }
+  steps.push(t.repo.tracked === true ? baseStepText(dir) : 'Base revision. Run no git command here. sha = "", dirty = [].')
   steps.push(t.flipStatus
     ? `Status. In "${specFolder}/spec-lite.md" (path from the current directory), change the frontmatter line "status: approved" to "status: in-progress" with a file edit. Change no other line and no other file. When the frontmatter status is not "approved", change nothing. statusFlipped = true only when you changed that line.`
     : 'Status. Edit no file. statusFlipped = false.')
   return `Prepare the ${t.repo.role} repo at "${dir}" for this run. Use Bash. Commit nothing, push nothing, fetch nothing.
 ${steps.map((s, i) => `${i + 1}. ${s}`).join('\n')}
-Return branch, previousBranch, created, protected, statusFlipped, and error only when the switch failed.`
+Return branch, previousBranch, created, protected, sha, dirty, statusFlipped, and error only when the switch failed.`
 }
 
 if (prepareTargets.length) {
@@ -3894,14 +5952,23 @@ if (prepareTargets.length) {
   })
   if (stop) {
     log(stop)
-    return { specRef, specId, error: stop, branches }
+    return { specRef, specId, error: stop, branches, ...askResult(), assurance: stopLedger('branch', 'fail', stop) }
   }
+  const roots = callerRoots(repoHints)
+  baseRevisions = repos.map((repo) => {
+    const i = prepareTargets.findIndex((t) => normalRepoPath(t.repo.path) === normalRepoPath(repo.path))
+    return baseEntry(repo, i >= 0 ? prepared[i] : null, roots)
+  })
+  logBases(baseRevisions)
 }
 
 // --- Build (serial; right specialist + repo per task; budget-guarded) ----
 const built = []
 const failedTasks = []
 const ownerSteps = []
+// Assumptions Build agents returned, by task id, and tasks that cover an AC but returned no test file.
+const assumptions = []
+const untestedTasks = []
 async function buildTasks(list) {
   for (const task of list) {
     if (budget.total && budget.remaining() < 80_000) {
@@ -3926,6 +5993,8 @@ ${task.verify ? `Verify: ${task.verify}` : ''}
 ${(task.covers || []).length ? `Covers: ${task.covers.join(', ')} — name the test after the criterion so the tasks.md Traceability row can point at it.` : ''}
 ${task.files && task.files.length ? `Likely files: ${task.files.join(', ')}` : ''}
 ${priorContext}
+${specContextFor(task)}
+${Object.keys(ANSWERS_ARG).length ? `Answers the owner gave (question id to answer): ${JSON.stringify(ANSWERS_ARG)}` : ''}${rulesNote(task)}
 ${mustNotChange.length ? `Must NOT change (keep identical; do not edit their guard tests): ${mustNotChange.join('; ')}` : ''}
 ${nfrs.length ? `Quality attributes (an NFR this task covers is built against like an AC: a test per role for authorization, a measured check for a latency budget, an axe assertion for accessibility): ${nfrs.join('; ')}` : ''}
 
@@ -3934,12 +6003,15 @@ Skills to consult: ${skillNamesFor(repo.stack).join(', ') || '(none declared)'}
 Standards: no changelog/AI-marker comments, lowercase doc filenames, match surrounding style.
 ${specTrackNote}
 ${NO_VCS_WRITES} ${OWNER_STEP_NOTE}
-Set completed=true only if the task is fully done with a passing test. Return what you changed (full repo-relative paths).`,
+Set completed=true only if the task is fully done with a passing test. Return what you changed (full repo-relative paths), the test files you wrote or extended in testFiles (empty when none), and every assumption you made where the spec was silent in assumptions (empty when none).`,
       { label: `build:t${task.id}`, phase: 'Build', schema: BUILD_SCHEMA, agentType: agentForStack(task.stack), ...MODELS.build }
     )
     if (result) recordChanged(repo, result.changedFiles)
-    if (result && result.completed !== false) built.push({ id: task.id, ...result })
-    else if (isOwnerStep(result)) ownerSteps.push({ id: task.id, title: task.title, note: String(result.notes).slice(0, 300) })
+    if (result && result.completed === true) {
+      built.push({ id: task.id, ...result })
+      assumptions.push(...buildAssumptionItems(result.assumptions, { prefix: `T${task.id}-A`, source: `build:t${task.id}`, start: assumptions.length }))
+      if ((task.covers || []).some((c) => /^AC-/i.test(c)) && !(result.testFiles || []).length) untestedTasks.push(task.id)
+    } else if (isOwnerStep(result)) ownerSteps.push({ id: task.id, title: task.title, note: String(result.notes).slice(0, 300) })
     else failedTasks.push(task.id)
   }
 }
@@ -3953,19 +6025,27 @@ Command: ${contractSync.command} — run it in "${contractSync.repo}".${routeLis
 Exit 0 = pass. Exit 1 = drift = fail: put every finding (missing-in-backend, method-mismatch, and unused-by-frontend when strict) in details. Exit 2 = bad input = unreachable, NEVER pass.
 Report exactly one gate named "contract-sync"; set repo="${contractSync.repo}" and allPassed accordingly. Do not fix anything here.`
 }
-async function runGates() {
-  const jobs = repos.map((r) => async () => scopeLintFailures(await runRepoGates(r, gateInstructionsFor, { label: `gates:${r.role}`, phase: 'Gates', schema: GATES_SCHEMA, ...MODELS.gatesFix }), r.stack, changedIn(r)))
+// The gate results of the run before any code is written; later failures that match them are pre-existing.
+let gateBaseline = null
+async function runGates({ takingBaseline = false } = {}) {
+  const extraJobs = []
   if (contractSync && (isUntrustedStack(backendRepo.stack) || isUntrustedStack(frontendRepo.stack))) {
-    jobs.push(async () => ({ repo: contractSync.repo, gates: [{ name: 'contract-sync', status: 'unreachable', details: NOT_RUN_UNTRUSTED }], allPassed: false }))
+    extraJobs.push(async () => ({ repo: contractSync.repo, gates: [{ name: 'contract-sync', status: 'unreachable', details: NOT_RUN_UNTRUSTED }], allPassed: false }))
   } else if (contractSync && (!contractSync.command || backendRepo.declinedStack || frontendRepo.declinedStack)) {
     const details = contractSync.command ? `${NOT_RUN_DECLINED}: a repo's stack comes from a declined manifest)` : `${NOT_RUN_DECLINED}: the contract-sync command Detect reported is not allowlisted)`
-    jobs.push(async () => ({ repo: contractSync.repo, gates: [{ name: 'contract-sync', status: 'unreachable', details }], allPassed: false }))
+    extraJobs.push(async () => ({ repo: contractSync.repo, gates: [{ name: 'contract-sync', status: 'unreachable', details }], allPassed: false }))
   } else if (contractSync) {
-    jobs.push(() => runAgent(contractSyncInstructions(), { label: 'gates:contract-sync', phase: 'Gates', schema: GATES_SCHEMA, ...MODELS.gatesFix }))
+    extraJobs.push(() => runAgent(contractSyncInstructions(), { label: 'gates:contract-sync', phase: 'Gates', schema: GATES_SCHEMA, ...MODELS.gatesFix }))
   }
-  const results = (await parallel(jobs)).filter(Boolean)
-  const allGates = results.flatMap((g) => (g.gates || []).map((x) => ({ ...x, repo: g.repo })))
-  return { results, allGates, allPassed: results.length > 0 && results.every((g) => g.allPassed) }
+  return runGateSet({
+    repos,
+    changedIn: takingBaseline ? null : changedIn,
+    baseline: takingBaseline ? null : gateBaseline,
+    extraJobs,
+    runRepo: (r) => runRepoGates(r, gateInstructionsFor, takingBaseline
+      ? { label: `baseline:${r.role}`, phase: 'Prepare', schema: GATES_SCHEMA, ...MODELS.gatesFix }
+      : { label: `gates:${r.role}`, phase: 'Gates', schema: GATES_SCHEMA, ...MODELS.gatesFix }),
+  })
 }
 // Failing gates a fix round left stuck, by signature, with the owner action the agent reported.
 const stuckGates = new Map()
@@ -3975,51 +6055,92 @@ const stuckGates = new Map()
  * @param {(repo: object) => string[]} [citedFor]  extra files a repo's fix may edit (the files Fix findings cite)
  * @returns {Promise<{ results: object[], allGates: object[], allPassed: boolean }>}
  */
-async function gatesUntilGreen(citedFor = () => []) {
-  let current = await runGates()
-  let fixRounds = 0
-  while (!current.allPassed && fixRounds < 3) {
-    const failing = gatesToFix(current.allGates, stuckGates)
-    if (!failing.length) {
-      log('Gates not all green but nothing actionable to fix — stopping loop.')
-      break
-    }
-    if (budget.total && budget.remaining() < 60_000) {
-      log(`Gates failing but budget low (${Math.round(budget.remaining() / 1000)}k left) — stopping fix loop.`)
-      break
-    }
-    // Fix per repo so the right specialist edits the right tree.
-    const byRepo = repos.filter((r) => failing.some((f) => f.repo === r.path))
-    const targets = byRepo.length ? byRepo : repos
-    targets.filter((r) => !changedIn(r).length).forEach((r) => log(`Gates: ${r.path} failures are pre-existing (this run changed no file there) — not fixed`))
-    const scoped = targets.filter((r) => changedIn(r).length)
-    if (!scoped.length) break
-    fixRounds++
-    log(`Gates round ${fixRounds}: fixing ${failing.length} failing gate(s)`)
-    const replies = await parallel(
-      scoped.map((r) => async () => {
-        const repoFailing = failing.filter((f) => !f.repo || f.repo === r.path)
-        const fixed = await runAgent(
-          `Quality gates are failing in the ${r.role} repo (${r.stack}) at "${r.path}". cd there. Fix the underlying code (not the gate config); do not suppress errors or weaken assertions.${contractSync ? `
+function gatesUntilGreen(citedFor = () => []) {
+  return gateFixLoop({
+    repos,
+    stuck: stuckGates,
+    runGates,
+    changedIn,
+    fixRepo: (r, repoFailing, round) => runAgent(
+      `Quality gates are failing in the ${r.role} repo (${r.stack}) at "${r.path}". cd there. Fix the underlying code (not the gate config); do not suppress errors or weaken assertions.${contractSync ? `
 A "contract-sync" failure means the frontend and backend disagree on an endpoint. The backend contract (docs/api/api-contracts.md and the spec) is authoritative: fix the side that deviates from it, and if the backend itself is missing the route, report that instead of inventing a frontend workaround.` : ''}
 ${gateFixScope(changedIn(r), citedFor(r))}
 ${NO_VCS_WRITES}
 Failures:
 ${repoFailing.map((g) => `- ${g.name}: ${g.details || ''}`).join('\n')}
 ${GATE_FIX_PROMPT_TAIL}`,
-          { label: `gates:fix${fixRounds}:${r.role}`, phase: 'Gates', agentType: agentForStack(r.stack), schema: GATE_FIX_SCHEMA, ...MODELS.gatesFix }
-        )
-        if (recordGateFix(stuckGates, repoFailing, fixed)) log(`Gates: the ${r.role} fix round changed no file or reported an environment cause — those failures are not sent to a fix agent again`)
-        return fixed
-      })
-    )
-    if (gateRoundIdle(replies)) {
-      log('Gates: no fix agent changed a file — not re-running the gates.')
-      break
-    }
-    current = await runGates()
+      { label: `gates:fix${round}:${r.role}`, phase: 'Gates', agentType: agentForStack(r.stack), schema: GATE_FIX_SCHEMA, ...MODELS.gatesFix }
+    ),
+  })
+}
+
+// --- Guard tests (bug and improvement specs with Must NOT change items) ----
+const GUARD_SCHEMA = {
+  ...BUILD_SCHEMA,
+  properties: {
+    ...BUILD_SCHEMA.properties,
+    manual: { type: 'array', items: { type: 'object', required: ['id', 'reason'], properties: { id: { type: 'string' }, reason: { type: 'string' } } } },
+  },
+}
+let manualGuards = []
+// The guard tests pin today's behavior and must pass on the unchanged code before any task is built.
+// A guard that fails means the code does not do what the MNC item says, so the run stops with the mismatch.
+// A resumed spec already has built code tasks, so its code is no longer the unchanged code the guards pin.
+const resumedBuild = specTaskLines.some((l) => {
+  const m = TASK_LINE.exec(l)
+  return !!m && m[1] !== ' ' && taskKind(m[3].trim()) === 'code'
+})
+if ((specType === 'bug' || specType === 'improvement') && mustNotChange.length && tasks.length && !resumedBuild) {
+  phase('Build')
+  const guardRepo = repoForStack(tasks[0].stack)
+  const guard = await runAgent(
+    `Write guard tests for the Must NOT change items of this ${specType} spec, then run them against the UNCHANGED code. Work in the ${guardRepo.role} repo (${guardRepo.stack}) at "${guardRepo.path}" — cd there.
+Must NOT change: ${mustNotChange.join('; ')}
+Write one test per item that pins today's behavior, named after its MNC id. They must PASS now (green first, no RED step). Change no production code. If a guard test fails on the unchanged code, the code does not do what the item says: set completed=false, and report the mismatch in notes.
+${specContextFor(tasks[0])}
+${NO_VCS_WRITES} ${OWNER_STEP_NOTE}
+An item no automated test can pin (for example a visual or third-party behavior) gets no test: return it in manual as { id, reason } and a person checks it in the manual test plan.
+Set completed=true only when every other guard test exists and passes. Return the files you changed in changedFiles, the test files in testFiles, and assumptions (empty when none).${hasOwn(ANSWERS_ARG, 'Q-guard-1') ? `
+The owner answered the question an earlier run raised about a failing guard (Q-guard-1): ${JSON.stringify(String(ANSWERS_ARG['Q-guard-1']))}. When it says the item is wrong and names the behavior to pin, pin that behavior instead and record the answer in assumptions; when it says the current behavior is a bug, leave the guard red and report it as before.` : ''}`,
+    { label: 'build:guard', phase: 'Build', schema: GUARD_SCHEMA, agentType: agentForStack(tasks[0].stack), ...MODELS.build }
+  )
+  if (guard) recordChanged(guardRepo, guard.changedFiles)
+  const guardStop = (status, error, question) => {
+    log(`Guard: ${error}`)
+    if (question) askedQuestions.push(question)
+    const guardLedger = stopLedger('guard-tests', status, error)
+    return { specRef, specId, error, guardFailed: true, recommendation: assuranceVerdict(guardLedger, { ship: 'SHIP', hold: 'FIX-FIRST', blocked: 'BLOCKED' }), ...askResult(), assurance: guardLedger }
   }
-  return current
+  const guardNotes = guard && guard.notes ? String(guard.notes).replace(/\s+/g, ' ').trim().slice(0, 400) : ''
+  // No result and an owner step say nothing about the code, so neither is reported as a failing guard.
+  if (!guard) return guardStop('unavailable', 'the guard step returned no result. Fix: re-run; the guard tests must run green on the unchanged code before any task is built')
+  if (isOwnerStep(guard)) return guardStop('unavailable', `the guard tests need an owner step first: ${guardNotes.replace(/^owner-step:\s*/i, '')}. Fix: do it by hand, then re-run`)
+  // The guard step may add tests only. With a git base, what it changed is read from git rather than taken from its own
+  // report; a repo without one has nothing better than the report, so it is not checked again.
+  const [guardFound] = await collectChanged([guardRepo], baseRevisions, {
+    roots: callerRoots(repoHints),
+    reported: () => [],
+    run: (prompt) => runAgent(prompt, { phase: 'Build', label: 'guard-changed-files', schema: CHANGED_SCHEMA, ...MODELS.prepare }),
+  })
+  const guardTestFiles = (guard.testFiles || []).map(normalFile).filter(Boolean)
+  const guardTestPaths = testPathMatchers((extrasFor(guardRepo.stack).testIntegrity || {}).testPaths)
+  const guardGitFiles = guardFound && guardFound.source === 'git' ? guardFound.files : []
+  if (guardFound && guardFound.source !== 'git') log(`Guard: ${guardRepo.role} has no git base; the guard step's own report of what it changed is not checked again`)
+  const guardProduction = guardGitFiles.filter((f) => !guardTestFiles.some((t) => sameFile(t, f)) && !guardTestPaths.some((re) => re.test(f)))
+  if (guardProduction.length) {
+    return guardStop('fail', `the guard step changed production code: ${guardProduction.slice(0, 10).join(', ')}. Fix: revert those files by hand; guard tests pin today's behavior and change no production code, then re-run`)
+  }
+  if (guard.completed !== true) {
+    const mismatch = guardNotes || 'the guard step reported a failing guard test without notes'
+    return guardStop('fail', `guard tests failed on the unchanged code: ${mismatch}. Fix: correct the Must NOT change item or the code it describes, then re-run`, {
+      id: 'Q-guard-1',
+      question: `A guard test for a Must NOT change item fails on the unchanged code: ${mismatch}. Is the item wrong (answer with the behavior to pin), or is the current behavior a bug to fix first?`,
+      why: 'the guard must pass before any task changes the code',
+      blocking: true,
+    })
+  }
+  manualGuards = (Array.isArray(guard.manual) ? guard.manual : []).filter((m) => m && m.id)
+  log(`Guard: ${(guard.testFiles || []).length} guard test file(s) green on the unchanged code`)
 }
 
 // --- Build → Gates → Converge loop ---------------------------------------
@@ -4033,8 +6154,16 @@ const convergeLog = []
 let remainingGaps = []
 // clean | cap | budget | stranded | nothing-built | unavailable; null until the loop ends.
 let convergeStop = null
-// Set when an audit did not return or wrote an owner gate; it blocks SHIP.
+// Set when an audit did not return, wrote an owner gate or was skipped for budget; it blocks SHIP.
 let convergeFailed = false
+// A resumed spec already has built code, so the tree is no longer the starting point to compare with.
+if (!resumedBuild && pending.length && (!budget.total || budget.remaining() >= 200_000)) {
+  phase('Prepare')
+  costSnapshot('Prepare')
+  const first = await runGates({ takingBaseline: true })
+  gateBaseline = gateBaselineOf(first.allGates)
+  log(`Gates baseline: ${first.allGates.filter((g) => g.status === 'fail').length} gate(s) failing before the build`)
+}
 while (true) {
   phase('Build')
   costSnapshot('Build')
@@ -4055,6 +6184,7 @@ while (true) {
   }
   if (budget.total && budget.remaining() < 100_000) {
     convergeStop = 'budget'
+    convergeFailed = true
     log(`Converge: skipped — budget low (${Math.round(budget.remaining() / 1000)}k left).`)
     break
   }
@@ -4069,11 +6199,11 @@ while (true) {
 Spec: ${specFolder ? `${specFolder} (read spec-lite.md and tasks.md)` : `in-memory (no spec folder) — feature: ${feature}`}
 Acceptance criteria: ${JSON.stringify(acceptanceCriteria)}
 Must NOT change: ${JSON.stringify(mustNotChange)}
-Quality attributes: ${JSON.stringify(nfrs)}
+Quality attributes: ${JSON.stringify(nfrs)}${rulesNote()}
 ${scopeNote}Tasks: ${JSON.stringify(tasks.map((t) => ({ id: t.id, title: t.title, covers: t.covers || [] })))}
 Built so far: ${JSON.stringify(built.map((b) => ({ id: b.id, summary: b.summary, changedFiles: b.changedFiles })))}
 Incomplete tasks: ${JSON.stringify(failedTasks)}
-${ownerSteps.length ? `Owner steps (the owner does these by hand; not gaps): ${JSON.stringify(ownerSteps.map((o) => o.id))}\n` : ''}Gate status: ${gates.allPassed ? 'green' : 'NOT green'}
+${untestedTasks.length ? `Untested tasks (covers an AC, no test file returned): ${JSON.stringify(untestedTasks)}. Check each one's criteria against the code and report a gap for any criterion with no test.\n` : ''}${ownerSteps.length ? `Owner steps (the owner does these by hand; not gaps): ${JSON.stringify(ownerSteps.map((o) => o.id))}\n` : ''}Gate status: ${gates.allPassed ? 'green' : 'NOT green'}
 ${priorGaps.length ? `Gaps raised in earlier rounds, already tasks in tasks.md: ${JSON.stringify(priorGaps.map((g) => `${g.id}. ${g.title}`))}. Do not report one of them again under a new title; report only work that is still missing.\n` : ''}${awaitingOwner ? `Out of scope: tasks ${ownerCut.join(', ')} wait for the owner gate "${awaitingOwner}". Do not report their work as gaps.\n` : ''}Never add a gap titled "Gate:" and never write a "Gate:" task: only the owner adds an owner gate.\n${manualTasks.length ? `Manual tasks ${manualTasks.map((t) => t.id).join(', ')} are a person's steps for the manual test plan; do not report them as gaps.\n` : ''}
 Read the changed code and its tests. For every AC: is it implemented AND covered by a test (or a manual-test step)? For every MNC: is there a guard proving the behavior is unchanged? For every NFR: is the requirement met and proven by a test or a recorded measurement against its target? For every task: is its Verify criterion actually met? Anything missing, half-done, or untested is a gap.
 Report only concrete gaps grounded in the code (not style preferences, not scope creep beyond the spec). Each gap: title, reason (what is missing, with file evidence), stack, files, approach, verify, covers (AC/MNC/NFR ids), and kind: "manual" when only a person or a live external system can check it (a real device, a real third-party account, production data), otherwise "code".
@@ -4163,9 +6293,14 @@ const partialBuild = built.length + ownerSteps.length !== tasks.length - remaini
 // --- Visual (Playwright MCP; only when UI changed) ----------------------
 phase('Visual')
 costSnapshot('Visual')
-const allChanged = Array.from(new Set(built.flatMap((b) => b.changedFiles || [])))
+await refreshChanged()
+const allChanged = Array.from(new Set(repos.flatMap((r) => {
+  const prefix = normalRepoPath(r.path) === '.' ? '' : `${normalRepoPath(r.path)}/`
+  return changedIn(r).map((f) => prefix + f)
+})))
 const uiChanged = allChanged.filter((f) => /\.(tsx|jsx|html?|s?css|less)$/.test(f))
 let visual = null
+let visualRecheck = null
 if (!uiChanged.length) {
   log('Visual: skipped — no UI files changed.')
 } else {
@@ -4190,14 +6325,26 @@ Do NOT trigger native alert/confirm/prompt dialogs — they freeze the extension
     const unchanged = split.filter((t) => !t.files.length)
     unchanged.forEach((t) => log(`Visual: ${t.repo.path} skipped — no UI files changed in that repo.`))
     const passes = await sequentialPasses(checked, (t) => visualPass(t.repo, t.url, t.files, { label: `visual:${t.repo.path}` }))
+    const withRepo = (found, list) => found.flatMap((v, i) => ((v && v.ran && v.findings) || []).map((f) => ({ ...f, repoPath: list[i].repo.path, description: `[${list[i].repo.path}] ${f.description}` })))
+    // Only frontends with a claimed fix are checked again; a frontend whose pass did not run covers nothing.
+    visualRecheck = async (repoPaths) => {
+      const targets = checked.filter((t) => repoPaths.includes(t.repo.path))
+      const again = await sequentialPasses(targets, (t) => visualPass(t.repo, t.url, t.files, { label: `visual:${t.repo.path}:recheck` }))
+      const ranPaths = targets.filter((t, i) => again[i] && again[i].ran).map((t) => t.repo.path)
+      return ranPaths.length ? { findings: withRepo(again, targets), covers: (repoPath) => ranPaths.includes(repoPath) } : null
+    }
     visual = {
       ran: passes.some((v) => v && v.ran),
-      findings: passes.flatMap((v, i) => ((v && v.ran && v.findings) || []).map((f) => ({ ...f, description: `[${checked[i].repo.path}] ${f.description}` }))),
+      findings: withRepo(passes, checked),
       passes: checked.map((t, i) => ({ repo: t.repo.path, url: t.url, ran: !!(passes[i] && passes[i].ran) }))
         .concat(unchanged.map((t) => ({ repo: t.repo.path, url: t.url, ran: false, status: 'skip', reason: 'no UI files changed in this repo' }))),
     }
   } else {
     visual = await visualPass(frontendRepo, devUrl, uiChanged, {})
+    visualRecheck = async () => {
+      const again = await visualPass(frontendRepo, devUrl, uiChanged, { label: 'visual:recheck' })
+      return again && again.ran ? { findings: (again.findings || []).map((f) => ({ ...f, repoPath: frontendRepo && frontendRepo.path })), covers: () => true } : null
+    }
   }
   if (visual && visual.ran) log(`Visual: ${(visual.findings || []).length} finding(s)`)
   else if (visual) {
@@ -4211,78 +6358,90 @@ const visualFindings = (visual && visual.findings) || []
 phase('Review')
 costSnapshot('Review')
 const DIMENSIONS = [
-  { key: 'correctness', prompt: 'logic errors, edge cases, off-by-one, null handling, incorrect business rules' },
-  { key: 'security', prompt: 'auth/authz gaps, injection, mass assignment, sensitive data exposure, missing validation' },
+  ...SHARED_REVIEW_DIMENSIONS,
   { key: 'performance', prompt: 'N+1 queries, missing indexes, unbounded loops, unnecessary re-renders, oversized payloads' },
   {
     key: 'design',
     prompt: `layer violations, departures from the detected stack conventions${stackConventions.length ? ` (${stackConventions.join(', ')})` : ''}, dead code. Every design finding names the rule it breaks in convention, with its source: a CLAUDE.md, AGENTS.md or rules entry, an item of the stack conventions, or a named principle with its reference. It also cites file and an integer line. A design finding without a convention, a file and a line is dropped unverified, so leave out matters of taste and general advice`,
   },
+  {
+    key: 'tests',
+    prompt: 'a test that cannot fail, a test that does not exercise the criterion it is named after, an assertion weakened to pass, a missing negative case for an authorization or validation criterion. Every finding cites file and an integer line; one without them is dropped unverified',
+  },
 ]
+// With a rule set the reviewers also answer, per rule, whether the changed code enforces it.
+if (ruleSet.length) {
+  DIMENSIONS.push({
+    key: 'business-rules',
+    prompt: `whether the changed code enforces each business rule below. Return one verdict per rule id: enforced, violated or not-applicable, with the file and an integer line that show it (a violated rule names the code that breaks it). Rules: ${ruleSet.map((r) => `${r.id}: ${r.text}`).join('; ')}`,
+  })
+}
 const changedFiles = allChanged
-const VERIFY_LENSES = {
-  correctness: 'does the cited code really behave the way the finding claims?',
-  reproducibility: 'can you name a concrete input, state or call path in this code that triggers it?',
-  severity: 'this vote breaks a tie: weigh the evidence both ways and decide whether its impact makes it a real defect in this code',
-}
-
-// The lens line goes last so every vote on one finding shares its prompt prefix up to it. In the Fix phase
-// the same votes re-check a finding the agent reports fixed, against the code as it stands after the fix.
-const verifyVote = (f, dim, lens, stage = 'Review') =>
-  runAgent(
-    `You verify one finding from an adversarial code review of ${specLabel}. Try to REFUTE it: read the cited file and line in the actual code, and default real=false if you cannot confirm it there. Do not re-rate its severity. When it is real, set fixSize: trivial (a local change of a line or two), small (within one function or file) or large (several files, or a design change).${stage === 'Fix' ? ' A fix for it has just been applied: judge the code as it stands now.' : ''}
-Finding (${dim.key}): "${f.title}" in ${f.file || '?'}${f.line ? ':' + f.line : ''}
-${f.description || ''}${f.convention ? `\nConvention: ${f.convention}` : ''}
-Lens: ${lens} — ${VERIFY_LENSES[lens]}`,
-    { label: `${stage === 'Fix' ? 'reverify' : 'verify'}:${dim.key}`, phase: stage, schema: VERDICT_SCHEMA, ...MODELS.verify }
-  )
-
-/** Two votes (one for a minor design finding) and a severity tie-break only when they split or one is missing. */
-async function verifyFinding(f, dim, stage = 'Review') {
-  const single = dim.key === 'design' && f.severity === 'minor'
-  const first = single
-    ? [await verifyVote(f, dim, 'correctness', stage)]
-    : await parallel([() => verifyVote(f, dim, 'correctness', stage), () => verifyVote(f, dim, 'reproducibility', stage)])
-  const votes = first.filter(Boolean)
-  const label = stage === 'Fix' ? 'reverify' : 'verify'
-  if (!votes.length) {
-    log(`${label}:${dim.key} unavailable for "${f.title}"`)
-    return { confirmed: false, refuted: false, reasons: [] }
-  }
-  if (!single && (votes.length === 1 || votes[0].real !== votes[1].real)) {
-    const tie = await verifyVote(f, dim, 'severity', stage)
-    if (tie) votes.push(tie)
-  }
-  const tally = tallyVotes(votes, single ? 1 : 2)
-  // A fix counts only when the votes refute the finding; missing or undecided votes leave it open.
-  if (stage === 'Fix' && !tally.confirmed && !tally.refuted) log(`${label}:${dim.key} unavailable for "${f.title}"`)
-  return tally
-}
-
-const reviewed = await pipeline(
-  DIMENSIONS,
-  (d) =>
-    runAgent(
-      `Adversarially review the changes for ${specLabel} on the ${d.key} dimension. Look specifically for: ${d.prompt}.
-Changed files: ${changedFiles.join(', ') || '(inspect recent git diff across all repos)'}
-Question every pattern — do not assume correctness. Report concrete findings only, with file and line where possible.`,
-      { label: `review:${d.key}`, phase: 'Review', schema: FINDINGS_SCHEMA, ...MODELS.review }
-    ),
-  (review, dim) => {
-    let findings = (review && review.findings) || []
-    if (!findings.length) return []
+// Content hashes of the changed files as Review starts; the second review compares against them.
+const reviewSnapshot = await hashChanged(repos, baseRevisions, changedIn, {
+  roots: callerRoots(repoHints),
+  run: (prompt) => runAgent(prompt, { phase: 'Review', label: 'review-snapshot', schema: HASHED_SCHEMA, ...MODELS.prepare }),
+})
+const verifyFinding = makeFindingVerifier({ subject: specLabel, models: MODELS })
+// Rule ids the business-rules reviewer gave no verdict for.
+let unjudgedRules = []
+const reviewRun = await reviewDiff({
+  subject: specLabel,
+  repos,
+  bases: baseRevisions,
+  changed: changedIn,
+  models: MODELS,
+  phase: 'Review',
+  dims: DIMENSIONS,
+  verify: verifyFinding,
+  context: `Changed files: ${changedFiles.join(', ') || '(inspect recent git diff across all repos)'}`,
+  schemaFor: (dim) => (dim.key === 'business-rules' ? RULE_REVIEW_SCHEMA : FINDINGS_SCHEMA),
+  findingsOf: (review, dim) => {
+    let findings = review.findings || []
+    if (dim && dim.key === 'business-rules') {
+      const verdicts = review.verdicts || []
+      // A clean verdict needs its evidence: file and line for enforced, a reason for not-applicable.
+      const supported = (v) =>
+        v.verdict === 'violated' ||
+        (v.verdict === 'enforced' && !!v.file && Number.isInteger(v.line)) ||
+        (v.verdict === 'not-applicable' && !!String(v.description || '').trim())
+      const judged = new Set(verdicts.filter((v) => RULE_VERDICTS.includes(v.verdict) && supported(v)).map((v) => v.id))
+      unjudgedRules = ruleSet.filter((r) => !judged.has(r.id)).map((r) => r.id)
+      findings = verdicts.filter((v) => v.verdict === 'violated').map((v) => ({
+        title: `${v.id} violated: ${(ruleSet.find((r) => r.id === v.id) || {}).text || v.id}`.slice(0, 120),
+        severity: 'critical',
+        file: v.file,
+        line: v.line,
+        description: v.description || `${v.id} is not enforced by the changed code`,
+      }))
+    }
     if (dim.key === 'design') {
       const concrete = findings.filter(isConcreteDesignFinding)
       if (concrete.length < findings.length) log(`Review: dropped ${findings.length - concrete.length} design finding(s) without a convention, file and line`)
       findings = concrete
     }
-    // The finder's severity stands; the votes decide only whether the finding is real and how big its fix is.
-    return parallel(findings.map((f) => () => verifyFinding(f, dim).then((v) => ({ ...f, dimension: dim.key, ...v }))))
-  }
-)
-
-const confirmed = reviewed.flat().filter(Boolean).filter((f) => f.confirmed).map((f, i) => ({ id: `F${i + 1}`, ...f }))
-log(`Review: ${confirmed.length} confirmed finding(s)`)
+    if (dim.key === 'tests') {
+      const located = findings.filter(hasFileAndLine)
+      if (located.length < findings.length) log(`Review: dropped ${findings.length - located.length} tests finding(s) without a file and line`)
+      findings = located
+    }
+    return findings
+  },
+})
+const unavailableDimensions = reviewRun.unavailable
+const riskFileCount = reviewRun.deep.files
+const deepUnavailable = reviewRun.deep.unavailable
+if (!riskFileCount) log('Security: deep pass skipped — no risk area touched.')
+const confirmedReview = reviewRun.confirmed
+log(`Review: ${confirmedReview.length} confirmed finding(s)`)
+// A critical or major visual finding is observed in the running app, so it needs no vote to enter the Fix list.
+const visualBlockers = visualFindings
+  .filter(isBlockingFinding)
+  .map((f, i) => ({ id: `V${i + 1}`, dimension: 'visual', severity: f.severity, title: `${f.area}: ${f.description}`.slice(0, 120), description: f.description, repoPath: f.repoPath || (frontendRepo && frontendRepo.path), area: f.area, confirmed: true }))
+const confirmed = [...confirmedReview, ...visualBlockers]
+// Findings no verifier answered for stay open: a critical or major one blocks, a minor one is only listed.
+const unverifiedFindings = reviewRun.unverified
+if (unverifiedFindings.length) log(`Review: ${unverifiedFindings.length} finding(s) could not be verified`)
 
 // --- Fix: confirmed critical, major and trivial minor findings, re-gated and re-verified ---
 // Review is not re-run: a defect a fix introduces is caught by the gates, the test gates and Acceptance.
@@ -4294,6 +6453,8 @@ costSnapshot('Fix')
  * include it (reviewers see repo-relative paths), and the primary repo otherwise.
  */
 function repoForFinding(f) {
+  const own = f.repoPath && repos.find((r) => r.path === f.repoPath)
+  if (own) return own
   const file = normalFile(f.file)
   const owners = repos.filter((r) => normalRepoPath(r.path) !== '.' && file.startsWith(`${normalRepoPath(r.path)}/`))
   const byPrefix = owners.sort((a, b) => b.path.length - a.path.length)[0]
@@ -4309,6 +6470,7 @@ function findingFile(f, repo) {
 const fixedIds = []
 let openFindings = confirmed.filter(isFixableFinding)
 let fixRound = 0
+const visualClaimed = new Set()
 let fixStop = openFindings.length ? null : 'clean'
 const citedFor = (repo) => openFindings.filter((f) => f.file && repoForFinding(f) === repo).map((f) => findingFile(f, repo))
 const findingLine = (f) => `- ${f.id} [${f.severity}] ${f.file || '?'}${f.line ? `:${f.line}` : ''} — ${f.title}${f.description ? `: ${f.description}` : ''}${(f.reasons || []).length ? `\n  Verifier reasons: ${f.reasons.join(' | ')}` : ''}`
@@ -4322,7 +6484,7 @@ while (!fixStop) {
   const groups = repos.map((r) => ({ repo: r, findings: openFindings.filter((f) => repoForFinding(f) === r) })).filter((g) => g.findings.length)
   log(`Fix round ${fixRound}: ${groups.map((g) => `${g.findings.map((f) => f.id).join(', ')} in ${g.repo.path}`).join('; ')}`)
   const replies = await parallel(groups.map((g) => () => {
-    const failingGates = ((gates && gates.allGates) || []).filter((x) => isFixableGate(x) && (!x.repo || x.repo === g.repo.path))
+    const failingGates = ((gates && gates.allGates) || []).filter((x) => isFixableGate(x) && !isSecurityGate(x, repos) && (!x.repo || x.repo === g.repo.path))
     return runAgent(
       `Fix these confirmed review findings of ${specLabel} in the ${g.repo.role} repo (${g.repo.stack}) at "${g.repo.path}" — cd there. Fix round ${fixRound} of ${FIX_ROUNDS}.
 Findings:
@@ -4335,17 +6497,34 @@ ${mustNotChange.length ? `Must NOT change (keep identical; do not edit their gua
   const reported = new Set()
   replies.forEach((reply, i) => {
     if (!reply) return
-    recordChanged(groups[i].repo, reply.changedFiles)
+    recordChanged(groups[i].repo, reply.changedFiles, [runChanged, lateChanged])
     const ids = new Set(groups[i].findings.map((f) => f.id))
     for (const id of reply.fixed || []) if (ids.has(id)) reported.add(id)
   })
   gates = await gatesUntilGreen(citedFor)
-  const recheck = openFindings.filter((f) => reported.has(f.id))
+  // A visual finding is settled by a second browser pass after the loop, not by code-reading votes.
+  openFindings.filter((f) => f.dimension === 'visual' && reported.has(f.id)).forEach((f) => visualClaimed.add(f.id))
+  const recheck = openFindings.filter((f) => reported.has(f.id) && f.dimension !== 'visual')
   const verdicts = await parallel(recheck.map((f) => () => verifyFinding(f, DIMENSIONS.find((d) => d.key === f.dimension) || { key: f.dimension || 'review' }, 'Fix')))
   const resolved = recheck.filter((f, i) => verdicts[i] && verdicts[i].refuted).map((f) => f.id)
   fixedIds.push(...resolved)
-  openFindings = openFindings.filter((f) => !resolved.includes(f.id))
+  openFindings = openFindings.filter((f) => !resolved.includes(f.id) && !visualClaimed.has(f.id))
   fixStop = fixStopAfterRound({ greenBefore, greenAfter: !!(gates && gates.allPassed), open: openFindings.length, resolved: resolved.length, rounds: fixRound })
+}
+if (visualClaimed.size && visualRecheck) {
+  if (fixStop === 'budget' || (budget.total > 0 && budget.remaining() < 100_000)) {
+    log('Visual re-check: skipped, budget low — visual findings stay unresolved.')
+  } else {
+    // The claimed repos' frontends are checked again; a critical or major finding reported again (same repo and area) keeps the claim open.
+    const claimed = confirmed.filter((f) => visualClaimed.has(f.id))
+    const again = await visualRecheck([...new Set(claimed.map((f) => f.repoPath))])
+    if (again) {
+      const blockingAgain = again.findings.filter(isBlockingFinding)
+      const stillThere = (f) => blockingAgain.some((g) => g.repoPath === f.repoPath && g.area === f.area)
+      for (const f of claimed) if (again.covers(f.repoPath) && !stillThere(f)) fixedIds.push(f.id)
+      log(`Visual re-check: ${again.findings.length} finding(s)`)
+    } else log('Visual re-check: could not run — visual findings stay unresolved.')
+  }
 }
 const unresolved = confirmed.filter((f) => !fixedIds.includes(f.id))
 const fixResult = { rounds: fixRound, stopReason: fixStop, fixed: fixedIds, remaining: unresolved.map((f) => f.id) }
@@ -4369,7 +6548,7 @@ Expected end state: ${(userJourney && userJourney.expectedEndState) || '(the rep
 Broken links flagged at investigation: ${brokenLinks.map((b) => b.target).join(', ') || 'none'}
 Acceptance criteria: ${JSON.stringify(acceptanceCriteria)}
 Must NOT change: ${JSON.stringify(mustNotChange)}
-Quality attributes: ${JSON.stringify(nfrs)}
+Quality attributes: ${JSON.stringify(nfrs)}${rulesNote()}
 Changed files: ${allChanged.join(', ') || '(inspect git diff)'}
 
 Walk the journey as a real request/user would: from each entry point, follow every hop (route → controller → service → response, or page → redirect → target page) to the expected end state. For each hop record step, expected, actual, ok. A redirect or link whose TARGET does not exist/resolve is ok=false and goes in brokenLinks. Also add one step per acceptance criterion (does the code satisfy it?) one per Must NOT change item (is that behavior still identical? compare against git history for the touched paths), and one per quality attribute (does the code meet it, and which test or measurement shows it?). Set resolved=true ONLY if the full journey reaches the expected end state with no broken hop, every AC and NFR holds, and no MNC behavior changed. If a repo is untracked WIP, say so in reason — it is not a verified deploy target. Uncommitted changes in a changed repo are expected (this workflow commits nothing); they are not WIP.`,
@@ -4427,13 +6606,89 @@ Finally, in ${specFolder}/tasks.md set the Traceability "Verified by" cell of ea
   )
   if (e2e) log(`E2E: ${e2e.written ? e2e.path || 'written' : 'not written'} — ${e2e.ran ? (e2e.passed ? 'passing' : 'FAILING') : `not run${e2e.details ? ` (${e2e.details})` : ''}`}`)
 }
+if (e2e && e2e.written && e2e.path && frontendRepo) recordChanged(frontendRepo, [e2e.path], [runChanged, lateChanged])
 const e2eFailed = !!(e2e && e2e.ran && !e2e.passed)
 const acceptanceResolved = !!(acceptance && acceptance.resolved) && !e2eFailed
+
+// --- Test integrity: covers every test-file change the run makes, Acceptance and E2E included ---------
+const builtTaskIds = new Set(built.map((b) => b.id))
+const builtTasks = tasks.filter((t) => builtTaskIds.has(t.id))
+const testIntegrityResults = await checkTestIntegrity(repos, baseRevisions, {
+  roots: callerRoots(repoHints),
+  rulesFor: (repo) => extrasFor(repo.stack).testIntegrity,
+  named: (file) => namedByTask(builtTasks, file),
+  run: (prompt) => runAgent(prompt, { phase: 'Acceptance', label: 'test-integrity', schema: TEST_INTEGRITY_SCHEMA, ...MODELS.prepare }),
+})
+testIntegrityResults.forEach((r) => log(`Test integrity: ${r.role} ${r.status}${r.reason ? ` (${r.reason})` : ''}`))
+
+// --- Second review: only what changed after Review, on correctness and security; it runs once ---
+// A finding it confirms blocks SHIP but starts no further Fix round.
+// The scope comes from git: every file that is new since Review started or whose content hash differs,
+// which includes what gate-fix agents changed without reporting it. A repo without a snapshot falls back
+// to the files agents reported.
+await refreshChanged()
+const lateHashes = await hashChanged(repos, baseRevisions, changedIn, {
+  roots: callerRoots(repoHints),
+  run: (prompt) => runAgent(prompt, { phase: 'Acceptance', label: 'late-hashes', schema: HASHED_SCHEMA, ...MODELS.prepare }),
+})
+const lateScope = repos
+  .map((r) => {
+    const before = reviewSnapshot.get(r.path)
+    const after = lateHashes.get(r.path)
+    const files = before && after ? changedSinceSnapshot(before, after) : Array.from(lateChanged.get(normalRepoPath(r.path)) || [])
+    return { repo: r, files }
+  })
+  .filter((x) => x.files.length)
+const lateHasTests = lateScope.some((x) => {
+  const matchers = testPathMatchers((extrasFor(x.repo.stack).testIntegrity || {}).testPaths)
+  return x.files.some((f) => matchers.some((m) => m.test(f)))
+})
+const lateDims = DIMENSIONS.filter((d) => d.key === 'correctness' || d.key === 'security' || (d.key === 'tests' && lateHasTests))
+const lateUnavailable = []
+let lateFindings = []
+let lateUnverified = []
+if (lateScope.length) {
+  log(`Second review: ${lateScope.reduce((n, x) => n + x.files.length, 0)} file(s) changed after Review`)
+  const lateReviewed = await pipeline(
+    lateDims,
+    (d) =>
+      runAgent(
+        `Adversarially review ONLY the changes made after the first review of ${specLabel}, on the ${d.key} dimension. Look specifically for: ${d.prompt}.
+Read the diff from git, per repo, and limit the review to these files:
+${reviewDiffLines(lateScope.map((x) => x.repo), baseRevisions, changedIn, (r) => (lateScope.find((x) => x.repo === r) || {}).files)}
+Files changed after the first review:
+${lateScope.map((x) => `- ${x.repo.path}: ${x.files.join(', ')}`).join('\n')}
+Question every pattern; report concrete findings only, with file and line where possible.${d.key === 'security' ? `\n${securityReviewText(repos)}` : ''}`,
+        { label: `review-late:${d.key}`, phase: 'Acceptance', schema: FINDINGS_SCHEMA, ...(d.key === 'security' ? { agentType: SECURITY_AGENT } : {}), ...MODELS.review }
+      ),
+    (review, dim) => {
+      if (!review) {
+        lateUnavailable.push(dim.key)
+        log(`review-late:${dim.key} unavailable`)
+        return []
+      }
+      let findings = review.findings || []
+      if (dim.key === 'tests') {
+        const located = findings.filter(hasFileAndLine)
+        if (located.length < findings.length) log(`Review: dropped ${findings.length - located.length} tests finding(s) without a file and line`)
+        findings = located
+      }
+      return parallel(findings.map((f) => () => verifyFinding(f, dim).then((v) => ({ ...f, dimension: dim.key, ...v }))))
+    }
+  )
+  const lateAll = lateReviewed.flat().filter(Boolean)
+  lateFindings = lateAll.filter((f) => f.confirmed).map((f, i) => ({ id: `L${i + 1}`, ...f }))
+  lateUnverified = lateAll.filter((f) => f.unverified).map((f, i) => ({ id: `LU${i + 1}`, ...f }))
+  log(`Second review: ${lateFindings.length} confirmed finding(s)`)
+} else {
+  log('Second review: skipped — no file changed after Review.')
+}
 
 // --- Docs ---------------------------------------------------------------
 phase('Docs')
 costSnapshot('Docs')
 let docs = null
+let docsEntryResult = null
 const criticalFindings = unresolved.filter((f) => f.severity === 'critical')
 if (!built.length) {
   log('Docs: skipped — nothing was built.')
@@ -4446,27 +6701,79 @@ if (!built.length) {
 } else {
   const docTargets = docsToUpdate.length
     ? docsToUpdate.map((d) => `- ${d.path}: ${d.reason}`).join('\n')
-    : '(none pre-identified — discover affected docs from the changed files)'
+    : '(none pre-identified by the investigation)'
+  let ownersUnanswered = false
+  // The changed files as they are now: Fix rounds, the last Converge build and the E2E test changed files after Review started.
+  const docsChanged = Array.from(new Set(repos.flatMap((r) => {
+    const prefix = normalRepoPath(r.path) === '.' ? '' : `${normalRepoPath(r.path)}/`
+    return changedIn(r).map((f) => prefix + f)
+  })))
+  let impactItems = withBusinessRuleItem(docImpactItems(docsChanged, docImpactRules(docImpactManifestFor(repos)), docsToUpdate), specRuleIds)
+  if (impactItems.some((i) => i.target === DOC_IMPACT_NONE)) {
+    const mapped = await runAgent(docOwnersPrompt(impactItems), { phase: 'DocOwners', schema: DOC_OWNERS_SCHEMA, agentType: 'code-explorer', ...MODELS.docowners })
+    ownersUnanswered = !mapped
+    impactItems = applyDocOwners(impactItems, mapped)
+  }
+  const impactText = impactItems.length
+    ? impactItems.map((i) => `- ${i.kind} (${fileListText(i.files, 10)}): owning doc ${i.target}`).join('\n')
+    : '(no change of a documented kind was found in the changed files)'
   docs = await runAgent(
     `The work below shipped. Update the project's EXISTING documentation across all repos so it reflects the new behavior. Document only what the code actually does now — verify each claim against the implementation.
 Feature: ${specLabel}
 Repos: ${JSON.stringify(repos.map((r) => ({ role: r.role, stack: r.stack, path: r.path })))}
-Changed files: ${changedFiles.join(', ') || '(inspect recent git diff)'}
+Changed files: ${fileListText(docsChanged, 30) || '(inspect recent git diff)'}${docsChanged.length > 30 ? ' (the full list: git diff against the base revision)' : ''}
 Tasks shipped: ${JSON.stringify(built.map((b) => ({ id: b.id, summary: b.summary })))}
 
 Docs flagged during investigation:
 ${docTargets}
 
-Rules: prefer updating existing docs; new docs only when nothing covers the area; lowercase filenames (except CLAUDE.md/README.md); no AI-marker/changelog comments; don't touch unaffected docs (list them under skipped).`,
+Doc impact (computed from the changed files; each item is a kind of change and the doc that owns it in this project, or "${DOC_IMPACT_NONE}"):
+${impactText}
+
+Return in entries one { kind, target, status, reason } per impact item above: target is the doc, status is one of ${DOC_IMPACT_STATUSES.join(', ')} (updated, created, or not-affected when the doc needs no change), reason says why. ${DOC_IMPACT_NONE_RULE} An item with no entry is recorded as unavailable. Return in changedSections one { doc, heading } per section of an existing doc you edited.
+
+Rules: prefer updating existing docs; new docs only when nothing covers the area; lowercase filenames (except CLAUDE.md/README.md); no AI-marker/changelog comments; don't touch unaffected docs (list them under skipped). Edit only docs, never code. ${NO_VCS_WRITES}`,
     { phase: 'Docs', schema: DOCS_SCHEMA, agentType: WRITER_AGENT, ...MODELS.docs }
   )
   if (docs) log(`Docs: ${(docs.updatedDocs || []).length} updated, ${(docs.newDocs || []).length} new`)
+  else docsEntryResult = assure('docs', 'unavailable', 'the docs agent returned nothing')
+  if (docsWrittenBy(docs).length) {
+    const checked = await checkDocs({
+      result: docs,
+      grade: (current) => runAgent(docsGradePrompt(specLabel, docsWrittenBy(current), current.changedSections), { phase: 'Docs', label: 'docs-grade', schema: GRADE_SCHEMA, agentType: 'outcomes-grader', ...MODELS.grade }),
+      repair: (phantoms, current) => runAgent(docsRepairPrompt(phantoms, { docs: docsWrittenBy(current), entries: current.entries }), { phase: 'Docs', label: 'docs-repair', schema: DOCS_SCHEMA, agentType: WRITER_AGENT, ...MODELS.docs }),
+    })
+    docs = checked.result
+    docsEntryResult = checked.entry
+  }
+  // Docs runs after both reviews, so a non-doc edit it makes is found here and blocks SHIP.
+  await refreshChanged()
+  const afterDocs = await hashChanged(repos, baseRevisions, changedIn, {
+    roots: callerRoots(repoHints),
+    run: (prompt) => runAgent(prompt, { phase: 'Docs', label: 'docs-hashes', schema: HASHED_SCHEMA, ...MODELS.prepare }),
+  })
+  const docsEscaped = nonDocChanges(repos.flatMap((r) => {
+    const before = lateHashes.get(r.path)
+    const after = afterDocs.get(r.path)
+    return before && after ? changedSinceSnapshot(before, after) : []
+  }))
+  const scopeEntry = docsScopeAssurance(docsEscaped)
+  if (scopeEntry) {
+    log(`Fix: the Docs phase changed non-doc file(s): ${docsEscaped.join(', ')}; docs fails.`)
+    docsEntryResult = scopeEntry
+  }
+  if (impactItems.length) {
+    const missing = docImpactResults(impactItems, docs && docs.entries).missing
+    if (!docsEntryResult || docsEntryResult.status === 'pass') docsEntryResult = docsAssurance(missing)
+    if (ownersUnanswered && !docImpactOwned(impactItems) && !scopeEntry) docsEntryResult = assure('docs', 'unavailable', 'the doc owner mapper returned no result, so it is not known whether a doc owns the changed behavior')
+  }
 }
 
 // Only an untrusted manifest that a detected repo uses blocks SHIP; the others are reported for information.
 const blockingManifests = blockingUntrusted(untrustedManifests, repos)
-const blockingFindings = unresolved.filter((f) => f.severity === 'critical' || f.severity === 'major')
-const recommendation = shipRecommendation({
+const blockingUnverified = unverifiedFindings.filter(isBlockingFinding)
+const blockingFindings = [...unresolved.filter(isBlockingFinding), ...blockingUnverified]
+const shipFacts = {
   blockingManifests: blockingManifests.length,
   partialBuild,
   gatesPassed: !!(gates && gates.allPassed),
@@ -4474,11 +6781,61 @@ const recommendation = shipRecommendation({
   // Acceptance that never returned after a build is not verified, so it blocks like a failed one.
   acceptanceFailed: built.length > 0 && !(acceptance && acceptance.resolved),
   e2eFailed,
+  e2eRan: !!(e2e && e2e.ran),
   repoWarnings: repoWarnings.length,
   remainingGaps: remainingGaps.length,
   convergeFailed,
+  convergeStop,
+}
+const visualEntry = !uiChanged.length
+  ? assure('visual', 'skipped', 'no UI files changed')
+  : !visual
+    ? assure('visual', 'unavailable', 'the visual agent returned nothing')
+    : visual.ran
+    ? (visualBlockers.some((f) => unresolved.includes(f)) ? assure('visual', 'fail', 'critical or major visual finding(s) remain') : assure('visual', 'pass'))
+    : assure('visual', 'skipped', (visual && visual.details) || NO_APP_URL)
+const fixEntry = !confirmed.length
+  ? assure('fix', 'skipped', 'no confirmed findings to fix')
+  : unresolved.some(isBlockingFinding) ? assure('fix', 'fail', 'critical or major finding(s) remain after the fix rounds') : assure('fix', 'pass')
+const lateBlocking = [...lateFindings, ...lateUnverified].filter(isBlockingFinding)
+const secondReviewEntry = !lateScope.length
+  ? assure('second-review', 'skipped', 'no file changed after Review')
+  : lateBlocking.length
+    ? assure('second-review', 'fail', `${lateBlocking.length} critical or major finding(s) in the changes made after Review`)
+    : lateUnavailable.length
+      ? assure('second-review', 'unavailable', `no answer from the ${lateUnavailable.join(', ')} reviewer`)
+      : assure('second-review', 'pass')
+const securityReview = securityReviewResult({
+  ran: !unavailableDimensions.includes('security'),
+  deep: deepState(riskFileCount, deepUnavailable),
+  findings: [...confirmedReview, ...lateFindings].filter((f) => f.dimension === 'security').length,
 })
-const notShippable = recommendation !== 'SHIP'
+let assurance = [
+  visualEntry,
+  secondReviewEntry,
+  fixEntry,
+  testIntegrityEntry(testIntegrityResults),
+  securityRanEntry(securityReview, !allChanged.length),
+  securityDeepEntry({
+    files: riskFileCount,
+    unavailable: deepUnavailable,
+    blocking: [...unresolved.filter((f) => f.dimension === 'security'), ...unverifiedFindings].filter((f) => f.deepPass && isBlockingFinding(f)).length,
+  }),
+  ...DIMENSIONS.map((d) => assure(`review:${d.key}`, 'pass')),
+  ...unavailableDimensions.map((d) => assure(`review:${d}`, 'unavailable', 'the reviewer returned nothing')),
+  ...(unjudgedRules.length || unresolvedRules.length
+    ? [assure('review:business-rules', 'unavailable', [
+        unresolvedRules.length ? `rule not found: ${unresolvedRules.join(', ')}` : '',
+        unjudgedRules.length ? `no verdict for ${unjudgedRules.join(', ')}` : '',
+      ].filter(Boolean).join('; '))]
+    : []),
+  ...[...new Set(blockingUnverified.map((f) => f.dimension))].map((d) =>
+    assure(`review:${d}`, 'unavailable', 'a critical or major finding could not be verified')
+  ),
+  ...(docsEntryResult ? [docsEntryResult] : []),
+].reduce(assureInto, [...shipLedger(shipFacts), ...detectAssurance(project, detection.failure)])
+let recommendation = assuranceVerdict(assurance, { ship: 'SHIP', hold: 'FIX-FIRST', blocked: 'BLOCKED' })
+let notShippable = recommendation !== 'SHIP'
 
 // --- TestPlan: copy-paste manual QA steps for a human --------------------
 phase('TestPlan')
@@ -4487,23 +6844,71 @@ let testPlan = null
 if (!built.length) {
   log('TestPlan: skipped — nothing was built.')
 } else {
-  const planPath = specFolder ? `${specFolder}/manual-test.md` : null
-  testPlan = await runAgent(
-    `Write a concrete, copy-paste manual test plan a human runs to verify this feature by hand — no AI/agent jargon, real values they can paste. Verify each step against the actual implementation; do not invent endpoints or URLs.
-Feature: ${feature || specLabel}
+  const planRequest = {
+    subject: 'this feature',
+    specFolder,
+    slug: feature || specLabel,
+    context: `Feature: ${feature || specLabel}
 Repos: ${JSON.stringify(repos.map((r) => ({ role: r.role, stack: r.stack, path: r.path, devUrl: r.devUrl })))}
 Entry points: ${(userJourney && userJourney.entryPoints || []).join(', ') || '(derive from the feature)'}
 Expected end state: ${(userJourney && userJourney.expectedEndState) || '(reported problem no longer occurs)'}
 App URL(s): ${appUrlLine(devUrl)}
 Acceptance trace: ${JSON.stringify(acceptance && { resolved: acceptance.resolved, steps: acceptance.steps } || 'not run')}
 Changed files: ${allChanged.join(', ') || '(inspect git diff)'}
-${manualTasks.length ? `Manual tasks (never built; a person runs them): ${JSON.stringify(manualTasks.map((t) => `${t.id}. ${t.title}`))}. Give each its own step, and end the plan with a "Tick after the manual steps pass" line naming the task ids ${manualTasks.map((t) => t.id).join(', ')}${specFolder ? ` (their "- [ ] N." lines in ${specFolder}/tasks.md; leave them unchecked yourself)` : ''}.\n` : ''}
-Each step: a precise action (exact URL to open / command to run / button to click with real example data) and the exact expected result (status code, redirect target, on-screen text). Include preconditions (env, seeded data, login) and a rollback note if the change is risky. Cover the happy path AND the originally-reported failing case (it must now pass), plus one step for each acceptance criterion, Must NOT change item, or quality attribute that has no automated test: ${JSON.stringify([...acceptanceCriteria, ...mustNotChange, ...nfrs])}.${specFolder ? ` Then in ${specFolder}/tasks.md fill the Traceability "Verified by" cells that point at manual steps with "manual-test.md#step-N"${notShippable || awaitingOwner || manualTasks.length ? '' : `, and set status: done in ${specFolder}/spec-lite.md frontmatter${slice ? `, then set slice ${slice}'s Status to shipped in the backlog.md next to the product-brief.md (the repo root or its parent; change nothing else there)` : ''}`}.` : ''}${planPath ? `\n\nWrite the plan to "${planPath}" as markdown (lowercase filename, human-authored tone, no AI-marker comments). Set path to that file.` : '\nReturn the steps inline (no spec folder to write to).'}`,
-    { phase: 'TestPlan', schema: TEST_PLAN_SCHEMA, agentType: WRITER_AGENT, ...MODELS.testplan }
-  )
+${manualGuards.length ? `Must NOT change items with no automated guard test (a person checks each one; give each its own step): ${JSON.stringify(manualGuards.map((m) => `${m.id}: ${criterionText(m.id, mustNotChange) || m.id}; why untestable: ${m.reason}`))}.\n` : ''}`.trim(),
+    ids: [...acceptanceCriteria, ...mustNotChange, ...nfrs],
+    manualTasks,
+    extra: '',
+  }
+  const testedIds = tasks.filter((t) => built.some((b) => b.id === t.id && (b.testFiles || []).length)).flatMap((t) => t.covers || []).concat(tracedTestIds(specTraceLines, [...built.flatMap((b) => b.testFiles || []), ...allChanged]))
+  const planCheck = await writeCheckedTestPlan({
+    request: planRequest,
+    tested: testedIds,
+    write: (prompt) => runAgent(prompt, { phase: 'TestPlan', schema: TEST_PLAN_SCHEMA, agentType: WRITER_AGENT, ...MODELS.testplan }),
+  })
+  testPlan = planCheck.plan
+  assurance = assureInto(assurance, testPlanAssurance(planCheck.missing, !!testPlan))
+  recommendation = assuranceVerdict(assurance, { ship: 'SHIP', hold: 'FIX-FIRST', blocked: 'BLOCKED' })
+  notShippable = recommendation !== 'SHIP'
   if (testPlan) log(`TestPlan: ${(testPlan.steps || []).length} step(s)${testPlan.path ? ` → ${testPlan.path}` : ''}`)
 }
 
+// --- Close: spec status and backlog slice, after the report data is final --------------------
+phase('Close')
+costSnapshot('Close')
+// A spec reaches done only when the run is shippable and nobody is left to act: no owner gate, no open Manual task.
+const closeWanted = !!specFolder && built.length > 0 && !notShippable && !awaitingOwner && manualTasks.length === 0
+let close = { statusSet: false, sliceSet: false, tracedRows: 0 }
+// Deviations: each Build assumption and each Converge gap task, by task id, written into spec-lite.md.
+const deviationItems = [
+  ...assumptions.map((a) => `- T${String(a.source).replace(/^build:t/, '')}: ${a.text}`),
+  ...convergeLog.flatMap((r) => [...r.gaps, ...(Array.isArray(r.manual) ? r.manual : [])].map((g) => `- T${g.id}: ${g.title}`)),
+]
+const deviationsInstruction = `In ${specFolder}/spec-lite.md write a "## Deviations" section (replace it when it exists, otherwise add it after "## Decisions" and before "## Open questions"): ${deviationItems.length ? `one line per item, exactly as given: ${JSON.stringify(deviationItems)}` : 'the single word "none"'}.`
+if (specFolder && built.length) {
+  const setStatus = closeWanted
+    ? `Set the frontmatter status in ${specFolder}/spec-lite.md to done.${slice ? ` Then set slice ${slice}'s Status to shipped in the backlog.md next to the product-brief.md (the repo root or its parent); change nothing else there.` : ''}`
+    : `Do not change the status in ${specFolder}/spec-lite.md and do not touch any backlog.md; statusSet = false and sliceSet = false.`
+  const closed = await runAgent(
+    `Close the spec in ${specFolder}. ${setStatus}
+${deviationsInstruction}
+${testPlan && testPlan.path ? `In ${specFolder}/tasks.md fill the Traceability "Verified by" cells that point at manual steps with "${testPlan.path.split('/').pop()}#step-N". ` : ''}Change no other line than the ones named here. Return statusSet (true only when you changed the status), sliceSet (true only when you changed the slice) and tracedRows (the number of Traceability rows whose Verified by cell you filled).`,
+    { phase: 'Close', schema: CLOSE_SCHEMA, agentType: WRITER_AGENT, ...MODELS.close }
+  )
+  if (!closed) {
+    assurance = assureInto(assurance, assure('close', 'unavailable', 'the close agent returned nothing'))
+    recommendation = assuranceVerdict(assurance, { ship: 'SHIP', hold: 'FIX-FIRST', blocked: 'BLOCKED' })
+    notShippable = recommendation !== 'SHIP'
+  }
+  if (closed && typeof closed.statusSet === 'boolean') {
+    close = { statusSet: closeWanted && closed.statusSet, sliceSet: closeWanted && !!slice && closed.sliceSet === true, tracedRows: Number.isInteger(closed.tracedRows) && closed.tracedRows > 0 ? closed.tracedRows : 0 }
+  }
+  if (closeWanted && !close.statusSet) log(`Close: ${specFolder}/spec-lite.md was not set to done. Fix: set status: done by hand`)
+  if (closeWanted && slice && !close.sliceSet) log(`Close: slice ${slice} was not set to shipped. Fix: set its Status to shipped in backlog.md`)
+} else {
+  log('Close: skipped, nothing was built or there is no spec folder.')
+}
+costSnapshot('Close')
 // --- Report -------------------------------------------------------------
 const gateEnvironmentText = environmentReportText(environmentIssues(gates.allGates, stuckGates))
 phase('Report')
@@ -4520,10 +6925,16 @@ const reportFindings = confirmed.map((f) => ({ id: f.id, severity: f.severity, d
 const reportVisual = visual && { ran: visual.ran, status: visual.status, details: visual.details, findings: visualFindings.length, bySeverity: ['critical', 'major', 'minor'].map((sev) => `${sev}: ${visualFindings.filter((f) => f.severity === sev).length}`).join(', ') }
 const reportAcceptance = acceptance && { resolved: acceptance.resolved, steps: (acceptance.steps || []).length, failedSteps: (acceptance.steps || []).filter((x) => !x.ok).map((x) => x.step), brokenLinks: acceptance.brokenLinks || [] }
 const reportDocs = docs && { updated: docs.updatedDocs || [], created: docs.newDocs || [] }
+// What Close did and did not do, so the report names any requested change that was not made.
+const notMade = [
+  ...(closeWanted && !close.statusSet ? [`${specFolder}/spec-lite.md was not set to done`] : []),
+  ...(closeWanted && slice && !close.sliceSet ? [`slice ${slice} was not set to shipped`] : []),
+]
+const closeReport = { ...close, notMade }
 const reportTestPlan = testPlan && { path: testPlan.path || null, steps: (testPlan.steps || []).length }
 const reportCost = costTable(costResult(RUN_COST))
 const report = await runAgent(
-  `Write a concise markdown ship report. Sections: Summary, Stack & repos (flag any untracked/WIP repo; name the branch each repo is on from Branches, and the branch it left when Prepare switched; add a "Stack overlay" line: ${stackOverlayLine(stackOverlay, untrustedManifests)}), Spec (id + folder), Investigation highlights (key files, risks, pieces already shipped), Tasks completed (note any incomplete: ${failedTasks.join(', ') || 'none'}), Owner steps (${ownerSteps.length ? 'list each task id, title and note: the owner does these by hand; they are not failures and do not lower the recommendation' : 'omit when there are none'}), Converge (rounds run and the stop reason; gap tasks appended per round; the last round's gaps built but not re-audited, and any that failed to build; manual gaps sent to the manual test plan; gaps left unbuilt), Quality gates per repo (pass/fail/skip/unreachable), Visual tests, Acceptance (did the ORIGINAL reported scenario resolve end-to-end? list any broken hop; the E2E regression test written, its AC ids, and whether it passed or could not run), Confirmed review findings (grouped by severity, by id, file:line and title, each marked fixed or remaining as in its status; remaining minor findings are listed and do not block SHIP), Fix (rounds run, the stop reason, the ids fixed and the ids remaining), Documentation updated, Manual test plan (where it was written + a one-line how-to-run), Cost (the per-phase table under Cost below, as given; tokens: n/a means the run had no token budget, and the Report agent itself is not in it), Recommendation (one of SHIP / FIX-FIRST / BLOCKED; this run's recommendation is ${recommendationHint}, computed from the facts below: state it as is, with the reasons). End with a "Next" line: when the recommendation is SHIP, "Next: /open-pr --spec=${specName || '<spec id>'} --report=<reportPath>"; otherwise the first fix to make.${trustNext ? ` An untrusted stack manifest means its gates did not run: the recommendation is BLOCKED and the Next line is exactly "${trustNext}"` : ''}
+  `Write a concise markdown ship report. Sections: Summary, Stack & repos (flag any untracked/WIP repo; name the branch each repo is on from Branches, and the branch it left when Prepare switched; add a "Stack overlay" line: ${stackOverlayLine(stackOverlay, untrustedManifests)}), Spec (id + folder), Investigation highlights (key files, risks, pieces already shipped), Tasks completed (note any incomplete: ${failedTasks.join(', ') || 'none'}), Owner steps (${ownerSteps.length ? 'list each task id, title and note: the owner does these by hand; they are not failures and do not lower the recommendation' : 'omit when there are none'}), Converge (rounds run and the stop reason; gap tasks appended per round; the last round's gaps built but not re-audited, and any that failed to build; manual gaps sent to the manual test plan; gaps left unbuilt), Quality gates per repo (pass/fail/skip/unreachable), Visual tests, Acceptance (did the ORIGINAL reported scenario resolve end-to-end? list any broken hop; the E2E regression test written, its AC ids, and whether it passed or could not run), Confirmed review findings (also list the Unverified findings, which no verifier answered for; a critical or major one blocks SHIP; grouped by severity, by id, file:line and title, each marked fixed or remaining as in its status; remaining minor findings are listed and do not block SHIP), Fix (rounds run, the stop reason, the ids fixed and the ids remaining), Documentation updated, Close (what the Close step set; list each change in Close.notMade as not done, with the manual fix), Assumptions (${assumptions.length ? 'list each by task id; the owner confirms or rejects them' : 'omit when there are none'}), Manual test plan (where it was written + a one-line how-to-run), Cost (the per-phase table under Cost below, as given; tokens: n/a means the run had no token budget, and the Report agent itself is not in it), Assurance (the table under Assurance below, as given), Recommendation (one of SHIP / FIX-FIRST / BLOCKED; this run's recommendation is ${recommendationHint}, computed from the facts below: state it as is, with the reasons). End with a "Next" line: when the recommendation is SHIP, "Next: /open-pr --spec=${specName || '<spec id>'} --report=<reportPath>"; otherwise the first fix to make.${trustNext ? ` An untrusted stack manifest means its gates did not run: the recommendation is BLOCKED and the Next line is exactly "${trustNext}"` : ''}
 Save the report: in the repo at "${reportRepo}", mkdir -p .ai/reports and write it to .ai/reports/ship-${reportSlug}-$(date +%Y%m%d-%H%M).md${reportSlug !== '<slug>' ? '' : ' (<slug> = 2-5 lowercase-hyphenated words naming the feature)'}, taking the timestamp from the shell, never inventing it. Lowercase filename, written as a human maintainer, no AI-marker comments. Write the file after every other section is final, so its modification time is later than the gate runs it records. Return reportPath (the path relative to the current directory, the same path the Next line names) and markdown (the full report).
 Feature: ${specLabel}
 Stack: ${JSON.stringify(repos.map((r) => ({ role: r.role, stack: r.stack, tracked: r.tracked })))}
@@ -4531,24 +6942,51 @@ Repo warnings: ${JSON.stringify(repoWarnings)}
 Branches: ${JSON.stringify(branches)}
 Stack overlay: ${JSON.stringify({ ...stackOverlay, untrusted: untrustedManifests })}
 Spec: ${JSON.stringify({ specId, specFolder })}
-Build: ${built.length}/${tasks.length} (incomplete: ${JSON.stringify(failedTasks)})${ownerSteps.length ? `\nOwner steps: ${JSON.stringify(ownerSteps)}` : ''}${awaitingOwner ? `\nAwaiting owner: ${awaitingOwner} (tasks ${ownerCut.join(', ')} not built; say so under Tasks completed, and give the resume call: ${resume} (file-copy install: name "ship-feature"))` : ''}${manualTasks.length ? `\nManual tasks: ${manualTasks.map((t) => `${t.id}. ${t.title}`).join('; ')} (not built and not incomplete; under Manual test plan, name the ids to tick after the steps pass)` : ''}
+Build: ${built.length}/${tasks.length} (incomplete: ${JSON.stringify(failedTasks)})${ownerSteps.length ? `\nOwner steps: ${JSON.stringify(ownerSteps)}` : ''}${assumptions.length ? `\nAssumptions: ${JSON.stringify(assumptions)}` : ''}${untestedTasks.length ? `\nUntested tasks: ${JSON.stringify(untestedTasks)}` : ''}${awaitingOwner ? `\nAwaiting owner: ${awaitingOwner} (tasks ${ownerCut.join(', ')} not built; say so under Tasks completed, and give the resume call: ${resume} (file-copy install: name "ship-feature"))` : ''}${manualTasks.length ? `\nManual tasks: ${manualTasks.map((t) => `${t.id}. ${t.title}`).join('; ')} (not built and not incomplete; under Manual test plan, name the ids to tick after the steps pass)` : ''}
 Converge: ${JSON.stringify({ ...convergeResult, remainingGaps: remainingGaps.map((g) => `${g.id}. ${g.title}`) })}
 Investigation: ${JSON.stringify({ relevantFiles: invFiles.slice(0, 12), risks: invRisks, existingImplementation: existingImpl })}
-Gates: ${JSON.stringify(gates.allGates)}
+Gates: ${JSON.stringify(gates.allGates.map((g) => (isSecurityGate(g, repos) ? { ...g, details: undefined } : g)))}
 ${gateEnvironmentText ? gateEnvironmentText + '\n' : ''}Visual: ${JSON.stringify(reportVisual)}
 Acceptance: ${JSON.stringify(reportAcceptance)}
 E2E: ${JSON.stringify(e2e)}
 Confirmed findings: ${JSON.stringify(reportFindings)}
+Unverified findings: ${JSON.stringify(unverifiedFindings.map((f) => ({ id: f.id, severity: f.severity, file: f.file, line: f.line, title: f.title })))}
 Fix: ${JSON.stringify(fixResult)}
 Docs: ${JSON.stringify(reportDocs)}
 Manual test plan: ${JSON.stringify(reportTestPlan)}
+Close: ${JSON.stringify(closeReport)}
+Assurance:
+${assuranceTable(assurance)}
 Cost:
 ${reportCost}`,
   { phase: 'Report', schema: REPORT_SCHEMA, ...MODELS.report }
 )
 const reportPath = (report && report.reportPath) || null
 if (reportPath) log(`Report saved: ${reportPath}`)
+if (!report) {
+  assurance = assureInto(assurance, assure('report', 'unavailable', 'the report agent returned nothing'))
+  recommendation = assuranceVerdict(assurance, { ship: 'SHIP', hold: 'FIX-FIRST', blocked: 'BLOCKED' })
+  notShippable = recommendation !== 'SHIP'
+  // Close ran on a shippable verdict that the missing report has now lost, so what it set is undone: a spec is done only when the run ships.
+  if (close.statusSet || close.sliceSet) {
+    const undo = [
+      close.statusSet ? `In ${specFolder}/spec-lite.md set the frontmatter status from done back to in-progress.` : '',
+      close.sliceSet ? `In the backlog.md next to the product-brief.md (the repo root or its parent) set slice ${slice}'s Status from shipped back to specced.` : '',
+    ].filter(Boolean).join(' ')
+    const reverted = await runAgent(
+      `The run report could not be written, so this run is not shippable. ${undo} Change no other line and no other file. Return statusSet (true only when the status is still done), sliceSet (true only when the slice is still shipped) and tracedRows (0).`,
+      { phase: 'Close', label: 'close-undo', schema: CLOSE_SCHEMA, agentType: WRITER_AGENT, ...MODELS.close }
+    )
+    const statusLeft = close.statusSet && !(reverted && reverted.statusSet === false)
+    const sliceLeft = close.sliceSet && !(reverted && reverted.sliceSet === false)
+    close = { ...close, statusSet: statusLeft, sliceSet: sliceLeft }
+    if (statusLeft) log(`Close: ${specFolder}/spec-lite.md is still done after the report failed. Fix: set status: in-progress by hand`)
+    if (sliceLeft) log(`Close: slice ${slice} is still shipped after the report failed. Fix: set its Status to specced in backlog.md`)
+    if (!statusLeft && !sliceLeft) log('Close: undone, because the report could not be written')
+  }
+}
 costSnapshot('Report')
+
 const cost = costResult(RUN_COST)
 log(`Cost: ${Object.values(cost.phases).reduce((n, c) => n + c.agents, 0)} agent(s); ${cost.probesFailed} failed agent-name lookup(s)`)
 
@@ -4564,18 +7002,25 @@ return {
   partialBuild,
   failedTasks,
   ownerSteps,
+  ...askResult(assumptions),
+  untestedTasks,
   awaitingOwner,
   notBuilt: ownerCut,
   resume,
   manualTasks: manualTasks.map((t) => t.id),
+  manualGuards: manualGuards.map((m) => m.id),
   convergeRounds: convergeRound,
   converge: convergeResult,
   remainingGaps: remainingGaps.map((g) => ({ id: g.id, title: g.title, reason: g.reason })),
   gatesPassed: gates ? gates.allPassed : false,
   visualFindings,
   confirmedFindings: confirmed,
+  unverifiedFindings,
+  lateFindings,
+  securityReview,
   fix: fixResult,
   recommendation,
+  assurance,
   cost,
   acceptanceResolved,
   acceptance,
@@ -4586,6 +7031,7 @@ return {
   brokenLinks,
   docsUpdated: docs ? docs.updatedDocs || [] : [],
   manualTestPlan: testPlan ? testPlan.path || testPlan : null,
+  close,
   reportPath,
   report: report ? report.markdown : null,
 }

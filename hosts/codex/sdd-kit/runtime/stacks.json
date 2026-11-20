@@ -32,6 +32,12 @@
           "name": "Pest/PHPUnit",
           "command": "php artisan test",
           "kind": "test"
+        },
+        {
+          "name": "composer audit",
+          "command": "composer audit",
+          "kind": "security",
+          "requires": "composer.lock"
         }
       ],
       "debugPatterns": [
@@ -44,6 +50,40 @@
         "routes/",
         "database/"
       ],
+      "docImpact": {
+        "endpoint": [
+          "(^|/)routes/",
+          "(^|/)openapi[^/]*\\.(ya?ml|json)$"
+        ],
+        "schema": [
+          "(^|/)database/migrations/",
+          "\\.sql$"
+        ]
+      },
+      "testIntegrity": {
+        "testPaths": [
+          "^tests/"
+        ],
+        "skipMarkers": [
+          "->skip(",
+          "->only(",
+          "->todo(",
+          "markTestSkipped(",
+          "markTestIncomplete("
+        ]
+      },
+      "security": {
+        "skills": [
+          "api-security",
+          "oauth2-passport"
+        ],
+        "riskPaths": [
+          "(^|/)app/(Policies|Http/(Middleware|Controllers))/",
+          "(^|/)routes/",
+          "(^|/)config/(auth|sanctum|cors|session)\\.php$",
+          "(^|/)composer\\.(json|lock)$"
+        ]
+      },
       "acceptance": "exercise the API routes over HTTP (curl / php artisan test)",
       "execWrapper": {
         "when": ".ddev/config.yaml",
@@ -227,6 +267,12 @@
             ],
             "vendor/bin/phpunit"
           ]
+        },
+        {
+          "name": "composer audit",
+          "command": "composer audit",
+          "kind": "security",
+          "requires": "composer.lock"
         }
       ],
       "debugPatterns": [
@@ -242,6 +288,27 @@
         "docroot/themes/custom/",
         "modules/"
       ],
+      "testIntegrity": {
+        "testPaths": [
+          "(^|/)tests/"
+        ],
+        "skipMarkers": [
+          "markTestSkipped(",
+          "markTestIncomplete("
+        ]
+      },
+      "security": {
+        "skills": [
+          "api-security",
+          "drupal-11"
+        ],
+        "riskPaths": [
+          "\\.(routing|permissions)\\.yml$",
+          "(^|/)src/(Access|Controller|Form)/",
+          "(^|/)composer\\.(json|lock)$",
+          "(^|/)settings(\\.[a-z]+)?\\.php$"
+        ]
+      },
       "acceptance": "exercise the routes/controllers over HTTP",
       "execWrapper": {
         "when": ".ddev/config.yaml",
@@ -274,6 +341,19 @@
         "composer": [
           "drupal/core",
           "drupal/core-recommended"
+        ]
+      },
+      "docImpact": {
+        "endpoint": [
+          "\\.routing\\.yml$"
+        ],
+        "schema": [
+          "\\.install$",
+          "(^|/)config/schema/"
+        ],
+        "config": [
+          "(^|/)config/(sync|install|optional)/",
+          "\\.settings\\.php$"
         ]
       }
     },
@@ -338,6 +418,20 @@
             "playwright.config.*"
           ],
           "skipWhenScaffolded": true
+        },
+        {
+          "name": "package audit",
+          "command": "<pm-audit>",
+          "kind": "security",
+          "requires": [
+            [
+              "package-lock.json",
+              "pnpm-lock.yaml",
+              "yarn.lock",
+              "bun.lockb",
+              "bun.lock"
+            ]
+          ]
         }
       ],
       "debugPatterns": [
@@ -350,6 +444,51 @@
         "components/",
         "lib/"
       ],
+      "docImpact": {
+        "endpoint": [
+          "(^|/)app/(.*/)?route\\.[jt]sx?$",
+          "(^|/)pages/api/",
+          "(^|/)openapi[^/]*\\.(ya?ml|json)$"
+        ],
+        "schema": [
+          "(^|/)prisma/",
+          "(^|/)migrations?/",
+          "\\.sql$"
+        ],
+        "config": [
+          "(^|/)next\\.config\\.[cm]?[jt]s$"
+        ]
+      },
+      "testIntegrity": {
+        "testPaths": [
+          "\\.(test|spec)\\.[jt]sx?$",
+          "(^|/)__tests__/",
+          "(^|/)e2e/"
+        ],
+        "skipMarkers": [
+          ".skip(",
+          ".only(",
+          "xit(",
+          "xdescribe(",
+          "fit(",
+          "fdescribe(",
+          "test.todo("
+        ]
+      },
+      "security": {
+        "skills": [
+          "api-security",
+          "nextjs-auth"
+        ],
+        "riskPaths": [
+          "(^|/)middleware\\.[jt]s$",
+          "(^|/)(app|pages)/api/",
+          "(^|/)route\\.[jt]s$",
+          "(^|/)next\\.config\\.[jt]s$",
+          "(^|/)package(-lock)?\\.json$",
+          "(^|/)(pnpm-lock\\.yaml|yarn\\.lock)$"
+        ]
+      },
       "devUrl": "http://localhost:3000",
       "visual": "playwright-mcp",
       "acceptance": "start the dev server and drive the user journey with the Playwright MCP browser tools",
@@ -368,7 +507,8 @@
             "yarn.lock"
           ],
           "run": "yarn",
-          "exec": "yarn"
+          "exec": "yarn",
+          "audit": "yarn npm audit"
         },
         {
           "name": "bun",
@@ -479,6 +619,46 @@
         "composables/",
         "server/"
       ],
+      "docImpact": {
+        "endpoint": [
+          "(^|/)server/(api|routes)/",
+          "(^|/)openapi[^/]*\\.(ya?ml|json)$"
+        ],
+        "schema": [
+          "(^|/)migrations?/",
+          "\\.sql$"
+        ]
+      },
+      "testIntegrity": {
+        "testPaths": [
+          "\\.(test|spec)\\.[jt]sx?$",
+          "(^|/)__tests__/",
+          "(^|/)e2e/"
+        ],
+        "skipMarkers": [
+          ".skip(",
+          ".only(",
+          "xit(",
+          "xdescribe(",
+          "fit(",
+          "fdescribe(",
+          "test.todo("
+        ]
+      },
+      "security": {
+        "skills": [
+          "api-security",
+          "nextjs-auth"
+        ],
+        "riskPaths": [
+          "(^|/)middleware\\.[jt]s$",
+          "(^|/)(app|pages)/api/",
+          "(^|/)route\\.[jt]s$",
+          "(^|/)next\\.config\\.[jt]s$",
+          "(^|/)package(-lock)?\\.json$",
+          "(^|/)(pnpm-lock\\.yaml|yarn\\.lock)$"
+        ]
+      },
       "devUrl": "http://localhost:3000",
       "visual": "playwright-mcp",
       "acceptance": "start the dev server and drive the user journey with the Playwright MCP browser tools",
@@ -497,7 +677,8 @@
             "yarn.lock"
           ],
           "run": "yarn",
-          "exec": "yarn"
+          "exec": "yarn",
+          "audit": "yarn npm audit"
         },
         {
           "name": "bun",
@@ -566,6 +747,28 @@
       "sourceDirs": [
         "Sources/"
       ],
+      "testIntegrity": {
+        "testPaths": [
+          "Tests?/"
+        ],
+        "skipMarkers": [
+          "XCTSkip(",
+          "XCTSkipIf(",
+          "XCTSkipUnless("
+        ]
+      },
+      "security": {
+        "skills": [
+          "api-security"
+        ],
+        "riskPaths": [
+          "\\.entitlements$",
+          "(^|/)Info\\.plist$",
+          "(^|/)Keychain",
+          "(^|/)Podfile(\\.lock)?$",
+          "(^|/)Package\\.resolved$"
+        ]
+      },
       "visual": "simulator",
       "acceptance": "boot a simulator (xcrun simctl boot), install & launch the app, assert via a UI test or an xcrun simctl screenshot",
       "markers": [

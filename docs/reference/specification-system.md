@@ -95,13 +95,14 @@ created: 2026-10-18
 stacks: [<stack-key>, <stack-key>]
 ```
 
-Sections, in order: **Summary · Context · Scope (in/out) · Must NOT change · Acceptance criteria · Quality attributes (optional, M/L) · Boundaries (Always / Ask first / Never) · Technical context · Decisions (optional) · Open questions · Dependencies**.
+Sections, in order: **Summary · Context · Scope (in/out) · Must NOT change · Acceptance criteria · Quality attributes (optional, M/L) · Boundaries (Always / Ask first / Never) · Technical context · Decisions (optional) · Deviations (written by ship-feature after a build) · Open questions · Dependencies**.
 
 - **Acceptance criteria** — `AC-n`, written in EARS (`WHEN <trigger> THE SYSTEM SHALL <response>`) or Given/When/Then; one observable outcome each.
 - **Must NOT change** — `MNC-n`, existing behavior that must stay identical. Mandatory for bugs and improvements, and the primary contract of a `refactor` spec (characterization tests are written first); fix-bug and ship-feature re-check these in Acceptance.
 - **Quality attributes** — `NFR-n` for authorization per role, a p95 latency budget, a WCAG level, personal-data handling; each traced to a test like an AC.
 - **Boundaries** — what the implementer may do freely, must ask about, and must never do.
 - **Open questions** — written by the clarity gate; each must be answered or accepted before approval.
+- **Deviations** — written by ship-feature after it built something: each Build assumption and each Converge gap task as a `- T<id>: <text>` line, or "none". It sits after Decisions and before Open questions.
 
 ## tasks.md
 

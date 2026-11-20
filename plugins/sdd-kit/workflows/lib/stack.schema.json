@@ -94,6 +94,7 @@
                   "test",
                   "e2e",
                   "build",
+                  "security",
                   "other"
                 ]
               },
@@ -351,6 +352,9 @@
               },
               "exec": {
                 "type": "string"
+              },
+              "audit": {
+                "type": "string"
               }
             }
           }
@@ -494,6 +498,81 @@
             "type": "string"
           }
         },
+        "docImpact": {
+          "type": "object",
+          "description": "Path patterns, as regular expressions on repo-relative paths, that mark a changed file as a kind of change the docs must follow. Only the five kinds below are accepted; the neutral defaults always apply.",
+          "additionalProperties": false,
+          "properties": {
+            "endpoint": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "business-rule": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "config": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "agent-instructions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "testIntegrity": {
+          "type": "object",
+          "description": "How the ship-feature test-integrity check recognizes tests: testPaths are regular expressions matched against repo-relative paths; skipMarkers are exact strings that disable or focus a test when added.",
+          "additionalProperties": false,
+          "properties": {
+            "testPaths": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "skipMarkers": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "security": {
+          "type": "object",
+          "description": "Security review data: skills the security reviewer consults, and riskPaths, regular expressions matched case-insensitively against repo-relative paths; a changed file that matches adds a second, independent security pass.",
+          "additionalProperties": false,
+          "properties": {
+            "skills": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "riskPaths": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
         "gateTemplates": {
           "type": "array",
           "description": "Core other manifest only: commands a repo of an unrecognized stack may run as gates. Each command holds {script}, which the workflows fill with a script or target name Detect found in the evidence file.",
@@ -624,6 +703,7 @@
                     "test",
                     "e2e",
                     "build",
+                    "security",
                     "other"
                   ]
                 },
@@ -881,6 +961,9 @@
                 },
                 "exec": {
                   "type": "string"
+                },
+                "audit": {
+                  "type": "string"
                 }
               }
             }
@@ -1022,6 +1105,81 @@
             "type": "array",
             "items": {
               "type": "string"
+            }
+          },
+          "docImpact": {
+            "type": "object",
+            "description": "Path patterns, as regular expressions on repo-relative paths, that mark a changed file as a kind of change the docs must follow. Only the five kinds below are accepted; the neutral defaults always apply.",
+            "additionalProperties": false,
+            "properties": {
+              "endpoint": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "business-rule": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "config": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "agent-instructions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "testIntegrity": {
+            "type": "object",
+            "description": "How the ship-feature test-integrity check recognizes tests: testPaths are regular expressions matched against repo-relative paths; skipMarkers are exact strings that disable or focus a test when added.",
+            "additionalProperties": false,
+            "properties": {
+              "testPaths": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "skipMarkers": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "security": {
+            "type": "object",
+            "description": "Security review data: skills the security reviewer consults, and riskPaths, regular expressions matched case-insensitively against repo-relative paths; a changed file that matches adds a second, independent security pass.",
+            "additionalProperties": false,
+            "properties": {
+              "skills": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "riskPaths": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
             }
           },
           "gateTemplates": {

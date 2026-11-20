@@ -2,7 +2,7 @@
 
 A stack manifest, `stack.json`, is the one file that teaches the SDD Kit workflows a stack: how to recognise it, which agent implements it, which gates verify it and how to scaffold, deploy and test it. The workflows read manifests and never name a stack themselves, so a new stack is a new manifest, not a code change.
 
-The format is defined by [`src/workflows/lib/stack.schema.json`](https://github.com/stasmarkov/sdd-kit/blob/v4.2.1/plugins/sdd-kit/workflows/lib/stack.schema.json). The examples on this page use a fictional stack, `acme`. To generate a manifest and a full add-on from a few answers, run `/new-stack`; this page is the field reference behind it.
+The format is defined by [`src/workflows/lib/stack.schema.json`](https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/plugins/sdd-kit/workflows/lib/stack.schema.json). The examples on this page use a fictional stack, `acme`. To generate a manifest and a full add-on from a few answers, run `/new-stack`; this page is the field reference behind it.
 
 ## Shape
 
@@ -54,7 +54,7 @@ Each gate is an object with `name` and `command`, plus optional fields:
 }
 ```
 
-- `kind`: `format`, `lint`, `types`, `test`, `e2e`, `build` or `other`. When absent the kind is `other`: the kit never infers a kind from a name or command. `/lint` runs `format`, `lint` and `types`; `/run-tests` runs `test` (and `e2e` with `--e2e`); `build` and `other` gates run through the verification gates and the workflow gate step.
+- `kind`: `format`, `lint`, `types`, `test`, `e2e`, `build`, `security` or `other`. When absent the kind is `other`: the kit never infers a kind from a name or command. `/lint` runs `format`, `lint` and `types`; `/run-tests` runs `test` (and `e2e` with `--e2e`); `build`, `security` and `other` gates run through the verification gates and the workflow gate step. A `security` gate (a dependency audit, a secret scan) is optional: a stack without one has none. In a workflow it runs with the other gates and is compared with the baseline taken before the build, so a finding that was already there is `pre-existing` and does not block, and a new finding blocks.
 - `skipWhenScaffolded`: `true` skips the gate on a freshly scaffolded project, before its tooling exists.
 - `unless`: globs relative to the repository root. The gate is skipped, with the reason `skipped — <glob> present`, when any glob matches. Use it for a fallback gate that applies only when a better one is not configured.
 - `requires`: what the gate's tool needs, as paths relative to the repository root. A string is one required path; when Detect finds it missing (checked through the exec wrapper when one applies), the gate is reported as `not run (<file name> not installed)` instead of failing. A list form holds strings and inner lists, all of which must be satisfied; an inner list is an "any of" group, satisfied when one of its paths exists. When something is missing the gate is reported as `not run (requires <path>; <path>)`, naming only the unmet entries (the plan step knows them from its probe, and Detect reports them as `missingRequires`; when they are not known, every entry is named), and an unmet group reads `one of <path>, <path>`. Paths are checked in the listed order. The first-party Drupal gates use this form.
@@ -92,6 +92,9 @@ Anything else, including a reformatted copy of a declined manifest's command, is
 | `migrations` | see below | Database migration commands. |
 | `audit` | see below | Dependency or security audit commands. |
 | `sourceDirs` | `["src/", "lib/"]` | Directories the debug-statement scan greps. Without it the gate agent picks the repo's source directories. |
+| `docImpact` | `{ "endpoint": ["^api/"], "schema": ["^db/"] }` | Path patterns that mark a changed file as a kind of change the docs must follow; ship-feature builds its doc-impact list from them before the Docs agent runs. Only the kinds `endpoint`, `schema`, `business-rule`, `config` and `agent-instructions` are accepted; patterns are regular expressions matched case-insensitively against repo-relative paths. The core's neutral defaults cover only `config` (`.env*`, `config/`), `agent-instructions` (`CLAUDE.md`, `AGENTS.md`, `.claude/`) and `business-rule` files, so a stack declares where its endpoints and schema changes live. |
+| `testIntegrity` | `{ "testPaths": ["^tests/"], "skipMarkers": [".skip(", ".only("] }` | How ship-feature recognizes tests (the spec's `tests.paths` and `tests.skipMarkers`; the shipped names are `testIntegrity.testPaths` and `testIntegrity.skipMarkers`, and the security skills sit in `security.skills` rather than `skills.security`). Markers are only looked for in files that match `testPaths`. `testPaths` are regular expressions matched against repo-relative paths; `skipMarkers` are exact strings that disable or focus a test. A deleted test file, a modified one no built task names, or an added marker fails the `test-integrity` check. |
+| `security` | `{ "skills": ["api-security"], "riskPaths": ["(^|/)auth/"] }` | What the security reviews of ship-feature, fix-bug and greenfield-build use. `skills` are the skills the security reviewer loads; `riskPaths` are regular expressions matched against changed paths, and a match runs the deep security pass. |
 | `gateTemplates` | `[{ "evidence": "Makefile", "command": "make {script}" }]` | Core `other` manifest only. Each item names an `evidence` file, relative to the repository root, and a `command` that holds `{script}`. See [Which commands run](#which-commands-run). |
 | `markers` | `["acme.config.*"]` | Globs relative to the project root, matching files or directories, that suggest the stack. The SessionStart hint reads them, and the file-copy installers read those of the kit's stack add-ons to pick the default stacks of a fresh project install. |
 | `packages` | `{ "composer": ["acme/framework"], "npm": ["acme"] }` | Package names that suggest the stack: `composer` names count when the project root's `composer.json` lists one under `require` or `require-dev`, `npm` names when its `package.json` lists one under `dependencies` or `devDependencies`. Only the file-copy installers read it, from the kit's stack add-ons, for the default stacks of a fresh project install; it catches a checkout whose marker files are not there yet (for example before `composer install`). |
@@ -134,7 +137,7 @@ Each list names skills: `conventions` guide implementation, `testing` guide test
 }
 ```
 
-`lockfiles` are the files whose presence selects the manager, `run` runs a script and `exec` runs a package binary. Gate, `e2e.run` and `ci.setup` commands write them as `<pm>` and `<pmx>`. Detect records the manager whose lockfile it finds; with no lockfile the last entry is the default. Each stack resolves its own list: one stack's managers never apply to another.
+`lockfiles` are the files whose presence selects the manager, `run` runs a script and `exec` runs a package binary. Gate, `e2e.run` and `ci.setup` commands write them as `<pm>` and `<pmx>`; an optional `audit` gives the manager's audit command, which `<pm-audit>` expands to (default `<run> audit`). Detect records the manager whose lockfile it finds; with no lockfile the last entry is the default. Each stack resolves its own list: one stack's managers never apply to another.
 
 ### scaffold, ci, e2e, migrations, audit
 
@@ -191,7 +194,7 @@ Report prompts get these validated fields, never the raw Detect object. A reject
 
 The trust check that skills run is the kit's own `trust-store.mjs`. The script is self-contained: `tools/gen-stacks.mjs` bundles the workflows' manifest checks and the first-party entries into it, and it loads no other script or registry file, so the hash covers everything it runs. A project copy is used only when its SHA-256 equals the hash generated into the `verification-gates` skill, and never by a hash stored in the project. When no copy can be verified, the check reports `trust check unavailable` and every overlay counts as untrusted. The trust store is always `~/.claude/sdd-kit/trusted-stacks.json` in your home directory as the operating system's user database records it; neither `$HOME` nor `CLAUDE_CONFIG_DIR` moves it, because a project setting can change both. User stack manifests still live in the config directory (`CLAUDE_CONFIG_DIR`, else `~/.claude`), since each one needs an approval anyway. As a further check, a config directory that resolves inside the current directory, its git toplevel, `CLAUDE_PROJECT_DIR`, or any ancestor of the current directory that holds `.git` is refused: the user stacks and plugin list there are reported unreadable.
 
-The shell guard that refuses writes to a trust store and agent-run approvals (`block-dangerous.sh`) is best-effort hardening, not a boundary: it matches text in the command, so a symlink to the store, a directory glob or a script assembled at run time can get past it. Those are known limits, listed in [hooks/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.2.1/share/hooks/README.md) (Trust store guard), and the approval itself stays a human action in your own terminal.
+The shell guard that refuses writes to a trust store and agent-run approvals (`block-dangerous.sh`) is best-effort hardening, not a boundary: it matches text in the command, so a symlink to the store, a directory glob or a script assembled at run time can get past it. Those are known limits, listed in [hooks/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/share/hooks/README.md) (Trust store guard), and the approval itself stays a human action in your own terminal.
 
 Out of scope: running a workflow on a repository you do not trust. Agents read repository files and have Bash, so hostile repository content can steer them whatever `/stack-trust` says. `/stack-trust` controls manifests, not repository content. That includes values a repository's settings supply, such as the settings `env` values in `.claude/settings.json` (`NODE_OPTIONS`, `PATH`): they reach every process the agents start and sit outside the threat model.
 
@@ -259,6 +262,6 @@ Loading an add-on plugin is consent to its hooks, so an add-on's `hooks/hooks.js
 
 ## Related
 
-- `/new-stack` scaffolds a manifest and add-on from a few answers; its template is [`src/templates/stack-addon/`](https://github.com/stasmarkov/sdd-kit/tree/v4.2.1/share/templates/stack-addon).
+- `/new-stack` scaffolds a manifest and add-on from a few answers; its template is [`src/templates/stack-addon/`](https://github.com/stasmarkov/sdd-kit/tree/v4.3.0/share/templates/stack-addon).
 - `node tools/gen-stacks.mjs` regenerates the workflow registry from the kit's manifests; `./verify.sh` checks the add-on layout (Check 16).
 - [Plugin mode](plugin-mode.md) explains add-on installation.

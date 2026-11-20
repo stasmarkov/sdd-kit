@@ -10,6 +10,7 @@ Traceable QA plan + user/dev docs for code that already exists, graded against t
 | `paths` | Array of globs. |
 | `gitRange` | `a..b` — files changed in the range. |
 | string | Feature name, located by searching the codebase. |
+| `answers` | Owner answers to the questions a previous run returned: `{ <question id>: <answer> }`. Answered questions are not asked again. |
 
 Plus `repos` and `models` as in the other routes.
 
@@ -34,6 +35,8 @@ Report         coverage matrix + grade + artifact paths
 ## Outputs
 
 `qa-plan.md` with a criterion → test coverage matrix and manual steps; created/updated docs (lowercase filenames); a grade listing phantom links and uncovered criteria.
+
+Also returns `questions` and `assumptions` (empty lists when nothing is open; item shapes and the hand-off in [Step 5 of /sdd](../SKILL.md#step-5--hand-off)). A blocking question from the spec lookup, Index or Criteria ends the run before any plan or doc is written; relaunch with `answers`.
 
 ## Done when
 

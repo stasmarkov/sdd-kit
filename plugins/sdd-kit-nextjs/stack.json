@@ -61,6 +61,20 @@
           "playwright.config.*"
         ],
         "skipWhenScaffolded": true
+      },
+      {
+        "name": "package audit",
+        "command": "<pm-audit>",
+        "kind": "security",
+        "requires": [
+          [
+            "package-lock.json",
+            "pnpm-lock.yaml",
+            "yarn.lock",
+            "bun.lockb",
+            "bun.lock"
+          ]
+        ]
       }
     ],
     "debugPatterns": [
@@ -73,6 +87,51 @@
       "components/",
       "lib/"
     ],
+    "docImpact": {
+      "endpoint": [
+        "(^|/)app/(.*/)?route\\.[jt]sx?$",
+        "(^|/)pages/api/",
+        "(^|/)openapi[^/]*\\.(ya?ml|json)$"
+      ],
+      "schema": [
+        "(^|/)prisma/",
+        "(^|/)migrations?/",
+        "\\.sql$"
+      ],
+      "config": [
+        "(^|/)next\\.config\\.[cm]?[jt]s$"
+      ]
+    },
+    "testIntegrity": {
+      "testPaths": [
+        "\\.(test|spec)\\.[jt]sx?$",
+        "(^|/)__tests__/",
+        "(^|/)e2e/"
+      ],
+      "skipMarkers": [
+        ".skip(",
+        ".only(",
+        "xit(",
+        "xdescribe(",
+        "fit(",
+        "fdescribe(",
+        "test.todo("
+      ]
+    },
+    "security": {
+      "skills": [
+        "api-security",
+        "nextjs-auth"
+      ],
+      "riskPaths": [
+        "(^|/)middleware\\.[jt]s$",
+        "(^|/)(app|pages)/api/",
+        "(^|/)route\\.[jt]s$",
+        "(^|/)next\\.config\\.[jt]s$",
+        "(^|/)package(-lock)?\\.json$",
+        "(^|/)(pnpm-lock\\.yaml|yarn\\.lock)$"
+      ]
+    },
     "devUrl": "http://localhost:3000",
     "visual": "playwright-mcp",
     "acceptance": "start the dev server and drive the user journey with the Playwright MCP browser tools",
@@ -91,7 +150,8 @@
           "yarn.lock"
         ],
         "run": "yarn",
-        "exec": "yarn"
+        "exec": "yarn",
+        "audit": "yarn npm audit"
       },
       {
         "name": "bun",
@@ -202,6 +262,46 @@
       "composables/",
       "server/"
     ],
+    "docImpact": {
+      "endpoint": [
+        "(^|/)server/(api|routes)/",
+        "(^|/)openapi[^/]*\\.(ya?ml|json)$"
+      ],
+      "schema": [
+        "(^|/)migrations?/",
+        "\\.sql$"
+      ]
+    },
+    "testIntegrity": {
+      "testPaths": [
+        "\\.(test|spec)\\.[jt]sx?$",
+        "(^|/)__tests__/",
+        "(^|/)e2e/"
+      ],
+      "skipMarkers": [
+        ".skip(",
+        ".only(",
+        "xit(",
+        "xdescribe(",
+        "fit(",
+        "fdescribe(",
+        "test.todo("
+      ]
+    },
+    "security": {
+      "skills": [
+        "api-security",
+        "nextjs-auth"
+      ],
+      "riskPaths": [
+        "(^|/)middleware\\.[jt]s$",
+        "(^|/)(app|pages)/api/",
+        "(^|/)route\\.[jt]s$",
+        "(^|/)next\\.config\\.[jt]s$",
+        "(^|/)package(-lock)?\\.json$",
+        "(^|/)(pnpm-lock\\.yaml|yarn\\.lock)$"
+      ]
+    },
     "devUrl": "http://localhost:3000",
     "visual": "playwright-mcp",
     "acceptance": "start the dev server and drive the user journey with the Playwright MCP browser tools",
@@ -220,7 +320,8 @@
           "yarn.lock"
         ],
         "run": "yarn",
-        "exec": "yarn"
+        "exec": "yarn",
+        "audit": "yarn npm audit"
       },
       {
         "name": "bun",
