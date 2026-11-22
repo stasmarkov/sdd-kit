@@ -3,6 +3,10 @@ name: schema-first
 description: Document schemas before migrations. Use when designing databases or planning data models.
 user-invocable: false
 allowed-tools: Read, Grep, Glob, Edit, Write, Bash
+metadata:
+  last_verified: "2026-10-22"
+  next_review: "2027-01-22"
+  targets: "none"
 ---
 
 # Schema-First Development Pattern

@@ -1,6 +1,6 @@
 ---
 name: deployment-specialist
-description: "Handle multi-environment deployments for Laravel and Next.js applications with pre/post deployment checks and verification."
+description: "Handle multi-environment deployments for Laravel and Next.js applications with pre/post deployment checks and verification. Use when deploying to staging or production."
 model: inherit
 ---
 

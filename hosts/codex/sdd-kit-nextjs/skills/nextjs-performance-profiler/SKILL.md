@@ -7,6 +7,9 @@ metadata:
   category: "frameworks"
   framework: "nextjs"
   framework-version: "15.x"
+  last_verified: "2026-11-09"
+  next_review: "2027-02-09"
+  targets: "next 15.x"
 ---
 
 # Next.js Performance Profiler

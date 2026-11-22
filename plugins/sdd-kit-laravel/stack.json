@@ -48,6 +48,52 @@
     "routes/",
     "database/"
   ],
+  "explore": [
+    {
+      "what": "Routes",
+      "where": "routes/api.php, routes/web.php"
+    },
+    {
+      "what": "Controllers",
+      "where": "app/Http/Controllers/**/*.php"
+    },
+    {
+      "what": "Requests and policies",
+      "where": "app/Http/Requests/, app/Policies/"
+    },
+    {
+      "what": "Services",
+      "where": "app/Services/**/*.php"
+    },
+    {
+      "what": "Data objects",
+      "where": "app/DTOs/, app/Data/"
+    },
+    {
+      "what": "Repositories",
+      "where": "app/Repositories/**/*.php"
+    },
+    {
+      "what": "Models and relations",
+      "where": "app/Models/*.php: hasMany, belongsTo, $casts"
+    },
+    {
+      "what": "Migrations",
+      "where": "database/migrations/*.php"
+    },
+    {
+      "what": "Events, jobs, listeners",
+      "where": "app/Events, app/Jobs, app/Listeners"
+    },
+    {
+      "what": "Pest tests",
+      "where": "tests/Feature/, tests/Unit/"
+    },
+    {
+      "what": "Factories",
+      "where": "database/factories/*.php"
+    }
+  ],
   "docImpact": {
     "endpoint": [
       "(^|/)routes/",

@@ -5,6 +5,10 @@ user-invocable: false
 allowed-tools: Read, Grep, Glob, Edit, Write, Bash
 paths:
 {{PATHS_YAML}}
+metadata:
+  last_verified: "{{LAST_VERIFIED}}"
+  next_review: "{{NEXT_REVIEW}}"
+  targets: "{{TARGETS}}"
 ---
 
 # {{TITLE}} conventions

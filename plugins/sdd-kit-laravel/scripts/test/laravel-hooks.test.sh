@@ -53,6 +53,22 @@ payload "$P/app/Models/User.php" | CLAUDE_SKIP_TEST_FIRST=1 CLAUDE_PROJECT_DIR="
 payload "$P/components/Button.tsx" | CLAUDE_PROJECT_DIR="$P" "$SCRIPTS/laravel-test-first.sh" >/dev/null; code=$?
 [[ $code -eq 0 ]] && ok "tsx component path is not its concern" || fail "tsx component path is not its concern (got $code)"
 
+P=$(project flat)
+mkdir -p "$P/tests/Unit/Services/Moderation"
+touch "$P/app/Services/ModerationService.php"
+payload "$P/app/Services/ModerationService.php" | CLAUDE_PROJECT_DIR="$P" "$SCRIPTS/laravel-test-first.sh" >/dev/null 2>&1; code=$?
+[[ $code -eq 2 ]] && ok "AC-35: service with no test exits 2" || fail "AC-35: service with no test exits 2 (got $code)"
+touch "$P/tests/Feature/ModerationServiceTest.php"
+payload "$P/app/Services/ModerationService.php" | CLAUDE_PROJECT_DIR="$P" "$SCRIPTS/laravel-test-first.sh" >/dev/null 2>&1; code=$?
+[[ $code -eq 0 ]] && ok "AC-35: flat tests/Feature test is found" || fail "AC-35: flat tests/Feature test is found (got $code)"
+rm "$P/tests/Feature/ModerationServiceTest.php"
+touch "$P/tests/Unit/Services/Moderation/ModerationServiceTest.php"
+payload "$P/app/Services/ModerationService.php" | CLAUDE_PROJECT_DIR="$P" "$SCRIPTS/laravel-test-first.sh" >/dev/null 2>&1; code=$?
+[[ $code -eq 0 ]] && ok "AC-35: two-level tests/Unit test is found" || fail "AC-35: two-level tests/Unit test is found (got $code)"
+rm "$P/tests/Unit/Services/Moderation/ModerationServiceTest.php"
+err=$(payload "$P/app/Services/ModerationService.php" | CLAUDE_PROJECT_DIR="$P" "$SCRIPTS/laravel-test-first.sh" 2>&1 >/dev/null)
+[[ "$err" == *"has no corresponding test"* ]] && ok "AC-35: block reason is on stderr" || fail "AC-35: block reason is on stderr: $err"
+
 echo "laravel-lint.sh"
 
 P=$(project lint)

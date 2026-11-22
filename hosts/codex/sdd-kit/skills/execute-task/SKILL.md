@@ -42,9 +42,6 @@ Execute spec tasks one at a time with verification gates between each task. Main
 
 # Verify without executing
 /execute-task --spec=spec-PROJ-123-refund-guard --verify-only
-
-# List all specs and progress
-/execute-task --list
 ```
 
 ---

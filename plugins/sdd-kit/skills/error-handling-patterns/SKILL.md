@@ -105,6 +105,6 @@ Implement robust error handling with typed exceptions, Result types, and gracefu
 
 - **api-design**: Error response design
 - **architecture-patterns**: Exception hierarchy design
-- **dto-first**: Error DTOs for consistent responses
+- The stack's conventions skills: error objects for consistent responses
 
 ---

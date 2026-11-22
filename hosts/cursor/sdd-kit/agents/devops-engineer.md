@@ -1,6 +1,6 @@
 ---
 name: devops-engineer
-description: "DevOps engineering agent specializing in CI/CD pipelines, containerization, and deployment automation for web applications in any stack."
+description: "DevOps engineering agent specializing in CI/CD pipelines, containerization, and deployment automation for web applications in any stack. Use when changing pipelines, containers or deployment automation."
 model: inherit
 ---
 

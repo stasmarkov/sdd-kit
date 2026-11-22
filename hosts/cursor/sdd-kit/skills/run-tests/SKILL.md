@@ -1,7 +1,7 @@
 ---
 name: run-tests
 description: Run the test suites of the detected stack - the test gates from the stack manifest, with filtering by name or module, coverage and parallel runs, plus --e2e for browser journeys (the manifest's e2e block). Polyrepo-aware, analyzes failures, and ends with a per-repo verdict. Use when you need to verify a change, investigate failing tests, check coverage, or confirm the suites are green before a merge or release.
-argument-hint: "[filter] | --module=[name] | --unit | --feature | --coverage | --all | --frontend | --e2e [\"AC-n:\"] [--url=<e2e frontend url>]"
+argument-hint: "[filter] | --module=[name] | --unit | --feature | --coverage | --all | --frontend | --e2e [\"AC-n:\"] [--url=<e2e frontend url>] [--filter=<pattern>]"
 allowed-tools: Bash, Read, Grep, Glob
 metadata:
   version: "2.0"
@@ -21,6 +21,7 @@ Run the test suites, analyze failures, and report a verdict per repo. The test c
 /run-tests --all                    # every test-kind gate of every repo
 /run-tests --module=User            # one module
 /run-tests UserRegistration         # filter by test name
+/run-tests --filter=UserRegistration  # same, explicit flag
 /run-tests --coverage               # with coverage
 /run-tests --unit
 /run-tests --feature

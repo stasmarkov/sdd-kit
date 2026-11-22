@@ -8,24 +8,24 @@ Subagents are delegated to with the Agent tool (`subagent_type: "<name>"`). Add-
 |---|---|---|---|
 | `adversarial-reviewer` | core | opus | Skeptical post-implementation reviewer that assumes code has bugs until proven otherwise. Uses different model from generation to catch… |
 | `api-architect` | core | opus | API and system architecture - resource and contract design, integration patterns, scalability and technology-fit assessment for API-backed… |
-| `changelog-writer` | core | haiku | Generate comprehensive changelogs from git history, categorize changes, and maintain CHANGELOG.md in Keep a Changelog format. |
+| `changelog-writer` | core | haiku | Generate comprehensive changelogs from git history, categorize changes, and maintain CHANGELOG.md in Keep a Changelog format. Use when… |
 | `code-explorer` | core | sonnet | Explore and analyze codebase structure, patterns, and implementations across any repo, one or several, including existing-implementation… |
 | `code-quality` | core | sonnet | Single quality-gate runner for any stack - runs the gate commands from the stack manifest per repo (format, lint, types, tests, build),… |
-| `database-designer` | core | sonnet | Database designer and migration author. MUST BE USED for schema design, data modeling, migrations, models and factories that mirror the… |
-| `devops-engineer` | core | sonnet | DevOps engineering agent specializing in CI/CD pipelines, containerization, and deployment automation for web applications in any stack. |
+| `database-designer` | core | sonnet | Database designer. Use when the repo's stack manifest declares a migrations block, or for query and index analysis on any stack. Also use… |
+| `devops-engineer` | core | sonnet | DevOps engineering agent specializing in CI/CD pipelines, containerization, and deployment automation for web applications in any stack.… |
 | `doc-creator` | core | sonnet | Documentation writer for write-docs (generate, --import, --audit) - turns cited code analysis and external material into clear markdown,… |
-| `outcomes-grader` | core | opus | Rubric-based grader that scores prior agent output against a domain rubric and either approves it or returns concrete failures for the… |
+| `outcomes-grader` | core | opus | Rubric-based grader that scores an artifact against a rubric file, or against criteria and an output schema the caller supplies, and… |
 | `performance-tester` | core | sonnet | Performance optimization for APIs and web frontends in any stack - measures a baseline and requires a target before changing anything,… |
 | `requirements-analyst` | core | sonnet | Elicit, validate, and formalize requirements - scores input clarity, asks targeted questions in bounded rounds, and writes testable… |
-| `security-auditor` | core | opus | MUST BE USED for security reviews, vulnerability detection, OWASP compliance checks, and application security validation. Use PROACTIVELY… |
+| `security-auditor` | core | opus | Security review, vulnerability detection and OWASP compliance checks. Use when asked for an explicit security review, or when a change… |
 | `security-hunter` | core | sonnet | Read-only, memory-less security analyst for the security-audit workflow - hunts one coverage unit, critiques coverage, or casts one… |
-| `test-writer` | core | sonnet | Test writing for any stack (unit, integration, component and end-to-end) with schema-first and data-object-first patterns, using the… |
-| `ui-ux-advisor` | design plugin | sonnet | Frontend design patterns, Next.js architecture, React component design, and UI/UX recommendations. Use PROACTIVELY for frontend… |
-| `drupal-backend-dev` | drupal plugin | sonnet | Drupal 10/11 backend implementer for custom modules, services, plugins, entities, forms, routes and configuration. Use PROACTIVELY for any… |
+| `test-writer` | core | sonnet | Writes and runs tests in the repo's own framework: RED tests that carry spec AC ids, a bug reproduction, a regression test, or an… |
+| `ui-ux-advisor` | design plugin | sonnet | Frontend design patterns, component architecture, and UI/UX recommendations for any web UI. Use PROACTIVELY when making frontend… |
+| `drupal-backend-dev` | drupal plugin | sonnet | Drupal 10/11 backend implementer for custom modules, services, plugins, entities, forms, routes and configuration. Use PROACTIVELY when… |
 | `ios-mobile-dev` | ios plugin | sonnet | iOS mobile development agent with expertise in Swift 6, SwiftUI, @Observable MVVM, structured concurrency, and SwiftData persistence. Use… |
-| `laravel-backend-dev` | laravel plugin | sonnet | Laravel backend implementer for domain features, REST API endpoints, and external integrations. Use PROACTIVELY for services,… |
+| `laravel-backend-dev` | laravel plugin | sonnet | Laravel backend implementer for domain features, REST API endpoints, and external integrations. Use PROACTIVELY when touching services,… |
 | `nextjs-frontend-dev` | nextjs plugin | sonnet | Next.js frontend development agent with expertise in App Router, Server Components, TypeScript, API integration patterns, and the frontend… |
-| `deployment-specialist` | ops plugin | sonnet | Handle multi-environment deployments for Laravel and Next.js applications with pre/post deployment checks and verification. |
-| `incident-responder` | ops plugin | sonnet | Triage incidents, coordinate response, manage communication, and ensure proper incident resolution for production issues. |
+| `deployment-specialist` | ops plugin | sonnet | Handle multi-environment deployments for Laravel and Next.js applications with pre/post deployment checks and verification. Use when… |
+| `incident-responder` | ops plugin | sonnet | Triage incidents, coordinate response, manage communication, and ensure proper incident resolution for production issues. Use when a… |
 | `ops-analyst` | ops plugin | haiku | Read-only operations analyst for Laravel and Next.js applications with three modes - monitor (health checks, metrics, anomaly detection,… |
-| `rollback-specialist` | ops plugin | sonnet | Execute safe rollbacks, manage database migration reversals, and coordinate emergency recovery procedures. |
+| `rollback-specialist` | ops plugin | sonnet | Execute safe rollbacks, manage database migration reversals, and coordinate emergency recovery procedures. Use when a deploy must be… |

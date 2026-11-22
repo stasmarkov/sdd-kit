@@ -2,7 +2,7 @@
 
 A stack manifest, `stack.json`, is the one file that teaches the SDD Kit workflows a stack: how to recognise it, which agent implements it, which gates verify it and how to scaffold, deploy and test it. The workflows read manifests and never name a stack themselves, so a new stack is a new manifest, not a code change.
 
-The format is defined by [`src/workflows/lib/stack.schema.json`](https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/plugins/sdd-kit/workflows/lib/stack.schema.json). The examples on this page use a fictional stack, `acme`. To generate a manifest and a full add-on from a few answers, run `/new-stack`; this page is the field reference behind it.
+The format is defined by [`src/workflows/lib/stack.schema.json`](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/plugins/sdd-kit/workflows/lib/stack.schema.json). The examples on this page use a fictional stack, `acme`. To generate a manifest and a full add-on from a few answers, run `/new-stack`; this page is the field reference behind it.
 
 ## Shape
 
@@ -92,6 +92,7 @@ Anything else, including a reformatted copy of a declined manifest's command, is
 | `migrations` | see below | Database migration commands. |
 | `audit` | see below | Dependency or security audit commands. |
 | `sourceDirs` | `["src/", "lib/"]` | Directories the debug-statement scan greps. Without it the gate agent picks the repo's source directories. |
+| `explore` | `[{"what": "Handlers", "where": "src/handlers/"}]` | Where this stack keeps things: rows of `what` (the kind of thing) and `where` (globs or directories), at most 15 rows with strings up to 120 characters. Workflows append the rows to the prompts that search existing code. Ignored for an untrusted overlay. |
 | `docImpact` | `{ "endpoint": ["^api/"], "schema": ["^db/"] }` | Path patterns that mark a changed file as a kind of change the docs must follow; ship-feature builds its doc-impact list from them before the Docs agent runs. Only the kinds `endpoint`, `schema`, `business-rule`, `config` and `agent-instructions` are accepted; patterns are regular expressions matched case-insensitively against repo-relative paths. The core's neutral defaults cover only `config` (`.env*`, `config/`), `agent-instructions` (`CLAUDE.md`, `AGENTS.md`, `.claude/`) and `business-rule` files, so a stack declares where its endpoints and schema changes live. |
 | `testIntegrity` | `{ "testPaths": ["^tests/"], "skipMarkers": [".skip(", ".only("] }` | How ship-feature recognizes tests (the spec's `tests.paths` and `tests.skipMarkers`; the shipped names are `testIntegrity.testPaths` and `testIntegrity.skipMarkers`, and the security skills sit in `security.skills` rather than `skills.security`). Markers are only looked for in files that match `testPaths`. `testPaths` are regular expressions matched against repo-relative paths; `skipMarkers` are exact strings that disable or focus a test. A deleted test file, a modified one no built task names, or an added marker fails the `test-integrity` check. |
 | `security` | `{ "skills": ["api-security"], "riskPaths": ["(^|/)auth/"] }` | What the security reviews of ship-feature, fix-bug and greenfield-build use. `skills` are the skills the security reviewer loads; `riskPaths` are regular expressions matched against changed paths, and a match runs the deep security pass. |
@@ -194,7 +195,7 @@ Report prompts get these validated fields, never the raw Detect object. A reject
 
 The trust check that skills run is the kit's own `trust-store.mjs`. The script is self-contained: `tools/gen-stacks.mjs` bundles the workflows' manifest checks and the first-party entries into it, and it loads no other script or registry file, so the hash covers everything it runs. A project copy is used only when its SHA-256 equals the hash generated into the `verification-gates` skill, and never by a hash stored in the project. When no copy can be verified, the check reports `trust check unavailable` and every overlay counts as untrusted. The trust store is always `~/.claude/sdd-kit/trusted-stacks.json` in your home directory as the operating system's user database records it; neither `$HOME` nor `CLAUDE_CONFIG_DIR` moves it, because a project setting can change both. User stack manifests still live in the config directory (`CLAUDE_CONFIG_DIR`, else `~/.claude`), since each one needs an approval anyway. As a further check, a config directory that resolves inside the current directory, its git toplevel, `CLAUDE_PROJECT_DIR`, or any ancestor of the current directory that holds `.git` is refused: the user stacks and plugin list there are reported unreadable.
 
-The shell guard that refuses writes to a trust store and agent-run approvals (`block-dangerous.sh`) is best-effort hardening, not a boundary: it matches text in the command, so a symlink to the store, a directory glob or a script assembled at run time can get past it. Those are known limits, listed in [hooks/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/share/hooks/README.md) (Trust store guard), and the approval itself stays a human action in your own terminal.
+The shell guard that refuses writes to a trust store and agent-run approvals (`block-dangerous.sh`) is best-effort hardening, not a boundary: it matches text in the command, so a symlink to the store, a directory glob or a script assembled at run time can get past it. Those are known limits, listed in [hooks/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/share/hooks/README.md) (Trust store guard), and the approval itself stays a human action in your own terminal.
 
 Out of scope: running a workflow on a repository you do not trust. Agents read repository files and have Bash, so hostile repository content can steer them whatever `/stack-trust` says. `/stack-trust` controls manifests, not repository content. That includes values a repository's settings supply, such as the settings `env` values in `.claude/settings.json` (`NODE_OPTIONS`, `PATH`): they reach every process the agents start and sit outside the threat model.
 
@@ -207,7 +208,7 @@ An overlay normally applies only to repos that match no stack the kit ships. To 
 ```json
 {
   "name": "drupal-docker",
-  "order": 50,
+  "order": 95,
   "extends": "drupal",
   "execWrapper": { "when": "docker-compose.yml", "command": "docker compose exec -T php" }
 }
@@ -262,6 +263,6 @@ Loading an add-on plugin is consent to its hooks, so an add-on's `hooks/hooks.js
 
 ## Related
 
-- `/new-stack` scaffolds a manifest and add-on from a few answers; its template is [`src/templates/stack-addon/`](https://github.com/stasmarkov/sdd-kit/tree/v4.3.0/share/templates/stack-addon).
+- `/new-stack` scaffolds a manifest and add-on from a few answers; its template is [`src/templates/stack-addon/`](https://github.com/stasmarkov/sdd-kit/tree/v4.4.0/share/templates/stack-addon).
 - `node tools/gen-stacks.mjs` regenerates the workflow registry from the kit's manifests; `./verify.sh` checks the add-on layout (Check 16).
 - [Plugin mode](plugin-mode.md) explains add-on installation.

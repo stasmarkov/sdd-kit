@@ -6,6 +6,10 @@ allowed-tools: Read, Grep, Glob, Edit, Write
 paths:
   - "**/*.ts"
   - "**/*.tsx"
+metadata:
+  last_verified: "2026-10-23"
+  next_review: "2027-01-23"
+  targets: "TypeScript 5.x"
 ---
 
 # TypeScript Patterns

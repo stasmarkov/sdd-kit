@@ -7,6 +7,10 @@ paths:
   - "config/passport.php"
   - "routes/api.php"
   - "app/**/Auth/**"
+metadata:
+  last_verified: "2026-10-22"
+  next_review: "2027-01-22"
+  targets: "laravel/passport 12; Laravel 12"
 ---
 
 # OAuth2 with Laravel Passport

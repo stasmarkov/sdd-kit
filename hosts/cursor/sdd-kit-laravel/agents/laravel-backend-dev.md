@@ -1,6 +1,6 @@
 ---
 name: laravel-backend-dev
-description: "Laravel backend implementer for domain features, REST API endpoints, and external integrations. Use PROACTIVELY for services, repositories, DTOs, invokable controllers, JsonResources, routes, policies, events and queued jobs, third-party API clients, and inbound or outbound webhooks. Follows service-repository and DTO-first patterns with consistent JSON responses."
+description: "Laravel backend implementer for domain features, REST API endpoints, and external integrations. Use PROACTIVELY when touching services, repositories, DTOs, invokable controllers, JsonResources, routes, policies, events and queued jobs, third-party API clients, and inbound or outbound webhooks. Follows service-repository and DTO-first patterns with consistent JSON responses."
 model: inherit
 ---
 

@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../index.html">SDD Kit</a>
-    <span class="badge">v4.3.0</span>
+    <span class="badge">v4.4.0</span>
   </div>
   <nav class="site-nav" aria-label="Site">
     <ul>
@@ -65,7 +65,7 @@
   <article class="doc-body">
 <h2 id="getting-started">Getting Started</h2>
 <p>From zero to building with SDD Kit: learn the Claude Code basics, install the kit, give Claude your project context, and take one ticket from spec to shipped code.</p>
-<p>This guide uses bare skill names (<code>/sdd</code>, <code>/write-spec</code>). In plugin mode they are namespaced: <code>/sdd-kit:sdd</code>, <code>/sdd-kit-ops:deploy</code>, and so on.</p>
+<p>This guide uses bare skill names (<code>/sdd</code>, <code>/write-spec</code>). Plugin mode uses the same bare names; <code>/sdd-kit:&lt;name&gt;</code> is needed only when another skill of the same name shadows the kit&#39;s.</p>
 <h3 id="0-new-to-claude-code">0. New to Claude Code?</h3>
 <p>Skip this section if you already use Claude Code.</p>
 <p><strong>What it is.</strong> Claude Code is an AI coding agent that runs in your terminal (there are also IDE extensions and a desktop app). It reads your project, edits files and runs commands, and it asks your permission before it acts. SDD Kit adds a process on top: a written spec that a human approves, fixed pipelines with quality gates, and hooks that block risky actions.</p>
@@ -88,16 +88,17 @@ winget install Anthropic.ClaudeCode                 # WinGet</code></pre>
 <p>In plugin mode the workflows&#39; browser steps use the plugin&#39;s own Playwright server and need no project <code>.mcp.json</code> entry: see <a href="installation.html#playwright-in-plugin-mode">Playwright in plugin mode</a>.</p>
 <p>or copied into your project&#39;s <code>.claude/</code> without cloning (from your project root; requirements in <a href="installation.html#without-cloning-npx">Without cloning: npx</a>):</p>
 <pre><code class="language-bash">npx github:stasmarkov/sdd-kit install --project</code></pre>
-<p>Both modes, add-ons, and a clone-based install are in <a href="installation.html">INSTALLATION.md</a>. A step-by-step path for a team, with examples for stacks other than the preset, is on the <a href="https://stasmarkov.github.io/sdd-kit/adopt.html" target="_blank" rel="noopener noreferrer">Adopt page</a>. The core is stack-agnostic: stack add-ons supply detection, gates and specialists, and a new stack is one manifest (<code>/new-stack</code>). Plugin mode: the preset above, or the core plus your stack&#39;s add-ons (see INSTALLATION). File-copy mode installs the default stack add-ons, and <code>--stack</code> changes the choice. Coming from 2.x: <a href="installation.html#upgrading-from-2x">Upgrading from 2.x</a>; see <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/README.md#stacks-and-roadmap" target="_blank" rel="noopener noreferrer">Stacks and roadmap</a>.</p>
+<p>npx needs npm 11 or 12 (Node 22 ships npm 10: run <code>npm i -g npm@11</code>). On npm 12 add <code>--allow-git=root</code> after <code>npx</code>.</p>
+<p>Both modes, add-ons, and a clone-based install are in <a href="installation.html">INSTALLATION.md</a>. A step-by-step path for a team, with examples for stacks other than the preset, is on the <a href="https://stasmarkov.github.io/sdd-kit/adopt.html" target="_blank" rel="noopener noreferrer">Adopt page</a>. The core is stack-agnostic: stack add-ons supply detection, gates and specialists, and a new stack is one manifest (<code>/new-stack</code>). Plugin mode: the preset above, or the core plus your stack&#39;s add-ons (see INSTALLATION). File-copy mode installs the default stack add-ons, and <code>--stack</code> changes the choice. Coming from 2.x: <a href="installation.html#upgrading-from-2x">Upgrading from 2.x</a>; see <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/README.md#stacks-and-roadmap" target="_blank" rel="noopener noreferrer">Stacks and roadmap</a>.</p>
 <p>Start Claude Code in your project root and run the health check:</p>
 <pre><code class="language-bash">cd ~/projects/my-app
 claude</code></pre>
 <pre><code>/framework-doctor</code></pre>
-<p>In plugin mode, type <code>/sdd-kit:framework-doctor</code>.</p>
+<p>The same bare name works in plugin mode; <code>/sdd-kit:framework-doctor</code> is needed only when another skill of that name shadows it.</p>
 <p>It reports PASS / WARN / FAIL for the directory layout, skill discovery, agents, MCP config, and hooks. In file-copy mode it also fires a harmless payload at the hooks to check they run; in plugin mode run <code>/hooks</code> to see which are listed. Fix any FAIL before you go on. <code>--fix</code> only sets permissions and creates missing directories. Anything else is covered in the troubleshooting section of <a href="installation.html">INSTALLATION.md</a>.</p>
 <h3 id="2-give-claude-your-project-context">2. Give Claude your project context</h3>
 <p>Claude only knows what the code shows and what you tell it. Three files carry that context. The file-copy installer creates them and never overwrites files that already exist. Plugin mode creates none of them, so plugin users fetch the templates once from the project root (skip any file you already have):</p>
-<pre><code class="language-bash">base=https://raw.githubusercontent.com/stasmarkov/sdd-kit/v4.3.0/share
+<pre><code class="language-bash">base=https://raw.githubusercontent.com/stasmarkov/sdd-kit/v4.4.0/share
 curl -fsSL &quot;$base/CLAUDE.template.md&quot; -o CLAUDE.md
 curl -fsSL &quot;$base/templates/AGENTS.template.md&quot; -o AGENTS.md
 mkdir -p .claude/rules
@@ -105,6 +106,17 @@ curl -fsSL &quot;$base/templates/rules/tests.md&quot; -o .claude/rules/tests.md<
 <p>Each stack add-on ships its own area rules in <code>plugins/&lt;add-on&gt;/rules/</code> of the same release; download the ones for your stack into <code>.claude/rules/</code> the same way.</p>
 <div class="table-wrap"><table><thead><tr><th>File</th><th>What it is for</th><th>Fill in first</th></tr></thead><tbody><tr><td><code>CLAUDE.md</code></td><td>Loaded every session. Keep it under 200 lines. It imports <code>@AGENTS.md</code>.</td><td>One-paragraph product summary, the &quot;Always load&quot; docs, invariants (<code>INV-01</code>…)</td></tr><tr><td><code>AGENTS.md</code></td><td>Stack, exact commands, red lines, architecture, code standards. Cursor, Codex, and Copilot read it too.</td><td>The test, lint, and build commands; things that must never happen</td></tr><tr><td><code>.claude/rules/*.md</code></td><td>Area conventions (migrations, API controllers, services and DTOs, frontend pages, tests). Each file has a <code>paths:</code> glob and loads only when Claude touches matching files.</td><td>Delete the rules that don&#39;t apply to you and adjust the globs to match your layout</td></tr></tbody></table></div>
 <p>Put each fact in one file. Commands and red lines go in <code>AGENTS.md</code>. Anything that only matters in one area goes in a rule. <code>CLAUDE.md</code> holds what is left. Replace every <code>&lt;placeholder&gt;</code> and delete sections you have nothing real for. An empty template costs tokens and teaches nothing.</p>
+<h4 id="first-success">First success</h4>
+<p>Before you write any context, prove the kit works on your code with three commands. Each shows what a good result looks like; your output will differ.</p>
+<ol><li><code>/framework-doctor</code> checks the install. Expected: PASS lines for layout, skills, agents, hooks and MCP, and no FAIL.<p>Example output:</p>
+<pre><code>PASS  skills discovered
+PASS  hooks wired
+0 FAIL, 1 WARN</code></pre></li><li><code>/investigate &quot;how does &lt;module&gt; check access?&quot;</code> reads your code and answers with citations. Expected: a short explanation that cites <code>file:line</code> for each claim.<p>Example output:</p>
+<pre><code>Access is checked in the controller before the service runs (src/OrderController:42),
+using the policy in src/OrderPolicy:18.</code></pre></li><li><code>/lint --check</code> runs your stack&#39;s real gates without fixing anything. Expected: one line per gate, each PASS, FAIL or <code>not run (&lt;reason&gt;)</code>.<p>Example output:</p>
+<pre><code>Lint   PASS
+Types  not run (tool not installed)</code></pre></li></ol>
+<p>If a step fails, <a href="installation.html#troubleshooting">INSTALLATION.md</a> lists the fix by message.</p>
 <h4 id="the-golden-triangle">The Golden Triangle</h4>
 <p>Three short documents give Claude your business context. <code>CLAUDE.md</code> loads them in every session:</p>
 <ul><li><code>docs/context/business-rules.md</code>: what the system must enforce (prohibitions, money rules, security, validation)</li><li><code>docs/context/architecture.md</code>: how it is built (layers, modules, boundaries, patterns)</li><li><code>docs/api/api-contracts.md</code>: the request and response shapes the frontend relies on</li></ul>
@@ -117,13 +129,13 @@ curl -fsSL &quot;$base/templates/rules/tests.md&quot; -o .claude/rules/tests.md<
 <h4 id="starting-a-new-product">Starting a new product</h4>
 <p>With no code yet, start with <code>/product-brief</code>: it turns the idea into a brief (users, problems, business rules, success metrics) and a backlog of vertical slices, each with its size, business-rule ids, and the <code>/sdd</code> line that starts it. <code>/sdd</code> then routes the first slice to the new-app route, which builds it with the <code>greenfield-build</code> workflow. The rest of this guide applies from the second slice on.</p>
 <h4 id="first-session-order">First-session order</h4>
-<ol><li><code>/framework-doctor</code>: the install works.</li><li>Context from code: <code>/write-docs</code> for the Golden Triangle (or <code>/product-brief</code> for a new product).</li><li><code>/sdd &lt;ticket or description&gt;</code>: your first piece of work.</li></ol>
+<ol><li><code>/framework-doctor</code>: the install works. Then the three commands under <a href="#first-success" data-anchor="first-success">First success</a>.</li><li>Context from code: <code>/write-docs</code> for the Golden Triangle (or <code>/product-brief</code> for a new product).</li><li><code>/sdd &lt;ticket or description&gt;</code>: your first piece of work.</li></ol>
 <h3 id="3-your-first-ticket-with-sdd">3. Your first ticket with /sdd</h3>
 <p><code>/sdd</code> is the front door for all spec-driven work. Give it a ticket key or a plain description:</p>
 <pre><code>/sdd PROJ-123</code></pre>
 <p><strong>1. Classify and confirm.</strong> <code>/sdd</code> pulls the ticket text from Jira or Linear if a tracker MCP server or CLI is available. Otherwise it asks you to paste the ticket. It then proposes a route with a one-line reason:</p>
 <pre><code>Route: feature. Adds a new behavior (refund guard on top-up orders); no existing behavior is broken.</code></pre>
-<p>You confirm it or pick another route. The routes are trivial, bug, decision, feature, shipped code, new app, and security audit (a deep, coverage-led audit of existing code). The full route tree is in the <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/README.md" target="_blank" rel="noopener noreferrer">README</a>. Nothing launches until you confirm.</p>
+<p>You confirm it or pick another route. The routes are trivial, bug, decision, feature, shipped code, new app, and security audit (a deep, coverage-led audit of existing code). The full route tree is in the <a href="https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/README.md" target="_blank" rel="noopener noreferrer">README</a>. Nothing launches until you confirm.</p>
 <p><strong>2. Inputs up front.</strong> Background workflows can&#39;t stop to ask questions, so <code>/sdd</code> asks two to four now: single repo or backend and frontend paths, the dev URL for browser checks, and anything specific to the route.</p>
 <p>A request is <strong>trivial</strong> only when it touches about three files with no design choice; <code>/sdd</code> sends it to <code>/simple-task</code> without a spec.</p>
 <p><strong>3. Spec.</strong> For a feature, <code>/sdd</code> runs <code>/write-spec</code>. It sizes the work, investigates the codebase, asks clarifying questions, and writes the spec:</p>
@@ -138,8 +150,9 @@ curl -fsSL &quot;$base/templates/rules/tests.md&quot; -o .claude/rules/tests.md<
 <p><strong>6. Build in the background.</strong> <em>Approve and build</em> launches the <code>ship-feature</code> workflow with <code>{ spec: &quot;spec-PROJ-123-refund-guard&quot; }</code>. It investigates, builds the tasks with tests first, runs quality gates, closes gaps against the acceptance criteria, checks the UI in the browser, runs an adversarial review, re-walks the ticket&#39;s scenario, and updates the docs. Browser checks use the built-in Playwright MCP server (headless), fall back to Claude in Chrome, and are reported as &quot;not run&quot; when no browser is available.</p>
 <p>Claude Code asks you to allow each workflow run (<em>Yes, run it</em>, <em>Yes, and don&#39;t ask again</em>, <em>View raw script</em>, <em>No</em>). <em>Don&#39;t ask again</em> is safe for the kit&#39;s workflows in this project. Watch the run with:</p>
 <pre><code>/workflows</code></pre>
+<blockquote><p><strong>While a workflow runs</strong>: keep the Claude Code session open, because the run lives in it. <code>/workflows</code> shows its progress. If the run stops (a usage limit, a closed terminal, the agent cap), relaunch it with the call the report prints, or reopen the session with <code>claude --resume</code> first. Details: <a href="usage-examples.html#when-a-run-stops">When a run stops</a>.</p></blockquote>
 <p><strong>7. Read the report.</strong> The report ends with a recommendation:</p>
-<ul><li><strong>SHIP</strong>: gates green, review approved, acceptance re-walked.</li><li><strong>FIX-FIRST</strong>: confirmed findings to address, listed by file and line with a one-line fix each.</li><li><strong>BLOCKED</strong>: a partial build, an unreachable gate, or an acceptance trace that did not resolve.</li></ul>
+<ul><li><strong>SHIP</strong>: gates green, review approved, acceptance re-walked.</li><li><strong>FIX-FIRST</strong>: confirmed findings to address, listed by file and line with a one-line fix each. A partial build, an unavailable check (a gate or phase that returned nothing) or an acceptance trace that did not resolve is listed here too.</li><li><strong>BLOCKED</strong>: an untrusted stack manifest. Approve it with <code>/stack-trust</code>, then relaunch.</li></ul>
 <p>It also writes a manual test plan to <code>manual-test.md</code> in the spec folder. Run it before you merge.</p>
 <h4 id="a-bug-takes-a-shorter-path">A bug takes a shorter path</h4>
 <pre><code>/sdd &quot;Refund button returns 500 for top-up orders since Tuesday&#39;s deploy&quot;</code></pre>
@@ -186,7 +199,7 @@ $sdd PROJ-123</code></pre>
   </article>
 </main>
 <footer class="site-footer">
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/docs/reference/getting-started.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/docs/reference/getting-started.md">View the Markdown source</a></p>
 </footer>
 <script>
   (function () {

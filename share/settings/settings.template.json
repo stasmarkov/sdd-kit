@@ -46,7 +46,7 @@
         ]
       },
       {
-        "matcher": "Read|Grep|Glob|Bash",
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
@@ -135,16 +135,6 @@
           {
             "type": "command",
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/scripts/pre-compact-save.sh"
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "Verify the subagent completed its assigned task. If it returned an error or incomplete results, flag the issue and determine if a retry is needed. Context: $ARGUMENTS"
           }
         ]
       }

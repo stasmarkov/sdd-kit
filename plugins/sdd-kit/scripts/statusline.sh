@@ -12,6 +12,11 @@ input=$(cat 2>/dev/null) || input=""
 
 command -v jq >/dev/null 2>&1 || exit 0
 
+# Non-empty stdin that is not valid JSON means the host sent something unexpected: stay silent.
+if [[ -n "${input//[[:space:]]/}" ]] && ! printf '%s' "$input" | jq -e . >/dev/null 2>&1; then
+  exit 0
+fi
+
 field() {
   printf '%s' "$input" | jq -r "$1 // empty" 2>/dev/null
 }
@@ -56,6 +61,40 @@ if [[ -d "$session_dir" ]]; then
           fi
         fi
       fi
+    fi
+  fi
+fi
+
+# No session state: fall back to the in-progress spec whose tasks.md changed last.
+if [[ ${#parts[@]} -eq 0 && -d "${project_dir}/.ai/specs" ]]; then
+  best=""
+  lites=()
+  for lite in "${project_dir}"/.ai/specs/*/spec-lite.md; do
+    [[ -f "$lite" ]] && lites+=("$lite")
+  done
+  # One awk over every spec-lite.md prints the in-progress ones. Frontmatter only; tolerate quotes
+  # and the template's trailing "# draft | ..." comment.
+  in_progress=""
+  if [[ ${#lites[@]} -gt 0 ]]; then
+    in_progress=$(awk 'FILENAME != cur {cur = FILENAME; infm = ($0 == "---"); stop = 0; next}
+      stop || !infm {next}
+      $0 == "---" {stop = 1; next}
+      /^status:/ {s = $0; sub(/^status:[ \t]*/, "", s); sub(/[ \t]*#.*$/, "", s); gsub(/["\x27 \t]/, "", s); if (s == "in-progress") print FILENAME; stop = 1}' "${lites[@]}" 2>/dev/null)
+  fi
+  while IFS= read -r lite; do
+    [[ -n "$lite" ]] || continue
+    tasks="${lite%/spec-lite.md}/tasks.md"
+    [[ -f "$tasks" ]] || continue
+    if [[ -z "$best" || "$tasks" -nt "$best" ]]; then
+      best="$tasks"
+    fi
+  done <<<"$in_progress"
+  if [[ -n "$best" ]]; then
+    counts=$(awk '/^- \[[ xX]\] [0-9]+\./ {t++} /^- \[[xX]\] [0-9]+\./ {d++} END {printf "%d %d", t, d}' "$best" 2>/dev/null)
+    read -r total done_count <<<"$counts"
+    if [[ "${total:-0}" -gt 0 ]]; then
+      spec_dir=${best%/tasks.md}
+      parts+=("${spec_dir##*/}" "${done_count:-0}/${total} done")
     fi
   fi
 fi

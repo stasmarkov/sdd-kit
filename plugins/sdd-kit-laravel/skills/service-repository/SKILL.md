@@ -3,6 +3,10 @@ name: service-repository
 description: Service-Repository architecture pattern. Use for business logic, layer separation, and data access.
 user-invocable: false
 allowed-tools: Read, Grep, Glob, Edit, Write
+metadata:
+  last_verified: "2026-10-22"
+  next_review: "2027-01-22"
+  targets: "Laravel 12; PHP 8.3"
 ---
 
 # Service-Repository Pattern

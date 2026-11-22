@@ -2,6 +2,10 @@
 name: ddev
 description: DDEV local development environment for PHP and Node.js projects (Drupal, Laravel, Next.js and others). Use for container management, running Composer, Drush, Artisan or npm inside DDEV, database work, Xdebug and quality gates in a DDEV project.
 allowed-tools: Read, Grep, Glob, Edit, Write, Bash
+metadata:
+  last_verified: "2026-11-21"
+  next_review: "2027-02-21"
+  targets: "DDEV stable docs (2026-11); Composer 2; drush via ddev drush"
 ---
 
 # DDEV Local Development
@@ -249,7 +253,18 @@ ddev drush uli
 
 Fresh install only; wipes the database: `ddev drush site:install`. Never run it on an existing site unless the task asks for it.
 
-For PHPCS, PHPStan and PHPUnit in a Drupal project, follow the `drupal-11` skill's Gate setup section.
+For PHPCS, PHPStan, Twig CS Fixer and PHPUnit in a Drupal project, follow the `drupal-11` skill's Gate setup section.
+
+## Custom services in DDEV
+
+Add a service such as Redis or Solr with a DDEV add-on first:
+
+```bash
+ddev add-on get ddev/ddev-redis
+ddev restart
+```
+
+When no add-on exists, write the service yourself in `.ddev/docker-compose.<service>.yaml` (for example `.ddev/docker-compose.mailpit.yaml`), then run `ddev restart`. DDEV merges the file into its own Compose project, so do not run a separate `docker compose` for the project.
 
 ## Useful URLs
 

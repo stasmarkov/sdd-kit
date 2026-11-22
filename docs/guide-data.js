@@ -5,7 +5,7 @@
 // text: renderers set it with textContent.
 window.GUIDE = {
   product: 'SDD Kit',
-  version: '4.3.0',
+  version: '4.4.0',
   repo: 'https://github.com/stasmarkov/sdd-kit',
   tagline: 'One front door, fixed pipelines, verified outcomes.',
   promise: 'Write down what "done" means, let the agent build it through gates, and approve the result as a human.',
@@ -19,7 +19,7 @@ window.GUIDE = {
         { text: 'Drupal: install the core, the Drupal add-on and devenv (file copy: install.sh --project --full --stack=drupal)', code: '/plugin install sdd-kit@sdd-kit\n/plugin install sdd-kit-drupal@sdd-kit\n/plugin install sdd-kit-devenv@sdd-kit' },
         { text: 'Any other stack: install the core, then describe your stack with /new-stack', code: '/plugin install sdd-kit@sdd-kit' },
       ],
-      note: 'You need Claude Code, git, jq, Node 18+ and Google Chrome (or Chromium selected with --browser chromium, see the README\'s MCP servers section). Without jq the guardrail hooks cannot read their input; without a browser, browser checks report "not run". In plugin mode skills are namespaced: /sdd-kit:sdd, /sdd-kit-ops:deploy. Playwright setup for plugin mode: see the INSTALLATION guide, section "Playwright in plugin mode".',
+      note: 'You need Claude Code, git, jq, Node 22+ and Google Chrome (or Chromium selected with --browser chromium, see the README\'s MCP servers section). Without jq the guardrail hooks cannot read their input; without a browser, browser checks report "not run". Use bare skill names in both modes; /sdd-kit:sdd is needed only when another skill of the same name shadows the kit\'s. Playwright setup for plugin mode: see the INSTALLATION guide, section "Playwright in plugin mode".',
     },
     fileCopy: {
       label: 'File copy (into a project or ~/.claude)',
@@ -30,7 +30,7 @@ window.GUIDE = {
         { text: 'Pick stacks, or add optional add-ons', code: '/path/to/sdd-kit/install.sh --project --full --stack=laravel,nextjs --with=ops' },
         { text: 'Or install for all projects', code: '/path/to/sdd-kit/install.sh --user --full' },
       ],
-      note: 'You need Claude Code, git, jq, Node 18+ and Google Chrome (or Chromium selected with --browser chromium, see the README\'s MCP servers section). Without jq the guardrail hooks cannot read their input; without a browser, browser checks report "not run". Run the installer from your project root: it installs into the .claude/ of the directory you run it from, so running it inside the kit clone installs the kit into itself. The installer merges into .claude/, never touches files it does not own, merges hooks into your settings.json (backup first), adds context7 and Playwright MCP to .mcp.json without overwriting your servers, and shows added / updated / removed files on every run. ',
+      note: 'You need Claude Code, git, jq, Node 22+ and Google Chrome (or Chromium selected with --browser chromium, see the README\'s MCP servers section). Without jq the guardrail hooks cannot read their input; without a browser, browser checks report "not run". Run the installer from your project root: it installs into the .claude/ of the directory you run it from, so running it inside the kit clone installs the kit into itself. The installer merges into .claude/, never touches files it does not own, merges hooks into your settings.json (backup first), adds context7 and Playwright MCP to .mcp.json without overwriting your servers, and shows added / updated / removed files on every run. ',
     },
     npx: {
       label: 'Without cloning (npx)',
@@ -41,7 +41,7 @@ window.GUIDE = {
       ],
       href: 'reference/installation.html#without-cloning-npx',
       hrefLabel: 'npm 12 blocks git dependencies unless you allow them: see INSTALLATION',
-      note: 'You need Claude Code, git, jq, npm 11 or 12 (npm 10 is not supported) and Google Chrome (or Chromium selected with --browser chromium, see the README\'s MCP servers section). Without jq the guardrail hooks cannot read their input; without a browser, browser checks report "not run". Run it from your project root; it uses the same install.sh as a clone, so every flag works, and also needs bash. Add #v4.3.0 after the repo name to pin a release. The package is not published to npm.',
+      note: 'You need Claude Code, git, jq, npm 11 or 12 (npm 10 is not supported) and Google Chrome (or Chromium selected with --browser chromium, see the README\'s MCP servers section). Without jq the guardrail hooks cannot read their input; without a browser, browser checks report "not run". Run it from your project root; it uses the same install.sh as a clone, so every flag works, and also needs bash. Add #v4.4.0 after the repo name to pin a release. The package is not published to npm.',
     },
     flags: [
       { flag: '--project | --user', meaning: 'Install into ./.claude or ~/.claude' },
@@ -59,7 +59,7 @@ window.GUIDE = {
     { title: 'Add the marketplace', claudeOnly: true, text: 'Inside Claude Code, register the kit\'s plugin marketplace. Prefer files in your repo? Use the file-copy installer instead (see install).', code: '/plugin marketplace add stasmarkov/sdd-kit' },
     { title: 'Install the plugin', claudeOnly: true, text: 'Pick your stack. Laravel + Next.js: install the preset below. Drupal: install sdd-kit-drupal@sdd-kit and sdd-kit-devenv@sdd-kit with the core (file copy: --stack=drupal). Any other stack: install sdd-kit, then run /new-stack. Takes a minute.', code: '/plugin install sdd-kit-laravel-nextjs@sdd-kit' },
     { title: 'Check the install', hostAware: true, text: 'The doctor checks the install, the hook wiring and the MCP servers, and prints a fix for each problem. In plugin mode, confirm the hooks are listed under /hooks.', hostText: 'The doctor checks the install, the hook wiring and the MCP servers, and prints a fix for each problem. If your host asks you to trust hooks, approve the kit\'s hooks first.', code: '/framework-doctor' },
-    { title: 'Give Claude project context', hostAware: true, text: 'In your project, generate the business rules and architecture docs Claude reads before every task. Starting a new product? Run /product-brief instead.', hostTitle: 'Give the agent project context', hostText: 'In your project, generate the business rules and architecture docs the agent reads before every task. Starting a new product? Use the product-brief skill instead.', code: '/write-docs --type=all' },
+    { title: 'See it work on your code', hostAware: true, text: 'Ask one question about your own code and check that the answer cites file:line. Getting started, First success, adds the doctor and lint checks with their expected output. Context docs come next: /write-docs, or /product-brief for a new product.', hostTitle: 'See it work on your code', hostText: 'Ask one question about your own code and check that the answer cites file:line. Getting started, First success, adds the doctor and lint checks with their expected output. Context docs come next: the write-docs skill, or the product-brief skill for a new product.', code: '/investigate "how does <module> check access?"' },
     { title: 'Describe the work', hostAware: true, text: 'A ticket key or a sentence. /sdd proposes a route; you confirm.', hostText: 'A ticket key or a sentence. The sdd skill proposes a route; you confirm.', code: '/sdd PROJ-123' },
     { title: 'Approve the spec', text: 'For features, read spec-lite.md (one page) and choose Approve and build, Approve only (build it yourself later with /execute-task), Request changes, or Stop here.', hostText: 'For features, read spec-lite.md (one page) and choose Approve and build, Approve only (build it yourself later with the execute-task skill), Request changes, or Stop here.', code: '.ai/specs/spec-PROJ-123-<slug>/spec-lite.md' },
     { title: 'Let the pipeline ship', claudeOnly: true, text: 'Build, gates, converge, adversarial review, a browser acceptance walk, docs. Watch it in /workflows.', code: '/workflows' },
@@ -104,7 +104,7 @@ window.GUIDE = {
       { label: 'Snapshot', code: 'npx github:stasmarkov/sdd-kit spec-board --out /tmp/spec-board.html' },
       { label: 'Split repos', code: 'npx github:stasmarkov/sdd-kit spec-board api/.ai/specs web/.ai/specs --serve' },
     ],
-    note: 'The npx form needs npm 11 or 12 and git, and works in any repo that has .ai/specs. Add #v4.3.0 after the repo name to pin a release. The package is not published to npm.',
+    note: 'The npx form needs npm 11 or 12 and git, and works in any repo that has .ai/specs. Add #v4.4.0 after the repo name to pin a release. The package is not published to npm.',
     exampleHref: 'example-board.html',
   },
 
@@ -117,7 +117,7 @@ window.GUIDE = {
   stacks: {
     now: 'Laravel API + Next.js',
     roadmap: 'Symfony and Java as first-class stacks, and Drupal and Swift beyond their early previews; add your own with /new-stack',
-    href: 'https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/README.md#stacks-and-roadmap',
+    href: 'https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/README.md#stacks-and-roadmap',
   },
 
   routes: [
@@ -205,7 +205,7 @@ window.GUIDE = {
 
   hooksSummary: {
     text: 'Core hooks block destructive commands and force pushes to main, check commit messages, scan written files for secrets and fetched content for prompt injection, and save session state across compaction. Stack add-ons can add a test-first hook and a lint hook.',
-    href: 'https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/share/hooks/README.md',
+    href: 'https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/share/hooks/README.md',
   },
 
   workflowsDirect: {
@@ -281,7 +281,7 @@ window.GUIDE = {
 
   troubleshooting: [
     { problem: 'Hooks never block anything', fix: 'Run /framework-doctor. Plugin mode: the hooks come from the plugin, so check jq --version (without jq they fail open) and confirm they are listed under /hooks. File copy: re-run the installer from your project root (it merges the hooks into settings.json), then check /hooks in a new session.' },
-    { problem: 'A skill is "not found"', fix: 'File-copy skills must be flat: .claude/skills/<name>/SKILL.md. In plugin mode use the namespace: /sdd-kit:<name>.' },
+    { problem: 'Any "not run (...)", "Unknown command" or "Unknown skill" message', fix: 'Look the exact message up in the INSTALLATION troubleshooting table: ../../src/docs/INSTALLATION.md#troubleshooting.' },
     { problem: 'Old command like /upstream:create-spec', fix: 'The 1.x names (here: /write-spec) still redirect and go in a later release; the CHANGELOG 2.0.0 entry lists the renames.' },
     { problem: 'Installer stops with "jq is required"', fix: 'Install jq (brew install jq / apt-get install jq); the hook scripts need it too.' },
     { problem: 'Browser checks report "not run"', fix: 'Run claude mcp list and check that playwright is connected. It starts through npx, so Node must be on your PATH, and the first start downloads the package. Setup differs per install mode: see the Playwright sections of the INSTALLATION guide. Claude in Chrome works as a fallback.' },
@@ -305,7 +305,7 @@ window.GUIDE = {
     { label: 'Usage examples', href: 'reference/usage-examples.html' },
     { label: 'Worked example: Hireboard', href: 'examples/job-board/README.html' },
     { label: 'Example spec board', href: 'example-board.html' },
-    { label: 'Spec board skill', href: 'https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/plugins/sdd-kit/skills/spec-board/SKILL.md' },
+    { label: 'Spec board skill', href: 'https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/plugins/sdd-kit/skills/spec-board/SKILL.md' },
     { label: 'Plugin mode', href: 'reference/plugin-mode.html' },
     { label: 'Multi-repo', href: 'reference/multi-repo.html' },
     { label: 'Model tiers', href: 'reference/effort-guidelines.html' },

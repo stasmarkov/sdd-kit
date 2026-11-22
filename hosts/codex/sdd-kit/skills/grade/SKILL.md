@@ -1,12 +1,15 @@
 ---
 name: grade
-description: Grade a target artifact against a domain rubric using the outcomes-grader subagent. Returns PASS / CHANGES_REQUIRED / BLOCKED with item-level findings. Use after any non-trivial generation task before marking it done.
-argument-hint: "--domain=api|ui|migration|test --target=<path|glob> [--threshold=80] [--max-iterations=3]"
+description: Use when asked to grade an artifact against a rubric. Runs the outcomes-grader subagent and returns PASS / CHANGES_REQUIRED / BLOCKED with item-level findings.
+argument-hint: "--domain=api|ui|migration|test|docs [--rubric=<path>] --target=<path|glob> [--threshold=80] [--max-iterations=3]"
+disable-model-invocation: true
 allowed-tools: Agent, Read, Write, Edit, Bash, Grep, Glob
 model: opus
 metadata:
   subagents: "outcomes-grader, adversarial-reviewer"
 ---
+Relative paths in this skill (scripts/..., ../other-skill/..., ../../runtime/...) are relative to the directory that holds this SKILL.md, not to the project directory; resolve them against it before running a command.
+
 
 # /grade
 
@@ -32,6 +35,12 @@ Run rubric-based outcomes grading against a target artifact. Loops the grader ag
 # Adjust threshold (default 80%)
 /grade --domain=api --target=... --threshold=90
 
+# Grade documentation
+/grade --domain=docs --target=docs/order-api.md
+
+# Use your own rubric
+/grade --rubric=docs/rubrics/my-rubric.md --target=...
+
 # Cap writer retries (default 3)
 /grade --domain=api --target=... --max-iterations=5
 ```
@@ -53,16 +62,17 @@ Run rubric-based outcomes grading against a target artifact. Loops the grader ag
 
 ### Step 1: Resolve Rubric
 
-Map `--domain` to the rubric file. `<reviews>` is `.codex/sdd-kit/templates/reviews/` in a file-copy install and `src/templates/reviews/` in the plugin; use the first one that exists.
+Map `--domain` to the bundled rubric `assets/rubric-<d>.md`.
 
 | Domain | Rubric path |
 |--------|-------------|
-| `api` | `<reviews>/rubric-api.md` |
-| `ui` | `<reviews>/rubric-ui.md` |
-| `migration` | `<reviews>/rubric-migration.md` |
-| `test` | `<reviews>/rubric-test.md` |
+| `api` | `assets/rubric-api.md` |
+| `ui` | `assets/rubric-ui.md` |
+| `migration` | `assets/rubric-migration.md` |
+| `test` | `assets/rubric-test.md` |
+| `docs` | `assets/rubric-docs.md` |
 
-If the domain is unknown, fail fast with the list of valid domains.
+`--rubric=<path>` replaces the bundled rubric with your own file; `--domain` is then optional and only names the report. If the domain is unknown, fail fast with the list of valid domains.
 
 ### Step 2: Invoke Outcomes Grader
 
@@ -99,7 +109,7 @@ Write the final grade report to `.ai/reviews/GRADE-<domain>-<target-slug>-<times
 ## Pre-conditions
 
 - The target file(s) must exist.
-- The rubric file must exist under `<reviews>` (Step 1).
+- The rubric file must exist (Step 1).
 - Tooling referenced in the rubric (static analyzer, test runner, linter, etc.) should be present; missing tools degrade affected items to `n/a`, not failure.
 
 ---

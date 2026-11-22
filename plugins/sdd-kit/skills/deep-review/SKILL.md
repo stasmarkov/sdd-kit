@@ -1,7 +1,7 @@
 ---
 name: deep-review
 description: Use for a code or PR review before merge. Reviews finished code adversarially and returns APPROVED, CHANGES_REQUIRED or BLOCKED.
-argument-hint: "[--depth=quick|standard|adversarial] [--task=ID | --spec=ID | --files=path | --staged | --branch=name --base=main] [--focus=security|performance|architecture|testing] [--format=markdown|json] [--critical-only] [--auto-fix]"
+argument-hint: "[--depth=quick|standard|adversarial] [--task=ID | --spec=ID | --files=path | --staged | --branch=name --base=main] [--focus=security|performance|architecture|testing] [--format=markdown|json] [--critical-only] [--auto-fix] [--checklist=<level>]"
 allowed-tools: Agent, Read, Write, Edit, Bash, Grep, Glob
 model: opus
 metadata:

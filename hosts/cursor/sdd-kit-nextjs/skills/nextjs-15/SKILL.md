@@ -7,6 +7,10 @@ paths:
   - "**/*.jsx"
   - "app/**"
   - "components/**"
+metadata:
+  last_verified: "2026-11-11"
+  next_review: "2027-02-11"
+  targets: "next 15.x; React 19"
 ---
 
 # Next.js 15 Development Patterns

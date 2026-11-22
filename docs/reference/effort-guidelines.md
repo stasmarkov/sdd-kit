@@ -139,7 +139,7 @@ Lead Orchestrator (1)
 4. **Use checkpointing** for tasks exceeding 100K tokens
 5. **Filter tool outputs** before returning to context
 
-The `token-budget` hook enforces part of this: it always blocks `find` from the filesystem root, and once context usage (hinted via `CLAUDE_CONTEXT_USAGE`) reaches `CLAUDE_BUDGET_THRESHOLD` (default 75%) it also blocks unbounded reads of huge files, unscoped repo-wide greps, open-ended globs, and dumping full logs. See the [hooks reference](https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/share/hooks/README.md).
+The `token-budget` hook enforces one part of this: it blocks `find` from the filesystem root. See the [hooks reference](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/share/hooks/README.md).
 
 ---
 
@@ -220,9 +220,24 @@ Every ship-feature report ends with a Cost table: the agents each phase started 
 | Review | One reviewer per dimension (correctness, security, performance, design, tests, plus business-rules with a rule set), so the tests dimension adds one agent per run; two verifier votes per finding (`standard` tier), a third only when they split; a minor design finding gets one |
 | Baseline gate pass | One extra gate run per repo before any code is written (ship-feature, fix-bug), by one `gatesFix`-tier agent per repo (`baseline:<role>`), plus one read-only base step per tracked repo. A low budget skips it (ship-feature under 200k tokens, fix-bug under 150k), and every failure then counts as new. Bookkeeping agents on the `prepare` tier also run in ship-feature: `changed-files` (one per tracked repo, twice), `guard-changed-files` (one, after the guard tests of a bug or improvement spec), `review-snapshot` and `late-hashes` (one hash step per repo each), and `test-integrity` (one per repo); each hashes all its files in one git call |
 | Security and second review | The `security-auditor` reviewer; a deep pass (`security-hunter`, `deep` tier) only when the diff touches a risk area; one second review of files changed after Review, correctness and security (plus tests when a late file is a test file), with the usual two verifier votes; fix-bug and greenfield-build add one Review phase with the same votes |
+| Agent cap (`maxAgents`) | A run stops starting agents at the cap, records the skipped checks as unavailable (never as pass) and reports a relaunch with a raised cap. The cap counts agents only, whatever `budget.total` is. security-audit has no runtime cap |
+| Findings cap (`maxFindings`) | Findings kept per review dimension (default 8, or 4 with profile `quick`; 1 to 50). Every critical and major finding is kept; the rest are sorted by severity, file and line and the overflow is listed as unverified ("review cap"), never as a pass |
 | Fix | At most 2 rounds, each a stack-agent fix, the gates on the changed files and a re-vote on the fixed findings |
 | Converge | At most 2 audits; round-2 gaps are built once without a third audit |
 | Gates | At most 3 auto-fix attempts per repo, scoped to the files the run changed |
+
+Default agent caps per workflow (`args.maxAgents` overrides one run):
+
+| Workflow | Default cap |
+|----------|-------------|
+| ship-feature | 120 |
+| quick | 60 |
+| fix-bug | 60 |
+| greenfield-build | 120 |
+| tech-research | 80 |
+| create-spec | 25 |
+
+`quick` is ship-feature with `profile: 'quick'`.
 
 Compare runs by the Cost table, not by wall time alone: a slow run that spent most of its agents in Fix points at the review findings, one that spent them in Gates at the build.
 
@@ -296,6 +311,6 @@ Durable lessons belong in Claude Code auto memory or agent memory (`memory: proj
 - Framework Design Rules - Core principles
 - [Agent index](agents.md) - Available agents
 - [Skill index](skills.md) - Available skills
-- [Hooks reference](https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/share/hooks/README.md) - `token-budget`, `pre-compact-save`, and the rest
+- [Hooks reference](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/share/hooks/README.md) - `token-budget`, `pre-compact-save`, and the rest
 
 Source: Anthropic Engineering, "How we built our multi-agent research system".

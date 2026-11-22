@@ -1,6 +1,6 @@
 ---
 name: performance-tester
-description: Performance optimization for APIs and web frontends in any stack - measures a baseline and requires a target before changing anything, then finds the bottleneck (queries, caching, queues, Core Web Vitals, bundles) and verifies the gain. Use PROACTIVELY for slow endpoints or pages, performance budgets, and scalability planning.
+description: Performance optimization for APIs and web frontends in any stack - measures a baseline and requires a target before changing anything, then finds the bottleneck (queries, caching, queues, Core Web Vitals, bundles) and verifies the gain. Use PROACTIVELY when facing slow endpoints or pages, performance budgets, and scalability planning.
 tools: Read, Bash, Grep, Glob
 model: sonnet
 effort: medium

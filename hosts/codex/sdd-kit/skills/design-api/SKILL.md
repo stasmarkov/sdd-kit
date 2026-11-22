@@ -1,7 +1,7 @@
 ---
 name: design-api
 description: "Design RESTful API architecture: resources, endpoints, request/response contracts, error format, and optional OpenAPI output, producing an API design document. Use when planning new endpoints or resources before implementation, generating an OpenAPI spec, or reviewing an existing API design for consistency."
-argument-hint: "[feature-name] | --resource=[name] | --openapi"
+argument-hint: "[feature-name] | --resource=[name] | --openapi | --review"
 allowed-tools: Read, Write, Edit, Grep, Glob
 metadata:
   mcp-tools: "context7"

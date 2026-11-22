@@ -23,7 +23,7 @@ set -euo pipefail
 # Hook scripts removed from the framework; existing installs still reference them.
 RETIRED_SCRIPTS='["kg-capture.sh", "lint-check.sh", "test-first-check.sh"]'
 # Earlier wordings of framework prompt hooks, replaced rather than duplicated.
-RETIRED_PROMPTS='["Before ending, verify: (1) All tasks marked as completed have passing tests, (2) No uncommitted changes are left without explanation, (3) Session state is saved if mid-spec. If this is a re-check after a previous stop attempt, allow stopping. Context: $ARGUMENTS"]'
+RETIRED_PROMPTS='["Before ending, verify: (1) All tasks marked as completed have passing tests, (2) No uncommitted changes are left without explanation, (3) Session state is saved if mid-spec. If this is a re-check after a previous stop attempt, allow stopping. Context: $ARGUMENTS", "Verify the subagent completed its assigned task. If it returned an error or incomplete results, flag the issue and determine if a retry is needed. Context: $ARGUMENTS"]'
 
 TEMPLATE="${1:?template path required}"
 SETTINGS="${2:?settings.json path required}"

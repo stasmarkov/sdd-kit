@@ -1,7 +1,7 @@
 ---
 name: rollback
 description: "Roll back a deployment safely: capture current state, identify the known-good target, revert code and migrations under maintenance mode, and verify health afterwards. Use when a deploy caused a regression, when reverting to a specific commit or N steps, or during an emergency recovery."
-argument-hint: "[environment] | --staging | --production | --steps=[n]"
+argument-hint: "[environment] | --staging | --production | --steps=[n] | --commit=[sha] | --emergency"
 allowed-tools: Bash, Read, Grep
 disable-model-invocation: true
 metadata:

@@ -8,7 +8,7 @@
 #   files before acting.
 # - Never blocks. Always exits 0.
 #
-# Output protocol: JSON on stdout with optional "additionalContext" field.
+# Output protocol: JSON on stdout, {hookSpecificOutput: {hookEventName, additionalContext}}.
 #
 
 set -euo pipefail
@@ -47,6 +47,27 @@ if echo "$PROMPT" | grep -qE '\b(TASK|SPEC)-[0-9]{2,}\b'; then
     CONTEXT_LINES+=("Hint: prompt references $REFS. Load the corresponding files under .ai/specs/ or .ai/tasks/ before acting.")
 fi
 
+# Ticket keys (PROJ-123): hint only when a top-level spec folder for the key exists
+PROJECT_DIR="${CLAUDE_PROJECT_DIR:-}"
+[[ -n "$PROJECT_DIR" ]] || PROJECT_DIR=$(echo "$INPUT" | jq -r '.cwd // empty')
+[[ -n "$PROJECT_DIR" ]] || PROJECT_DIR="$PWD"
+if [[ -d "$PROJECT_DIR/.ai/specs" ]]; then
+    KEYS=$(echo "$PROMPT" | grep -oE '\b[A-Z][A-Z0-9]+-[0-9]+\b' | grep -vE '^(TASK|SPEC)-' | sort -u | head -n 3 || true)
+    for KEY in $KEYS; do
+        FOUND=""
+        shopt -s nocaseglob
+        for DIR in "$PROJECT_DIR"/.ai/specs/spec-"$KEY"-*/; do
+            [[ -d "$DIR" ]] || continue
+            NAME=$(basename "$DIR")
+            FOUND="${FOUND:+$FOUND, }.ai/specs/$NAME"
+        done
+        shopt -u nocaseglob
+        if [[ -n "$FOUND" ]]; then
+            CONTEXT_LINES+=("Hint: prompt references $KEY. Load $FOUND (spec-lite.md, tasks.md) before acting.")
+        fi
+    done
+fi
+
 # /caveman, /graphify, /plan invocations: log only
 if echo "$PROMPT" | grep -qE '^\s*/(caveman|graphify|grade|deep-review)'; then
     : # no-op; built-in skills handle it
@@ -57,5 +78,5 @@ if [[ ${#CONTEXT_LINES[@]} -eq 0 ]]; then
 fi
 
 CONTEXT=$(printf '%s\n' "${CONTEXT_LINES[@]}")
-jq -nc --arg c "$CONTEXT" '{additionalContext: $c}'
+jq -nc --arg c "$CONTEXT" '{hookSpecificOutput: {hookEventName: "UserPromptSubmit", additionalContext: $c}}'
 exit 0

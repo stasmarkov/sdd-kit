@@ -7,6 +7,10 @@ paths:
   - "app/**"
   - "routes/**"
   - "database/**"
+metadata:
+  last_verified: "2026-11-11"
+  next_review: "2027-02-11"
+  targets: "Laravel 12.x; PHP 8.3"
 ---
 
 # Laravel 12 Development Patterns

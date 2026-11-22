@@ -7,6 +7,10 @@ paths:
   - "middleware.ts"
   - "app/**/auth/**"
   - "**/*.tsx"
+metadata:
+  last_verified: "2026-10-23"
+  next_review: "2027-01-23"
+  targets: "next 15.x; Auth.js v5"
 ---
 
 # Next.js Authentication Patterns

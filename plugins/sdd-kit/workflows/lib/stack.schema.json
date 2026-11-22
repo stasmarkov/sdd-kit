@@ -498,6 +498,29 @@
             "type": "string"
           }
         },
+        "explore": {
+          "type": "array",
+          "description": "Where this stack keeps things, as rows for the code-explorer prompts: what to look for and where (globs, directories or patterns).",
+          "maxItems": 15,
+          "items": {
+            "type": "object",
+            "required": [
+              "what",
+              "where"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "what": {
+                "type": "string",
+                "maxLength": 120
+              },
+              "where": {
+                "type": "string",
+                "maxLength": 120
+              }
+            }
+          }
+        },
         "docImpact": {
           "type": "object",
           "description": "Path patterns, as regular expressions on repo-relative paths, that mark a changed file as a kind of change the docs must follow. Only the five kinds below are accepted; the neutral defaults always apply.",
@@ -1105,6 +1128,29 @@
             "type": "array",
             "items": {
               "type": "string"
+            }
+          },
+          "explore": {
+            "type": "array",
+            "description": "Where this stack keeps things, as rows for the code-explorer prompts: what to look for and where (globs, directories or patterns).",
+            "maxItems": 15,
+            "items": {
+              "type": "object",
+              "required": [
+                "what",
+                "where"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "what": {
+                  "type": "string",
+                  "maxLength": 120
+                },
+                "where": {
+                  "type": "string",
+                  "maxLength": 120
+                }
+              }
             }
           },
           "docImpact": {

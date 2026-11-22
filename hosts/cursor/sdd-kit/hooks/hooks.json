@@ -24,29 +24,6 @@
         "command": "node ./runtime/hooks/dispatch.mjs beforeShellExecution --host cursor --hook token-budget.sh"
       }
     ],
-    "preToolUse": [
-      {
-        "command": "node ./runtime/hooks/dispatch.mjs preToolUse --host cursor --hook token-budget.sh",
-        "matcher": "Read|Grep|Glob"
-      },
-      {
-        "command": "node ./runtime/hooks/dispatch.mjs preToolUse --host cursor --hook drupal-test-first.sh",
-        "matcher": "Write"
-      },
-      {
-        "command": "node ./runtime/hooks/dispatch.mjs preToolUse --host cursor --hook laravel-test-first.sh",
-        "matcher": "Write"
-      },
-      {
-        "command": "node ./runtime/hooks/dispatch.mjs preToolUse --host cursor --hook nextjs-test-first.sh",
-        "matcher": "Write"
-      },
-      {
-        "command": "node ./runtime/hooks/dispatch.mjs preToolUse --host cursor --hook block-dangerous.sh",
-        "matcher": "Write",
-        "failClosed": true
-      }
-    ],
     "beforeSubmitPrompt": [
       {
         "command": "node ./runtime/hooks/dispatch.mjs beforeSubmitPrompt --host cursor --hook prompt-preflight.sh"
@@ -83,6 +60,25 @@
       {
         "command": "node ./runtime/hooks/dispatch.mjs stop --host cursor --hook lesson-nudge.sh",
         "timeout": 15
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "node ./runtime/hooks/dispatch.mjs preToolUse --host cursor --hook drupal-test-first.sh",
+        "matcher": "Write"
+      },
+      {
+        "command": "node ./runtime/hooks/dispatch.mjs preToolUse --host cursor --hook laravel-test-first.sh",
+        "matcher": "Write"
+      },
+      {
+        "command": "node ./runtime/hooks/dispatch.mjs preToolUse --host cursor --hook nextjs-test-first.sh",
+        "matcher": "Write"
+      },
+      {
+        "command": "node ./runtime/hooks/dispatch.mjs preToolUse --host cursor --hook block-dangerous.sh",
+        "matcher": "Write",
+        "failClosed": true
       }
     ]
   }

@@ -63,9 +63,24 @@ Background workflows **cannot stop and ask questions**, so gather everything now
 
 Before any `Workflow` call, run `node ${CLAUDE_SKILL_DIR}/../stack-trust/scripts/trust-store.mjs --list-untrusted`. If it lists any manifest, tell the user those stacks' gates will be reported as `not run (untrusted manifest)` and offer `/stack-trust` first. Never approve for them.
 
-**Branch check** (before a `fix-bug` or `ship-feature` launch, including from 4b): run `git branch --show-current` in each repo of the change. A repo is on a base branch when HEAD is detached or the branch is `open-pr.base` from the project `CLAUDE.md`, the default from `git symbolic-ref --short refs/remotes/origin/HEAD` without its `origin/` prefix, `main`, `master`, `develop` or `release/*`. If any repo is, add `git switch -c <fix|feature>/<KEY>-<slug>` (`fix/` for a bug; no `<KEY>-` without a ticket; the same name in every repo) to the confirmation below, and run it before the `Workflow` call when the user agrees. This is part of the confirmation, not another question round. If the user keeps the base branch, say that fix-bug creates a `fix/` branch itself and commits only its regression-test checkpoint, and that ship-feature switches off a base branch by itself, stays on any other branch, and commits nothing (the developer commits; agents never push).
+**Branch check** (before a `fix-bug` or `ship-feature` launch, including from 4b): run `git branch --show-current` in each repo of the change. A repo is on a base branch when HEAD is detached or the branch is `open-pr.base` from the project `CLAUDE.md`, the default from `git symbolic-ref --short refs/remotes/origin/HEAD` without its `origin/` prefix, a name or glob from `SDD_KIT_PROTECTED_BRANCHES` (separated by spaces or commas), `main`, `master`, `develop` or `release/*`. If any repo is, add `git switch -c <fix|feature>/<KEY>-<slug>` (`fix/` for a bug; no `<KEY>-` without a ticket; the same name in every repo) to the confirmation below, and run it before the `Workflow` call when the user agrees. This is part of the confirmation, not another question round. If the user keeps the base branch, say that fix-bug creates a `fix/` branch itself and commits only its regression-test checkpoint, and that ship-feature switches off a base branch by itself, stays on any other branch, and commits nothing (the developer commits; agents never push).
 
-Then show the exact call and note that it runs many agents in the background. Launch only after the user agrees, by the [workflow name rule](#workflow-names).
+**Local changes** (same launches, same repos as the Branch check): run `git status --porcelain` in each repo. A clean tree adds nothing. When any repo is dirty, add these to the same confirmation, as part of it and not another question round: stash and launch, worktree and stop, keep the changes and launch, or cancel.
+- *Stash*: `git stash push -u -m "sdd: before <branch>"` in each dirty repo, run before any `git switch -c`; always with `-u`, so untracked files travel too. Give the restore command, `git stash pop --index`, to run on the branch the developer was on. On a conflict the stash entry stays; tell the developer to resolve it, then run `git stash drop` themselves; you never drop a stash.
+- *Worktree*: `git worktree add ../<repo>-<KEY> -b <branch>` per dirty repo (without `-b` when the branch exists), and the developer starts a new session there. Leave this option out for a repo already on `<branch>` (`git branch --show-current`): git refuses to check out a branch a second time, and the changes are already on it. Caveat: gitignored dependencies, local-environment config and local instruction files are absent from the checkout. Choosing this stops /sdd without launching.
+- *Keep the changes*: launch as today.
+Never reset, clean, commit or drop a stash. Stash and create a worktree only after the user agrees in this confirmation.
+
+Then show the exact call and note that it runs many agents in the background. Add the line `Agent cap: <n> (a "Large workflow" warning is expected)` with the route's default from the table below; the user can raise or lower it with `maxAgents` in `args`. For a `feature` spec of size S, propose `profile: 'quick'` for `ship-feature`. Launch only after the user agrees, by the [workflow name rule](#workflow-names).
+
+| Workflow | Agent cap (`maxAgents` default) |
+|---|---|
+| `fix-bug` | 60 |
+| `ship-feature` | 120 (60 with `profile: 'quick'`) |
+| `greenfield-build` | 120 |
+| `create-spec` | 25 |
+| `tech-research` | 80 |
+| `qa-and-docs`, `security-audit` | none by default (`security-audit` is bounded by `budget` and `maxUnits`) |
 
 | Route | Required inputs | Launch | Output | Done when |
 |---|---|---|---|---|
@@ -81,7 +96,7 @@ When there is a ticket, start the free-text input (`bug`, `question`, `idea`, or
 
 ### Workflow names
 
-Every `Workflow` call in this skill, its references and the docs uses the plugin name `sdd-kit:<name>`. When the call fails with "not found" (a file-copy install registers the bare name), retry once with the bare `<name>` and the same `args`. Do not try to guess the install mode first: a skill cannot see the mode Detect reports, and the retry costs at most one failed call. Any other error is not a reason to retry. When the bare name is not found either, the workflow is not installed (see Rules).
+Every `Workflow` call shown in this skill, its references and the docs uses the plugin name `sdd-kit:<name>`. Before the first call, check for `.claude/.framework-version` in the project and in `~/.claude/`. When it exists (a file-copy install registers the bare name), call the bare `<name>`; otherwise call `sdd-kit:<name>`. When the call fails with "not found", retry once with the other form and the same `args`. Any other error is not a reason to retry. When neither form is found, the workflow is not installed (see Rules).
 
 ### 4a — Feature: write the spec (interactive)
 
@@ -136,6 +151,14 @@ Next:
                                                  (fix-bug: /open-pr --report=<its reportPath, .ai/reports/fix-…md>)
   /learn <the report's Prevention item>          (only when the report has a Prevention section)
 ```
+
+When a run ends FIX-FIRST, NOT-RESOLVED or stopped (the cap, a usage limit, an unavailable check), read `relaunch` and the other result keys, never the Next text:
+
+- Show the run's computed `next` line and `resume` call as returned.
+- When `relaunch` is `'same-run'`, offer `Workflow({ name: "sdd-kit:<name>", args: <the same args>, resumeFromRunId: "<runId>" })`, with `runId` taken from the launch result. When the cap stopped the run, raise `maxAgents` in those args first (the result's `agentCap` shows the limit that was hit).
+- When `relaunch` is `'spec'` or finding tasks were appended to `tasks.md`, offer `ship-feature { spec }` to build them.
+- When `allowDraftUsed` is true, say the run was built without an approved spec.
+- Troubleshooting for a run that will not resume: [INSTALLATION.md Troubleshooting](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/docs/reference/installation.md).
 
 After **SHIP**, offer the security audit (never launch it unprompted) when the report's `confirmedFindings` contain an entry with `dimension === 'security'`, or the spec's `spec-lite.md` has a line matching `NFR-[0-9]+\**:?\**\s*(authori[sz]ation|personal[- ]data|privacy)` (case-insensitive). Scope it to the branch with `gitRange` (the workflow reads the files of `git diff --name-only <default branch>...HEAD` itself, so long lists, names with spaces and deleted files need no handling here), pass the quick profile and the repo ship-feature changed (its path or role from the report), and confirm it as in Step 4:
 

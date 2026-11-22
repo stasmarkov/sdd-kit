@@ -106,15 +106,80 @@ for WORD in $(printf '%s' "$PLAIN" | tr '[:upper:]' '[:lower:]'); do
     fi
 done
 set +f
+# Interpreters that run code given on the command line. A word counts by its basename with a trailing
+# version suffix removed, so python3, /usr/bin/python3.12 and node22 all name an interpreter.
+INTERPRETERS=' bash sh zsh dash ksh fish node nodejs deno bun python perl ruby php '
+
+# Prints the subcommands of $1, one per line: split on && || ; | |& & and newlines, and at the start of a
+# $( ` <( >( substitution. Splitting inside quotes is harmless: it only adds subcommands to check.
+subcommands_of() {
+    printf '%s' "$1" | sed -E 's/\$\(|`|<\(|>\(/\n/g' | tr ';&|' '\n\n\n'
+}
+
+# Succeeds when a subcommand of $1 passes inline code (-c, -e, -p, bundled as in -pe, --eval, --print) to an interpreter.
+# The flags count only next to an interpreter word, so `jq -c`, `grep -e` or `uniq -c` stay reads.
+inline_code_in() {
+    local sub word name
+    while IFS= read -r sub; do
+        echo "$sub" | grep -qE '[[:space:]](-[a-zA-Z]*[cep][a-zA-Z]*|--eval|--print)([[:space:]=]|$)' || continue
+        for word in $sub; do
+            name=${word##*/}
+            while [[ "$name" =~ [0-9.]$ ]]; do
+                name=${name%?}
+            done
+            case "$INTERPRETERS" in
+                *" $name "*) return 0 ;;
+            esac
+        done
+    done <<< "$(subcommands_of "$1")"
+    return 1
+}
+
+# Succeeds when a subcommand of $1 runs a program that reads by default but is told to write a file or run
+# a program: sort -o/--output, uniq with an output operand, rg --pre.
+filter_writes_in() {
+    local sub first operands skip word
+    while IFS= read -r sub; do
+        first=$(echo "$sub" | awk '{print $1}')
+        first=${first##*/}
+        case "$first" in
+            sort)
+                if echo "$sub" | grep -qE '[[:space:]](-[a-zA-Z]*o|--output)'; then return 0; fi
+                ;;
+            rg)
+                if echo "$sub" | grep -qE '[[:space:]]--pre([[:space:]=]|$)'; then return 0; fi
+                ;;
+            uniq)
+                operands=0
+                skip=''
+                for word in $sub; do
+                    if [[ -n "$skip" ]]; then skip=''; continue; fi
+                    case "$word" in
+                        uniq|*/uniq) ;;
+                        -f|-s|-w|--skip-fields|--skip-chars|--check-chars) skip=1 ;;
+                        -?*) ;;
+                        *) operands=$((operands + 1)) ;;
+                    esac
+                done
+                if [[ "$operands" -ge 2 ]]; then return 0; fi
+                ;;
+        esac
+    done <<< "$(subcommands_of "$1")"
+    return 1
+}
 if [[ "$TOUCHES_STORE" -eq 1 ]]; then
+    # The checks split subcommands into words; no word may expand against the file system.
+    set -f
     STRIPPED=$(echo "$PLAIN" | sed -E 's#[0-9]*>>?[[:space:]]*/dev/null##g; s#[0-9]*>&[0-9-]##g; s#(test|\[)[[:space:]]+-[a-z]([[:space:]])#\1 \2#g')
     if echo "$STRIPPED" | grep -qE '>' \
         || echo "$STRIPPED" | grep -qE '(^|[^[:alnum:]_.-])(tee|cp|mv|rm|ln|install|rsync|truncate|dd|touch|chmod|chown|ed|ex|vi|vim|nano)([[:space:]]|$)' \
-        || echo "$STRIPPED" | grep -qE '[[:space:]](-e|-c|-p|--eval|--print)([[:space:]]|$)' \
+        || inline_code_in "$STRIPPED" \
+        || filter_writes_in "$STRIPPED" \
         || echo "$STRIPPED" | grep -qE '(^|[[:space:]])(sed|gsed)[[:space:]].*-i'; then
         echo "Blocked: shell command that could write the stack trust store. $STORE_FIX" >&2
         exit 2
     fi
+    set +f
 fi
 
 # Keep patterns portable (POSIX classes, no empty alternatives): macOS grep rejects

@@ -1,6 +1,6 @@
 ---
 name: doc-creator
-description: "Documentation writer for write-docs (generate, --import, --audit) - turns cited code analysis and external material into clear markdown, verifies every behavioral claim against file:line, and enforces lowercase filenames."
+description: "Documentation writer for write-docs (generate, --import, --audit) - turns cited code analysis and external material into clear markdown, verifies every behavioral claim against file:line, and enforces lowercase filenames. Use when write-docs delegates documentation drafting."
 model: inherit
 ---
 

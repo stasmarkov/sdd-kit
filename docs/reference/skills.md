@@ -4,68 +4,68 @@
 
 Start spec-driven work with `/sdd`. "Manual only" skills have side effects and never auto-trigger; "auto only" skills are reference material Claude loads when relevant.
 
-| Skill | Ships in | Invoke | Purpose |
-|---|---|---|---|
-| `accessibility` | core | `/accessibility` | Web accessibility (a11y) for component-based frontends. Use when building UI components, forms, navigation, or auditing pages against WCAG… |
-| `api-design` | core | auto only | RESTful API design patterns. Use for endpoints, response formats, pagination, and error handling. |
-| `api-security` | core | auto only | API security best practices. Use for auth, CORS, rate limiting, validation, and OWASP compliance. |
-| `architecture-patterns` | core | auto only | Implement Clean Architecture, Hexagonal Architecture, and DDD patterns. Use when designing new modules or refactoring for maintainability. |
-| `changelog` | core | `/changelog` (manual only) | Generate a changelog from git history by parsing conventional commits and grouping them into Keep a Changelog sections, optionally… |
-| `ci-cd` | core | `/ci-cd` | CI/CD pipelines for GitHub Actions, GitLab CI and Bitbucket Pipelines, built from the stack's gate commands. Use for testing, deployment… |
-| `deep-review` | core | `/deep-review` | Use for a code or PR review before merge. Reviews finished code adversarially and returns APPROVED, CHANGES_REQUIRED or BLOCKED. |
-| `design-api` | core | `/design-api` | Design RESTful API architecture: resources, endpoints, request/response contracts, error format, and optional OpenAPI output, producing an… |
-| `design-schema` | core | `/design-schema` | Design a database schema - entities, columns and types, relationships, indexes, naming, and migration strategy - and write it as… |
-| `doc-hygiene` | core | `/doc-hygiene` | Use before you create, rename, move or link a Markdown doc, or via /doc-hygiene to check changed docs, --audit a repo's docs or --init a… |
-| `error-handling-patterns` | core | auto only | Robust error handling with typed exceptions, Result types, and graceful degradation. Use when designing error flows or improving resilience. |
-| `execute-task` | core | `/execute-task` | Execute an approved spec's tasks one at a time with TDD, verification gates, AC-to-test traceability, and session state for cross-session… |
-| `fix-ci` | core | `/fix-ci` | Use when CI is red, a PR check fails, or a build or install broke. Reproduces the failing gate and makes the minimal fix without weakening… |
-| `framework-doctor` | core | `/framework-doctor` (manual only) | Diagnose a framework installation and report PASS / WARN / FAIL per check - directory layout, flat skill discovery, agents, manifest drift… |
-| `generate` | core | `/generate` | Generate code scaffolding that follows project conventions (controllers, services, data objects, repositories, models, CRUD and API… |
-| `grade` | core | `/grade` | Grade a target artifact against a domain rubric using the outcomes-grader subagent. Returns PASS / CHANGES_REQUIRED / BLOCKED with… |
-| `investigate` | core | `/investigate` | Research a technical problem or evaluate a technology inline - searches the codebase and framework docs, compares options in a pros/cons… |
-| `learn` | core | `/learn` (manual only) | Fix the system, not the instance - turn one mistake into the cheapest durable guard so the whole class cannot recur. States the mistake… |
-| `lint` | core | `/lint` | Run the code quality suite - the format, lint and type-check gates of the detected stack (taken from the stack manifest) - in check or… |
-| `new-stack` | core | `/new-stack` (manual only) | Scaffold a new stack add-on (manifest, agent, conventions skill, lint hook) from the kit template, or stage a project-local stack. Use… |
-| `observability` | core | `/observability` | Observability for web applications - structured logging, error tracking, metrics, and OpenTelemetry tracing. Use when adding… |
-| `open-pr` | core | `/open-pr` (manual only) | Open spec-traced pull requests once a feature or fix is approved — one PR per changed repo, backend first, cross-linked. Checks the… |
-| `product-brief` | core | `/product-brief` | Use when starting a new product with no product-brief.md, asking what to build first, or folding feedback into the backlog (--intake).… |
-| `progress` | core | `/progress` | Use when resuming work and asking where was I or what next. Shows per-spec task progress and the next task; --health adds a health snapshot. |
-| `run-tests` | core | `/run-tests` | Run the test suites of the detected stack - the test gates from the stack manifest, with filtering by name or module, coverage and… |
-| `schema-first` | core | auto only | Document schemas before migrations. Use when designing databases or planning data models. |
-| `sdd` | core | `/sdd` | Use when starting work on a ticket (PROJ-123), a bug, a feature or a tech choice, or when asked to run a workflow. Picks the route and… |
-| `security-audit` | core | auto only | Security guidance and vulnerability review for codebases, APIs, services, CLIs and libraries. Use for security questions, focused reviews… |
-| `security-scan` | core | `/security-scan` | Use for a security check before a release or after new dependencies or auth code. Audits dependencies, scans for injection, XSS, secrets… |
-| `simple-task` | core | `/simple-task` | Execute a small-to-medium task (bug fix, small feature, refactor, safe rename, or research-only question) in one context window -… |
-| `source-verification` | core | auto only | Rules for verifying claims against the actual code before stating or changing anything — read referenced files, cite file:line, never… |
-| `spec-board` | core | `/spec-board` | Use to see, browse or share the specs as a Kanban board by status with task progress, as a live local page or one offline HTML file. |
-| `stack-trust` | core | `/stack-trust` (manual only) | Review and approve overlay stack manifests (project .claude/stacks, user stacks directory, third-party plugin stack.json) before their… |
-| `sync-obsidian` | core | `/sync-obsidian` (manual only) | Sync human-verified project knowledge - specs, review output, a spec-board status note, and architecture/context docs - into an Obsidian… |
-| `upgrade-deps` | core | `/upgrade-deps` (manual only) | Audit and upgrade dependencies (any package manager the stack uses) safely — report outdated/vulnerable packages, bump in tiers (patch →… |
-| `verification-gates` | core | auto only | Standard post-implementation quality gates (format, lint, types, tests, coverage, build, browser journeys, accessibility, contract sync)… |
-| `write-docs` | core | `/write-docs` | Use to document business rules, APIs or architecture from the code, import external docs (--import), or audit docs against conventions… |
-| `write-spec` | core | `/write-spec` | Use to plan a feature or change before coding, or to revise a spec. Writes spec-lite.md and tasks.md with acceptance criteria; XS work… |
-| `design-ui` | design plugin | `/design-ui` | Design UI/UX for a feature: user flows, component hierarchy, state management, data fetching, and accessibility, producing a UI design… |
-| `ddev` | devenv plugin | `/ddev` | DDEV local development environment for PHP and Node.js projects (Drupal, Laravel, Next.js and others). Use for container management,… |
-| `docker` | devenv plugin | `/docker` | Docker for Laravel + Next.js. Use for Dockerfiles, compose setup, and container configuration. |
-| `drupal-11` | drupal plugin | `/drupal-11` | Drupal 10.3+ and 11 module development patterns. Use for entities, services, plugins, hooks, tests, and backend architecture decisions. |
-| `ios-native` | ios plugin | `/ios-native` | Native iOS development with Swift 6 and SwiftUI. Use for views, @Observable view models, structured concurrency, URLSession networking,… |
-| `swift-testing` | ios plugin | `/swift-testing` | Testing iOS/Swift code with the Swift Testing framework (@Test / #expect) and XCTest. Use when writing unit tests for view models,… |
-| `dto-first` | laravel plugin | auto only | DTO patterns with Spatie Laravel Data. Use for request/response data handling and layer boundaries. |
-| `event-driven` | laravel plugin | auto only | Event-driven architecture in Laravel. Use for events, listeners, and async processing patterns. |
-| `laravel-12` | laravel plugin | `/laravel-12` | Laravel 12 API patterns. Use for services, models, controllers, and backend architecture decisions. |
-| `laravel-migration-coordinator` | laravel plugin | `/laravel-migration-coordinator` | Plan, write, and verify safe Laravel migrations. Use when adding/altering DB schema, splitting NOT-NULL backfills, fixing foreign-key… |
-| `migrate-db` | laravel plugin | `/migrate-db` (manual only) | Create, modify, roll back, and inspect Laravel database migrations schema-first — update the schema doc in docs/schemas/ before generating… |
-| `oauth2-passport` | laravel plugin | auto only | Laravel Passport OAuth2 patterns. Use for token auth, scopes, PKCE, and API authentication. |
-| `pest-3` | laravel plugin | auto only | Pest PHP 3.x testing patterns. Use for writing tests, expectations, and test architecture. |
-| `service-repository` | laravel plugin | auto only | Service-Repository architecture pattern. Use for business logic, layer separation, and data access. |
-| `nextjs-15` | nextjs plugin | `/nextjs-15` | Next.js 15 App Router patterns. Use for pages, components, server actions, and frontend architecture. |
-| `nextjs-auth` | nextjs plugin | auto only | Next.js auth patterns for a separate API backend (token proxy, HttpOnly cookies). Use for token flow, middleware, and protected routes. |
-| `nextjs-performance-profiler` | nextjs plugin | `/nextjs-performance-profiler` | Profile and optimize Next.js 15 App Router apps for Core Web Vitals (LCP/INP/CLS), bundle size, server-component balance, and image/font… |
-| `nextjs-testing` | nextjs plugin | auto only | Testing patterns for the Next.js 15 frontend of an API-backed app - Vitest with React Testing Library component tests, MSW mocks built… |
-| `tailwind-4` | nextjs plugin | auto only | Tailwind CSS v4 patterns. Use for styling, layouts, responsive design, and dark mode. |
-| `typescript` | nextjs plugin | auto only | TypeScript patterns for full-stack apps. Use for type definitions, API clients, and Zod validation. |
-| `deploy` | ops plugin | `/deploy` (manual only) | Deploy the application to staging or production with pre-deploy gates (tests, lint, build), confirmation for production, and post-deploy… |
-| `feature-flag` | ops plugin | `/feature-flag` (manual only) | Create, list, enable, disable, roll out, and clean up feature flags (boolean, percentage, user-targeted) with config, env, and… |
-| `health-check` | ops plugin | `/health-check` | Verify system health across the app, database, cache, queues, disk, and external services, and report a pass/warn/fail summary. Use when… |
-| `incident` | ops plugin | `/incident` | Run an incident response workflow: open an incident record, triage by severity, investigate logs and recent deploys, mitigate, resolve,… |
-| `rollback` | ops plugin | `/rollback` (manual only) | Roll back a deployment safely: capture current state, identify the known-good target, revert code and migrations under maintenance mode,… |
+| Skill | Ships in | Invoke | Last verified | Purpose |
+|---|---|---|---|---|
+| `accessibility` | core | `/accessibility` | 2026-10-22 | Web accessibility (a11y) for any rendered UI. Use when building templates, components, forms or navigation, or auditing pages against WCAG… |
+| `api-design` | core | auto only | 2026-10-22 | RESTful API design patterns. Use for endpoints, response formats, pagination, and error handling. |
+| `api-security` | core | auto only |  | API security best practices. Use for auth, CORS, rate limiting, validation, and OWASP compliance. |
+| `architecture-patterns` | core | auto only |  | Implement Clean Architecture, Hexagonal Architecture, and DDD patterns. Use when designing new modules or refactoring for maintainability. |
+| `changelog` | core | `/changelog` (manual only) |  | Generate a changelog from git history by parsing conventional commits and grouping them into Keep a Changelog sections, optionally… |
+| `ci-cd` | core | `/ci-cd` | 2026-11-11 | CI/CD pipelines for GitHub Actions, GitLab CI and Bitbucket Pipelines, built from the stack's gate commands. Use for testing, deployment… |
+| `deep-review` | core | `/deep-review` |  | Use for a code or PR review before merge. Reviews finished code adversarially and returns APPROVED, CHANGES_REQUIRED or BLOCKED. |
+| `design-api` | core | `/design-api` | 2026-10-19 | Design RESTful API architecture: resources, endpoints, request/response contracts, error format, and optional OpenAPI output, producing an… |
+| `design-schema` | core | `/design-schema` | 2026-10-19 | Design a database schema - entities, columns and types, relationships, indexes, naming, and migration strategy - and write it as… |
+| `doc-hygiene` | core | `/doc-hygiene` | 2026-11-13 | Use before you create, rename, move or link a Markdown doc, or via /doc-hygiene to check changed docs, --audit a repo's docs or --init a… |
+| `error-handling-patterns` | core | auto only |  | Robust error handling with typed exceptions, Result types, and graceful degradation. Use when designing error flows or improving resilience. |
+| `execute-task` | core | `/execute-task` | 2026-11-11 | Execute an approved spec's tasks one at a time with TDD, verification gates, AC-to-test traceability, and session state for cross-session… |
+| `fix-ci` | core | `/fix-ci` | 2026-11-11 | Use when CI is red, a PR check fails, or a build or install broke. Reproduces the failing gate and makes the minimal fix without weakening… |
+| `framework-doctor` | core | `/framework-doctor` (manual only) |  | Diagnose a framework installation and report PASS / WARN / FAIL per check - directory layout, flat skill discovery, agents, manifest drift… |
+| `generate` | core | `/generate` | 2026-10-22 | Generate code scaffolding that follows project conventions (controllers, services, data objects, repositories, models, CRUD and API… |
+| `grade` | core | `/grade` (manual only) |  | Use when asked to grade an artifact against a rubric. Runs the outcomes-grader subagent and returns PASS / CHANGES_REQUIRED / BLOCKED with… |
+| `investigate` | core | `/investigate` |  | Research a technical problem or evaluate a technology inline - searches the codebase and framework docs, compares options in a pros/cons… |
+| `learn` | core | `/learn` (manual only) | 2026-10-19 | Fix the system, not the instance - turn one mistake into the cheapest durable guard so the whole class cannot recur. States the mistake… |
+| `lint` | core | `/lint` |  | Run the code quality suite - the format, lint and type-check gates of the detected stack (taken from the stack manifest) - in check or… |
+| `new-stack` | core | `/new-stack` (manual only) |  | Scaffold a new stack add-on (manifest, agent, conventions skill, lint hook) from the kit template, or stage a project-local stack. Use… |
+| `observability` | core | `/observability` | 2026-10-22 | Observability for web applications - structured logging, error tracking, metrics, and OpenTelemetry tracing. Use when adding… |
+| `open-pr` | core | `/open-pr` (manual only) | 2026-10-19 | Open spec-traced pull requests once a feature or fix is approved — one PR per changed repo, backend first, cross-linked. Checks the… |
+| `product-brief` | core | `/product-brief` | 2026-10-19 | Use when starting a new product with no product-brief.md, asking what to build first, or folding feedback into the backlog (--intake).… |
+| `progress` | core | `/progress` | 2026-10-19 | Use when resuming work and asking where was I, what next, what's left or how many specs remain. Shows per-spec task progress, backlog.md… |
+| `run-tests` | core | `/run-tests` | 2026-10-22 | Run the test suites of the detected stack - the test gates from the stack manifest, with filtering by name or module, coverage and… |
+| `schema-first` | core | auto only | 2026-10-22 | Document schemas before migrations. Use when designing databases or planning data models. |
+| `sdd` | core | `/sdd` | 2026-10-19 | Use when starting work on a ticket (PROJ-123), a bug, a feature or a tech choice, or when asked to run a workflow. Picks the route and… |
+| `security-audit` | core | auto only |  | Security guidance and vulnerability review for codebases, APIs, services, CLIs and libraries. Use for security questions, focused reviews… |
+| `security-scan` | core | `/security-scan` |  | Use for a security check before a release or after new dependencies or auth code. Audits dependencies, scans for injection, XSS, secrets… |
+| `simple-task` | core | `/simple-task` |  | Execute a small-to-medium task (bug fix, small feature, refactor, safe rename, or research-only question) in one context window -… |
+| `source-verification` | core | auto only |  | Rules for verifying claims against the actual code before stating or changing anything — read referenced files, cite file:line, never… |
+| `spec-board` | core | `/spec-board` | 2026-10-19 | Use to see, browse or share the specs as a Kanban board by status with task progress, as a live local page or one offline HTML file. |
+| `stack-trust` | core | `/stack-trust` (manual only) |  | Review and approve overlay stack manifests (project .claude/stacks, user stacks directory, third-party plugin stack.json) before their… |
+| `sync-obsidian` | core | `/sync-obsidian` (manual only) | 2026-10-19 | Sync human-verified project knowledge - specs, review output, a spec-board status note, and architecture/context docs - into an Obsidian… |
+| `upgrade-deps` | core | `/upgrade-deps` (manual only) |  | Audit and upgrade dependencies (any package manager the stack uses) safely — report outdated/vulnerable packages, bump in tiers (patch →… |
+| `verification-gates` | core | auto only |  | Standard post-implementation quality gates (format, lint, types, tests, coverage, build, browser journeys, accessibility, contract sync)… |
+| `write-docs` | core | `/write-docs` | 2026-11-11 | Use to document business rules, APIs or architecture from the code, import external docs (--import), or audit docs against conventions… |
+| `write-spec` | core | `/write-spec` | 2026-11-11 | Use to plan a feature or change before coding, or to revise a spec. Writes spec-lite.md and tasks.md with acceptance criteria; XS work… |
+| `design-ui` | design plugin | `/design-ui` |  | Design UI/UX for a feature: user flows, component hierarchy, state management, data fetching, and accessibility, producing a UI design… |
+| `ddev` | devenv plugin | `/ddev` | 2026-11-21 | DDEV local development environment for PHP and Node.js projects (Drupal, Laravel, Next.js and others). Use for container management,… |
+| `docker` | devenv plugin | `/docker` | 2026-10-22 | Docker and Compose for application containers. Not for DDEV projects (use the ddev skill). Use for Dockerfiles, compose setup, and… |
+| `drupal-11` | drupal plugin | `/drupal-11` | 2026-11-21 | Drupal 10.3+ and 11 module development patterns. Use for entities, services, plugins, hooks, tests, and backend architecture decisions. |
+| `ios-native` | ios plugin | `/ios-native` | 2026-10-18 | Native iOS development with Swift 6 and SwiftUI. Use for views, @Observable view models, structured concurrency, URLSession networking,… |
+| `swift-testing` | ios plugin | `/swift-testing` | 2026-11-09 | Testing iOS/Swift code with the Swift Testing framework (@Test / #expect) and XCTest. Use when writing unit tests for view models,… |
+| `dto-first` | laravel plugin | auto only | 2026-10-22 | DTO patterns with Spatie Laravel Data. Use for request/response data handling and layer boundaries. |
+| `event-driven` | laravel plugin | auto only |  | Event-driven architecture in Laravel. Use for events, listeners, and async processing patterns. |
+| `laravel-12` | laravel plugin | `/laravel-12` | 2026-11-11 | Laravel 12 API patterns. Use for services, models, controllers, and backend architecture decisions. |
+| `laravel-migration-coordinator` | laravel plugin | `/laravel-migration-coordinator` | 2026-11-09 | Plan, write, and verify safe Laravel migrations. Use when adding/altering DB schema, splitting NOT-NULL backfills, fixing foreign-key… |
+| `migrate-db` | laravel plugin | `/migrate-db` (manual only) | 2026-10-19 | Create, modify, roll back, and inspect Laravel database migrations schema-first — update the schema doc in docs/schemas/ before generating… |
+| `oauth2-passport` | laravel plugin | auto only | 2026-10-22 | Laravel Passport OAuth2 patterns. Use for token auth, scopes, PKCE, and API authentication. |
+| `pest-3` | laravel plugin | auto only | 2026-10-22 | Pest PHP 3.x testing patterns. Use for writing tests, expectations, and test architecture. |
+| `service-repository` | laravel plugin | auto only | 2026-10-22 | Service-Repository architecture pattern. Use for business logic, layer separation, and data access. |
+| `nextjs-15` | nextjs plugin | `/nextjs-15` | 2026-11-11 | Next.js 15 App Router patterns. Use for pages, components, server actions, and frontend architecture. |
+| `nextjs-auth` | nextjs plugin | auto only | 2026-10-23 | Next.js auth patterns for a separate API backend (token proxy, HttpOnly cookies). Use for token flow, middleware, and protected routes. |
+| `nextjs-performance-profiler` | nextjs plugin | `/nextjs-performance-profiler` | 2026-11-09 | Profile and optimize Next.js 15 App Router apps for Core Web Vitals (LCP/INP/CLS), bundle size, server-component balance, and image/font… |
+| `nextjs-testing` | nextjs plugin | auto only | 2026-10-19 | Testing patterns for the Next.js 15 frontend of an API-backed app - Vitest with React Testing Library component tests, MSW mocks built… |
+| `tailwind-4` | nextjs plugin | auto only | 2026-10-22 | Tailwind CSS v4 patterns. Use for styling, layouts, responsive design, and dark mode. |
+| `typescript` | nextjs plugin | auto only | 2026-10-23 | TypeScript patterns for full-stack apps. Use for type definitions, API clients, and Zod validation. |
+| `deploy` | ops plugin | `/deploy` (manual only) |  | Deploy the application to staging or production with pre-deploy gates (tests, lint, build), confirmation for production, and post-deploy… |
+| `feature-flag` | ops plugin | `/feature-flag` (manual only) |  | Create, list, enable, disable, roll out, and clean up feature flags (boolean, percentage, user-targeted) with config, env, and… |
+| `health-check` | ops plugin | `/health-check` |  | Verify system health across the app, database, cache, queues, disk, and external services, and report a pass/warn/fail summary. Use when… |
+| `incident` | ops plugin | `/incident` (manual only) |  | Run an incident response workflow: open an incident record, triage by severity, investigate logs and recent deploys, mitigate, resolve,… |
+| `rollback` | ops plugin | `/rollback` (manual only) |  | Roll back a deployment safely: capture current state, identify the known-good target, revert code and migrations under maintenance mode,… |

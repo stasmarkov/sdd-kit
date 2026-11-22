@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "SDD Kit: spec-driven development for Claude Code. A stack-agnostic core plugin (/sdd front door, workflows, agents, skills, hooks) plus optional stack, preset and tool add-ons.",
-    "version": "4.3.0"
+    "version": "4.4.0"
   },
   "plugins": [
     {
@@ -26,7 +26,7 @@
     },
     {
       "name": "sdd-kit-design",
-      "description": "UI design add-on: ui-ux-advisor agent and design-ui skill. Third-party design skills are listed in docs/third-party.md.",
+      "description": "UI design add-on for any web UI (framework examples in design-ui/references): ui-ux-advisor agent and design-ui skill. Third-party design skills are listed in docs/third-party.md.",
       "category": "development",
       "source": "./plugins/sdd-kit-design",
       "keywords": [
@@ -103,7 +103,7 @@
     },
     {
       "name": "sdd-kit-ops",
-      "description": "Operations add-on: deploy, rollback, feature flags, health checks, incident response, and ops analysis agents.",
+      "description": "Operations add-on for Laravel applications: deploy, rollback, feature flags, health checks, incident response, and ops analysis agents.",
       "category": "development",
       "source": "./plugins/sdd-kit-ops",
       "keywords": [

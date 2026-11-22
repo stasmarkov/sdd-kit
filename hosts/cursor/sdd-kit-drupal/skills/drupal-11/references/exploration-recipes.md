@@ -14,6 +14,8 @@ Glob and Grep patterns the `code-explorer` agent uses in a Drupal repo. Custom c
 | Permissions and access | `**/*.permissions.yml`, `**/src/Access/**/*.php` | `title:`, `restrict access:`, `function access(`, `AccessResult::` |
 | Configuration | `**/config/schema/*.yml`, `**/config/install/*.yml`, `**/config/optional/*.yml`, `config/sync/*.yml` | the config name, `type: config_object`, `mapping:` |
 | Entities | `**/src/Entity/**/*.php` | `#[ContentEntityType(`, `#[ConfigEntityType(`, `@ContentEntityType`, `@ConfigEntityType`, `function baseFieldDefinitions` |
+| Views | `config/sync/views.view.*.yml`, `**/config/install/views.view.*.yml` | `base_table:`, `display:`, `path:` |
+| Blocks | `config/sync/block.block.*.yml`, `**/config/install/block.block.*.yml` | `plugin:`, `region:`, `theme:`, `visibility:` |
 | Plugins | `**/src/Plugin/**/*.php` | `#[Block(`, `#[FieldType(`, `#[QueueWorker(`, the annotation form `@Block`, `@FieldType` |
 | Event subscribers | `**/src/EventSubscriber/**/*.php`, `**/*.services.yml` | `implements EventSubscriberInterface`, `function getSubscribedEvents`, `event_subscriber` tag |
 | JSON:API and REST | `config/sync/core.extension.yml`, `**/config/install/rest.resource.*.yml`, `**/src/Plugin/rest/resource/**/*.php` | `jsonapi:`, `rest:`, `#[RestResource(`, `@RestResource` |

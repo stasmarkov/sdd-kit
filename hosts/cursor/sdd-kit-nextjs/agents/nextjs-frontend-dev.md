@@ -1,6 +1,6 @@
 ---
 name: nextjs-frontend-dev
-description: "Next.js frontend development agent with expertise in App Router, Server Components, TypeScript, API integration patterns, and the frontend tests that prove them (Vitest + Testing Library + MSW, Playwright E2E)."
+description: "Next.js frontend development agent with expertise in App Router, Server Components, TypeScript, API integration patterns, and the frontend tests that prove them (Vitest + Testing Library + MSW, Playwright E2E). Use when implementing or testing Next.js frontend work."
 model: inherit
 ---
 

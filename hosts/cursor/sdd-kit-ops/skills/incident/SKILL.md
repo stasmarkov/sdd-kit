@@ -1,13 +1,16 @@
 ---
 name: incident
 description: "Run an incident response workflow: open an incident record, triage by severity, investigate logs and recent deploys, mitigate, resolve, and draft a postmortem with action items. Use when production is broken or degraded, when updating or resolving an active incident, or when writing a postmortem."
-argument-hint: "[severity] | --start | --update | --resolve"
+argument-hint: "[severity] | --start | --update | --resolve | --severity=[level] | --list | --postmortem [id]"
+disable-model-invocation: true
 allowed-tools: Bash, Read, Grep, Write
 metadata:
   mcp-tools: "sentry, datadog"
   version: "1.1"
   subagents: "incident-responder"
 ---
+Relative paths in this skill (scripts/..., ../other-skill/..., ../../runtime/...) are relative to the directory that holds this SKILL.md, not to the project directory; resolve them against it before running a command.
+
 
 # /incident
 
@@ -144,17 +147,17 @@ echo "✅ Verifying resolution..."
 curl -s $APP_URL/api/health
 
 # Monitor for new errors
-tail -f storage/logs/laravel.log | head -20
+tail -n 100 storage/logs/laravel.log
 
 # Confirm user impact resolved
 ```
 
 ### Step 6: Documentation
 
-Record the resolution in the incident file, then write the follow-up documents from the kit's templates (`.cursor/sdd-kit/templates/docs/` in file-copy installs, `src/templates/docs/` in the core plugin):
+Record the resolution in the incident file, then write the follow-up documents from the templates bundled with this skill:
 
-- **Postmortem** (`--postmortem INC-001`): fill `postmortem.template.md` into `docs/postmortems/<YYYY-MM-DD>-<slug>.md`. Blameless; timeline from the incident record; root cause backed by evidence (log lines, commits, `file:line`); each action item has an owner and a due date.
-- **Runbook**: when the incident exposed a missing or wrong procedure, create or update `docs/runbooks/<service>.md` from `runbook.template.md` (symptoms, diagnosis commands, mitigation steps, escalation).
+- **Postmortem** (`--postmortem INC-001`): fill `assets/postmortem.template.md` into `docs/postmortems/<YYYY-MM-DD>-<slug>.md`. Blameless; timeline from the incident record; root cause backed by evidence (log lines, commits, `file:line`); each action item has an owner and a due date.
+- **Runbook**: when the incident exposed a missing or wrong procedure, create or update `docs/runbooks/<service>.md` from `assets/runbook.template.md` (symptoms, diagnosis commands, mitigation steps, escalation).
 
 ```bash
 # Update incident record

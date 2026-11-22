@@ -21,7 +21,7 @@
 <header class="site-header">
   <div class="brand">
     <a class="brand-name" href="../index.html">SDD Kit</a>
-    <span class="badge">v4.3.0</span>
+    <span class="badge">v4.4.0</span>
   </div>
   <nav class="site-nav" aria-label="Site">
     <ul>
@@ -90,11 +90,11 @@
 <h3 id="completion-review">Completion review</h3>
 <p>A blocked run (<code>CHANGES_REQUIRED</code> or <code>BLOCKED</code>) moves on only through <code>workflow_retry_review</code>. It needs a changed artifact: the artifact field of the result, inside the workspace or inside a repo given in <code>args.repos</code>. A repo outside the workspace counts only when it sits in a git checkout (its own or a monorepo&#39;s) that is not the home folder or <code>/</code>. A path that is the workspace, an <code>args.repos</code> root or any folder holding a <code>.git</code> entry names a whole repository and is refused, and so is a <code>node_modules</code>, <code>vendor</code> or <code>.git</code> folder. A folder artifact is hashed with those three folders skipped; build output and <code>.ai/</code> notes inside it count. A missing artifact, one over 32 MiB or 20000 entries, and one that is not a regular file or folder are each refused with their own message. The bridge compares the artifact&#39;s sha256 with the one recorded at review time, queues a new review with the correction note appended, keeps every earlier verdict and runs no implementation job again. The field depends on the workflow: <code>reportPath</code> for ship-feature and fix-bug (when it is present in the result, even null, no other field is tried), <code>specFolder</code> for create-spec, <code>adrPath</code> for tech-research, <code>qaPlanPath</code> for qa-and-docs and <code>backlog.path</code> for greenfield-build. An unchanged, missing or outside artifact is refused; start a new run instead.</p>
 <h3 id="limits">Limits</h3>
-<ul><li><code>budget.total</code> and <code>budget.remaining()</code> report 0 on a bridge host, so budget branches in the workflows do not trigger.</li><li>The script has no clock or randomness; pass dates and ids in through <code>args</code> or ask an agent.</li><li>Claude Code does not use the bridge. Its generated prompts, schemas and verdicts are unchanged, and the host reaches the runtime only through the <code>sddHost</code> global that the bridge injects.</li></ul>
+<ul><li><code>budget.total</code> and <code>budget.remaining()</code> report 0 on a bridge host, so budget branches in the workflows do not trigger.</li><li>The agent cap (<code>maxAgents</code>) counts started agents, not tokens, so it still applies with <code>budget.total</code> at 0.</li><li>The script has no clock or randomness; pass dates and ids in through <code>args</code> or ask an agent.</li><li>Claude Code does not use the bridge. Its generated prompts, schemas and verdicts are unchanged, and the host reaches the runtime only through the <code>sddHost</code> global that the bridge injects.</li></ul>
   </article>
 </main>
 <footer class="site-footer">
-  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/docs/reference/workflow-bridge.md">View the Markdown source</a></p>
+  <p class="doc-source"><a href="https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/docs/reference/workflow-bridge.md">View the Markdown source</a></p>
 </footer>
 <script>
   (function () {

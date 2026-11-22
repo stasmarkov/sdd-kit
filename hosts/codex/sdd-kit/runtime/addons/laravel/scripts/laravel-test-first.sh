@@ -33,45 +33,45 @@ esac
 emit_block() {
     local source="$1"
     local expected_test="$2"
-    jq -nc --arg r "Test-first guard: '$source' has no corresponding test at '$expected_test'. Create or scaffold the test first, then retry the edit. Set CLAUDE_SKIP_TEST_FIRST=1 to bypass." \
+    local reason="Test-first guard: '$source' has no corresponding test at '$expected_test'. Create or scaffold the test first, then retry the edit. Set CLAUDE_SKIP_TEST_FIRST=1 to bypass."
+    jq -nc --arg r "$reason" \
         '{hookSpecificOutput: {hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: $r}}'
+    echo "$reason" >&2
     exit 2
 }
 
+# Succeeds when a file named $2 exists anywhere under tests/$1 (flat or nested).
 test_exists() {
-    local pattern="$1"
-    [[ -n "$(compgen -G "$PROJECT_DIR/$pattern" 2>/dev/null || true)" ]]
+    [[ -n "$(find "$PROJECT_DIR/tests/$1" -name "$2" -print -quit 2>/dev/null || true)" ]]
 }
 
 # Laravel core file patterns
 case "$REL" in
     app/Http/Controllers/*.php)
         BASE=$(basename "$REL" .php)
-        if ! test_exists "tests/Feature/${BASE}Test.php" \
-            && ! test_exists "tests/Feature/**/${BASE}Test.php"; then
+        if ! test_exists Feature "${BASE}Test.php"; then
             emit_block "$REL" "tests/Feature/${BASE}Test.php"
         fi
         ;;
     app/Models/*.php)
         # Models: require a Unit test
         BASE=$(basename "$REL" .php)
-        if ! test_exists "tests/Unit/${BASE}Test.php" \
-            && ! test_exists "tests/Unit/**/${BASE}Test.php" \
-            && ! test_exists "tests/Feature/**/${BASE}Test.php"; then
+        if ! test_exists Unit "${BASE}Test.php" \
+            && ! test_exists Feature "${BASE}Test.php"; then
             emit_block "$REL" "tests/Unit/${BASE}Test.php"
         fi
         ;;
     app/Services/*.php|app/Domain/*/Services/*.php)
         BASE=$(basename "$REL" .php)
-        if ! test_exists "tests/Unit/**/${BASE}Test.php" \
-            && ! test_exists "tests/Feature/**/${BASE}Test.php"; then
+        if ! test_exists Unit "${BASE}Test.php" \
+            && ! test_exists Feature "${BASE}Test.php"; then
             emit_block "$REL" "tests/Unit/${BASE}Test.php"
         fi
         ;;
     app/Http/Middleware/*.php)
         BASE=$(basename "$REL" .php)
-        if ! test_exists "tests/Feature/Middleware/${BASE}Test.php" \
-            && ! test_exists "tests/Unit/Middleware/${BASE}Test.php"; then
+        if ! test_exists Feature/Middleware "${BASE}Test.php" \
+            && ! test_exists Unit/Middleware "${BASE}Test.php"; then
             emit_block "$REL" "tests/Feature/Middleware/${BASE}Test.php"
         fi
         ;;

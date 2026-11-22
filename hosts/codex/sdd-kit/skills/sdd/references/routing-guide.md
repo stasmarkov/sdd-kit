@@ -41,7 +41,7 @@ Code is reviewed and ready to merge?               → /open-pr --spec=<ref>
 | Grade an artifact against a rubric | `/grade --domain=api --target=<path>` |
 | Lint only | `/lint` |
 | Scaffold CRUD | `/generate --crud=<Entity>` |
-| Database change | `/migrate-db` |
+| Database change | `/design-schema` for the schema docs, then the manifest `migrations` block (`status`, `run`) through the stack specialist; when no stack declares one, an update plan only |
 | QA plan / docs for shipped code | `/sdd` → qa-and-docs |
 | Where was I, what next, project health | `/progress`, `/progress --next`, `/progress --health` |
 | Board of all specs and backlog slices | `/spec-board` |
@@ -57,7 +57,7 @@ The rest of the lifecycle, in order. Each row points at a component that already
 | Discover | An idea, user feedback, or "what should we build first?" | `/product-brief` (brief + sliced backlog); `--intake` folds feedback into an existing backlog |
 | Spec | Work needs planning | `/write-spec`; `--type=refactor` for behavior-preserving changes (must-not-change first, characterization tests before any edit) |
 | Design | An API, schema, or architecture question before building | `/design-api`, `/design-schema`, the `api-architect` agent; a technology fork goes to the decision route (`/sdd "X or Y?"` → ADR) |
-| Build | An approved spec, scaffolding, a database change | `/execute-task --spec=<ref>`, `/generate`, `/migrate-db` |
+| Build | An approved spec, scaffolding, a database change | `/execute-task --spec=<ref>`, `/generate`, the manifest `migrations` block (`status`, `run`; when no stack declares one, an update plan only) |
 | Verify | Tests, lint, red CI, split repos drifting apart | `/run-tests` (`--frontend` for the frontend suite, `--e2e` for browser journeys), `/lint`, `/fix-ci`, contract-sync for a backend + frontend in separate repos (the backend add-on's `contractSync.template`: `.codex/sdd-kit/templates/<addon>/contract-sync/` in a file-copy install, `templates/contract-sync/` in the add-on root in plugin mode) |
 | Performance | A slow endpoint or page | Measure a baseline and set a target first; then the `performance-tester` agent (backend) or the stack add-on's profiler skill (frontend, Core Web Vitals and bundles) |
 | Cleanup | Dead code, unused classes or exports | the `code-quality` agent in cleanup mode (reports with evidence), then `/sdd` (trivial) or `/write-spec --type=refactor` for the removal |

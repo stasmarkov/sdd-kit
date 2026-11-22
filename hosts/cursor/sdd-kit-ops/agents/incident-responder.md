@@ -1,6 +1,6 @@
 ---
 name: incident-responder
-description: "Triage incidents, coordinate response, manage communication, and ensure proper incident resolution for production issues."
+description: "Triage incidents, coordinate response, manage communication, and ensure proper incident resolution for production issues. Use when a production incident is declared or being resolved."
 model: inherit
 ---
 

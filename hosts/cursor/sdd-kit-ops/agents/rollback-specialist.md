@@ -1,6 +1,6 @@
 ---
 name: rollback-specialist
-description: "Execute safe rollbacks, manage database migration reversals, and coordinate emergency recovery procedures."
+description: "Execute safe rollbacks, manage database migration reversals, and coordinate emergency recovery procedures. Use when a deploy must be rolled back."
 model: inherit
 ---
 

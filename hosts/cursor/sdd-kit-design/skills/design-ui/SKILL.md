@@ -1,7 +1,7 @@
 ---
 name: design-ui
-description: "Design UI/UX for a feature: user flows, component hierarchy, state management, data fetching, and accessibility, producing a UI design document for Next.js. Use when planning a new page, component, or user flow before implementation, or when reviewing existing frontend component patterns."
-argument-hint: "[feature-name] | --component=[name] | --page=[name]"
+description: "Design UI/UX for a feature: user flows, component hierarchy, state management, data fetching, and accessibility, producing a UI design document for any web UI; framework examples are in references. Use when planning a new page, component, or user flow before implementation, or when reviewing existing frontend component patterns."
+argument-hint: "[feature-name] | --component=[name] | --page=[name] | --review"
 allowed-tools: Read, Write, Edit, Grep, Glob
 metadata:
   mcp-tools: "context7"
@@ -45,164 +45,18 @@ User Actions:
 ```
 
 ### Step 2: Component Architecture
-```
-pages/
-├── checkout/
-│   ├── page.tsx          # Main checkout page
-│   ├── layout.tsx        # Checkout layout
-│   └── components/
-│       ├── CartSummary.tsx
-│       ├── ShippingForm.tsx
-│       ├── PaymentForm.tsx
-│       └── OrderConfirmation.tsx
-
-components/
-├── ui/
-│   ├── Button.tsx
-│   ├── Input.tsx
-│   └── Card.tsx
-└── forms/
-    ├── AddressForm.tsx
-    └── CreditCardForm.tsx
-```
+List the pages and the components each page needs. Group shared primitives (button, input, card) apart from feature components, and mark which components fetch data and which are interactive.
 
 ### Step 3: Component Design
-
-#### Server Component (Data Fetching)
-```tsx
-// app/checkout/page.tsx
-import { getCart } from '@/lib/api/cart';
-import { CartSummary } from './components/CartSummary';
-import { CheckoutForm } from './components/CheckoutForm';
-
-export default async function CheckoutPage() {
-  const cart = await getCart();
-
-  return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-2xl font-bold mb-6">Checkout</h1>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <CheckoutForm />
-        <CartSummary cart={cart} />
-      </div>
-    </div>
-  );
-}
-```
-
-#### Client Component (Interactivity)
-```tsx
-'use client';
-
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { checkoutSchema, type CheckoutData } from '@/lib/validations/checkout';
-
-export function CheckoutForm() {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const form = useForm<CheckoutData>({
-    resolver: zodResolver(checkoutSchema),
-  });
-
-  async function onSubmit(data: CheckoutData) {
-    setIsLoading(true);
-    try {
-      await submitOrder(data);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  return (
-    <form onSubmit={form.handleSubmit(onSubmit)}>
-      {/* Form fields */}
-    </form>
-  );
-}
-```
+For each component state its inputs, its states (loading, empty, error, success) and who owns the data. Keep data fetching at the page or container level and interactivity in leaf components.
 
 ### Step 4: State Management
-```tsx
-// For complex state, use React Query or Zustand
-
-// React Query for server state
-const { data: cart, isLoading } = useQuery({
-  queryKey: ['cart'],
-  queryFn: fetchCart,
-});
-
-// Zustand for client state
-const useCartStore = create<CartStore>((set) => ({
-  items: [],
-  addItem: (item) => set((state) => ({
-    items: [...state.items, item]
-  })),
-}));
-```
+Separate server state (fetched, cached, invalidated) from client state (form values, UI toggles). Use the framework's own mechanism first and add a library only when it does not cover the case.
 
 ### Step 5: API Integration
-```tsx
-// lib/api/types.ts
-export interface CartItem {
-  id: string;
-  name: string;
-  quantity: number;
-  price: number;
-}
+Define the request and response types the UI consumes, how authentication reaches the call, and how failures surface to the user.
 
-export interface Cart {
-  items: CartItem[];
-  total: number;
-}
-
-// lib/api/cart.ts
-export async function getCart(): Promise<Cart> {
-  const response = await fetch('/api/cart', {
-    headers: {
-      Authorization: `Bearer ${getToken()}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch cart');
-  }
-
-  return response.json();
-}
-```
-
-## Component Patterns
-
-### Composition Pattern
-```tsx
-<Card>
-  <Card.Header>
-    <Card.Title>Order Summary</Card.Title>
-  </Card.Header>
-  <Card.Content>
-    {/* Content */}
-  </Card.Content>
-  <Card.Footer>
-    <Button>Place Order</Button>
-  </Card.Footer>
-</Card>
-```
-
-### Render Props Pattern
-```tsx
-<DataTable
-  data={orders}
-  columns={columns}
-  renderRow={(row) => (
-    <TableRow key={row.id}>
-      <TableCell>{row.id}</TableCell>
-      <TableCell>{row.status}</TableCell>
-    </TableRow>
-  )}
-/>
-```
+Framework-specific examples (component layout, server and client components, state libraries, typed API calls, composition patterns) are in `references/framework-examples.md`.
 
 ## Output: UI Design Document
 
@@ -221,14 +75,14 @@ export async function getCart(): Promise<Cart> {
 ### Components
 | Component | Type | Props |
 |-----------|------|-------|
-| CartSummary | Server | cart: Cart |
-| CheckoutForm | Client | onSubmit: fn |
-| ShippingForm | Client | control: Control |
-| PaymentForm | Client | control: Control |
+| CartSummary | Display | cart |
+| CheckoutForm | Interactive | onSubmit |
+| ShippingForm | Interactive | form state |
+| PaymentForm | Interactive | form state |
 
 ### State Management
-- Server State: React Query (cart, orders)
-- Client State: Form state (react-hook-form)
+- Server State: fetched cart and orders
+- Client State: form state
 
 ### API Endpoints
 - GET /api/cart

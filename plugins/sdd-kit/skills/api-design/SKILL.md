@@ -3,6 +3,10 @@ name: api-design
 description: RESTful API design patterns. Use for endpoints, response formats, pagination, and error handling.
 user-invocable: false
 allowed-tools: Read, Grep, Glob, Edit, Write
+metadata:
+  last_verified: "2026-10-22"
+  next_review: "2027-01-22"
+  targets: "none"
 ---
 
 # RESTful API Design Patterns
@@ -187,8 +191,7 @@ GET /api/v1/users?search=john
 
 ## Related Skills
 
-- **dto-first**: Data transfer objects for API payloads
 - **error-handling-patterns**: Structured error responses
-- **oauth2-passport**: OAuth2 API authentication
+- The stack's conventions skills: payload objects and API authentication
 
 ---

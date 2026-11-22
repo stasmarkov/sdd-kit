@@ -15,7 +15,7 @@ This page is about Claude Code. For Codex and Cursor, see [hosts.md](hosts.md); 
 | Hooks | `hooks/hooks.json` with `${CLAUDE_PLUGIN_ROOT}` | `.claude/settings.json` with `$CLAUDE_PROJECT_DIR` |
 | Permissions and env | Not applied from the plugin (see below) | `.claude/settings.json` |
 | MCP servers | The plugin's root `.mcp.json` starts `context7` and Playwright MCP; the workflows' browser steps use it with no project entry, see [Playwright in plugin mode](installation.md#playwright-in-plugin-mode) | Project `.mcp.json` with the same two, merged, never overwritten |
-| Names | Namespaced: `/sdd-kit:sdd` | Bare: `/sdd` |
+| Names | Bare: `/sdd` (namespaced `/sdd-kit:sdd` only for a shadowed name) | Bare: `/sdd` |
 | Project context | `CLAUDE.md`, `AGENTS.md`, and `.claude/rules/` are **not** installed | Installer creates them from templates when absent |
 | Best for | Teams that want one pinned version | Projects that customize agents, or need agent-level guardrails |
 
@@ -30,7 +30,7 @@ The marketplace publishes the core plugin and the optional add-ons; the install 
 
 In file-copy mode the same add-ons install with `./install.sh --stack=laravel,nextjs --with=ops`. Stack add-on skills are namespaced by their own plugin, for example `/sdd-kit-laravel:laravel-12`. Rules and third-party fragments of an add-on are file-copy only.
 
-Every plugin component is namespaced under its plugin name:
+Every plugin component is namespaced under its plugin name, and you type the bare skill name (`/sdd`); use the namespaced form only when another skill shadows it ([naming rule](installation.md#namespacing)):
 
 - Skills: `<plugin>:<skill>`, for example `/sdd-kit:sdd` or
   `/sdd-kit-ops:deploy`.
@@ -71,17 +71,16 @@ grep -rlE '^(hooks|mcpServers|permissionMode|initialPrompt):' src/agents src/plu
 3. **File-copy install** for the rare agent that truly needs its own hooks or MCP servers.
    Document that requirement in the agent's description.
 
-## Limitation: plugin settings.json
+## Limitation: no plugin permissions or env
 
-A plugin's root `settings.json` only applies `agent` and `subagentStatusLine`. Other keys
-are dropped at load. In SDD Kit that means the root `settings.json`'s
-`permissions.allow`/`permissions.deny` lists and `env.CLAUDE_BUDGET_THRESHOLD` **do not
-apply in plugin mode**.
+A plugin's root `settings.json` only applies `agent` and `subagentStatusLine`; other keys are
+dropped at load, so the kit ships none. The permissions lists and `env` of your project are
+yours to set.
 
 The global hooks still run, so command blocking goes through `scripts/block-dangerous.sh`
-in both modes. To get the deny list and env as well, copy them into the project's
-`.claude/settings.json` (shared with the team) or `~/.claude/settings.json` (personal).
-`src/settings/settings.template.json` is the reference.
+in both modes. To add a deny list, put it in the project's `.claude/settings.json` (shared
+with the team) or `~/.claude/settings.json` (personal); the stack-neutral entries are in
+[INSTALLATION, Recommended settings](installation.md#recommended-settings).
 
 ## Hooks that run in both modes
 
@@ -94,13 +93,13 @@ All of the kit's hooks are global (`hooks/hooks.json`), so plugin mode keeps the
 | PreToolUse (Read/Grep/Glob/Bash) | `token-budget.sh` | Block `find /`, and unbounded reads once context usage passes the threshold |
 | PostToolUse (Write/Edit) | `laravel-lint.sh`, `nextjs-lint.sh` (stack add-ons), `scan-secrets.sh` | Lint changed files; catch secrets |
 | PostToolUse (Bash/WebFetch/MCP) | `scan-injection.sh` | Flag prompt-injection patterns |
-| SessionStart, UserPromptSubmit, PreCompact, SessionEnd, Stop, SubagentStop, Notification | various | Context load/save, prompt preflight, completion checks |
+| SessionStart, UserPromptSubmit, PreCompact, SessionEnd, Stop, Notification | various | Context load/save, prompt preflight, completion checks |
 
-`hooks/hooks.json` is the source of truth. If this table and that file disagree, trust the file. Every hook, with how to tune or disable it, is in [src/hooks/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/share/hooks/README.md).
+`hooks/hooks.json` is the source of truth. If this table and that file disagree, trust the file. Every hook, with how to tune or disable it, is in [src/hooks/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/share/hooks/README.md).
 
 ## Verifying an install
 
 - `/plugin` → **Errors** tab shows components that failed to load.
 - `claude plugin validate <path>` checks the manifest and agent frontmatter.
 - `/hooks` lists active hooks; `/memory` lists loaded `CLAUDE.md`, `AGENTS.md`, and rules files.
-- `/framework-doctor` (`/sdd-kit:framework-doctor` in plugin mode) checks that hooks fire and paths resolve.
+- `/framework-doctor` checks that hooks fire and paths resolve.

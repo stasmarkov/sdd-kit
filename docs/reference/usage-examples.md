@@ -4,9 +4,9 @@ What to type for each kind of work in SDD Kit, and what you get back.
 
 See the routes used on one project in the [Hireboard worked example](../examples/job-board/README.md).
 
-Start with `/sdd` unless you already know you want a specific skill. It classifies the request, confirms the route with you, collects every input up front, and launches one fixed pipeline. The route tree itself is in the [README](https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/README.md); this page shows each route in practice.
+Start with `/sdd` unless you already know you want a specific skill. It classifies the request, confirms the route with you, collects every input up front, and launches one fixed pipeline. The route tree itself is in the [README](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/README.md); this page shows each route in practice.
 
-Skill names below are bare (`/sdd`, `/write-spec`). In plugin mode they are namespaced: `/sdd-kit:sdd`, `/sdd-kit-ops:deploy`. The full lists are in [skill index](skills.md) and [agent index](agents.md).
+Skill names below are bare (`/sdd`, `/write-spec`), and you type them bare in both install modes. In plugin mode the namespaced form (`/sdd-kit:sdd`, `/sdd-kit-ops:deploy`) is needed only when another skill of the same name shadows the kit's. The full lists are in [skill index](skills.md) and [agent index](agents.md).
 
 | Kind of work | Type | Runs |
 |---|---|---|
@@ -156,7 +156,7 @@ Verdict:
 
 **You get:** a scaffold with CI, one working slice, and handoff docs: `docs/getting-started.md`, `docs/context/architecture.md` and one ADR under `docs/adr/`, plus the manual test plan under `.ai/reports/`. The slice is marked `shipped` in `backlog.md` and the next slices are added to it. Verdict: `SHIP-SLICE`, `FIX-FIRST`, or `BLOCKED` (target was not empty). Build later slices with their `Run:` line (scenario 1). Feedback from a demo or sprint review goes back into the backlog with `/product-brief --intake "<notes>"`.
 
-Supported stacks come from the registry in [src/workflows/lib/stacks.js](https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/plugins/sdd-kit/workflows/lib/stacks.js).
+Supported stacks come from the registry in [src/workflows/lib/stacks.js](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/plugins/sdd-kit/workflows/lib/stacks.js).
 
 ## 6. Small change
 
@@ -345,7 +345,7 @@ Layout, the parent-folder `CLAUDE.md`, contract rules, and merge order: [multi-r
 
 **When:** you want a full adversarially validated review of an existing codebase without sitting in a session.
 
-The pipeline runs `claude -p` from a plain terminal (not from inside Claude Code). Setup, configuration, and phases: [scripts/review/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/plugins/sdd-kit/scripts/review/README.md).
+The pipeline runs `claude -p` from a plain terminal (not from inside Claude Code). Setup, configuration, and phases: [scripts/review/README.md](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/plugins/sdd-kit/scripts/review/README.md).
 
 ## 13. Add-ons: ops and design
 
@@ -434,7 +434,7 @@ There are three ways to start a background workflow:
 
 1. **`/sdd`** (preferred). It confirms the route, collects inputs, and never builds an unapproved spec.
 2. **Plain English containing the word "workflow"**, e.g. "run the fix-bug workflow for the refund 500". Claude only launches a background workflow when you explicitly opt in like this.
-3. **A direct call**, `Workflow({ name: "sdd-kit:<name>", args })`. A file-copy install registers the bare name, so when the call fails with "not found", retry with the bare `<name>` ([workflow name rule](https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/plugins/sdd-kit/skills/sdd/SKILL.md#workflow-names)). Each workflow is also runnable as a skill: `/ship-feature`, `/fix-bug`, `/qa-and-docs`, `/tech-research`, `/greenfield-build`, `/create-spec`, `/security-audit` (the audit workflow opens in guidance mode on hosts where it is also a skill).
+3. **A direct call**, `Workflow({ name: "sdd-kit:<name>", args })`. A file-copy install registers the bare name, so when the call fails with "not found", retry with the bare `<name>` ([workflow name rule](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/plugins/sdd-kit/skills/sdd/SKILL.md#workflow-names)). Each workflow is also runnable as a skill: `/ship-feature`, `/fix-bug`, `/qa-and-docs`, `/tech-research`, `/greenfield-build`, `/create-spec`, `/security-audit` (the audit workflow opens in guidance mode on hosts where it is also a skill).
 
 Watch running workflows with `/workflows`.
 
@@ -480,4 +480,12 @@ To build an existing spec, pass `{ spec: "<ref>" }` (folder name, ticket key, ti
 
 A phase that returns nothing never leaves a run at SHIP, FIXED or SHIP-SLICE: its check is recorded as unavailable in the `assurance` table and the verdict drops to FIX-FIRST or NOT-RESOLVED.
 
-Every workflow accepts `args.models` to pin a model per tier (`deep`, `standard`, `light`) for one run. Which tier each phase uses, and when to override it, is in [effort-guidelines.md](effort-guidelines.md).
+Every workflow accepts `args.models` to pin a model per tier (`deep`, `standard`, `light`) for one run, and `maxAgents` (agent cap). ship-feature, fix-bug and greenfield-build also accept `maxFindings` (findings kept per review dimension, 1 to 50, default 8) and, in ship-feature, `profile` (`'quick'` or `'standard'`) to bound its cost. Which tier each phase uses, and when to override it, is in [effort-guidelines.md](effort-guidelines.md).
+
+### When a run stops
+
+A run stops when the agent cap is reached, the session closes, or a usage limit pauses it. The report says which, and prints a relaunch call:
+
+- **Relaunch.** For a spec run, the call is `Workflow({ name: "sdd-kit:ship-feature", args: { spec: "<id>" } })`: finished tasks are already ticked in `tasks.md`, so it continues from the first open one. When the cap stopped the run, the printed call carries a raised `maxAgents`. To continue the same run instead of starting over, pass `resumeFromRunId: "<runId>"` with the same `args`.
+- **`claude --resume`.** Reopen the original session first, so the run and its report are still there to resume.
+- **Usage limits.** A run pauses at a usage limit only when `autoContinueAtUsageLimit` is enabled and the session stays open; otherwise it stops and you relaunch after the limit resets. No wait time is promised. Which Claude Code versions support this is in the [Claude Code docs](https://code.claude.com/docs/en/overview).

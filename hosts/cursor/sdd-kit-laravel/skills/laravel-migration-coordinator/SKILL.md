@@ -7,6 +7,9 @@ metadata:
   category: "frameworks"
   framework: "laravel"
   framework-version: "12.x"
+  last_verified: "2026-11-09"
+  next_review: "2027-02-09"
+  targets: "Laravel 12.x migrations"
 ---
 
 # Laravel Migration Coordinator

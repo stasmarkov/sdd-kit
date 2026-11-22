@@ -6,7 +6,15 @@ paths:
   - "**/*.module"
   - "web/modules/**"
   - "docroot/modules/**"
+  - "**/themes/custom/**/*.twig"
+  - "**/themes/custom/**"
+  - "**/*.html.twig"
+  - "**/themes/custom/**/*.theme"
   - "**/*.php"
+metadata:
+  last_verified: "2026-11-21"
+  next_review: "2027-02-21"
+  targets: "drupal/core ^10.3 || ^11; drush 13; PHPUnit 9.6+"
 ---
 
 # Drupal 10.3+ and 11 Development Patterns
@@ -42,6 +50,7 @@ Apply these patterns when building Drupal 10.3+ and 11 modules and sites.
 | Building REST/JSON:API endpoints | `references/api-patterns.md` |
 | Writing tests | `references/testing-patterns.md` |
 | Exploring the codebase (where routes, handlers, data access and tests live) | `references/exploration-recipes.md` |
+| Gate commands, fix forms, dependency audit and security grep patterns | `references/quality-tools.md` |
 
 ## Code Templates
 
@@ -364,6 +373,7 @@ The workflow gates run only when the project has what they need; a missing piece
 | PHPCS (docroot) | `skipped — web/core/lib/Drupal.php present` | Intended: Drupal core is under `web/` (or `web` links to `docroot/`), so the `web/` variant runs |
 | PHPCS (project ruleset) | `not run (requires one of phpcs.xml, phpcs.xml.dist, .phpcs.xml, .phpcs.xml.dist; vendor/bin/phpcs)` | Add a ruleset file, or ignore: the default PHPCS gate covers the project |
 | PHPStan | `not run (requires one of phpstan.neon, phpstan.neon.dist, phpstan.dist.neon; vendor/bin/phpstan)` | Steps 2 and 3 |
+| Twig CS Fixer | `not run (requires one of .twig-cs-fixer.php, .twig-cs-fixer.dist.php; vendor/bin/twig-cs-fixer)` | `composer require --dev vincentlanglet/twig-cs-fixer` and a `.twig-cs-fixer.php` that registers `TwigTransTokenParser` and sets a finder limited to the custom modules and themes (see `references/quality-tools.md`) |
 | PHPUnit | `skipped — <config file> present` | Intended: the project config gate runs instead |
 | PHPUnit, PHPUnit (docroot) | `not run (requires <missing entries>)`, from vendor/bin/phpunit; `<docroot>/core/phpunit.xml.dist`; `<docroot>/modules/custom` | Step 2 for vendor/bin/phpunit. Missing paths of the other layout are expected: that variant does not apply |
 | PHPUnit (docroot) | `skipped — web/core/lib/Drupal.php present` | Intended: the `web/` variant runs |
@@ -385,11 +395,13 @@ drush generate entity:content
 
 # Common drush commands (in DDEV: ddev drush cr, ddev drush cim -y, ...)
 drush cr              # Cache rebuild
-drush cex -y          # Config export
+drush cex -y          # Config export (scoped: see below)
 drush cim -y          # Config import
 drush updb -y         # Run update hooks
 drush en my_module    # Enable module
 drush pmu my_module   # Uninstall module
 ```
+
+Scoped export: run `drush cex -y`, then `git status --porcelain` on the sync and split config directories. `git restore` each changed or deleted tracked file the task did not touch, remove each unrelated new file by its exact path (never `git clean` on a directory), then run `drush config:status`. Keep an object when unsure and list it under "Manual steps for the developer". Use plain `cex -y`, never `--add` or `--commit`.
 
 ---

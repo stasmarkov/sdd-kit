@@ -198,6 +198,5 @@ Orchestrates domain operations for a single use case.
 
 ## Related Skills
 
-- **dto-first**: Data transfer objects for layer boundaries
-- **service-repository**: Simpler pattern for less complex domains
+- The stack's conventions skills: layer boundaries and simpler patterns for less complex domains
 - **api-design**: Designing the HTTP adapter layer

@@ -91,7 +91,7 @@ description: Billing API patterns. Use for services, models, controllers.
 
 # Bad (too long, vague)
 description: This skill provides comprehensive patterns including
-service-repository architecture, ORM best practices, single-action controllers,
+layered service architecture, ORM best practices, single-action controllers,
 and modern language patterns for building API backends.
 ```
 

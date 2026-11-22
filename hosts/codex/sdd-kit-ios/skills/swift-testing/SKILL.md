@@ -6,6 +6,10 @@ paths:
   - "**/*Tests.swift"
   - "**/Tests/**"
   - "**/*Test.swift"
+metadata:
+  last_verified: "2026-11-09"
+  next_review: "2027-02-09"
+  targets: "Swift Testing (Swift 6)"
 ---
 
 # Swift Testing

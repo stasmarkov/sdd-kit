@@ -50,6 +50,52 @@
         "routes/",
         "database/"
       ],
+      "explore": [
+        {
+          "what": "Routes",
+          "where": "routes/api.php, routes/web.php"
+        },
+        {
+          "what": "Controllers",
+          "where": "app/Http/Controllers/**/*.php"
+        },
+        {
+          "what": "Requests and policies",
+          "where": "app/Http/Requests/, app/Policies/"
+        },
+        {
+          "what": "Services",
+          "where": "app/Services/**/*.php"
+        },
+        {
+          "what": "Data objects",
+          "where": "app/DTOs/, app/Data/"
+        },
+        {
+          "what": "Repositories",
+          "where": "app/Repositories/**/*.php"
+        },
+        {
+          "what": "Models and relations",
+          "where": "app/Models/*.php: hasMany, belongsTo, $casts"
+        },
+        {
+          "what": "Migrations",
+          "where": "database/migrations/*.php"
+        },
+        {
+          "what": "Events, jobs, listeners",
+          "where": "app/Events, app/Jobs, app/Listeners"
+        },
+        {
+          "what": "Pest tests",
+          "where": "tests/Feature/, tests/Unit/"
+        },
+        {
+          "what": "Factories",
+          "where": "database/factories/*.php"
+        }
+      ],
       "docImpact": {
         "endpoint": [
           "(^|/)routes/",
@@ -228,6 +274,18 @@
           ]
         },
         {
+          "name": "Twig CS Fixer",
+          "command": "./vendor/bin/twig-cs-fixer lint --no-cache",
+          "kind": "lint",
+          "requires": [
+            [
+              ".twig-cs-fixer.php",
+              ".twig-cs-fixer.dist.php"
+            ],
+            "vendor/bin/twig-cs-fixer"
+          ]
+        },
+        {
           "name": "PHPUnit",
           "command": "./vendor/bin/phpunit -c web/core --fail-on-empty-test-suite web/modules/custom",
           "kind": "test",
@@ -275,6 +333,12 @@
           "requires": "composer.lock"
         }
       ],
+      "audit": [
+        {
+          "name": "composer audit",
+          "command": "composer audit --locked --format=json"
+        }
+      ],
       "debugPatterns": [
         "dd(",
         "dump(",
@@ -287,6 +351,60 @@
         "docroot/modules/custom/",
         "docroot/themes/custom/",
         "modules/"
+      ],
+      "explore": [
+        {
+          "what": "Routes",
+          "where": "**/*.routing.yml"
+        },
+        {
+          "what": "Controllers",
+          "where": "**/src/Controller/**/*.php"
+        },
+        {
+          "what": "Forms and validation",
+          "where": "**/src/Form/**/*.php"
+        },
+        {
+          "what": "Services",
+          "where": "**/*.services.yml, **/src/**/*.php"
+        },
+        {
+          "what": "Hooks",
+          "where": "**/*.module, **/*.install, **/src/Hook/**/*.php"
+        },
+        {
+          "what": "Permissions and access",
+          "where": "**/*.permissions.yml, **/src/Access/**/*.php"
+        },
+        {
+          "what": "Configuration",
+          "where": "**/config/schema/*.yml, config/sync/*.yml"
+        },
+        {
+          "what": "Entities",
+          "where": "**/src/Entity/**/*.php"
+        },
+        {
+          "what": "Plugins",
+          "where": "**/src/Plugin/**/*.php"
+        },
+        {
+          "what": "Views",
+          "where": "config/sync/views.view.*.yml"
+        },
+        {
+          "what": "Blocks",
+          "where": "config/sync/block.block.*.yml"
+        },
+        {
+          "what": "Event subscribers",
+          "where": "**/src/EventSubscriber/**/*.php"
+        },
+        {
+          "what": "Kernel and functional tests",
+          "where": "**/tests/src/Kernel/, **/tests/src/Functional/"
+        }
       ],
       "testIntegrity": {
         "testPaths": [
@@ -342,6 +460,10 @@
           "drupal/core",
           "drupal/core-recommended"
         ]
+      },
+      "migrations": {
+        "status": "./vendor/bin/drush updatedb:status",
+        "run": "./vendor/bin/drush updatedb -y"
       },
       "docImpact": {
         "endpoint": [
@@ -443,6 +565,44 @@
         "src/",
         "components/",
         "lib/"
+      ],
+      "explore": [
+        {
+          "what": "Routes and pages",
+          "where": "app/**/page.tsx, app/**/layout.tsx"
+        },
+        {
+          "what": "Route handlers",
+          "where": "app/**/route.ts"
+        },
+        {
+          "what": "Server Actions",
+          "where": "grep 'use server'"
+        },
+        {
+          "what": "Client components",
+          "where": "components/**/*.tsx, grep 'use client'"
+        },
+        {
+          "what": "API client",
+          "where": "lib/api*.ts, services/**/*.ts"
+        },
+        {
+          "what": "Auth and middleware",
+          "where": "middleware.ts, auth.ts, lib/auth*"
+        },
+        {
+          "what": "Types shared with the API",
+          "where": "types/**/*.ts, lib/**/types.ts"
+        },
+        {
+          "what": "Vitest tests",
+          "where": "**/*.test.ts, **/*.test.tsx"
+        },
+        {
+          "what": "Playwright tests",
+          "where": "e2e/**/*.spec.ts, tests/e2e/**"
+        }
       ],
       "docImpact": {
         "endpoint": [
@@ -1043,7 +1203,7 @@
       },
       {
         "event": "PreToolUse",
-        "matcher": "Read|Grep|Glob|Bash",
+        "matcher": "Bash",
         "script": "token-budget.sh"
       },
       {

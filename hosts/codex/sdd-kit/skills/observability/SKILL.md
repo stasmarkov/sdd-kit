@@ -3,6 +3,10 @@ name: observability
 description: Observability for web applications - structured logging, error tracking, metrics, and OpenTelemetry tracing. Use when adding logging/monitoring, instrumenting requests, debugging production issues, or wiring alerting. Stack-specific setup comes from the stack add-on's references.
 license: Apache-2.0
 allowed-tools: Read, Grep, Glob, Edit, Write, Bash
+metadata:
+  last_verified: "2026-10-22"
+  next_review: "2027-01-22"
+  targets: "none"
 ---
 
 # Observability

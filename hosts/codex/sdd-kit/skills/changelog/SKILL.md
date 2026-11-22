@@ -1,7 +1,7 @@
 ---
 name: changelog
 description: Generate a changelog from git history by parsing conventional commits and grouping them into Keep a Changelog sections, optionally updating CHANGELOG.md. --release <version> runs a release-readiness check (specs done, gates and contract-sync green, security and dependency audits clean, migrations safe), suggests the semver bump, writes CHANGELOG.md, and proposes the tag. Use when preparing a release, summarizing unreleased changes, or producing notes between two tags.
-argument-hint: "[version] | --from=[tag] | --to=[tag] | --unreleased | --release <version>"
+argument-hint: "[version] | --from=[tag] | --to=[tag] | --unreleased | --release <version> | --update"
 allowed-tools: Bash, Read, Write, Grep, Glob, AskUserQuestion
 disable-model-invocation: true
 metadata:

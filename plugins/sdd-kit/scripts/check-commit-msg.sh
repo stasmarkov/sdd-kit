@@ -10,7 +10,10 @@
 # (PROJ-123, MY_PROJ-7). A key can also trail the subject: fix(x): y (PROJ-123).
 #
 # Pass-through for non-commit Bash commands.
-# Allows merge/revert auto-messages.
+# Allows git's own merge/revert subjects ("Merge ..." and 'Revert "..."').
+#
+# SDD_KIT_COMMIT_STYLE picks the accepted subject form: conventional (default),
+# ticket (PROJ-123: subject), either, or off. Unknown values mean conventional.
 #
 
 set -euo pipefail
@@ -29,11 +32,6 @@ fi
 
 # Skip if --amend without -m (using $EDITOR) or interactive
 if echo "$CMD" | grep -qE '(\-\-amend)([[:space:]]|$)' && ! echo "$CMD" | grep -qE '(\-m|--message)'; then
-    exit 0
-fi
-
-# Skip merge commits
-if echo "$CMD" | grep -qE '(^|[[:space:]])(merge|revert)[[:space:]]'; then
     exit 0
 fi
 
@@ -72,16 +70,47 @@ fi
 
 SUBJECT=$(printf '%s\n' "$MSG" | head -1)
 
-# Conventional Commits regex
-CC_RE='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(([a-z0-9_./-]+|[A-Z][A-Z0-9_]+-[0-9]+)\))?!?:[[:space:]]+.+'
+# git's auto-generated merge and revert subjects are not validated
+if [[ $SUBJECT == "Merge "* || $SUBJECT == 'Revert "'* || $SUBJECT == 'Revert \' ]]; then
+    exit 0
+fi
 
-if ! echo "$SUBJECT" | grep -qE "$CC_RE"; then
-    echo "Blocked: commit subject does not follow Conventional Commits." >&2
-    echo "  Subject: $SUBJECT" >&2
-    echo "  Required form: type(scope?): subject" >&2
+CC_RE='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(([a-z0-9_./-]+|[A-Z][A-Z0-9_]+-[0-9]+)\))?!?:[[:space:]]+.+'
+TICKET_RE='^[A-Z][A-Z0-9_]+-[0-9]+:? .+'
+
+STYLE=$(printf '%s' "${SDD_KIT_COMMIT_STYLE:-}" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')
+case "$STYLE" in
+    off) exit 0 ;;
+    ticket|either) ;;
+    *) STYLE=conventional ;;
+esac
+
+OK=0
+if [[ $STYLE != ticket ]] && echo "$SUBJECT" | grep -qE "$CC_RE"; then OK=1; fi
+if [[ $STYLE != conventional ]] && echo "$SUBJECT" | grep -qE "$TICKET_RE"; then OK=1; fi
+
+if (( ! OK )); then
+    case "$STYLE" in
+        ticket)
+            echo "Blocked: commit subject does not follow the ticket style (SDD_KIT_COMMIT_STYLE=ticket)." >&2
+            echo "  Subject: $SUBJECT" >&2
+            echo "  Required form: PROJ-123: subject" >&2
+            ;;
+        either)
+            echo "Blocked: commit subject is neither Conventional Commits nor ticket style (SDD_KIT_COMMIT_STYLE=either)." >&2
+            echo "  Subject: $SUBJECT" >&2
+            echo "  Required form: type(scope?): subject, or PROJ-123: subject" >&2
+            ;;
+        *)
+            echo "Blocked: commit subject does not follow Conventional Commits." >&2
+            echo "  Subject: $SUBJECT" >&2
+            echo "  Required form: type(scope?): subject" >&2
+            ;;
+    esac
     echo "  Types: feat | fix | docs | style | refactor | perf | test | build | ci | chore | revert" >&2
     echo "  Example: feat(auth): add OAuth2 callback handler" >&2
     echo "  Ticket key: fix(refunds): subject (PROJ-123), or fix(PROJ-123): subject" >&2
+    echo "  Fix: set SDD_KIT_COMMIT_STYLE to ticket, either or off to change the accepted style (now: $STYLE)." >&2
     exit 2
 fi
 

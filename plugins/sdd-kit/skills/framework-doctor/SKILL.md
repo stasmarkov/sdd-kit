@@ -74,6 +74,18 @@ echo "MODE=$MODE INSTALL_DIR=$INSTALL_DIR"
 
 Both installed plugins (under `~/.claude/plugins/`) and `claude --plugin-dir <path>` resolve to a directory holding `.claude-plugin/plugin.json`, so either is reported as plugin mode. Never fall back to user mode because `~/.claude/skills/` happens to exist when either placeholder points into a plugin.
 
+Print one "Invoke as" line next to the reported mode. Plugin mode:
+
+```
+Invoke as: /<name> (plugin mode: /sdd-kit:<name> only when another skill shadows the name; workflow names need sdd-kit:<name>)
+```
+
+File-copy mode:
+
+```
+Invoke as: /<name>
+```
+
 Report the mode and the version: in plugin mode the `"version"` field of `${INSTALL_DIR}/.claude-plugin/plugin.json`, otherwise `${INSTALL_DIR}/.framework-version` when present.
 
 ### Phase 2: Run Checks
@@ -261,7 +273,7 @@ Classify every installed SDD Kit add-on. All problems here are WARN, never FAIL.
 - Preset (`plugin.json` with `dependencies`, no components): `<plugin> (preset): depends on <deps>; each installed|missing`. A missing dependency is a WARN.
 - Tool add-on (no `stack.json`, has components such as devenv, ops, design): `<plugin> (tool add-on): <n> skills, <m> agents present`. Each `skills:` preload that does not resolve is a WARN.
 
-When neither selection finds a stack add-on, print `[PASS] no stack add-ons installed` with the hints: `install.sh --stack=<key>` for file-copy installs, `/plugin install sdd-kit-laravel-nextjs@sdd-kit` (or one `sdd-kit-<stack>` add-on) for plugin installs. A core-only install is valid and is never a FAIL.
+When neither selection finds a stack add-on, print `[PASS] no stack add-ons installed` and run `bash "${CLAUDE_SKILL_DIR}/../../scripts/stack-hint.sh" --detect`, which prints `<key> <plugin>` for each stack whose markers match the project. For each line add the hint `/plugin install <plugin>@sdd-kit` (plugin installs) or `install.sh --stack=<add-on>` (file-copy installs), where `<add-on>` is `<plugin>` without its `sdd-kit-` prefix: one add-on can provide several stack keys, and install.sh takes the add-on name, not the key. When it prints nothing, add the generic hint: `install.sh --stack=<add-on>` or `/plugin install sdd-kit-<stack>@sdd-kit` for the stack you use, or `/new-stack` to declare your own. A core-only install is valid and is never a FAIL.
 
 **Mixed-mode shadowing.** When a plugin is enabled and a file-copy copy of the same component also exists, both load: skills load twice, agents shadow each other and kit hooks run twice. "Enabled" comes from `claude plugin list --json`: its `enabled` reflects `enabledPlugins` false entries from the project and local settings, so no separate settings merge is needed. Without the CLI, skip the check. Consider only enabled plugins whose id starts with `sdd-kit`.
 
@@ -314,7 +326,7 @@ Framework Health Check (project, v<version>)
 [PASS] MCP config: .mcp.json valid (3 servers)
 [PASS] Script permissions
 [PASS] Path integrity
-[PASS] Add-ons: no stack add-ons installed (--stack=<key> or /plugin install sdd-kit-laravel-nextjs@sdd-kit)
+[PASS] Add-ons: no stack add-ons installed (detected: <key>; /plugin install <plugin>@sdd-kit)
 [WARN] Golden Triangle: docs/context/ not found
 [PASS] Hooks wired and firing (block-dangerous exit=2)
 [PASS] Node: v22.4.1 (18+ required)

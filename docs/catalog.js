@@ -6,7 +6,7 @@ window.CATALOG = {
       "ships": "core",
       "category": "frameworks",
       "invoke": "both",
-      "description": "Web accessibility (a11y) for component-based frontends. Use when building UI components, forms, navigation, or auditing pages against WCAG 2.2 AA. Covers semantic HTML, ARIA, keyboard, focus, contrast, and automated testing.",
+      "description": "Web accessibility (a11y) for any rendered UI. Use when building templates, components, forms or navigation, or auditing pages against WCAG 2.2 AA. Covers semantic HTML, ARIA, keyboard, focus, contrast, and automated testing.",
       "hosts": {
         "codex": {
           "invoke": "$accessibility",
@@ -260,16 +260,16 @@ window.CATALOG = {
       "name": "grade",
       "ships": "core",
       "category": "quality",
-      "invoke": "both",
-      "description": "Grade a target artifact against a domain rubric using the outcomes-grader subagent. Returns PASS / CHANGES_REQUIRED / BLOCKED with item-level findings. Use after any non-trivial generation task before marking it done.",
+      "invoke": "manual",
+      "description": "Use when asked to grade an artifact against a rubric. Runs the outcomes-grader subagent and returns PASS / CHANGES_REQUIRED / BLOCKED with item-level findings.",
       "hosts": {
         "codex": {
           "invoke": "$grade",
-          "availability": "available"
+          "availability": "explicit-only"
         },
         "cursor": {
           "invoke": "/grade",
-          "availability": "available"
+          "availability": "explicit-only"
         }
       }
     },
@@ -397,7 +397,7 @@ window.CATALOG = {
       "ships": "core",
       "category": "workflow",
       "invoke": "both",
-      "description": "Use when resuming work and asking where was I or what next. Shows per-spec task progress and the next task; --health adds a health snapshot.",
+      "description": "Use when resuming work and asking where was I, what next, what's left or how many specs remain. Shows per-spec task progress, backlog.md slice status and the next task; --health adds a health snapshot.",
       "hosts": {
         "codex": {
           "invoke": "$progress",
@@ -652,7 +652,7 @@ window.CATALOG = {
       "ships": "design plugin",
       "category": "design",
       "invoke": "both",
-      "description": "Design UI/UX for a feature: user flows, component hierarchy, state management, data fetching, and accessibility, producing a UI design document for Next.js. Use when planning a new page, component, or user flow before implementation, or when reviewing existing frontend component patterns.",
+      "description": "Design UI/UX for a feature: user flows, component hierarchy, state management, data fetching, and accessibility, producing a UI design document for any web UI; framework examples are in references. Use when planning a new page, component, or user flow before implementation, or when reviewing existing frontend component patterns.",
       "hosts": {
         "codex": {
           "invoke": "$design-ui",
@@ -686,7 +686,7 @@ window.CATALOG = {
       "ships": "devenv plugin",
       "category": "devops",
       "invoke": "both",
-      "description": "Docker for Laravel + Next.js. Use for Dockerfiles, compose setup, and container configuration.",
+      "description": "Docker and Compose for application containers. Not for DDEV projects (use the ddev skill). Use for Dockerfiles, compose setup, and container configuration outside DDEV.",
       "hosts": {
         "codex": {
           "invoke": "$docker",
@@ -1042,16 +1042,16 @@ window.CATALOG = {
       "name": "incident",
       "ships": "ops plugin",
       "category": "ops",
-      "invoke": "both",
+      "invoke": "manual",
       "description": "Run an incident response workflow: open an incident record, triage by severity, investigate logs and recent deploys, mitigate, resolve, and draft a postmortem with action items. Use when production is broken or degraded, when updating or resolving an active incident, or when writing a postmortem.",
       "hosts": {
         "codex": {
           "invoke": "$incident",
-          "availability": "available"
+          "availability": "explicit-only"
         },
         "cursor": {
           "invoke": "/incident",
-          "availability": "available"
+          "availability": "explicit-only"
         }
       }
     },
@@ -1080,7 +1080,7 @@ window.CATALOG = {
       "category": "quality",
       "model": "opus",
       "effort": "high",
-      "description": "Skeptical post-implementation reviewer that assumes code has bugs until proven otherwise. Uses different model from generation to catch blind spots.",
+      "description": "Skeptical post-implementation reviewer that assumes code has bugs until proven otherwise. Uses different model from generation to catch blind spots. Use when reviewing a diff or branch you did not write.",
       "hosts": {
         "codex": {
           "invoke": "$sdd-runtime",
@@ -1098,7 +1098,7 @@ window.CATALOG = {
       "category": "design",
       "model": "opus",
       "effort": "high",
-      "description": "API and system architecture - resource and contract design, integration patterns, scalability and technology-fit assessment for API-backed web systems in any stack. Use PROACTIVELY for architectural decisions, design patterns, high-load planning, and integration design.",
+      "description": "API and system architecture - resource and contract design, integration patterns, scalability and technology-fit assessment for API-backed web systems in any stack. Use PROACTIVELY when making architectural decisions, design patterns, high-load planning, and integration design.",
       "hosts": {
         "codex": {
           "invoke": "$sdd-runtime",
@@ -1116,7 +1116,7 @@ window.CATALOG = {
       "category": "release",
       "model": "haiku",
       "effort": "low",
-      "description": "Generate comprehensive changelogs from git history, categorize changes, and maintain CHANGELOG.md in Keep a Changelog format.",
+      "description": "Generate comprehensive changelogs from git history, categorize changes, and maintain CHANGELOG.md in Keep a Changelog format. Use when preparing a release or updating the changelog.",
       "hosts": {
         "codex": {
           "invoke": "$sdd-runtime",
@@ -1170,7 +1170,7 @@ window.CATALOG = {
       "category": "design",
       "model": "sonnet",
       "effort": "medium",
-      "description": "Database designer and migration author. MUST BE USED for schema design, data modeling, migrations, models and factories that mirror the schema, indexing, and query optimization. Use PROACTIVELY whenever a table, column, index, constraint, or relationship is added or changed, or when a query is slow. Works schema-first and keeps migrations safe and reversible.",
+      "description": "Database designer. Use when the repo's stack manifest declares a migrations block, or for query and index analysis on any stack. Also use PROACTIVELY when a table, column, index, constraint, or relationship is added or changed. Works schema-first and keeps migrations safe and reversible.",
       "hosts": {
         "codex": {
           "invoke": "$sdd-runtime",
@@ -1188,7 +1188,7 @@ window.CATALOG = {
       "category": "execution",
       "model": "sonnet",
       "effort": "medium",
-      "description": "DevOps engineering agent specializing in CI/CD pipelines, containerization, and deployment automation for web applications in any stack.",
+      "description": "DevOps engineering agent specializing in CI/CD pipelines, containerization, and deployment automation for web applications in any stack. Use when changing pipelines, containers or deployment automation.",
       "hosts": {
         "codex": {
           "invoke": "$sdd-runtime",
@@ -1205,8 +1205,8 @@ window.CATALOG = {
       "ships": "core",
       "category": "operations",
       "model": "sonnet",
-      "effort": "",
-      "description": "Documentation writer for write-docs (generate, --import, --audit) - turns cited code analysis and external material into clear markdown, verifies every behavioral claim against file:line, and enforces lowercase filenames.",
+      "effort": "low",
+      "description": "Documentation writer for write-docs (generate, --import, --audit) - turns cited code analysis and external material into clear markdown, verifies every behavioral claim against file:line, and enforces lowercase filenames. Use when write-docs delegates documentation drafting.",
       "hosts": {
         "codex": {
           "invoke": "$sdd-runtime",
@@ -1224,7 +1224,7 @@ window.CATALOG = {
       "category": "quality",
       "model": "opus",
       "effort": "high",
-      "description": "Rubric-based grader that scores prior agent output against a domain rubric and either approves it or returns concrete failures for the writer to address. Use PROACTIVELY after any non-trivial generation task (API implementation, UI component, migration, test suite) before considering it done. Returns pass/fail verdict plus item-by-item grades.",
+      "description": "Rubric-based grader that scores an artifact against a rubric file, or against criteria and an output schema the caller supplies, and returns a verdict with item-by-item grades. Use when a caller asks for a graded verdict on an artifact.",
       "hosts": {
         "codex": {
           "invoke": "$sdd-runtime",
@@ -1242,7 +1242,7 @@ window.CATALOG = {
       "category": "quality",
       "model": "sonnet",
       "effort": "medium",
-      "description": "Performance optimization for APIs and web frontends in any stack - measures a baseline and requires a target before changing anything, then finds the bottleneck (queries, caching, queues, Core Web Vitals, bundles) and verifies the gain. Use PROACTIVELY for slow endpoints or pages, performance budgets, and scalability planning.",
+      "description": "Performance optimization for APIs and web frontends in any stack - measures a baseline and requires a target before changing anything, then finds the bottleneck (queries, caching, queues, Core Web Vitals, bundles) and verifies the gain. Use PROACTIVELY when facing slow endpoints or pages, performance budgets, and scalability planning.",
       "hosts": {
         "codex": {
           "invoke": "$sdd-runtime",
@@ -1259,8 +1259,8 @@ window.CATALOG = {
       "ships": "core",
       "category": "upstream",
       "model": "sonnet",
-      "effort": "",
-      "description": "Elicit, validate, and formalize requirements - scores input clarity, asks targeted questions in bounded rounds, and writes testable acceptance criteria. Used by write-spec for L-size specs and by product-brief for idea and feedback intake.",
+      "effort": "medium",
+      "description": "Elicit, validate, and formalize requirements - scores input clarity, asks targeted questions in bounded rounds, and writes testable acceptance criteria. Use when write-spec sizes a spec L or product-brief runs idea and feedback intake. Used by write-spec for L-size specs and by product-brief for idea and feedback intake.",
       "hosts": {
         "codex": {
           "invoke": "$sdd-runtime",
@@ -1278,7 +1278,7 @@ window.CATALOG = {
       "category": "quality",
       "model": "opus",
       "effort": "high",
-      "description": "MUST BE USED for security reviews, vulnerability detection, OWASP compliance checks, and application security validation. Use PROACTIVELY for any security-related concerns, authentication flows, or sensitive data handling.",
+      "description": "Security review, vulnerability detection and OWASP compliance checks. Use when asked for an explicit security review, or when a change touches authentication, access rules, uploads or secrets.",
       "hosts": {
         "codex": {
           "invoke": "$sdd-runtime",
@@ -1314,7 +1314,7 @@ window.CATALOG = {
       "category": "quality",
       "model": "sonnet",
       "effort": "medium",
-      "description": "Test writing for any stack (unit, integration, component and end-to-end) with schema-first and data-object-first patterns, using the repo's own test runner. Writes RED-phase tests that carry the spec's AC ids. Use for creating feature, unit, integration, component, and end-to-end tests.",
+      "description": "Writes and runs tests in the repo's own framework: RED tests that carry spec AC ids, a bug reproduction, a regression test, or an end-to-end test. Use when a task or workflow asks for tests, a failing reproduction or a regression test.",
       "hosts": {
         "codex": {
           "invoke": "$sdd-runtime",
@@ -1331,8 +1331,8 @@ window.CATALOG = {
       "ships": "design plugin",
       "category": "design",
       "model": "sonnet",
-      "effort": "",
-      "description": "Frontend design patterns, Next.js architecture, React component design, and UI/UX recommendations. Use PROACTIVELY for frontend architecture decisions, component design, and user experience optimization.",
+      "effort": "medium",
+      "description": "Frontend design patterns, component architecture, and UI/UX recommendations for any web UI. Use PROACTIVELY when making frontend architecture decisions, component design, and user experience optimization.",
       "hosts": {
         "codex": {
           "invoke": "$sdd-runtime",
@@ -1350,7 +1350,7 @@ window.CATALOG = {
       "category": "execution",
       "model": "sonnet",
       "effort": "medium",
-      "description": "Drupal 10/11 backend implementer for custom modules, services, plugins, entities, forms, routes and configuration. Use PROACTIVELY for any work in <docroot>/modules/custom (web/ or docroot/), hook and event subscriber code, config schema and exports, and Drush-driven checks. Follows Drupal coding standards and runs the project's PHPCS, PHPStan and PHPUnit gates through DDEV when present.",
+      "description": "Drupal 10/11 backend implementer for custom modules, services, plugins, entities, forms, routes and configuration. Use PROACTIVELY when working in <docroot>/modules/custom (web/ or docroot/), custom themes (Twig, preprocess, libraries), hook and event subscriber code, config schema and exports, and Drush-driven checks. Follows Drupal coding standards and runs the project's PHPCS, PHPStan, Twig CS Fixer and PHPUnit gates through DDEV when present.",
       "hosts": {
         "codex": {
           "invoke": "$sdd-runtime",
@@ -1367,7 +1367,7 @@ window.CATALOG = {
       "ships": "ios plugin",
       "category": "ios",
       "model": "sonnet",
-      "effort": "",
+      "effort": "medium",
       "description": "iOS mobile development agent with expertise in Swift 6, SwiftUI, @Observable MVVM, structured concurrency, and SwiftData persistence. Use for native iOS/iPadOS features and Swift package work.",
       "hosts": {
         "codex": {
@@ -1386,7 +1386,7 @@ window.CATALOG = {
       "category": "execution",
       "model": "sonnet",
       "effort": "medium",
-      "description": "Laravel backend implementer for domain features, REST API endpoints, and external integrations. Use PROACTIVELY for services, repositories, DTOs, invokable controllers, JsonResources, routes, policies, events and queued jobs, third-party API clients, and inbound or outbound webhooks. Follows service-repository and DTO-first patterns with consistent JSON responses.",
+      "description": "Laravel backend implementer for domain features, REST API endpoints, and external integrations. Use PROACTIVELY when touching services, repositories, DTOs, invokable controllers, JsonResources, routes, policies, events and queued jobs, third-party API clients, and inbound or outbound webhooks. Follows service-repository and DTO-first patterns with consistent JSON responses.",
       "hosts": {
         "codex": {
           "invoke": "$sdd-runtime",
@@ -1404,7 +1404,7 @@ window.CATALOG = {
       "category": "execution",
       "model": "sonnet",
       "effort": "medium",
-      "description": "Next.js frontend development agent with expertise in App Router, Server Components, TypeScript, API integration patterns, and the frontend tests that prove them (Vitest + Testing Library + MSW, Playwright E2E).",
+      "description": "Next.js frontend development agent with expertise in App Router, Server Components, TypeScript, API integration patterns, and the frontend tests that prove them (Vitest + Testing Library + MSW, Playwright E2E). Use when implementing or testing Next.js frontend work.",
       "hosts": {
         "codex": {
           "invoke": "$sdd-runtime",
@@ -1422,7 +1422,7 @@ window.CATALOG = {
       "category": "ops",
       "model": "sonnet",
       "effort": "medium",
-      "description": "Handle multi-environment deployments for Laravel and Next.js applications with pre/post deployment checks and verification.",
+      "description": "Handle multi-environment deployments for Laravel and Next.js applications with pre/post deployment checks and verification. Use when deploying to staging or production.",
       "hosts": {
         "codex": {
           "invoke": "$sdd-runtime",
@@ -1440,7 +1440,7 @@ window.CATALOG = {
       "category": "ops",
       "model": "sonnet",
       "effort": "medium",
-      "description": "Triage incidents, coordinate response, manage communication, and ensure proper incident resolution for production issues.",
+      "description": "Triage incidents, coordinate response, manage communication, and ensure proper incident resolution for production issues. Use when a production incident is declared or being resolved.",
       "hosts": {
         "codex": {
           "invoke": "$sdd-runtime",
@@ -1476,7 +1476,7 @@ window.CATALOG = {
       "category": "ops",
       "model": "sonnet",
       "effort": "medium",
-      "description": "Execute safe rollbacks, manage database migration reversals, and coordinate emergency recovery procedures.",
+      "description": "Execute safe rollbacks, manage database migration reversals, and coordinate emergency recovery procedures. Use when a deploy must be rolled back.",
       "hosts": {
         "codex": {
           "invoke": "$sdd-runtime",
@@ -1704,7 +1704,7 @@ window.CATALOG = {
     {
       "name": "ship-feature",
       "description": "Detect stack → investigate → spec → build → quality gates → converge (spec vs code) → visual → adversarial review → docs, for a single feature across one or more repos",
-      "whenToUse": "When a feature is well-scoped enough to implement end-to-end. Auto-detects the stack from the stack manifests and supports split backend+frontend repos. Pass {spec:\"<ref>\"} to execute an approved spec (folder name, legacy number, ticket key, or timestamp id); pass {repos:{backend,frontend}} for a polyrepo project. When the frontend stack declares e2e and its config exists, browser acceptance leaves an E2E regression test traced to the acceptance criteria ({e2e:false} skips it); with split repos and contract-sync installed, API drift is a gate. Saves its report to .ai/reports/ for /open-pr --report.",
+      "whenToUse": "When a feature is well-scoped enough to implement end-to-end. Auto-detects the stack from the stack manifests and supports split backend+frontend repos. Pass {profile:\"quick\"} for one Converge round, one Fix round, maxFindings 4 and maxAgents 60; {maxAgents, maxFindings} set the per-run agent cap and the findings kept per review dimension. Pass {spec:\"<ref>\"} to execute an approved spec (folder name, legacy number, ticket key, or timestamp id); pass {repos:{backend,frontend}} for a polyrepo project. When the frontend stack declares e2e and its config exists, browser acceptance leaves an E2E regression test traced to the acceptance criteria ({e2e:false} skips it); with split repos and contract-sync installed, API drift is a gate. Saves its report to .ai/reports/ for /open-pr --report.",
       "phases": [
         {
           "title": "Detect",
@@ -1839,7 +1839,7 @@ window.CATALOG = {
     },
     {
       "name": "sdd-kit-ops",
-      "description": "Operations add-on: deploy, rollback, feature flags, health checks, incident response, and ops analysis agents.",
+      "description": "Operations add-on for Laravel applications: deploy, rollback, feature flags, health checks, incident response, and ops analysis agents.",
       "skills": 5,
       "agents": 4
     },
@@ -1857,7 +1857,7 @@ window.CATALOG = {
     },
     {
       "name": "sdd-kit-design",
-      "description": "UI design add-on: ui-ux-advisor agent and design-ui skill. Third-party design skills are listed in docs/third-party.md.",
+      "description": "UI design add-on for any web UI (framework examples in design-ui/references): ui-ux-advisor agent and design-ui skill. Third-party design skills are listed in docs/third-party.md.",
       "skills": 1,
       "agents": 1
     }

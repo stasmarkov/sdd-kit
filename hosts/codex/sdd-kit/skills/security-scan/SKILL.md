@@ -39,7 +39,7 @@ In a polyrepo project, run each repo's checks in that repo and report per repo. 
 
 ### Audit (Vulnerabilities)
 
-Run each entry of the stack manifest's `audit` list (`{name, command}`) in its repo, with the package manager the lockfile names (the `verification-gates` rule). With no manifest (`stack manifest not found`), run the audit command the repo's package manager offers and say so. An audit tool that is not installed is reported as not run, never as "none found".
+Run each entry of the stack manifest's `audit` list (`{name, command}`) in its repo, with the package manager the lockfile names (the `verification-gates` rule). Get the repo's gate plan with the plan step of the `verification-gates` skill (`launch.cjs plan --repo <repo> --key <key>`) and start each `audit` command with the plan's `wrapper.prefix` when the plan has one. When the plan reports its gates `not run (<wrapper> not running)`, report each audit with that same line and run none. With no manifest (`stack manifest not found`), run the audit command the repo's package manager offers and say so. An audit tool that is not installed is reported as not run, never as "none found".
 
 ### Outdated and unused packages (`--dependencies`)
 

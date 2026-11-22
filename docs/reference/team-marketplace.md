@@ -40,8 +40,8 @@ The catalog points at the kit's public distribution repository, `stasmarkov/sdd-
         "source": "git-subdir",
         "url": "stasmarkov/sdd-kit",
         "path": "plugins/sdd-kit-laravel-nextjs",
-        "ref": "v4.3.0",
-        "sha": "<40-char commit sha of v4.3.0>"
+        "ref": "v4.4.0",
+        "sha": "<40-char commit sha of v4.4.0>"
       }
     },
     {
@@ -51,8 +51,8 @@ The catalog points at the kit's public distribution repository, `stasmarkov/sdd-
         "source": "git-subdir",
         "url": "stasmarkov/sdd-kit",
         "path": "plugins/sdd-kit",
-        "ref": "v4.3.0",
-        "sha": "<40-char commit sha of v4.3.0>"
+        "ref": "v4.4.0",
+        "sha": "<40-char commit sha of v4.4.0>"
       }
     },
     {
@@ -62,8 +62,8 @@ The catalog points at the kit's public distribution repository, `stasmarkov/sdd-
         "source": "git-subdir",
         "url": "stasmarkov/sdd-kit",
         "path": "plugins/sdd-kit-laravel",
-        "ref": "v4.3.0",
-        "sha": "<40-char commit sha of v4.3.0>"
+        "ref": "v4.4.0",
+        "sha": "<40-char commit sha of v4.4.0>"
       }
     },
     {
@@ -73,8 +73,8 @@ The catalog points at the kit's public distribution repository, `stasmarkov/sdd-
         "source": "git-subdir",
         "url": "stasmarkov/sdd-kit",
         "path": "plugins/sdd-kit-nextjs",
-        "ref": "v4.3.0",
-        "sha": "<40-char commit sha of v4.3.0>"
+        "ref": "v4.4.0",
+        "sha": "<40-char commit sha of v4.4.0>"
       }
     },
     {
@@ -84,8 +84,8 @@ The catalog points at the kit's public distribution repository, `stasmarkov/sdd-
         "source": "git-subdir",
         "url": "stasmarkov/sdd-kit",
         "path": "plugins/sdd-kit-devenv",
-        "ref": "v4.3.0",
-        "sha": "<40-char commit sha of v4.3.0>"
+        "ref": "v4.4.0",
+        "sha": "<40-char commit sha of v4.4.0>"
       }
     },
     {
@@ -95,8 +95,8 @@ The catalog points at the kit's public distribution repository, `stasmarkov/sdd-
         "source": "git-subdir",
         "url": "stasmarkov/sdd-kit",
         "path": "plugins/sdd-kit-ops",
-        "ref": "v4.3.0",
-        "sha": "<40-char commit sha of v4.3.0>"
+        "ref": "v4.4.0",
+        "sha": "<40-char commit sha of v4.4.0>"
       }
     },
     {
@@ -107,8 +107,8 @@ The catalog points at the kit's public distribution repository, `stasmarkov/sdd-
         "source": "git-subdir",
         "url": "stasmarkov/sdd-kit",
         "path": "plugins/sdd-kit-design",
-        "ref": "v4.3.0",
-        "sha": "<40-char commit sha of v4.3.0>"
+        "ref": "v4.4.0",
+        "sha": "<40-char commit sha of v4.4.0>"
       }
     }
   ]
@@ -118,7 +118,7 @@ The catalog points at the kit's public distribution repository, `stasmarkov/sdd-
 Notes:
 
 - Keep each entry's `name` identical to the `name` in that plugin's own `.claude-plugin/plugin.json`; the entry name is the install id (`<name>@your-org-claude`) and the key written to `enabledPlugins`.
-- Get the commit for a tag with `git ls-remote https://github.com/stasmarkov/sdd-kit refs/tags/v4.3.0` (use the `^{}` line for annotated tags).
+- Get the commit for a tag with `git ls-remote https://github.com/stasmarkov/sdd-kit refs/tags/v4.4.0` (use the `^{}` line for annotated tags).
 - If you fork the framework, point `repo` / `url` at your fork. A fork is the right choice when you carry local changes; otherwise reference upstream.
 - Stack add-ons are separate entries (`plugins/sdd-kit-laravel`, `plugins/sdd-kit-nextjs`, `plugins/sdd-kit-devenv`) that the preset resolves from your catalog. The preset `sdd-kit-laravel-nextjs` (`plugins/sdd-kit-laravel-nextjs`) is the first entry above: it only declares dependencies on the core and those three add-ons, so list all of them in your catalog too, pinned like the preset.
 - List only the add-ons you approve. `ios` and `drupal` can be added the same way (`path: plugins/sdd-kit-ios`, `plugins/sdd-kit-drupal`).
@@ -188,6 +188,33 @@ Commit this to each application repo's `.claude/settings.json`. Contributors get
   }
 }
 ```
+
+A Drupal project with DDEV also commits the team baseline in `env`, so every developer gets the same protected branches without exporting a variable:
+
+```json
+{
+  "env": {
+    "SDD_KIT_PROTECTED_BRANCHES": "develop staging release/*",
+    "SDD_KIT_COMMIT_STYLE": "either"
+  },
+  "extraKnownMarketplaces": {
+    "your-org-claude": {
+      "source": { "source": "github", "repo": "your-org/claude-marketplace" }
+    }
+  },
+  "enabledPlugins": {
+    "sdd-kit@your-org-claude": true,
+    "sdd-kit-drupal@your-org-claude": true,
+    "sdd-kit-devenv@your-org-claude": true
+  }
+}
+```
+
+`SDD_KIT_COMMIT_STYLE` is optional; leave it out to keep Conventional Commits. Notes on this file:
+
+- Claude Code applies it after the contributor accepts the folder trust dialog. `/status` shows which settings files are loaded.
+- A contributor can override a value in `.claude/settings.local.json`, which stays uncommitted.
+- Keep personal or risky keys out of the committed file: `model`, telemetry exporters, `permissions.defaultMode` and `Workflow(...)` allow rules.
 
 Because the plugin entries point at an external source (this framework's repo), each contributor installs once per project:
 

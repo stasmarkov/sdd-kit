@@ -22,7 +22,7 @@ export const meta = {
 // `stack` enum, the specialist-agent map, the Detect-phase catalog and the
 // debug scan all derive from STACKS. A project never gets a
 // specialist for a stack it does not use, because the agent is looked up per detected stack.
-const STACK_SCHEMA = {"oneOf":[{"type":"object","required":["name","order","role","detect","agent","conventions","gates","debugPatterns","acceptance"],"additionalProperties":false,"properties":{"$schema":{"type":"string"},"name":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"},"order":{"type":"integer"},"role":{"type":"string","enum":["backend","frontend","fullstack","mobile"]},"detect":{"type":"string"},"agent":{"type":"object","required":["name"],"additionalProperties":false,"properties":{"name":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"},"plugin":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"}}},"conventions":{"type":"array","items":{"type":"string"}},"gates":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"},"skipWhenScaffolded":{"type":"boolean","enum":[true]},"kind":{"type":"string","enum":["format","lint","types","test","e2e","build","security","other"]},"unless":{"type":"array","items":{"type":"string"}},"requires":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"}}]}}]},"lintFix":{"type":"object","required":["flag","fallback"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-[A-Za-z0-9=_-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}},"scriptFallback":{"type":"object","required":["dependency","manifest","minMajor","contains","fallback"],"additionalProperties":false,"properties":{"dependency":{"type":"string","pattern":"^[A-Za-z0-9@_./-]+$"},"manifest":{"type":"string","pattern":"^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$"},"minMajor":{"type":"integer"},"contains":{"type":"string","pattern":"^[A-Za-z0-9 _./:=-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}}}}},"debugPatterns":{"type":"array","items":{"type":"string"}},"acceptance":{"type":"string"},"notes":{"type":"string"},"devUrl":{"type":"string"},"visual":{"type":"string"},"buildGateGuard":{"type":"string"},"execWrapper":{"type":"object","required":["when","command"],"additionalProperties":false,"properties":{"when":{"type":"string","pattern":"^[A-Za-z0-9._][A-Za-z0-9._/-]*$"},"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"requiresRunning":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},{"type":"object","required":["command","jsonField","equals"],"additionalProperties":false,"properties":{"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"jsonField":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"},"equals":{"type":"string","pattern":"^[A-Za-z0-9._-]+$"},"devUrlFields":{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"}}}}]},"workdir":{"type":"object","required":["flag","root"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-{1,2}[A-Za-z][A-Za-z0-9-]*$"},"root":{"type":"string","pattern":"^(/(?!\\.{1,2}(/|$))[A-Za-z0-9._-]+)+$"}}}}},"contractSync":{"type":"object","additionalProperties":false,"properties":{"routeListCommand":{"type":"string"},"consumer":{"type":"boolean","enum":[true]},"template":{"type":"string"}}},"skills":{"type":"object","additionalProperties":false,"properties":{"conventions":{"type":"array","items":{"type":"string"}},"testing":{"type":"array","items":{"type":"string"}},"scaffold":{"type":"array","items":{"type":"string"}}}},"packageManagers":{"type":"array","items":{"type":"object","required":["name","lockfiles","run"],"additionalProperties":false,"properties":{"name":{"type":"string"},"lockfiles":{"type":"array","items":{"type":"string"}},"run":{"type":"string"},"exec":{"type":"string"},"audit":{"type":"string"}}}},"scaffold":{"type":"object","additionalProperties":false,"properties":{"command":{"type":"string"},"tooling":{"type":"array","items":{"type":"string"}}}},"ci":{"type":"object","additionalProperties":false,"properties":{"services":{"type":"array","items":{"type":"string"}},"setup":{"type":"array","items":{"type":"string"}}}},"e2e":{"type":"object","required":["configGlob","run","convention"],"additionalProperties":false,"properties":{"configGlob":{"type":"string"},"run":{"type":"string"},"convention":{"type":"string"},"seed":{"type":"string"},"file":{"type":"string"}}},"migrations":{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string"},"run":{"type":"string"},"fresh":{"type":"string"}}},"audit":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"}}}},"markers":{"type":"array","items":{"type":"string"}},"packages":{"type":"object","additionalProperties":false,"properties":{"composer":{"type":"array","items":{"type":"string"}},"npm":{"type":"array","items":{"type":"string"}}}},"e2eBackend":{"type":"object","required":["convention"],"additionalProperties":false,"properties":{"convention":{"type":"string"},"seed":{"type":"string"}}},"sourceDirs":{"type":"array","items":{"type":"string"}},"docImpact":{"type":"object","additionalProperties":false,"properties":{"endpoint":{"type":"array","items":{"type":"string"}},"schema":{"type":"array","items":{"type":"string"}},"business-rule":{"type":"array","items":{"type":"string"}},"config":{"type":"array","items":{"type":"string"}},"agent-instructions":{"type":"array","items":{"type":"string"}}}},"testIntegrity":{"type":"object","additionalProperties":false,"properties":{"testPaths":{"type":"array","items":{"type":"string"}},"skipMarkers":{"type":"array","items":{"type":"string"}}}},"security":{"type":"object","additionalProperties":false,"properties":{"skills":{"type":"array","items":{"type":"string"}},"riskPaths":{"type":"array","items":{"type":"string"}}}},"gateTemplates":{"type":"array","items":{"type":"object","required":["evidence","command"],"additionalProperties":false,"properties":{"evidence":{"type":"string"},"command":{"type":"string","pattern":"\\{script\\}"}}}},"devUrlHosts":{"type":"array","items":{"type":"string","pattern":"^[a-z0-9-]+(\\.[a-z0-9-]+)+$"}},"extends":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"}}},{"type":"array","items":{"type":"object","required":["name","order","role","detect","agent","conventions","gates","debugPatterns","acceptance"],"additionalProperties":false,"properties":{"$schema":{"type":"string"},"name":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"},"order":{"type":"integer"},"role":{"type":"string","enum":["backend","frontend","fullstack","mobile"]},"detect":{"type":"string"},"agent":{"type":"object","required":["name"],"additionalProperties":false,"properties":{"name":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"},"plugin":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"}}},"conventions":{"type":"array","items":{"type":"string"}},"gates":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"},"skipWhenScaffolded":{"type":"boolean","enum":[true]},"kind":{"type":"string","enum":["format","lint","types","test","e2e","build","security","other"]},"unless":{"type":"array","items":{"type":"string"}},"requires":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"}}]}}]},"lintFix":{"type":"object","required":["flag","fallback"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-[A-Za-z0-9=_-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}},"scriptFallback":{"type":"object","required":["dependency","manifest","minMajor","contains","fallback"],"additionalProperties":false,"properties":{"dependency":{"type":"string","pattern":"^[A-Za-z0-9@_./-]+$"},"manifest":{"type":"string","pattern":"^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$"},"minMajor":{"type":"integer"},"contains":{"type":"string","pattern":"^[A-Za-z0-9 _./:=-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}}}}},"debugPatterns":{"type":"array","items":{"type":"string"}},"acceptance":{"type":"string"},"notes":{"type":"string"},"devUrl":{"type":"string"},"visual":{"type":"string"},"buildGateGuard":{"type":"string"},"execWrapper":{"type":"object","required":["when","command"],"additionalProperties":false,"properties":{"when":{"type":"string","pattern":"^[A-Za-z0-9._][A-Za-z0-9._/-]*$"},"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"requiresRunning":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},{"type":"object","required":["command","jsonField","equals"],"additionalProperties":false,"properties":{"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"jsonField":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"},"equals":{"type":"string","pattern":"^[A-Za-z0-9._-]+$"},"devUrlFields":{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"}}}}]},"workdir":{"type":"object","required":["flag","root"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-{1,2}[A-Za-z][A-Za-z0-9-]*$"},"root":{"type":"string","pattern":"^(/(?!\\.{1,2}(/|$))[A-Za-z0-9._-]+)+$"}}}}},"contractSync":{"type":"object","additionalProperties":false,"properties":{"routeListCommand":{"type":"string"},"consumer":{"type":"boolean","enum":[true]},"template":{"type":"string"}}},"skills":{"type":"object","additionalProperties":false,"properties":{"conventions":{"type":"array","items":{"type":"string"}},"testing":{"type":"array","items":{"type":"string"}},"scaffold":{"type":"array","items":{"type":"string"}}}},"packageManagers":{"type":"array","items":{"type":"object","required":["name","lockfiles","run"],"additionalProperties":false,"properties":{"name":{"type":"string"},"lockfiles":{"type":"array","items":{"type":"string"}},"run":{"type":"string"},"exec":{"type":"string"},"audit":{"type":"string"}}}},"scaffold":{"type":"object","additionalProperties":false,"properties":{"command":{"type":"string"},"tooling":{"type":"array","items":{"type":"string"}}}},"ci":{"type":"object","additionalProperties":false,"properties":{"services":{"type":"array","items":{"type":"string"}},"setup":{"type":"array","items":{"type":"string"}}}},"e2e":{"type":"object","required":["configGlob","run","convention"],"additionalProperties":false,"properties":{"configGlob":{"type":"string"},"run":{"type":"string"},"convention":{"type":"string"},"seed":{"type":"string"},"file":{"type":"string"}}},"migrations":{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string"},"run":{"type":"string"},"fresh":{"type":"string"}}},"audit":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"}}}},"markers":{"type":"array","items":{"type":"string"}},"packages":{"type":"object","additionalProperties":false,"properties":{"composer":{"type":"array","items":{"type":"string"}},"npm":{"type":"array","items":{"type":"string"}}}},"e2eBackend":{"type":"object","required":["convention"],"additionalProperties":false,"properties":{"convention":{"type":"string"},"seed":{"type":"string"}}},"sourceDirs":{"type":"array","items":{"type":"string"}},"docImpact":{"type":"object","additionalProperties":false,"properties":{"endpoint":{"type":"array","items":{"type":"string"}},"schema":{"type":"array","items":{"type":"string"}},"business-rule":{"type":"array","items":{"type":"string"}},"config":{"type":"array","items":{"type":"string"}},"agent-instructions":{"type":"array","items":{"type":"string"}}}},"testIntegrity":{"type":"object","additionalProperties":false,"properties":{"testPaths":{"type":"array","items":{"type":"string"}},"skipMarkers":{"type":"array","items":{"type":"string"}}}},"security":{"type":"object","additionalProperties":false,"properties":{"skills":{"type":"array","items":{"type":"string"}},"riskPaths":{"type":"array","items":{"type":"string"}}}},"gateTemplates":{"type":"array","items":{"type":"object","required":["evidence","command"],"additionalProperties":false,"properties":{"evidence":{"type":"string"},"command":{"type":"string","pattern":"\\{script\\}"}}}},"devUrlHosts":{"type":"array","items":{"type":"string","pattern":"^[a-z0-9-]+(\\.[a-z0-9-]+)+$"}},"extends":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"}}}}]}
+const STACK_SCHEMA = {"oneOf":[{"type":"object","required":["name","order","role","detect","agent","conventions","gates","debugPatterns","acceptance"],"additionalProperties":false,"properties":{"$schema":{"type":"string"},"name":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"},"order":{"type":"integer"},"role":{"type":"string","enum":["backend","frontend","fullstack","mobile"]},"detect":{"type":"string"},"agent":{"type":"object","required":["name"],"additionalProperties":false,"properties":{"name":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"},"plugin":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"}}},"conventions":{"type":"array","items":{"type":"string"}},"gates":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"},"skipWhenScaffolded":{"type":"boolean","enum":[true]},"kind":{"type":"string","enum":["format","lint","types","test","e2e","build","security","other"]},"unless":{"type":"array","items":{"type":"string"}},"requires":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"}}]}}]},"lintFix":{"type":"object","required":["flag","fallback"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-[A-Za-z0-9=_-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}},"scriptFallback":{"type":"object","required":["dependency","manifest","minMajor","contains","fallback"],"additionalProperties":false,"properties":{"dependency":{"type":"string","pattern":"^[A-Za-z0-9@_./-]+$"},"manifest":{"type":"string","pattern":"^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$"},"minMajor":{"type":"integer"},"contains":{"type":"string","pattern":"^[A-Za-z0-9 _./:=-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}}}}},"debugPatterns":{"type":"array","items":{"type":"string"}},"acceptance":{"type":"string"},"notes":{"type":"string"},"devUrl":{"type":"string"},"visual":{"type":"string"},"buildGateGuard":{"type":"string"},"execWrapper":{"type":"object","required":["when","command"],"additionalProperties":false,"properties":{"when":{"type":"string","pattern":"^[A-Za-z0-9._][A-Za-z0-9._/-]*$"},"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"requiresRunning":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},{"type":"object","required":["command","jsonField","equals"],"additionalProperties":false,"properties":{"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"jsonField":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"},"equals":{"type":"string","pattern":"^[A-Za-z0-9._-]+$"},"devUrlFields":{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"}}}}]},"workdir":{"type":"object","required":["flag","root"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-{1,2}[A-Za-z][A-Za-z0-9-]*$"},"root":{"type":"string","pattern":"^(/(?!\\.{1,2}(/|$))[A-Za-z0-9._-]+)+$"}}}}},"contractSync":{"type":"object","additionalProperties":false,"properties":{"routeListCommand":{"type":"string"},"consumer":{"type":"boolean","enum":[true]},"template":{"type":"string"}}},"skills":{"type":"object","additionalProperties":false,"properties":{"conventions":{"type":"array","items":{"type":"string"}},"testing":{"type":"array","items":{"type":"string"}},"scaffold":{"type":"array","items":{"type":"string"}}}},"packageManagers":{"type":"array","items":{"type":"object","required":["name","lockfiles","run"],"additionalProperties":false,"properties":{"name":{"type":"string"},"lockfiles":{"type":"array","items":{"type":"string"}},"run":{"type":"string"},"exec":{"type":"string"},"audit":{"type":"string"}}}},"scaffold":{"type":"object","additionalProperties":false,"properties":{"command":{"type":"string"},"tooling":{"type":"array","items":{"type":"string"}}}},"ci":{"type":"object","additionalProperties":false,"properties":{"services":{"type":"array","items":{"type":"string"}},"setup":{"type":"array","items":{"type":"string"}}}},"e2e":{"type":"object","required":["configGlob","run","convention"],"additionalProperties":false,"properties":{"configGlob":{"type":"string"},"run":{"type":"string"},"convention":{"type":"string"},"seed":{"type":"string"},"file":{"type":"string"}}},"migrations":{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string"},"run":{"type":"string"},"fresh":{"type":"string"}}},"audit":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"}}}},"markers":{"type":"array","items":{"type":"string"}},"packages":{"type":"object","additionalProperties":false,"properties":{"composer":{"type":"array","items":{"type":"string"}},"npm":{"type":"array","items":{"type":"string"}}}},"e2eBackend":{"type":"object","required":["convention"],"additionalProperties":false,"properties":{"convention":{"type":"string"},"seed":{"type":"string"}}},"sourceDirs":{"type":"array","items":{"type":"string"}},"explore":{"type":"array","maxItems":15,"items":{"type":"object","required":["what","where"],"additionalProperties":false,"properties":{"what":{"type":"string","maxLength":120},"where":{"type":"string","maxLength":120}}}},"docImpact":{"type":"object","additionalProperties":false,"properties":{"endpoint":{"type":"array","items":{"type":"string"}},"schema":{"type":"array","items":{"type":"string"}},"business-rule":{"type":"array","items":{"type":"string"}},"config":{"type":"array","items":{"type":"string"}},"agent-instructions":{"type":"array","items":{"type":"string"}}}},"testIntegrity":{"type":"object","additionalProperties":false,"properties":{"testPaths":{"type":"array","items":{"type":"string"}},"skipMarkers":{"type":"array","items":{"type":"string"}}}},"security":{"type":"object","additionalProperties":false,"properties":{"skills":{"type":"array","items":{"type":"string"}},"riskPaths":{"type":"array","items":{"type":"string"}}}},"gateTemplates":{"type":"array","items":{"type":"object","required":["evidence","command"],"additionalProperties":false,"properties":{"evidence":{"type":"string"},"command":{"type":"string","pattern":"\\{script\\}"}}}},"devUrlHosts":{"type":"array","items":{"type":"string","pattern":"^[a-z0-9-]+(\\.[a-z0-9-]+)+$"}},"extends":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"}}},{"type":"array","items":{"type":"object","required":["name","order","role","detect","agent","conventions","gates","debugPatterns","acceptance"],"additionalProperties":false,"properties":{"$schema":{"type":"string"},"name":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"},"order":{"type":"integer"},"role":{"type":"string","enum":["backend","frontend","fullstack","mobile"]},"detect":{"type":"string"},"agent":{"type":"object","required":["name"],"additionalProperties":false,"properties":{"name":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"},"plugin":{"type":"string","pattern":"^[a-z][a-z0-9-]*$"}}},"conventions":{"type":"array","items":{"type":"string"}},"gates":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"},"skipWhenScaffolded":{"type":"boolean","enum":[true]},"kind":{"type":"string","enum":["format","lint","types","test","e2e","build","security","other"]},"unless":{"type":"array","items":{"type":"string"}},"requires":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"},{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_./-]+$"}}]}}]},"lintFix":{"type":"object","required":["flag","fallback"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-[A-Za-z0-9=_-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}},"scriptFallback":{"type":"object","required":["dependency","manifest","minMajor","contains","fallback"],"additionalProperties":false,"properties":{"dependency":{"type":"string","pattern":"^[A-Za-z0-9@_./-]+$"},"manifest":{"type":"string","pattern":"^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$"},"minMajor":{"type":"integer"},"contains":{"type":"string","pattern":"^[A-Za-z0-9 _./:=-]+$"},"fallback":{"type":"string","pattern":"^[A-Za-z0-9 _<>./@:=-]+$"}}}}}},"debugPatterns":{"type":"array","items":{"type":"string"}},"acceptance":{"type":"string"},"notes":{"type":"string"},"devUrl":{"type":"string"},"visual":{"type":"string"},"buildGateGuard":{"type":"string"},"execWrapper":{"type":"object","required":["when","command"],"additionalProperties":false,"properties":{"when":{"type":"string","pattern":"^[A-Za-z0-9._][A-Za-z0-9._/-]*$"},"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"requiresRunning":{"oneOf":[{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},{"type":"object","required":["command","jsonField","equals"],"additionalProperties":false,"properties":{"command":{"type":"string","pattern":"^[A-Za-z0-9._-]+( [A-Za-z0-9._-]+)*$"},"jsonField":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"},"equals":{"type":"string","pattern":"^[A-Za-z0-9._-]+$"},"devUrlFields":{"type":"array","minItems":1,"items":{"type":"string","pattern":"^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"}}}}]},"workdir":{"type":"object","required":["flag","root"],"additionalProperties":false,"properties":{"flag":{"type":"string","pattern":"^-{1,2}[A-Za-z][A-Za-z0-9-]*$"},"root":{"type":"string","pattern":"^(/(?!\\.{1,2}(/|$))[A-Za-z0-9._-]+)+$"}}}}},"contractSync":{"type":"object","additionalProperties":false,"properties":{"routeListCommand":{"type":"string"},"consumer":{"type":"boolean","enum":[true]},"template":{"type":"string"}}},"skills":{"type":"object","additionalProperties":false,"properties":{"conventions":{"type":"array","items":{"type":"string"}},"testing":{"type":"array","items":{"type":"string"}},"scaffold":{"type":"array","items":{"type":"string"}}}},"packageManagers":{"type":"array","items":{"type":"object","required":["name","lockfiles","run"],"additionalProperties":false,"properties":{"name":{"type":"string"},"lockfiles":{"type":"array","items":{"type":"string"}},"run":{"type":"string"},"exec":{"type":"string"},"audit":{"type":"string"}}}},"scaffold":{"type":"object","additionalProperties":false,"properties":{"command":{"type":"string"},"tooling":{"type":"array","items":{"type":"string"}}}},"ci":{"type":"object","additionalProperties":false,"properties":{"services":{"type":"array","items":{"type":"string"}},"setup":{"type":"array","items":{"type":"string"}}}},"e2e":{"type":"object","required":["configGlob","run","convention"],"additionalProperties":false,"properties":{"configGlob":{"type":"string"},"run":{"type":"string"},"convention":{"type":"string"},"seed":{"type":"string"},"file":{"type":"string"}}},"migrations":{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string"},"run":{"type":"string"},"fresh":{"type":"string"}}},"audit":{"type":"array","items":{"type":"object","required":["name","command"],"additionalProperties":false,"properties":{"name":{"type":"string"},"command":{"type":"string"}}}},"markers":{"type":"array","items":{"type":"string"}},"packages":{"type":"object","additionalProperties":false,"properties":{"composer":{"type":"array","items":{"type":"string"}},"npm":{"type":"array","items":{"type":"string"}}}},"e2eBackend":{"type":"object","required":["convention"],"additionalProperties":false,"properties":{"convention":{"type":"string"},"seed":{"type":"string"}}},"sourceDirs":{"type":"array","items":{"type":"string"}},"explore":{"type":"array","maxItems":15,"items":{"type":"object","required":["what","where"],"additionalProperties":false,"properties":{"what":{"type":"string","maxLength":120},"where":{"type":"string","maxLength":120}}}},"docImpact":{"type":"object","additionalProperties":false,"properties":{"endpoint":{"type":"array","items":{"type":"string"}},"schema":{"type":"array","items":{"type":"string"}},"business-rule":{"type":"array","items":{"type":"string"}},"config":{"type":"array","items":{"type":"string"}},"agent-instructions":{"type":"array","items":{"type":"string"}}}},"testIntegrity":{"type":"object","additionalProperties":false,"properties":{"testPaths":{"type":"array","items":{"type":"string"}},"skipMarkers":{"type":"array","items":{"type":"string"}}}},"security":{"type":"object","additionalProperties":false,"properties":{"skills":{"type":"array","items":{"type":"string"}},"riskPaths":{"type":"array","items":{"type":"string"}}}},"gateTemplates":{"type":"array","items":{"type":"object","required":["evidence","command"],"additionalProperties":false,"properties":{"evidence":{"type":"string"},"command":{"type":"string","pattern":"\\{script\\}"}}}},"devUrlHosts":{"type":"array","items":{"type":"string","pattern":"^[a-z0-9-]+(\\.[a-z0-9-]+)+$"}},"extends":{"type":"string","pattern":"^[a-z][a-z0-9-]{1,31}$"}}}}]}
 const STACK_LIMITS = { maxString: 500, maxItems: 32, maxEntries: 8, maxRawLength: 65536 }
 const STACKS = {
   laravel: {
@@ -49,6 +49,7 @@ const STACKS = {
       { name: 'PHPCS (docroot)', command: './vendor/bin/phpcs --standard=Drupal,DrupalPractice --extensions=php,module,inc,install,test,profile,theme,info,yml docroot/modules/custom' },
       { name: 'PHPCS (project ruleset)', command: './vendor/bin/phpcs' },
       { name: 'PHPStan', command: './vendor/bin/phpstan analyse --no-progress' },
+      { name: 'Twig CS Fixer', command: './vendor/bin/twig-cs-fixer lint --no-cache' },
       { name: 'PHPUnit', command: './vendor/bin/phpunit -c web/core --fail-on-empty-test-suite web/modules/custom' },
       { name: 'PHPUnit (docroot)', command: './vendor/bin/phpunit -c docroot/core --fail-on-empty-test-suite docroot/modules/custom' },
       { name: 'PHPUnit (project config)', command: './vendor/bin/phpunit --fail-on-empty-test-suite' },
@@ -182,6 +183,19 @@ const STACK_EXTRAS = {
     ],
     markers: ['artisan'],
     sourceDirs: ['app/', 'routes/', 'database/'],
+    explore: [
+      { what: 'Routes', where: 'routes/api.php, routes/web.php' },
+      { what: 'Controllers', where: 'app/Http/Controllers/**/*.php' },
+      { what: 'Requests and policies', where: 'app/Http/Requests/, app/Policies/' },
+      { what: 'Services', where: 'app/Services/**/*.php' },
+      { what: 'Data objects', where: 'app/DTOs/, app/Data/' },
+      { what: 'Repositories', where: 'app/Repositories/**/*.php' },
+      { what: 'Models and relations', where: 'app/Models/*.php: hasMany, belongsTo, $casts' },
+      { what: 'Migrations', where: 'database/migrations/*.php' },
+      { what: 'Events, jobs, listeners', where: 'app/Events, app/Jobs, app/Listeners' },
+      { what: 'Pest tests', where: 'tests/Feature/, tests/Unit/' },
+      { what: 'Factories', where: 'database/factories/*.php' },
+    ],
     docImpact: {
       endpoint: ['(^|/)routes/', '(^|/)openapi[^/]*\\.(ya?ml|json)$'],
       schema: ['(^|/)database/migrations/', '\\.sql$'],
@@ -221,6 +235,13 @@ const STACK_EXTRAS = {
           'vendor/bin/phpstan',
         ],
       },
+      'Twig CS Fixer': {
+        kind: 'lint',
+        requires: [
+          ['.twig-cs-fixer.php', '.twig-cs-fixer.dist.php'],
+          'vendor/bin/twig-cs-fixer',
+        ],
+      },
       PHPUnit: {
         kind: 'test',
         unless: ['phpunit.xml', 'phpunit.xml.dist'],
@@ -241,9 +262,28 @@ const STACK_EXTRAS = {
       'composer audit': { kind: 'security', requires: 'composer.lock' },
     },
     skills: { conventions: ['drupal-11'] },
+    migrations: { status: './vendor/bin/drush updatedb:status', run: './vendor/bin/drush updatedb -y' },
+    audit: [
+      { name: 'composer audit', command: 'composer audit --locked --format=json' },
+    ],
     markers: ['core/lib/Drupal.php', 'web/core/lib/Drupal.php', 'docroot/core/lib/Drupal.php'],
     packages: { composer: ['drupal/core', 'drupal/core-recommended'] },
     sourceDirs: ['web/modules/custom/', 'web/themes/custom/', 'docroot/modules/custom/', 'docroot/themes/custom/', 'modules/'],
+    explore: [
+      { what: 'Routes', where: '**/*.routing.yml' },
+      { what: 'Controllers', where: '**/src/Controller/**/*.php' },
+      { what: 'Forms and validation', where: '**/src/Form/**/*.php' },
+      { what: 'Services', where: '**/*.services.yml, **/src/**/*.php' },
+      { what: 'Hooks', where: '**/*.module, **/*.install, **/src/Hook/**/*.php' },
+      { what: 'Permissions and access', where: '**/*.permissions.yml, **/src/Access/**/*.php' },
+      { what: 'Configuration', where: '**/config/schema/*.yml, config/sync/*.yml' },
+      { what: 'Entities', where: '**/src/Entity/**/*.php' },
+      { what: 'Plugins', where: '**/src/Plugin/**/*.php' },
+      { what: 'Views', where: 'config/sync/views.view.*.yml' },
+      { what: 'Blocks', where: 'config/sync/block.block.*.yml' },
+      { what: 'Event subscribers', where: '**/src/EventSubscriber/**/*.php' },
+      { what: 'Kernel and functional tests', where: '**/tests/src/Kernel/, **/tests/src/Functional/' },
+    ],
     docImpact: {
       endpoint: ['\\.routing\\.yml$'],
       schema: ['\\.install$', '(^|/)config/schema/'],
@@ -308,6 +348,17 @@ const STACK_EXTRAS = {
       { name: 'npm', lockfiles: ['package-lock.json'], run: 'npm', exec: 'npx' },
     ],
     sourceDirs: ['app/', 'src/', 'components/', 'lib/'],
+    explore: [
+      { what: 'Routes and pages', where: 'app/**/page.tsx, app/**/layout.tsx' },
+      { what: 'Route handlers', where: 'app/**/route.ts' },
+      { what: 'Server Actions', where: 'grep \'use server\'' },
+      { what: 'Client components', where: 'components/**/*.tsx, grep \'use client\'' },
+      { what: 'API client', where: 'lib/api*.ts, services/**/*.ts' },
+      { what: 'Auth and middleware', where: 'middleware.ts, auth.ts, lib/auth*' },
+      { what: 'Types shared with the API', where: 'types/**/*.ts, lib/**/types.ts' },
+      { what: 'Vitest tests', where: '**/*.test.ts, **/*.test.tsx' },
+      { what: 'Playwright tests', where: 'e2e/**/*.spec.ts, tests/e2e/**' },
+    ],
     docImpact: {
       endpoint: ['(^|/)app/(.*/)?route\\.[jt]sx?$', '(^|/)pages/api/', '(^|/)openapi[^/]*\\.(ya?ml|json)$'],
       schema: ['(^|/)prisma/', '(^|/)migrations?/', '\\.sql$'],
@@ -396,17 +447,17 @@ const FIRST_PARTY_PLUGINS = [
   'sdd-kit-drupal', 'sdd-kit-ios', 'sdd-kit-laravel', 'sdd-kit-nextjs',
 ]
 const FIRST_PARTY_HASHES = {
-  drupal: 'b3715351ec36282dbbab59a31f897c1df85f178ea06f1c862ad2e43fc246d4da',
+  drupal: '84a2dc7dcef6c1f1e0a26f7ea940c546d22b273453a6645482e5a3918f6a3ada',
   ios: '5d0c6a57a8da31bd811e2e14e264ff3252ec789f1d450d7fb1c6c42ba11f59c5',
-  laravel: '36f779dad887cc62f4272cb0ff2fa552ce83818e60f7e341f0afc6f4f9d88393',
-  nextjs: '7a3b6b0b298e48870ca3934ccb1da82e6848a8505c3f9be5a674ed35b8e0bd24',
+  laravel: '3e16ca6d67effb631671c0b8c5777c5e6e4157e0a87d2d1bc1c5e3708ac6d605',
+  nextjs: 'e65e27004e2c4ea85acb074c0bc37c066768f0cf9f373e94297d094e86977645',
   nuxt: 'fec759b91ee44eec49a4c4c1b50493770856c54a155d0ff367a1dddec013ed19',
 }
 const FIRST_PARTY_FILE_HASHES = {
-  drupal: 'b3715351ec36282dbbab59a31f897c1df85f178ea06f1c862ad2e43fc246d4da',
+  drupal: '84a2dc7dcef6c1f1e0a26f7ea940c546d22b273453a6645482e5a3918f6a3ada',
   ios: '5d0c6a57a8da31bd811e2e14e264ff3252ec789f1d450d7fb1c6c42ba11f59c5',
-  laravel: '36f779dad887cc62f4272cb0ff2fa552ce83818e60f7e341f0afc6f4f9d88393',
-  nextjs: 'f744d000c0b06f7d6d208e1491aa6f67f56a53aa10172f9981d4757bdc8c8b53',
+  laravel: '3e16ca6d67effb631671c0b8c5777c5e6e4157e0a87d2d1bc1c5e3708ac6d605',
+  nextjs: 'b4a646262a8b650b5ee300bffd5b31bdf6e6381f6a5c58d3a89908b4bc10e723',
 }
 const DEV_URL_HOSTS = [
   'ddev.site',
@@ -449,6 +500,7 @@ const HOSTS = {
     skillsDir: '.cursor/skills',
   },
 }
+const KIT_VERSION = '4.4.0'
 const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key)
 
 // Keys inlined at build time. Overlay manifests can never replace them.
@@ -685,6 +737,27 @@ function isContractConsumer(stack) {
 
 // Extras whose fields carry commands (scaffold, ci, e2e, migrations, audit, packageManagers): empty for an untrusted overlay.
 const extrasFor = (stack) => (hasOwn(STACK_EXTRAS, stack) && !isUntrustedStack(stack) ? STACK_EXTRAS[stack] : {})
+
+/**
+ * The manifest's exploration rows for the stacks of the given repos, as prompt text for a code-explorer
+ * step. Rows render as "- <what>: <where>" under one heading per stack (deduplicated); a stack with no
+ * rows, and an untrusted overlay, adds nothing.
+ * @param {Array<{stack: string, role?: string}>} repos
+ * @returns {string} empty, or text that starts with a blank line so it can be appended to a prompt
+ */
+function exploreText(repos) {
+  const seen = []
+  const groups = []
+  for (const repo of repos || []) {
+    if (!repo || seen.includes(repo.stack)) continue
+    seen.push(repo.stack)
+    const rows = extrasFor(repo.stack).explore || []
+    const roots = extrasFor(repo.stack).sourceDirs || []
+    const scope = roots.length ? `\nSearch under ${roots.join(' ')} first; vendored and framework code (core, contrib, vendor) is read-only reference, so do not sweep it with repo-wide globs.` : ''
+    if (rows.length) groups.push(`Where ${repo.stack} keeps things (${repo.role || 'repo'} repo):${scope}\n${rows.map((r) => `- ${r.what}: ${r.where}`).join('\n')}`)
+  }
+  return groups.length ? `\n\n${groups.join('\n\n')}` : ''
+}
 
 // Skill names the manifest lists for a stack: { conventions, testing, scaffold } (absent groups are empty).
 // Empty for an untrusted overlay (OD-17a): its steps run as the default agent with no stack skills.
@@ -1326,8 +1399,187 @@ let discoveryMode = null
  * costSnapshot phase, or null when the run has no budget. probesFailed counts candidate
  * names agent() rejected while resolving an agent type.
  */
-const RUN_COST = { phases: {}, probesFailed: 0 }
+const RUN_COST = { phases: {}, probesFailed: 0, cap: { limit: null, used: 0, refused: 0, phase: null } }
 let costMark = null
+
+/** Highest value args.maxAgents accepts: the runtime's own per-run backstop. */
+const AGENT_CAP_LIMIT = 1000
+/** Phases whose calls are never refused, so a capped run still writes its report. setAgentCap adds a workflow's own. */
+const AGENT_CAP_EXEMPT = new Set(['Report', 'Close'])
+
+/**
+ * Sets the per-run agent cap. Call it before Detect with args.maxAgents. undefined and null take
+ * `fallback`; any other value must be an integer from 1 to AGENT_CAP_LIMIT (strict: "40" and 1.5 are rejected).
+ * @param {*} value args.maxAgents
+ * @param {number|null} [fallback] the workflow's default; null or absent means no cap
+ * @param {string[]} [exempt] phases besides Report and Close that are never refused
+ * @returns {string[]} argIssues entries; empty when the value is acceptable
+ * @example
+ * const issues = setAgentCap(args.maxAgents, 120)
+ */
+function setAgentCap(value, fallback, exempt = []) {
+  for (const name of exempt) AGENT_CAP_EXEMPT.add(name)
+  const cap = RUN_COST.cap
+  cap.limit = typeof fallback === 'number' ? fallback : null
+  if (value === undefined || value === null) return []
+  if (!Number.isInteger(value) || value < 1 || value > AGENT_CAP_LIMIT) {
+    return [`args.maxAgents must be an integer from 1 to ${AGENT_CAP_LIMIT}. Fix: pass a whole number in that range, or leave it out for the default`]
+  }
+  cap.limit = value
+  return []
+}
+
+/** Highest value args.maxFindings accepts. */
+const FINDINGS_CAP_LIMIT = 50
+/** The per-dimension Review findings cap of this run; setReviewArgs sets it. */
+const REVIEW_CAP = { maxFindings: 8 }
+
+/**
+ * Validates the review-related args before Detect and sets the per-dimension findings cap.
+ * `maxFindings` must be an integer from 1 to FINDINGS_CAP_LIMIT (undefined and null take `fallback`);
+ * `profile`, when `profiles` is given, must be one of them.
+ * @param {*} maxFindings args.maxFindings
+ * @param {*} profile args.profile
+ * @param {number} fallback default findings per dimension
+ * @param {string[]} [profiles] the profile names the workflow accepts; omit when it has none
+ * @returns {string[]} argIssues entries; empty when the args are acceptable
+ * @example
+ * const issues = setReviewArgs(args.maxFindings, args.profile, 8, ['quick', 'standard'])
+ */
+function setReviewArgs(maxFindings, profile, fallback, profiles) {
+  const issues = []
+  REVIEW_CAP.maxFindings = fallback
+  if (maxFindings !== undefined && maxFindings !== null) {
+    if (!Number.isInteger(maxFindings) || maxFindings < 1 || maxFindings > FINDINGS_CAP_LIMIT) {
+      issues.push(`args.maxFindings must be an integer from 1 to ${FINDINGS_CAP_LIMIT}. Fix: pass a whole number in that range, or leave it out for the default`)
+    } else REVIEW_CAP.maxFindings = maxFindings
+  }
+  if (profiles && profile !== undefined && profile !== null && !profiles.includes(profile)) {
+    issues.push(`args.profile must be one of ${profiles.map((p) => `'${p}'`).join(' or ')}. Fix: pass one of those values, or leave it out for the default`)
+  }
+  return issues
+}
+
+/**
+ * The run's agent cap as a result returns it.
+ * @returns {{ limit: number|null, used: number, reached: boolean, refused: number, phase: string|null }}
+ */
+function agentCapResult() {
+  const { limit, used, refused, phase } = RUN_COST.cap
+  return { limit, used, reached: refused > 0, refused, phase }
+}
+
+/**
+ * The cost line for the report: used and limit, with the phase of the first refusal once the cap was reached.
+ * @returns {string}
+ */
+function agentCapLine() {
+  const { limit, used, refused, phase } = RUN_COST.cap
+  if (limit === null) return `agents: ${used} (no cap)`
+  return refused > 0 ? `agents: ${used} of ${limit} (cap reached in ${phase})` : `agents: ${used} of ${limit}`
+}
+
+/**
+ * A report-prompt paragraph for workflows without a ledger: empty unless calls were refused.
+ * @returns {string}
+ */
+function agentCapNote() {
+  const { limit, refused, phase } = RUN_COST.cap
+  if (!refused) return ''
+  return `\nAgent cap: the run's limit of ${limit} agents was reached in ${phase}; ${refused} call(s) were refused, so later checks did not run and the results are partial. State this in the report and end with: Fix: re-run with a higher maxAgents`
+}
+
+const CALL_KEY = /^[A-Za-z_$][A-Za-z0-9_$]*$/
+
+/**
+ * Serializes a workflow args value as call text: bare identifier keys in insertion order, JSON values.
+ * A string is quoted in full and is never truncated, so the printed call runs as written.
+ * @param {*} value the caller's args (object or string)
+ * @returns {string}
+ * @example
+ * callArgs({ spec: 'spec-1', maxAgents: 240 }) // '{ spec: "spec-1", maxAgents: 240 }'
+ */
+function callArgs(value) {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return JSON.stringify(value === undefined ? null : value)
+  const parts = Object.keys(value)
+    .filter((k) => value[k] !== undefined)
+    .map((k) => `${CALL_KEY.test(k) ? k : JSON.stringify(k)}: ${JSON.stringify(value[k])}`)
+  return parts.length ? `{ ${parts.join(', ')} }` : '{}'
+}
+
+/**
+ * The call that launches a workflow again, computed in script so the Report agent quotes it as is.
+ * A bridge host (HOST not 'claude') is checked first because the bridge always uses the bare name;
+ * otherwise the name follows Detect's discovery mode: bare in file-copy mode, namespaced elsewhere.
+ * @param {string} name workflow meta.name
+ * @param {*} callerArgs args to pass on
+ * @returns {string}
+ */
+function resumeCall(name, callerArgs) {
+  if (HOST !== 'claude') return `workflow_start({ name: "${name}", workspace, args: ${callArgs(callerArgs)} })`
+  const callName = discoveryMode === 'file-copy' ? name : `sdd-kit:${name}`
+  return `Workflow({ name: "${callName}", args: ${callArgs(callerArgs)} })`
+}
+
+/**
+ * The note that tells a file-copy install how the call is named; '' on a bridge host or in file-copy mode.
+ * It goes into log and Report text only, never into a result field.
+ * @param {string} name workflow meta.name
+ * @returns {string}
+ */
+function resumeFileCopyNote(name) {
+  return HOST !== 'claude' || discoveryMode === 'file-copy' ? '' : ` (file-copy install: name "${name}")`
+}
+
+/**
+ * The maxAgents a relaunch should carry after the cap stopped the run: min(2 x limit, 1000).
+ * @returns {number|null} null when the cap did not stop the run or is already at its maximum
+ */
+function raisedMaxAgents() {
+  const { limit, refused } = RUN_COST.cap
+  if (limit === null || refused === 0 || limit >= AGENT_CAP_LIMIT) return null
+  return Math.min(limit * 2, AGENT_CAP_LIMIT)
+}
+
+/**
+ * The caller's args for a relaunch: the same args, with maxAgents raised when the cap stopped the run.
+ * A string argument stays a string unless keys are added; then it moves under `stringKey`.
+ * @param {*} callerArgs the run's args
+ * @param {object} [overrides] keys to set, such as { spec: '<id>' }
+ * @param {string} [stringKey] the workflow's arg that a string argument stands for, such as 'bug'
+ * @returns {*}
+ * @example relaunchArgs('the total is off', { spec: 's' }, 'bug')  // { bug: 'the total is off', spec: 's' }
+ */
+function relaunchArgs(callerArgs, overrides = {}, stringKey = 'description') {
+  const raised = raisedMaxAgents()
+  const extra = { ...overrides, ...(raised ? { maxAgents: raised } : {}) }
+  if (typeof callerArgs === 'string') return Object.keys(extra).length ? { [stringKey]: callerArgs, ...extra } : callerArgs
+  return { ...(callerArgs && typeof callerArgs === 'object' ? callerArgs : {}), ...extra }
+}
+
+/**
+ * The Next line for a run that should be relaunched as the same run: every task is ticked, so a new
+ * {spec} run would have nothing to build.
+ * @param {string} [call] the computed relaunch call to quote after the sentence; omit for ship-feature
+ * @returns {string}
+ */
+function sameRunRelaunchLine(call) {
+  const { limit, refused } = RUN_COST.cap
+  const raised = raisedMaxAgents()
+  const stopped = limit !== null && refused > 0
+  const cap = !stopped ? '' : raised ? ` with maxAgents raised to ${raised}` : ` (maxAgents is at its maximum of ${AGENT_CAP_LIMIT}. Fix: narrow the scope or split the spec)`
+  return `Relaunch this run in the same session (or after claude --resume)${cap}${call ? `: ${call}` : ''}`
+}
+
+/**
+ * The ledger entry for a run that refused calls, or null when none was refused.
+ * @returns {{ check: string, status: string, reason: string }|null}
+ */
+function agentCapEntry() {
+  const { limit, refused, phase } = RUN_COST.cap
+  if (!refused) return null
+  return assure('agent-cap', 'unavailable', `agent cap of ${limit} reached in ${phase}; ${refused} call(s) refused, so later checks did not run. Fix: re-run with a higher maxAgents`)
+}
 
 function costPhase(name) {
   if (!hasOwn(RUN_COST.phases, name)) RUN_COST.phases[name] = { agents: 0, tokens: null }
@@ -1381,6 +1633,95 @@ function agentCandidates(name, mode = discoveryMode) {
   return { candidates: [name], hint: addAgentHint(name) }
 }
 
+const RERUN_FIX = 'then re-run the same workflow'
+
+/**
+ * Errors the host reports when the session or account cannot run any agent. Patterns are anchored on
+ * the host's own error text so a report that merely discusses a quota feature does not match.
+ * @type {{ kind: string, pattern: RegExp, line: string }[]}
+ */
+const HOST_FATAL = [
+  {
+    kind: 'auth',
+    pattern: /please run \/login|\bAPI Error: 401\b|"type"\s*:\s*"authentication_error"|\bOAuth token (?:has )?expired\b|\binvalid api key\b/i,
+    line: `host session not authenticated. Fix: sign in to the host again, ${RERUN_FIX}`,
+  },
+  {
+    kind: 'access',
+    pattern: /\bAPI Error: 403\b|"type"\s*:\s*"permission_error"/,
+    line: `host account has no access (API 403). Fix: check the account or organization permissions, sign in to the host with an account that has access, ${RERUN_FIX}`,
+  },
+  {
+    kind: 'limit',
+    pattern: /credit balance is too low|usage limit reached|\bquota (?:exceeded|exhausted)\b/i,
+    line: `host credit or usage limit reached. Fix: add credits or wait for the limit to reset, ${RERUN_FIX}`,
+  },
+]
+
+/**
+ * Run-level host abort. Set by the first host-fatal result; every later runAgent call returns null.
+ * Module-level like RUN_COST: each run evaluates the script afresh, so a re-run starts clear.
+ */
+const HOST_ABORT = { kind: null, line: null, phase: null }
+
+/**
+ * Classifies an agent() failure. A thrown error is matched on its message at any length; a string
+ * result only when its trimmed length is 500 characters or less, and only when the matched phrase is
+ * not in the call's own prompt: an agent that repeats a ticket or spec quoting an error message is
+ * answering, not failing.
+ * @param {*} errOrText an Error, or the value agent() returned
+ * @param {string} [prompt] the prompt of the call that returned errOrText
+ * @returns {{ kind: string, line: string }|null} the matched class, or null when not host-fatal
+ * @example isHostFatal('Please run /login')                                   // { kind: 'auth', line: '...' }
+ * @example isHostFatal('Please run /login', 'Bug: users see "Please run /login"')  // null
+ */
+function isHostFatal(errOrText, prompt) {
+  let text
+  let returned = false
+  if (errOrText instanceof Error || (errOrText && typeof errOrText === 'object' && typeof errOrText.message === 'string')) text = errOrText.message
+  else if (typeof errOrText === 'string' && errOrText.trim().length <= 500) {
+    text = errOrText
+    returned = true
+  } else return null
+  for (const h of HOST_FATAL) {
+    const m = h.pattern.exec(text)
+    if (!m) continue
+    if (returned && typeof prompt === 'string' && prompt.toLowerCase().includes(m[0].toLowerCase())) continue
+    return { kind: h.kind, line: h.line }
+  }
+  return null
+}
+
+/** @returns {boolean} true once a host-fatal result has aborted the run */
+const hostAborted = () => HOST_ABORT.kind !== null
+
+/**
+ * The result of a run ended by a host-fatal error. Built without an agent, so no report is written.
+ * @param {{ failedTasks?: number[], notRun?: number[], assurance?: object[], handFixes?: string[] }} [parts] failures from before the abort,
+ *   tasks never built, the ledger so far, and steps the user takes by hand because no agent can run to undo them
+ * @returns {object} { recommendation: 'ABORTED', abort: { kind, line, phase }, failedTasks, notRun, assurance, agentCap, next }
+ */
+function hostAbortResult(parts = {}) {
+  const abort = { kind: HOST_ABORT.kind, line: HOST_ABORT.line, phase: HOST_ABORT.phase }
+  return {
+    recommendation: 'ABORTED',
+    abort,
+    failedTasks: parts.failedTasks || [],
+    notRun: parts.notRun || [],
+    assurance: parts.assurance || [],
+    agentCap: agentCapResult(),
+    next: `${abort.line}. Changes made before the abort are uncommitted in the working tree; check git status.${parts.handFixes && parts.handFixes.length ? ` Fix by hand: ${parts.handFixes.join('; ')}.` : ''}`,
+  }
+}
+
+function tripHostAbort(fatal, phase) {
+  if (hostAborted()) return
+  HOST_ABORT.kind = fatal.kind
+  HOST_ABORT.line = fatal.line
+  HOST_ABORT.phase = phase
+  log(fatal.line)
+}
+
 /**
  * Runs `prompt` through agent() with the agent type resolved for this install, adds the
  * browser guide to browser phases, and counts the call under opts.phase in RUN_COST.
@@ -1389,35 +1730,70 @@ function agentCandidates(name, mode = discoveryMode) {
  * @returns {Promise<*>} the agent's result
  */
 async function runAgent(prompt, opts) {
+  if (hostAborted()) return null
+  const phaseName = (opts && opts.phase) || 'unphased'
+  const cap = RUN_COST.cap
+  if (cap.limit !== null && cap.used >= cap.limit && !AGENT_CAP_EXEMPT.has(phaseName)) {
+    if (cap.refused === 0) {
+      cap.phase = phaseName
+      log(`Agent cap of ${cap.limit} reached in ${phaseName}; later agent calls are refused and their checks do not run. Fix: re-run with a higher maxAgents`)
+    }
+    cap.refused += 1
+    return null
+  }
+  cap.used += 1
+  const guard = (result) => {
+    const fatal = isHostFatal(result, prompt)
+    if (!fatal) return result
+    tripHostAbort(fatal, phaseName)
+    return null
+  }
+  const launch = async (p, o) => {
+    try {
+      return guard(await agent(p, o))
+    } catch (e) {
+      const fatal = isHostFatal(e)
+      if (!fatal) throw e
+      tripHostAbort(fatal, phaseName)
+      return null
+    }
+  }
   costPhase((opts && opts.phase) || 'unphased').agents += 1
   if (opts && BROWSER_PHASES.has(opts.phase)) prompt = `${prompt}\n\n${browserGuideFor()}`
-  if (!opts || !opts.agentType || opts.agentType === 'general-purpose') return agent(prompt, opts)
+  if (!opts || !opts.agentType || opts.agentType === 'general-purpose') return launch(prompt, opts)
   const name = opts.agentType
   const { agentType, ...rest } = opts
   if (resolvedAgents.has(name)) {
     const known = resolvedAgents.get(name)
-    return known === null ? agent(prompt, rest) : agent(prompt, { ...opts, agentType: known })
+    return known === null ? launch(prompt, rest) : launch(prompt, { ...opts, agentType: known })
   }
   const { candidates, hint } = agentCandidates(name)
   for (const candidate of candidates) {
+    if (hostAborted()) return null
     if (rejectedAgentTypes.has(candidate)) continue
     let result
     try {
       result = await agent(prompt, { ...opts, agentType: candidate })
     } catch (e) {
+      const fatal = isHostFatal(e)
+      if (fatal) {
+        tripHostAbort(fatal, phaseName)
+        return null
+      }
       // Unknown agent type in this install mode; try the next form.
       rejectedAgentTypes.add(candidate)
       RUN_COST.probesFailed += 1
       continue
     }
     if (!resolvedAgents.has(name)) resolvedAgents.set(name, candidate)
-    return result
+    return guard(result)
   }
   if (!resolvedAgents.has(name)) {
     resolvedAgents.set(name, null)
     log(`Specialist ${name} not available (tried: ${candidates.join(', ')}); ${hint}. Falling back to general-purpose.`)
   }
-  return agent(prompt, rest)
+  if (hostAborted()) return null
+  return launch(prompt, rest)
 }
 
 // --- manifest validation ------------------------------------------------
@@ -1462,7 +1838,9 @@ function manifestSchemaCheck(value, schema, ptr, overlay, out) {
     if (schema.pattern && !new RegExp(schema.pattern).test(value)) {
       out.push({ pointer: at, rule: 'pattern', problem: `does not match the pattern (found ${JSON.stringify(value)})`, fix: `match ${schema.pattern}` })
     }
-    if (overlay && value.length > STACK_LIMITS.maxString) {
+    if (schema.maxLength !== undefined && value.length > schema.maxLength) {
+      out.push({ pointer: at, rule: 'maxLength', problem: `is longer than ${schema.maxLength} characters`, fix: 'shorten it' })
+    } else if (overlay && value.length > STACK_LIMITS.maxString) {
       out.push({ pointer: at, rule: 'maxLength', problem: `is longer than ${STACK_LIMITS.maxString} characters`, fix: 'shorten it' })
     }
   }
@@ -1486,7 +1864,9 @@ function manifestSchemaCheck(value, schema, ptr, overlay, out) {
     if (schema.minItems !== undefined && value.length < schema.minItems) {
       out.push({ pointer: at, rule: 'minItems', problem: `has fewer than ${schema.minItems} items`, fix: 'add an item' })
     }
-    if (overlay && value.length > STACK_LIMITS.maxItems) {
+    if (schema.maxItems !== undefined && value.length > schema.maxItems) {
+      out.push({ pointer: at, rule: 'maxItems', problem: `has more than ${schema.maxItems} items`, fix: 'remove items' })
+    } else if (overlay && value.length > STACK_LIMITS.maxItems) {
       out.push({ pointer: at, rule: 'maxItems', problem: `has more than ${STACK_LIMITS.maxItems} items`, fix: 'remove items' })
     }
     if (schema.items) value.forEach((item, i) => manifestSchemaCheck(item, schema.items, manifestPointer(ptr, i), overlay, out))
@@ -1734,7 +2114,11 @@ const SCHEMA_KEY_NAMES = (() => {
 function redactedReason(p) {
   const pointer = !p.pointer || p.pointer === '/' ? '/' : p.pointer.split('/').map((seg, i) => (i === 0 || /^\d{1,3}$/.test(seg) || SCHEMA_KEY_NAMES.has(seg) ? seg : '<key>')).join('/')
   const rule = hasOwn(RULE_TEXT, p.rule) ? p.rule : 'schema'
-  const [problem, fix] = hasOwn(RULE_TEXT, rule) ? RULE_TEXT[rule] : ['breaks the manifest schema', 'check the manifest against stack.schema.json']
+  const [ruleProblem, fix] = hasOwn(RULE_TEXT, rule) ? RULE_TEXT[rule] : ['breaks the manifest schema', 'check the manifest against stack.schema.json']
+  // A length or count limit comes from the schema or STACK_LIMITS, never from the manifest, so the validator's
+  // text is kept when it is exactly that sentence with a number.
+  const limitText = (rule === 'maxLength' && /^is longer than \d+ characters$/.test(String(p.problem || ''))) || (rule === 'maxItems' && /^has more than \d+ items$/.test(String(p.problem || '')))
+  const problem = limitText ? p.problem : ruleProblem
   return `${pointer} ${problem} (rule ${rule}). Fix: ${fix}`
 }
 const SOURCE_LABEL_PATTERN = /^[A-Za-z0-9:._~/@-]{1,120}$/
@@ -1963,7 +2347,7 @@ function firstPartyEntry(key) {
 }
 
 // Optional manifest blocks copied unchanged into STACK_EXTRAS.
-const MANIFEST_EXTRA_FIELDS = ['skills', 'scaffold', 'ci', 'e2e', 'e2eBackend', 'migrations', 'audit', 'markers', 'packages', 'packageManagers', 'sourceDirs', 'docImpact', 'testIntegrity', 'security', 'gateTemplates']
+const MANIFEST_EXTRA_FIELDS = ['skills', 'scaffold', 'ci', 'e2e', 'e2eBackend', 'migrations', 'audit', 'markers', 'packages', 'packageManagers', 'sourceDirs', 'explore', 'docImpact', 'testIntegrity', 'security', 'gateTemplates']
 
 /**
  * The one projection of a manifest entry onto the registry: its STACKS row plus the trait and extra
@@ -2172,6 +2556,7 @@ const REPO_PATH_RULE = `REPO PATHS — report each repo's path relative to the c
  * @returns {Promise<{ project: object|null, failure: string|null }>}
  */
 async function detectStacks(prompt, opts) {
+  log(`SDD Kit ${KIT_VERSION}`)
   try {
     return { project: await runAgent(prompt, opts), failure: null }
   } catch (e) {
@@ -2364,6 +2749,64 @@ function workBranchName(prefix, folder, key, fallback) {
   const name = validKey ? (slug ? `${prefix}/${validKey}-${slug}` : `${prefix}/${validKey}`) : slug ? `${prefix}/${slug}` : null
   return name && new RegExp(`^${prefix}/[A-Za-z0-9._-]+$`).test(name) ? name : null
 }
+
+/**
+ * Whether a branch is protected without a git call: a detached HEAD (""), main, master, develop,
+ * release/*, or a name or glob the Prepare agent read from SDD_KIT_PROTECTED_BRANCHES. In a glob
+ * `*` matches any characters including "/" and `?` one character. The origin default branch is known
+ * only inside the repo, so the agent reports it as `protected`.
+ *
+ * @param {string} branch    output of git branch --show-current
+ * @param {string[]} [extra] names or globs reported as extraProtected
+ * @returns {boolean}
+ * @example isProtectedBranch('release/a/b')            // true
+ * @example isProtectedBranch('staging', ['stag*'])     // true
+ */
+function isProtectedBranch(branch, extra = []) {
+  const b = String(branch || '').trim()
+  if (b === '' || b === 'main' || b === 'master' || b === 'develop' || b.startsWith('release/')) return true
+  const globs = (Array.isArray(extra) ? extra : []).flatMap((entry) => String(entry ?? '').split(/[\s,]+/)).filter(Boolean)
+  return globs.some((glob) => globRegExp(glob).test(b))
+}
+
+/**
+ * A bash `case` pattern as an anchored regex: `*` matches any characters including "/", `?` one
+ * character, and `[...]` a bracket expression (`[!x]` or `[^x]` negated, a leading `]` literal). An
+ * unclosed `[` is a literal, as in bash. block-dangerous.sh matches the same globs with `case`.
+ * @param {string} glob
+ * @returns {RegExp}
+ * @example globRegExp('release-[0-9]*').test('release-2.1')  // true
+ */
+function globRegExp(glob) {
+  const escape = (c) => c.replace(/[.+^${}()|[\]\\*?\/-]/g, '\\$&')
+  let out = ''
+  for (let i = 0; i < glob.length; i++) {
+    const c = glob[i]
+    if (c === '*') out += '.*'
+    else if (c === '?') out += '.'
+    else if (c === '[') {
+      let j = i + 1
+      const negated = glob[j] === '!' || glob[j] === '^'
+      if (negated) j++
+      if (glob[j] === ']') j++
+      while (j < glob.length && glob[j] !== ']') j++
+      if (j >= glob.length) {
+        out += '\\['
+        continue
+      }
+      const body = glob.slice(i + 1 + (negated ? 1 : 0), j).replace(/[\\\]^]/g, '\\$&')
+      out += `[${negated ? '^' : ''}${body}]`
+      i = j
+    } else out += escape(c)
+  }
+  return new RegExp(`^${out}$`)
+}
+
+/**
+ * Prompt text that defines a protected branch for an agent: the built-in set plus the names and globs
+ * in the SDD_KIT_PROTECTED_BRANCHES environment variable (spaces or commas). The variable only adds branches.
+ */
+const PROTECTED_BRANCH_RULE = 'The branch is protected when HEAD is detached, or it is main, master, develop, release/<anything>, or the default branch. It is also protected when it matches a name or glob in the output of printenv SDD_KIT_PROTECTED_BRANCHES (entries split on spaces or commas, blanks ignored, * matches any characters including /; empty or unset adds nothing)'
 
 /**
  * The feature branch of ship-feature.
@@ -3362,7 +3805,7 @@ const HASHES_SCHEMA = {
 
 const BASE_SCHEMA = {
   type: 'object',
-  required: ['sha', 'dirty'],
+  required: ['sha', 'dirty', 'hashes'],
   properties: {
     sha: { type: 'string' },
     dirty: { type: 'array', items: { type: 'string' } },
@@ -3475,7 +3918,14 @@ async function recordBases(repoList, opts) {
   return Promise.all(repoList.map(async (repo) => {
     if (repo.tracked !== true || !isRepoPath(repo.path, opts.roots)) return baseEntry(repo, null, opts.roots)
     const raw = await opts.run(`Record the starting point of the ${repo.role} repo at "${repo.path}". Use Bash. Change nothing.\n1. ${baseStepText(repo.path)}\nReturn sha, dirty and hashes.`, repo)
-    return baseEntry(repo, raw, opts.roots)
+    const entry = baseEntry(repo, raw, opts.roots)
+    // A dirty file without a base hash later counts as changed by the run, so missing hashes are asked for once more.
+    const missing = entry.sha ? entry.dirty.filter(isHashablePath).filter((f) => !hasOwn(entry.hashes || {}, f)) : []
+    if (!missing.length) return entry
+    const again = await opts.run(`Record the starting point of the ${repo.role} repo at "${repo.path}". Use Bash. Change nothing.\nThe content hashes of the already-changed files are missing. Return sha = ${entry.sha}, dirty = the same list as before, and hashes for these paths:\n1.${hashStepText(repo.path, missing).replace(/^ +/, ' ')}Return sha, dirty and hashes.`, repo)
+    const more = again ? acceptHashes(again.hashes) : {}
+    if (Object.keys(more).length) entry.hashes = { ...(entry.hashes || {}), ...more }
+    return entry
   }))
 }
 
@@ -3489,7 +3939,7 @@ function logBases(bases) {
 // base plus untracked files, minus the files already dirty at the start), not from what agents report.
 const CHANGED_SCHEMA = {
   type: 'object',
-  required: ['files'],
+  required: ['files', 'hashes'],
   properties: { files: { type: 'array', items: { type: 'string' } }, hashes: HASHES_SCHEMA },
 }
 
@@ -3637,10 +4087,73 @@ const FINDINGS_SCHEMA = {
           severity: { type: 'string', enum: ['critical', 'major', 'minor'] },
           description: { type: 'string' },
           convention: { type: 'string' },
+          excerpt: { type: 'string' },
         },
       },
     },
   },
+}
+
+const EXCERPT_LIMIT = 2000
+const EXCERPT_MARKER = '[excerpt truncated]'
+/** The reviewer instruction for excerpts. Excerpts come back in the workflow result, so no secret may be quoted. */
+const EXCERPT_RULE = 'For each finding you may quote up to 10 lines of code either side in excerpt; never quote a secret value (a key, token, password or credential in a connection string): write <redacted> in its place.'
+
+/**
+ * An excerpt cut to EXCERPT_LIMIT characters with the truncation marker, so the verifier prompt and
+ * the workflow result carry the same text.
+ * @param {*} excerpt the reviewer's excerpt
+ * @returns {*} the cut string, or the value unchanged when it is not a string within the limit
+ */
+function clipExcerpt(excerpt) {
+  return typeof excerpt === 'string' && excerpt.length > EXCERPT_LIMIT ? `${excerpt.slice(0, EXCERPT_LIMIT)}\n${EXCERPT_MARKER}` : excerpt
+}
+const SEVERITY_RANK = { critical: 0, major: 1, minor: 2 }
+
+/**
+ * Caps one dimension's findings. Every critical and major finding is kept; the remaining slots are filled
+ * in severity, file, line and title order, so the same reviewer output always gives the same selection and order.
+ * @param {object[]} findings a dimension's findings
+ * @param {number} [max] findings kept per dimension (the run's args.maxFindings by default)
+ * @returns {{ kept: object[], skipped: object[] }} skipped = the lower-severity findings beyond the cap
+ */
+function capFindings(findings, max = REVIEW_CAP.maxFindings) {
+  const rank = (f) => (f.severity in SEVERITY_RANK ? SEVERITY_RANK[f.severity] : 3)
+  const cmp = (x, y) => (x < y ? -1 : x > y ? 1 : 0)
+  const sorted = [...findings].sort(
+    (a, b) =>
+      rank(a) - rank(b) ||
+      cmp(a.file ? 0 : 1, b.file ? 0 : 1) ||
+      cmp(String(a.file || ''), String(b.file || '')) ||
+      cmp(Number.isInteger(a.line) ? a.line : Infinity, Number.isInteger(b.line) ? b.line : Infinity) ||
+      cmp(String(a.title || ''), String(b.title || ''))
+  )
+  const blocking = sorted.filter((f) => rank(f) < 2).length
+  const keep = Math.max(blocking, max)
+  const clipped = sorted.map((f) => (f && typeof f.excerpt === 'string' && f.excerpt.length > EXCERPT_LIMIT ? { ...f, excerpt: clipExcerpt(f.excerpt) } : f))
+  return { kept: clipped.slice(0, keep), skipped: clipped.slice(keep) }
+}
+
+/**
+ * Marks findings skipped by the cap as unverified so they are listed but never counted as checked.
+ * @param {object[]} skipped from capFindings
+ * @param {string} dimension the dimension key
+ * @param {object} [extra] fields added to every entry
+ * @returns {object[]}
+ */
+function capSkipped(skipped, dimension, extra = {}) {
+  return skipped.map((f) => ({ ...f, dimension, ...extra, unverified: true, reason: 'review cap' }))
+}
+
+/**
+ * The verifier-prompt block for a finding's reviewer-quoted excerpt, cut to EXCERPT_LIMIT characters.
+ * @param {{ excerpt?: string }} f
+ * @returns {string} empty when the finding has no excerpt
+ */
+function excerptBlock(f) {
+  if (typeof f.excerpt !== 'string' || !f.excerpt.trim()) return ''
+  const text = f.excerpt.endsWith(`\n${EXCERPT_MARKER}`) ? f.excerpt : clipExcerpt(f.excerpt)
+  return `\nReviewer-quoted context (quoted by the reviewer, not verified; check it against the file before relying on it):\n${text}`
 }
 
 const REVIEW_VERDICT_SCHEMA = {
@@ -3690,7 +4203,7 @@ function makeFindingVerifier({ subject, models }) {
     runAgent(
       `You verify one finding from an adversarial code review of ${subject}. Try to REFUTE it: read the cited file and line in the actual code, and default real=false if you cannot confirm it there. Do not re-rate its severity. When it is real, set fixSize: trivial (a local change of a line or two), small (within one function or file) or large (several files, or a design change).${stage === 'Fix' ? ' A fix for it has just been applied: judge the code as it stands now.' : ''}
 Finding (${dim.key}): "${f.title}" in ${f.file || '?'}${f.line ? ':' + f.line : ''}
-${f.description || ''}${f.convention ? `\nConvention: ${f.convention}` : ''}
+${f.description || ''}${f.convention ? `\nConvention: ${f.convention}` : ''}${stage === 'Fix' ? '' : excerptBlock(f)}
 Lens: ${lens} — ${VERIFY_LENSES[lens]}`,
       { label: `${stage === 'Fix' ? 'reverify' : 'verify'}:${dim.key}`, phase: stage, schema: REVIEW_VERDICT_SCHEMA, ...models.verify }
     )
@@ -3726,7 +4239,7 @@ function isBlockingFinding(f) {
 
 const SHARED_REVIEW_DIMENSIONS = [
   { key: 'correctness', prompt: 'logic errors, edge cases, off-by-one, null handling, incorrect business rules' },
-  { key: 'security', prompt: 'auth/authz gaps, injection, mass assignment, sensitive data exposure, missing validation' },
+  { key: 'security', prompt: 'auth/authz gaps, injection, unvalidated field binding (over-posting), sensitive data exposure, missing validation' },
 ]
 
 /**
@@ -3740,9 +4253,10 @@ const SHARED_REVIEW_DIMENSIONS = [
  * @param {object} o.models  the workflow's phase models (review)
  * @param {string} o.phase  phase label of the agent calls
  * @param {Function} o.verify  from makeFindingVerifier
+ * @param {number} [o.maxFindings]  findings verified; the rest come back unverified with reason 'review cap'
  * @returns {Promise<{ unavailable: boolean, reviewed: object[] }>}
  */
-async function runDeepSecurity({ subject, riskScope, bases, changed, models, phase, verify }) {
+async function runDeepSecurity({ subject, riskScope, bases, changed, models, phase, verify, maxFindings = REVIEW_CAP.maxFindings }) {
   const deep = await runAgent(
     `Run a second, independent security review of ${subject}, limited to the risk areas the changes touch. Do not rely on any earlier review; read the code yourself.
 Read the changes from git, per repo:
@@ -3750,7 +4264,7 @@ ${reviewDiffLines(riskScope.map((x) => x.repo), bases, changed, (r) => (riskScop
 Risk files:
 ${riskScope.map((x) => `- ${x.repo.path}: ${x.files.join(', ')}`).join('\n')}
 ${securityReviewText(riskScope.map((x) => x.repo))}
-Report concrete findings only, with file and line.`,
+Report concrete findings only, with file and line. ${EXCERPT_RULE}`,
     { label: 'review:security-deep', phase, schema: FINDINGS_SCHEMA, agentType: DEEP_SECURITY_AGENT, ...models.review }
   )
   if (!deep) {
@@ -3758,7 +4272,9 @@ Report concrete findings only, with file and line.`,
     return { unavailable: true, reviewed: [] }
   }
   const secDim = { key: 'security' }
-  const reviewed = await parallel((deep.findings || []).map((f) => () => verify(f, secDim, phase).then((v) => ({ ...f, dimension: 'security', deepPass: true, ...v }))))
+  const { kept, skipped } = capFindings(deep.findings || [], maxFindings)
+  const checked = await parallel(kept.map((f) => () => verify(f, secDim, phase).then((v) => ({ ...f, dimension: 'security', deepPass: true, ...v }))))
+  const reviewed = [...checked, ...capSkipped(skipped, 'security', { deepPass: true })]
   return { unavailable: false, reviewed }
 }
 
@@ -3776,22 +4292,23 @@ Report concrete findings only, with file and line.`,
  * @param {string} [o.phase]  phase label of the agent calls
  * @param {{ key: string, prompt: string }[]} [o.dims]  review dimensions
  * @param {ReturnType<typeof makeFindingVerifier>} [o.verify]  the workflow's verifier, when it reuses one after the review
+ * @param {number} [o.maxFindings]  findings verified per dimension (the run's cap by default); the rest are returned in `unverified` with reason 'review cap'
  * @param {string} [o.context]  one extra line for every reviewer prompt, e.g. the changed files
  * @param {(dim: { key: string }) => object} [o.schemaFor]  the reply schema of a dimension (FINDINGS_SCHEMA by default)
  * @param {(review: object, dim: { key: string }) => object[]} [o.findingsOf]  the findings to verify from a dimension's reply (all of its findings by default); the place for per-dimension verdict handling and filters
  * @returns {Promise<{ confirmed: object[], unverified: object[], unavailable: string[], securityReview: { ran: boolean, deep: 'ran'|'skipped'|'unavailable', findings: number }, noChanges: boolean, deep: { files: number, unavailable: boolean, blocking: number } }>}
  */
-async function reviewDiff({ subject, repos, bases, changed, models, phase = 'Review', dims = SHARED_REVIEW_DIMENSIONS, verify = makeFindingVerifier({ subject, models }), context = '', schemaFor = () => FINDINGS_SCHEMA, findingsOf = (review) => review.findings || [] }) {
+async function reviewDiff({ subject, repos, bases, changed, models, phase = 'Review', dims = SHARED_REVIEW_DIMENSIONS, verify = makeFindingVerifier({ subject, models }), context = '', schemaFor = () => FINDINGS_SCHEMA, findingsOf = (review) => review.findings || [], maxFindings = REVIEW_CAP.maxFindings }) {
   const unavailable = []
   const riskScope = riskFiles(repos, changed)
   // The deep pass starts with the dimension reviewers; it reads the code itself and needs none of their output.
-  const deepRun = riskScope.length ? runDeepSecurity({ subject, riskScope, bases, changed, models, phase, verify }) : Promise.resolve({ unavailable: false, reviewed: [] })
+  const deepRun = riskScope.length ? runDeepSecurity({ subject, riskScope, bases, changed, models, phase, verify, maxFindings }) : Promise.resolve({ unavailable: false, reviewed: [] })
   const reviewed = await parallel(dims.map((dim) => async () => {
     const review = await runAgent(
       `Adversarially review the changes for ${subject} on the ${dim.key} dimension. Look specifically for: ${dim.prompt}.
 Read the changes from git, per repo:
 ${reviewDiffLines(repos, bases, changed)}${context ? `\n${context}` : ''}
-Question every pattern — do not assume correctness. Report concrete findings only, with file and line where possible.${dim.key === 'security' ? `\n${securityReviewText(repos)}` : ''}`,
+Question every pattern — do not assume correctness. Report concrete findings only, with file and line where possible. ${EXCERPT_RULE}${dim.key === 'security' ? `\n${securityReviewText(repos)}` : ''}`,
       { label: `review:${dim.key}`, phase, schema: schemaFor(dim), ...(dim.key === 'security' ? { agentType: SECURITY_AGENT } : {}), ...models.review }
     )
     if (!review) {
@@ -3799,7 +4316,9 @@ Question every pattern — do not assume correctness. Report concrete findings o
       log(`review:${dim.key} unavailable`)
       return []
     }
-    return parallel(findingsOf(review, dim).map((f) => () => verify(f, dim, phase).then((v) => ({ ...f, dimension: dim.key, ...v }))))
+    const { kept, skipped } = capFindings(findingsOf(review, dim), maxFindings)
+    const checked = await parallel(kept.map((f) => () => verify(f, dim, phase).then((v) => ({ ...f, dimension: dim.key, ...v }))))
+    return [...checked, ...capSkipped(skipped, dim.key)]
   }))
   const { unavailable: deepUnavailable, reviewed: deepReviewed } = await deepRun
   const all = [...reviewed.flat(), ...deepReviewed].filter(Boolean)
@@ -4619,6 +5138,7 @@ function checkArgs() {
     return
   }
   const a = rawArgs
+  argIssues.push(...setAgentCap(a.maxAgents, null))
   inputs.profile = a.profile === undefined ? 'standard' : a.profile
   if (!PROFILES.includes(inputs.profile)) argIssues.push(`args.profile "${String(inputs.profile).slice(0, 40)}" is not a profile. Fix: use quick, standard or deep`)
   inputs.budget = a.budget === undefined || a.budget === null ? null : a.budget
@@ -4682,6 +5202,7 @@ if (argIssues.length) {
     coverage: { target: null, profile: PROFILE, scope: SCOPE, scoped: SCOPED, partial: true, deferred: [], finalCritic: 'not_run', notAudited: [] },
     next: [],
     error: argIssues.join('; '),
+    agentCap: agentCapResult(),
   }
 }
 
@@ -6594,4 +7115,5 @@ return {
   counts: countsNow(),
   coverage: coverageNow(),
   next: nextSteps(),
+  agentCap: agentCapResult(),
 }

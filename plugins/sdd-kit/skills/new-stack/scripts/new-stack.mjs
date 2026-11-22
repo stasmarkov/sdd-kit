@@ -17,7 +17,7 @@
  *   paths      glob list of the stack's source files (required)
  *   gates      [{ name, command, kind? }]; kind defaults to "other" unless --interactive asks
  *   markers    optional globs, relative to the project root, that suggest the stack
- *   optional:  title, agent, order, conventions, debugPatterns, acceptance, author
+ *   optional:  title, agent, order, conventions, debugPatterns, acceptance, author, targets
  *
  * Exit codes: 0 done, 1 rejected answers or a failed step, 2 usage error.
  */
@@ -103,10 +103,10 @@ export async function normalizeAnswers(raw, { ask = null } = {}) {
   for (const key of ['conventions', 'debugPatterns']) {
     if (raw[key] !== undefined && !isStringList(raw[key])) fail(`answers: "${key}" must be a list of strings. Fix: write a JSON array of strings.`);
   }
-  for (const key of ['title', 'agent', 'acceptance', 'author']) {
+  for (const key of ['title', 'agent', 'acceptance', 'author', 'targets']) {
     if (raw[key] !== undefined && !isString(raw[key])) fail(`answers: "${key}" must be a non-empty string. Fix: write a string or remove the key.`);
   }
-  for (const key of ['title', 'author']) {
+  for (const key of ['title', 'author', 'targets']) {
     if (raw[key] !== undefined && !/^[^:"\\\r\n{}]+$/.test(raw[key])) fail(`answers: "${key}" must not contain colons, quotes, backslashes or braces. Fix: reword it.`);
   }
   if (raw.agent !== undefined && !/^[a-z][a-z0-9-]*$/.test(raw.agent)) fail('answers: "agent" must be lowercase with hyphens. Fix: for example "acme-dev".');
@@ -127,6 +127,7 @@ export async function normalizeAnswers(raw, { ask = null } = {}) {
     debugPatterns: raw.debugPatterns || [],
     acceptance: raw.acceptance || `exercise the ${title} application and run its test gate`,
     author: raw.author || 'SDD Kit contributors',
+    targets: raw.targets || `${title} version this project targets (fill in)`,
   };
 }
 
@@ -229,14 +230,35 @@ function buildManifest(template, a, { overlay, order }) {
 }
 
 /**
+ * The freshness dates of a scaffolded skill: the UTC calendar day of `now`, and the same day three
+ * months later, clamped to the last day of a shorter month (Nov 30 -> Feb 28), so both dates are
+ * read in one time zone and never roll into the following month.
+ * @param {Date} now
+ * @returns {{ lastVerified: string, nextReview: string }} YYYY-MM-DD strings
+ * @example reviewDates(new Date('2026-11-30T23:30:00Z'))  // { lastVerified: '2026-11-30', nextReview: '2027-02-28' }
+ */
+export function reviewDates(now) {
+  const y = now.getUTCFullYear();
+  const m = now.getUTCMonth() + 3;
+  const lastDay = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+  const review = new Date(Date.UTC(y, m, Math.min(now.getUTCDate(), lastDay)));
+  const day = (d) => d.toISOString().slice(0, 10);
+  return { lastVerified: day(now), nextReview: day(review) };
+}
+
+/**
  * Renders every add-on file as { rel, content, mode }.
  * @param {string} templateDir the templates/stack-addon directory
  * @param {object} a normalized answers
- * @param {{ version: string, overlay: boolean, order: number, runners: Set<string> }} ctx
+ * @param {{ version: string, overlay: boolean, order: number, runners: Set<string>, now?: Date }} ctx  now defaults to the current time
  */
 export function renderAddon(templateDir, a, ctx) {
+  const dates = reviewDates(ctx.now || new Date());
   const values = {
     NAME: a.name,
+    LAST_VERIFIED: dates.lastVerified,
+    NEXT_REVIEW: dates.nextReview,
+    TARGETS: a.targets,
     TITLE: a.title,
     VERSION: ctx.version,
     ROLE: a.role,

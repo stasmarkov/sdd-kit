@@ -1,7 +1,7 @@
 ---
 name: simple-task
 description: Execute a small-to-medium task (bug fix, small feature, refactor, safe rename, or research-only question) in one context window - investigate, clarify if ambiguous, implement test-first, run the verification gates, leave a resumable task log. Use when the change touches about three files or fewer and needs no formal spec; escalates to /write-spec when it grows.
-argument-hint: "[task-description] | --continue=TASK-ID | --research-only | --rename | --no-tests | --force"
+argument-hint: "[task-description] | --continue=TASK-ID | --research-only | --rename | --force"
 allowed-tools: Agent, Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion, WebFetch, WebSearch
 metadata:
   mcp-tools: "context7"

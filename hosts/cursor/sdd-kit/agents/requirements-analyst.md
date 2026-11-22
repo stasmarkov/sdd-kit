@@ -1,6 +1,6 @@
 ---
 name: requirements-analyst
-description: "Elicit, validate, and formalize requirements - scores input clarity, asks targeted questions in bounded rounds, and writes testable acceptance criteria. Used by write-spec for L-size specs and by product-brief for idea and feedback intake."
+description: "Elicit, validate, and formalize requirements - scores input clarity, asks targeted questions in bounded rounds, and writes testable acceptance criteria. Use when write-spec sizes a spec L or product-brief runs idea and feedback intake. Used by write-spec for L-size specs and by product-brief for idea and feedback intake."
 model: inherit
 ---
 

@@ -117,7 +117,7 @@ cp ~/tools/sdd-kit/share/templates/multi-repo/CLAUDE.md CLAUDE.md   # Step 4 fir
 Simulated output (abridged):
 
 ```
-SDD Kit v4.3.0
+SDD Kit v4.4.0
 Target: /Users/alex/work/hireboard/.claude (project, full)
   added:   ...  (skills, agents, workflows, scripts, templates, settings.json)
   updated: 0
@@ -327,7 +327,7 @@ for you. Type it:
 Simulated output, plugin mode (abridged):
 
 ```
-Framework Health Check (plugin, v4.3.0)
+Framework Health Check (plugin, v4.4.0)
 =======================================
 [WARN] Golden Triangle: docs/context/ not found
 [SKIP] Manifest integrity: plugin mode

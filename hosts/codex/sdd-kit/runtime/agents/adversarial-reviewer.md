@@ -1,6 +1,6 @@
 ---
 name: adversarial-reviewer
-description: Skeptical post-implementation reviewer that assumes code has bugs until proven otherwise. Uses different model from generation to catch blind spots.
+description: Skeptical post-implementation reviewer that assumes code has bugs until proven otherwise. Uses different model from generation to catch blind spots. Use when reviewing a diff or branch you did not write.
 tools: Read, Grep, Glob, Bash
 model: opus
 effort: high

@@ -78,5 +78,6 @@ A blocked run (`CHANGES_REQUIRED` or `BLOCKED`) moves on only through `workflow_
 ## Limits
 
 - `budget.total` and `budget.remaining()` report 0 on a bridge host, so budget branches in the workflows do not trigger.
+- The agent cap (`maxAgents`) counts started agents, not tokens, so it still applies with `budget.total` at 0.
 - The script has no clock or randomness; pass dates and ids in through `args` or ask an agent.
 - Claude Code does not use the bridge. Its generated prompts, schemas and verdicts are unchanged, and the host reaches the runtime only through the `sddHost` global that the bridge injects.

@@ -1,7 +1,7 @@
 ---
 name: investigate
 description: Research a technical problem or evaluate a technology inline - searches the codebase and framework docs, compares options in a pros/cons table, ends with a recommendation, implementation steps and a testing strategy. Use for a quick answer to "how should we do X" or "which library fits" before coding. For a verified decision with an ADR, use /tech-research.
-argument-hint: "[problem-or-topic] | --tech | --compare --options=A,B,C | --approach=options"
+argument-hint: "[problem-or-topic] | --tech | --compare --options=A,B,C"
 allowed-tools: Read, Grep, Glob, WebSearch, WebFetch
 metadata:
   mcp-tools: "context7"
@@ -23,10 +23,6 @@ Research technical solutions, evaluate technologies, and compare implementation 
 
 # Compare alternatives
 /investigate --compare "queues" --options="Redis,SQS,RabbitMQ"
-
-# Framework-specific research
-/investigate --laravel "queue job batching"
-/investigate --nextjs "server actions vs api routes"
 ```
 
 ## Investigation Process

@@ -1,7 +1,7 @@
 ---
 name: feature-flag
 description: Create, list, enable, disable, roll out, and clean up feature flags (boolean, percentage, user-targeted) with config, env, and documentation updates. Use when releasing a change gradually, gating unfinished work behind a flag, planning a percentage rollout, or removing stale flags.
-argument-hint: "create|list|enable|disable|rollout|cleanup [flag-name]"
+argument-hint: "create|list|enable|disable|rollout|cleanup [flag-name] [--type=boolean|percentage] [--env=[name]] [--status=[state]] [--percent=[n]] [--users=[list]] [--groups=[list]] [--remove=[flag]]"
 allowed-tools: Read, Write, Edit, Grep, Glob, Bash
 disable-model-invocation: true
 metadata:

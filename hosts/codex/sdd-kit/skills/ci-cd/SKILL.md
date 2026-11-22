@@ -2,6 +2,10 @@
 name: ci-cd
 description: CI/CD pipelines for GitHub Actions, GitLab CI and Bitbucket Pipelines, built from the stack's gate commands. Use for testing, deployment and release automation.
 allowed-tools: Read, Grep, Glob, Edit, Write, Bash
+metadata:
+  last_verified: "2026-11-11"
+  next_review: "2027-02-11"
+  targets: "GitHub Actions; generic CI"
 ---
 
 # CI/CD pipelines

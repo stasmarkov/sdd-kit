@@ -7,6 +7,44 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [4.4.0] - 2026-11-22
+
+Drupal pilot week-1 fixes, workflow cost and safety limits, and skill, agent and onboarding quality.
+
+**Upgrade notes:**
+- A run whose host session loses its login, access or credits now ends with the verdict `ABORTED`, lists the unbuilt tasks in `notRun` and names the fix, instead of marking every task failed.
+- Workflows stop calling agents at a per-run cap (`maxAgents`, default 120, 60 with the quick profile); a capped run reports the `agent-cap` check in its Assurance table and returns a `relaunch` to resume it with a higher cap.
+- The root `settings.json` with Laravel and Next.js permissions is removed; INSTALLATION shows the stack-neutral deny rules to copy instead.
+- Drupal: `composer audit` and a Twig CS Fixer gate join the gates; an abandoned Composer package fails the audit unless the project relaxes it in `composer.json`.
+
+### Changed
+
+- The trust-store guard counts inline-code flags (`-c`, `-e`, `-p`, bundled as in `-pe`, `--eval`, `--print`) only next to an interpreter (`node`, `python3.12`, `bash` and similar), so `jq -c` on the store is a read, and it blocks `sort -o`, `uniq` with an output file and `rg --pre` on the store.
+- fix-bug checks the branch its checkpoint commit landed on: a commit on a protected branch (built-in or `SDD_KIT_PROTECTED_BRANCHES`) fails the checkpoint. With `SDD_KIT_COMMIT_STYLE=ticket` and no ticket key the checkpoint is not committed and the run names the fix (`args.ticket`, or `SDD_KIT_COMMIT_STYLE=either`).
+- A fix-bug run stopped by the agent cap before Reproduce or RootCause finishes ends NOT-RESOLVED with a same-run relaunch instead of NEEDS-INFO.
+- `SDD_KIT_PROTECTED_BRANCHES` globs with bracket expressions (`release-[0-9]*`) match the same branches in the workflows as in `block-dangerous.sh`.
+- Reviewers never quote a secret value in a finding excerpt, and excerpts in the workflow result are cut to 2000 characters, as in the verifier prompt.
+- A host error phrase that an agent repeats from its own prompt (a ticket quoting "Please run /login") no longer aborts the run. An abort after Close keeps the checks that ran and says to set the spec status back by hand; an aborted fix-bug run keeps its result keys and returns `next` as a list.
+- `/sdd` leaves out the worktree option for a repo already on the target branch. The stale-session line stays silent when the loaded plugin is one of the installed records.
+- `package.json` declares Node.js 22 or later, matching the Prerequisites; the README and the guide's Codex and Cursor notes say the same.
+- `/framework-doctor`'s file-copy hint for a detected stack is `install.sh --stack=<add-on>` (the plugin name without `sdd-kit-`), so a stack provided by another add-on's plugin no longer gets an install flag that install.sh refuses.
+- `/new-stack` writes `last_verified` and `next_review` as UTC dates, and `next_review` stays in its month (Nov 30 gives Feb 28).
+- The Drupal adoption docs explain that a committed `.ddev/config.yaml` keeps the DDEV wrapper on for every developer: those not on DDEV need a personal overlay with a lower `order` than the shared CI overlay, their own `execWrapper` and a copy of its gates.
+- `/grade` ships its rubrics inside the skill (`assets/rubric-<domain>.md`) and adds a `docs` domain and a `--rubric=<path>` override; it is explicit-only. `outcomes-grader` drops its memory and preloaded skills, gets `maxTurns: 30`, and takes either a rubric file or caller criteria plus an output schema. The API rubric no longer names a framework. `/incident` reads its postmortem and runbook templates from its own `assets/`.
+- Stack manifests take an optional `explore` list of {what, where} rows (at most 15); laravel, nextjs and drupal declare it, and the Investigate, Research, RootCause, Index, Criteria and codebase-fit prompts append the rows of the repo's stack. Those prompts and the shared security review lens use stack-neutral wording (unvalidated field binding instead of mass assignment), and the Drupal recipe lists Views and blocks.
+- `test-writer` is rewritten around RED, Reproduce, Regression and E2E, in test-first order.
+- Agent frontmatter hygiene: `python3 tools/gen-indexes.py` fails an agent with no valid `effort` or no `Use when`, `Use for`, `Use after`, `Use before` or `Use PROACTIVELY when` clause in its description. Agents that failed gain the clause and an effort, `requirements-analyst` loses Write and Edit, `security-auditor` is narrowed to explicit security reviews and changes to authentication, access rules, uploads or secrets, and `/incident` is explicit-only and tails 100 log lines instead of following the log.
+- Workflows stop on a host error: `runAgent()` recognises authentication, access and usage-limit errors, runs no further agent, logs one Fix line, and ship-feature and fix-bug end ABORTED instead of reporting a verdict.
+- Drupal manifest: a Twig CS Fixer lint gate after PHPStan and a top-level `audit` list that `/security-scan` runs through the gate plan's exec wrapper.
+- The security-auditor agent is stack-neutral and applies its money checks only when the code handles money.
+- A SessionStart line tells you to restart Claude Code when the loaded SDD Kit version differs from the installed one.
+- The token-budget hook is Bash-only: it blocks `find` from the filesystem root with the same pattern and prints the reason on stderr. The prompt preflight emits `hookSpecificOutput` and names the spec folders of up to three ticket keys in your prompt; the status line falls back to the numbered top-level tasks of `tasks.md` when no state file exists; the root `settings.json` is removed.
+- The trust-store guard allows read-only greps that name the store (`grep -c`, `uniq -c`) and still blocks writes; the Laravel test-first hook finds flat tests such as `tests/Feature/ModerationServiceTest.php` and prints its block reason on stderr.
+- Version-sensitive skills carry freshness metadata (`last_verified`, `next_review`, `targets`) that `python3 tools/gen-indexes.py` checks and publishes; the `docker` skill moves its Dockerfile examples to `references/dockerfile-examples.md`.
+- `/new-stack` scaffolds the conventions skill with freshness metadata (`last_verified`, `next_review` three months later, `targets`), so a new add-on passes `python3 tools/gen-indexes.py`.
+- The generated registry carries `KIT_VERSION` from `VERSION`; Detect logs it and the ship-feature report shows it.
+- The SubagentStop prompt hook is removed; file-copy upgrades retire it and keep your own hooks.
+
 ## [4.3.0] - 2026-11-20
 
 The building workflows now prove their verdicts: every check the verdict depends on is recorded in an assurance ledger, and a check that did not run or did not return blocks SHIP or FIXED. Build agents get the full criteria they are held to, business rules and security are reviewed on the real diff, and docs, the test plan and closing the spec are checked steps.

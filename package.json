@@ -1,12 +1,12 @@
 {
   "name": "sdd-kit",
-  "version": "4.3.0",
+  "version": "4.4.0",
   "private": true,
   "description": "SDD Kit: spec board, installer and guide launcher for spec-driven development with Claude Code",
   "license": "MIT",
   "repository": "github:stasmarkov/sdd-kit",
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "bin": {
     "sdd-kit": "cli/sdd-kit.mjs",

@@ -1,7 +1,7 @@
 ---
 name: design-schema
 description: Design a database schema - entities, columns and types, relationships, indexes, naming, and migration strategy - and write it as docs/schemas/{table}.md in the schema-first format. Use when modelling new entities or relationships before writing migrations, planning a schema change, or reviewing an existing schema.
-argument-hint: "[entity-name] | --entity=[name] | --migration"
+argument-hint: "[entity-name] | --entity=[name] | --migration | --relations | --review"
 allowed-tools: Read, Write, Edit, Grep, Glob
 metadata:
   mcp-tools: "context7"
@@ -13,7 +13,7 @@ metadata:
 
 # /design-schema
 
-Design database schemas, relationships, and migration strategies. The output is one `docs/schemas/{table}.md` per table in the `schema-first` format, which the migration then implements. Delegate the design work to the `database-designer` agent for anything beyond a single table; implementation goes through `/migrate-db`.
+Design database schemas, relationships, and migration strategies. The output is one `docs/schemas/{table}.md` per table in the `schema-first` format, which the migration then implements. Delegate the design work to the `database-designer` agent for anything beyond a single table; implementation goes through the manifest `migrations` block (see the handoff below).
 
 ## Usage
 
@@ -58,7 +58,7 @@ Order
 ```
 
 ### Step 3: Migration Strategy
-Decide how the change reaches the database, not the migration code: new table vs alter, the order of foreign keys, whether a NOT NULL column on an existing table needs a split backfill, and whether the change must be zero-downtime. The `laravel-migration-coordinator` skill has the rules; `/migrate-db` writes and runs the migration from the schema doc.
+Decide how the change reaches the database, not the migration code: new table vs alter, the order of foreign keys, whether a NOT NULL column on an existing table needs a split backfill, and whether the change must be zero-downtime. The stack's migration conventions skill (listed in its manifest) has the rules.
 
 ### Step 4: Model Design
 > Framework implementation: see the stack add-on's skill references.
@@ -131,7 +131,9 @@ Customer orders and their lifecycle from checkout to delivery.
 - Money is stored as integer minor units plus a currency column (schema-first money rule).
 ````
 
-Then hand off: `/migrate-db --create=orders` writes and runs the migration from this file.
+## Handoff
+
+Implementation uses the stack manifest's `migrations` block: `status` lists pending migrations and `run` applies them. Pass the schema docs to the manifest's specialist agent to write the migration, then run `status` and `run` on a disposable database. When no stack declares a `migrations` block (stack `other`, or no manifest), stop after the schema docs and give the user an ordered update plan with the risk and rollback of each step.
 
 **Source verification**: follow the `source-verification` skill.
 

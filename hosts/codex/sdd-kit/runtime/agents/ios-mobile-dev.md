@@ -3,6 +3,7 @@ name: ios-mobile-dev
 description: iOS mobile development agent with expertise in Swift 6, SwiftUI, @Observable MVVM, structured concurrency, and SwiftData persistence. Use for native iOS/iPadOS features and Swift package work.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
+effort: medium
 skills:
   - ios-native
   - swift-testing

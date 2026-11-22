@@ -35,12 +35,7 @@
           {
             "type": "command",
             "command": "node \"${PLUGIN_ROOT}/runtime/hooks/dispatch.mjs\" PreToolUse --host codex --hook check-commit-msg.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Read|Grep|Glob|Bash",
-        "hooks": [
+          },
           {
             "type": "command",
             "command": "node \"${PLUGIN_ROOT}/runtime/hooks/dispatch.mjs\" PreToolUse --host codex --hook token-budget.sh"

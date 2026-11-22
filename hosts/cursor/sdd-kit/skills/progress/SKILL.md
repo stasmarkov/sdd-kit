@@ -1,6 +1,6 @@
 ---
 name: progress
-description: Use when resuming work and asking where was I or what next. Shows per-spec task progress and the next task; --health adds a health snapshot.
+description: Use when resuming work and asking where was I, what next, what's left or how many specs remain. Shows per-spec task progress, backlog.md slice status and the next task; --health adds a health snapshot.
 argument-hint: "[--spec=<folder|ticket>] [--next] [--health] [--export=markdown|json]"
 allowed-tools: Read, Grep, Glob, Bash
 metadata:
@@ -33,6 +33,7 @@ Only these. If a source is missing, say so; never estimate.
 | `.ai/specs/*/spec-lite.md` frontmatter | `status` (draft, approved, in-progress, done), `priority` (P0-P3), `size`, `type`, `ticket`, `approved_by` |
 | `.ai/specs/*/tasks.md` | top-level tasks `- [x] N. Title` / `- [ ] N. Title`; done/total |
 | `.ai/session/<spec-folder>-state.json` | `current_task`, `completed_tasks`, `last_updated`, `resume_hint` (written by `/execute-task`) |
+| `backlog.md` next to `product-brief.md` (current folder or its parent) | `### SL-nn · <title>` slices under `## Slices`, each with `- **Status:**` (proposed, approved, specced, shipped) and `- **Spec:**` (a spec folder, `greenfield-build` or `—`) |
 | `git log` | last commit touching each spec folder and the files it lists; recent commits on the current branch |
 | `git branch --no-merged` | unfinished branches |
 
@@ -58,6 +59,21 @@ Resume: /execute-task --spec=spec-PROJ-123-refund-guard --continue
 Sort: in-progress first, then approved, then draft, then done (done collapsed to a count unless `--export`). Within a status, by priority, then by last activity.
 
 **Last activity** is the newest of the session file's `last_updated` and the last commit that touched the spec folder or a file listed in its tasks. Label which one it came from.
+
+## Backlog slices
+
+When `backlog.md` exists next to `product-brief.md` (in the current folder or its parent), add a section after the overview with one line per `### SL-nn` slice: id, title, its `**Status:**` value, and, for a slice whose `Spec:` field names a folder under `.ai/specs/`, that spec's frontmatter `status`. End with the counts: slices left (proposed or approved), specced, shipped, and how many specs remain open. Without a backlog.md, skip the section and say nothing about it.
+
+```
+Backlog (product-brief.md)
+
+Slice  Title                          Status    Spec (status)
+SL-01  Visitor searches open jobs     shipped   greenfield-build
+SL-02  Company careers page           specced   spec-HIRE-2-careers-page (in-progress)
+SL-03  Candidate and employer accounts approved  none yet
+
+Left: 1 approved, 1 specced, 1 shipped. Specs remaining: 1
+```
 
 ## Spec detail (`--spec=<ref>`)
 

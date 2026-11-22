@@ -32,7 +32,8 @@ Commands:
                    ${NPX} spec-board api/.ai/specs web/.ai/specs --serve
   install [install.sh flags]
                  Run the kit's install.sh (file-copy mode); --project installs
-                 into the current directory. Needs bash, git, jq and Node 18+.
+                 into the current directory. Needs bash, git, jq, Node 22+ and
+                 npm 11 or 12 (npm 12 also needs: npx --allow-git=root ...).
                  Flags include --stack=<list|none>, --with=<add-ons> and --prune.
                  Examples:
                    ${NPX} install --project --dry-run

@@ -1,6 +1,6 @@
 ---
 name: api-architect
-description: API and system architecture - resource and contract design, integration patterns, scalability and technology-fit assessment for API-backed web systems in any stack. Use PROACTIVELY for architectural decisions, design patterns, high-load planning, and integration design.
+description: API and system architecture - resource and contract design, integration patterns, scalability and technology-fit assessment for API-backed web systems in any stack. Use PROACTIVELY when making architectural decisions, design patterns, high-load planning, and integration design.
 tools: Read, Write, Edit, Grep, Glob
 model: opus
 effort: high
@@ -60,7 +60,7 @@ Scale bands to assume when nothing is stated: small under 1K requests a day, med
 
 Work through, in writing:
 1. Requirements against the constraints of the existing system
-2. Pattern options against the kit's principles (data-object-first, service-repository, schema-first), with performance and maintenance trade-offs
+2. Pattern options against the kit's principles (data-object-first, service layering, schema-first), with performance and maintenance trade-offs
 3. Cross-module and external integration, including event payload design and versioning
 4. Caching and invalidation, observability, error handling and graceful degradation, and how each part is tested
 

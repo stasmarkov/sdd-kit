@@ -9,7 +9,7 @@ For the hook API itself (events, matchers, exit codes, stdin/stdout JSON, async 
 
 ## Lifecycle hooks
 
-[`hooks/hooks.json`](https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/plugins/sdd-kit/hooks/hooks.json) is the source of truth. If this table disagrees with that file, trust the file. All command hooks need `jq`.
+[`hooks/hooks.json`](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/plugins/sdd-kit/hooks/hooks.json) is the source of truth. If this table disagrees with that file, trust the file. All command hooks need `jq`.
 
 | Script | Event (matcher) | Blocks? | Purpose | Tune/disable |
 |--------|-----------------|---------|---------|--------------|
@@ -17,26 +17,25 @@ For the hook API itself (events, matchers, exit codes, stdin/stdout JSON, async 
 | `stack-hint.sh` | SessionStart | No | Prints one line, once per project, when a stack's marker files are present but its add-on is not installed. See [Stack hint](#stack-hint) | `SDD_KIT_NO_STACK_HINT=1` or remove the entry |
 | `post-compact-context.sh` | SessionStart (`compact`) | No | After compaction, re-injects the first 30 lines of `docs/context/{business-rules,architecture,workflow}.md`, the active spec count, and the latest session checkpoint | Remove the entry |
 | `block-dangerous.sh` | PreToolUse (`Bash`) | Yes (exit 2) | Blocks `rm` on `/` or `/*`, force pushes to protected branches (see [Protected branches](#protected-branches)), `git push` from a subagent (payload carries `agent_id`; the main session pushes after review), and `DROP DATABASE`/`dropdb`. Guards the stack trust store: see [Trust store guard](#trust-store-guard) | `SDD_KIT_PROTECTED_BRANCHES` adds branches. `SDD_KIT_ALLOW_AGENT_PUSH=1` lets subagents push. Keep it on. Run the command yourself if you really mean it |
-| `check-commit-msg.sh` | PreToolUse (`Bash`) | Yes (exit 2) | Makes `git commit -m` subjects follow Conventional Commits (`feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`) and stay within 72 characters. The scope is a lowercase area or a ticket key such as `PROJ-123` (`fix(PROJ-123): ...`); a key can also go at the end of the subject (`fix(refunds): ... (PROJ-123)`). Lets merge/revert messages and editor-based `--amend` through | Remove the entry |
-| `token-budget.sh` | PreToolUse (`Read\|Grep\|Glob\|Bash`) | Yes (exit 2) | Always blocks `find /`. When context usage is at or above the threshold, it also blocks unbounded reads of 5,000+ line files, repo-wide content greps, `**` globs, unscoped recursive `grep`/`rg`, and `cat` of whole `.log` files | `CLAUDE_BUDGET_THRESHOLD` (default `75`, percent). Usage is read from `CLAUDE_CONTEXT_USAGE`. If that is unset, only the `find /` rule applies |
-| `prompt-preflight.sh` | UserPromptSubmit | No | Adds guardrail context when a prompt targets production data, force pushes, `rm -rf /`, or skipping verification. Adds a hint to load the spec when a prompt references one | Remove the entry |
+| `check-commit-msg.sh` | PreToolUse (`Bash`) | Yes (exit 2) | Makes `git commit -m` subjects follow Conventional Commits (`feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`) and stay within 72 characters. The scope is a lowercase area or a ticket key such as `PROJ-123` (`fix(PROJ-123): ...`); a key can also go at the end of the subject (`fix(refunds): ... (PROJ-123)`). Lets git's own `Merge ...` and `Revert "..."` subjects and editor-based `--amend` through. `SDD_KIT_COMMIT_STYLE` picks the style: `conventional` (default; also used for an unknown value), `ticket` (`PROJ-123: subject`), `either`, or `off` | `SDD_KIT_COMMIT_STYLE=off`, or remove the entry |
+| `token-budget.sh` | PreToolUse (`Bash`) | Yes (exit 2) | Blocks `find` from the filesystem root, with the reason on stderr | None |
+| `prompt-preflight.sh` | UserPromptSubmit | No | Adds guardrail context when a prompt targets production data, force pushes, `rm -rf /`, or skipping verification. Adds a hint to load the spec when a prompt references a TASK-/SPEC- id, or a ticket key whose `.ai/specs/spec-<KEY>-*` folder exists | Remove the entry |
 | `scan-secrets.sh` | PostToolUse (`Write\|Edit`) | Reports (exit 2) | Scans the written file with `gitleaks` if it is installed, otherwise with a regex bank. On a hit, tells Claude to remove the secret and rotate it. The file is already written by then | Remove the entry (not recommended) |
 | `scan-injection.sh` | PostToolUse (`Bash\|WebFetch\|mcp__.*`), async | No | Scans the first 32 KB of tool output for prompt-injection patterns and warns Claude | Remove the entry |
 | `pre-compact-save.sh` | PreCompact | No | Writes a `.ai/session/pre-compact-<timestamp>.json` checkpoint (active spec, done/pending task counts) | Remove the entry |
 | `session-end.sh` | SessionEnd, async | No | Writes a session summary (branch, uncommitted changes, recent commits) to `.ai/session/<timestamp>.md` and deletes summaries older than 30 days | Remove the entry |
 | `notify.sh` | Notification | No | Shows a desktop notification | See [Notifications](#notifications) |
-| *(prompt)* | Stop | Yes | Before Claude stops, checks that completed tasks have passing tests and session state is saved mid-spec; allows stopping when remaining uncommitted changes are explained | See [Stop and SubagentStop checks](#stop-and-subagentstop-checks) |
+| *(prompt)* | Stop | Yes | Before Claude stops, checks that completed tasks have passing tests and session state is saved mid-spec; allows stopping when remaining uncommitted changes are explained | See [Stop check](#stop-check) |
 | `lesson-nudge.sh` | Stop | No | Records a candidate lesson in `.ai/session/lessons.jsonl` and suggests `/learn`. See [Candidate lessons](#candidate-lessons) | Remove the entry |
-| *(prompt)* | SubagentStop | Yes | Checks that the subagent finished its task, and flags errors or incomplete results for a retry | Remove the entry |
 
 Stack add-ons add their own hooks; see [Add-on hooks](#add-on-hooks).
 
 Blocking PreToolUse hooks (`token-budget.sh` and the test-first scripts) answer with `hookSpecificOutput` (`hookEventName: "PreToolUse"`, `permissionDecision: "deny"`, `permissionDecisionReason`) on stdout and exit 2. On exit 2, Claude Code and the Codex and Cursor dispatcher read only stderr, so a blocking script must also write the reason to stderr; otherwise Claude sees the block without the reason. New blocking scripts do both.
 
-Environment variables such as `CLAUDE_BUDGET_THRESHOLD` and `CLAUDE_SKIP_TEST_FIRST` can go in your shell or in the `env` block of `settings.json`. Both work in either install mode:
+Environment variables such as `CLAUDE_SKIP_TEST_FIRST` can go in your shell or in the `env` block of `settings.json`. Both work in either install mode:
 
 ```json
-{ "env": { "CLAUDE_BUDGET_THRESHOLD": "85", "CLAUDE_SKIP_TEST_FIRST": "1" } }
+{ "env": { "CLAUDE_SKIP_TEST_FIRST": "1" } }
 ```
 
 To turn off every hook temporarily, set `"disableAllHooks": true` in `settings.json`.
@@ -51,7 +50,7 @@ To turn off every hook temporarily, set `"disableAllHooks": true` in `settings.j
 
 In file-copy mode, `src/scripts/install-hooks.sh` merges the hooks into your existing `settings.json`. It needs `jq`, backs up the file first, and keeps your permissions and your own hooks. Re-running the installer replaces the kit's hooks instead of duplicating them. That also restores any kit hook you deleted, so use the env-var opt-outs above for hooks you want to keep off. Installer behavior is covered in [INSTALLATION.md](../docs/INSTALLATION.md).
 
-**Plugin mode.** The plugin's `hooks/hooks.json` is global. It applies to the whole session, subagents included, and you can't edit it per project. Use the env-var opt-outs or `disableAllHooks` instead. For what does and doesn't apply in plugin mode, see [plugin-mode.md](https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/docs/reference/plugin-mode.md).
+**Plugin mode.** The plugin's `hooks/hooks.json` is global. It applies to the whole session, subagents included, and you can't edit it per project. Use the env-var opt-outs or `disableAllHooks` instead. For what does and doesn't apply in plugin mode, see [plugin-mode.md](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/docs/reference/plugin-mode.md).
 
 **Drift rule.** `src/settings/settings.template.json` must contain exactly the hooks in `hooks/hooks.json`, differing only in the script path prefix. `./verify.sh` fails the build if they drift. When you add or change a hook, edit both files.
 
@@ -91,6 +90,8 @@ An approval in `<home>/.claude/sdd-kit/trusted-stacks.json`, where `<home>` is y
 - `trust-store.mjs --approve` when the hook input carries an `agent_id`, that is, when a subagent or workflow agent runs it. The main session running `/stack-trust` is allowed.
 - Shell commands that name `trusted-stacks.json` and could write it: an output redirect (other than to `/dev/null` or a descriptor), `tee`, `cp`, `mv`, `rm`, `ln`, `install`, `rsync`, `truncate`, `dd`, `touch`, `chmod`, `chown`, an editor, `sed -i`, or inline code passed with `-e`, `-c`, `-p`, `--eval` or `--print`.
 
+The guard is a speed bump, not containment: it stops an agent from writing the store by accident or by an obvious command, and the limits below name what it cannot catch. Inline-code flags (`-e`, `-c`, `-p`, bundled forms such as `-pe`, `--eval`, `--print`) count only in a subcommand (split on `&&`, `||`, `;`, `|`, `&`, newlines and `$(`, backtick, `<(`, `>(` substitutions) that names an interpreter (bash, sh, zsh, dash, ksh, fish, node, nodejs, deno, bun, python, perl, ruby or php, also by path or with a version suffix such as `python3.12`), so `grep -c`, `uniq -c` or `jq -c` on a command that names the store stays a read. `sort -o`, `uniq` with an output file and `rg --pre` on a command that names the store are blocked.
+
 Reading the store stays allowed. Detect reads it with the Read tool on its literal path (never `cat` or `jq`, which Claude Code refuses outside the project) and returns its text to the workflow; a shell read such as `jq` or `test -f` in the main session is not blocked either. The hook is wired to `Bash` only; the Write and Edit tools are held back by Claude Code's own rule that writes outside the project directory need permission, since the store lives in your home directory, outside any project. The trust decision itself is made by the workflow script from the store's hashes.
 
 **Limits.** The guard is a speed bump for agents that follow the documented path, not a security boundary. It matches text in the command, so it does not stop a command that names neither the store file nor `--approve`, for example:
@@ -103,7 +104,7 @@ Reading the store stays allowed. Detect reads it with the Read tool on its liter
 
 The shell check is best-effort hardening. It does match the store name and paths without regard to case, reads the command with quotes and backslashes removed (so `--appro""ve` is still `--approve`), treats a glob that matches the store file name as naming it, and treats a shell command starting with `apply_patch` as a patch. It never blocks a read-only tool. Anything beyond that is a known limit, not a defect to chase: a stronger control needs the trust script itself to refuse, which this kit does not do.
 
-**Threat model (OD-17).** A stack manifest that is neither first-party nor approved by `/stack-trust` (hash-matched) never supplies a command, path, URL or other value that reaches a shell, a gate plan or an agent prompt as an instruction. The workflows also check every value Detect and the scaffold report against a strict pattern (paths, `devUrl`, `packageManager`, gate and script names, prose) before quoting it, and drop and log the rest. Skills verify the trust script against a hash shipped in the kit, never one stored in the project. The trust store lives in the home directory the OS user database records, so neither `$HOME` nor `CLAUDE_CONFIG_DIR` (both of which a project setting can change) can point it into a repository. A config directory that resolves inside the project (the current directory, its git toplevel, `CLAUDE_PROJECT_DIR`, or any ancestor of the current directory that holds `.git`) is refused as well: the user stacks and plugin list there count as unreadable, and `trust-store.mjs` writes no settings there. Out of scope: running workflows on a repository you do not trust. Agents read repository files and have Bash, so hostile repository content can steer them regardless of `/stack-trust`, which controls manifests, not repository content. Full rules: [stack-manifest.md](https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/docs/reference/stack-manifest.md#agent-and-trust).
+**Threat model (OD-17).** A stack manifest that is neither first-party nor approved by `/stack-trust` (hash-matched) never supplies a command, path, URL or other value that reaches a shell, a gate plan or an agent prompt as an instruction. The workflows also check every value Detect and the scaffold report against a strict pattern (paths, `devUrl`, `packageManager`, gate and script names, prose) before quoting it, and drop and log the rest. Skills verify the trust script against a hash shipped in the kit, never one stored in the project. The trust store lives in the home directory the OS user database records, so neither `$HOME` nor `CLAUDE_CONFIG_DIR` (both of which a project setting can change) can point it into a repository. A config directory that resolves inside the project (the current directory, its git toplevel, `CLAUDE_PROJECT_DIR`, or any ancestor of the current directory that holds `.git`) is refused as well: the user stacks and plugin list there count as unreadable, and `trust-store.mjs` writes no settings there. Out of scope: running workflows on a repository you do not trust. Agents read repository files and have Bash, so hostile repository content can steer them regardless of `/stack-trust`, which controls manifests, not repository content. Full rules: [stack-manifest.md](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/docs/reference/stack-manifest.md#agent-and-trust).
 
 What keeps an untrusted manifest's commands from running is the review step: an approval records the manifest's hash, and any edit to the manifest makes it untrusted again. Review the diff of `trusted-stacks.json` (or run `trust-store.mjs --list`) if an approval you did not give shows up.
 
@@ -113,7 +114,7 @@ What keeps an untrusted manifest's commands from running is the review step: an 
 
 - `main` and `master`;
 - the remote's default branch, read from `refs/remotes/<remote>/HEAD` (for example `develop` on a git-flow repository, or `trunk`). A clone sets it; in a repository made with `git init` and `git remote add`, run `git remote set-head origin -a` once;
-- every branch matching `SDD_KIT_PROTECTED_BRANCHES`: branch names or globs separated by spaces or commas, such as `export SDD_KIT_PROTECTED_BRANCHES='develop release/*'`. Set it in the shell that launches Claude Code, Codex or Cursor. It only adds branches; nothing removes `main`, `master` or the default branch.
+- every branch matching `SDD_KIT_PROTECTED_BRANCHES`: branch names or globs separated by spaces or commas, such as `export SDD_KIT_PROTECTED_BRANCHES='develop release/*'`. Commit it in `.claude/settings.json` under `env` so the whole team gets it; a shell export in the shell that launches Claude Code, Codex or Cursor also works. It only adds branches; nothing removes `main`, `master` or the default branch.
 
 A push counts as forced when it has `--force`, `-f` (also inside a group such as `-uf`), `--force-with-lease`, `--force-if-includes` or `--mirror`, or an abbreviation git accepts for one of them (`--force-with`, `--mirr`), wherever the flag sits, or a refspec starting with `+`. The destination is the part after `:` without `refs/heads/` or `heads/`; `HEAD` and `@` stand for the current branch, and a wildcard destination such as `refs/heads/*` is checked against main, master and every local and remote-tracking branch it matches. A push with no refspec is checked against the current branch and its upstream, and against every local branch when `push.default` is `matching` (in the repository config or an inline `-c`) or an inline `-c remote.<name>.push` is set; `--all` or `--mirror` is checked against every local branch. `git -C <dir>` and an earlier `cd <dir>` on the same line pick the repository, `-c` and `--config-env` values are skipped as values, and `sudo`, `env`, `bash -c` and subshell forms are read the same way. A command that runs an alias defined inline with `-c alias.<name>=` and able to push is blocked, because its target cannot be read.
 
@@ -125,9 +126,9 @@ The hook reads each command segment (split at `;`, `&&`, `||`, `|` and newlines)
 
 `notify.sh` uses `osascript` on macOS, `notify-send` on Linux (install `libnotify-bin`), and a PowerShell message box on Git Bash/MSYS2/Cygwin. It shows the message and title Claude Code sends with the notification, falling back to "Claude Code needs your attention" when none is given. If `notify-send` is missing it does nothing.
 
-## Stop and SubagentStop checks
+## Stop check
 
-Both are `prompt` hooks: a model reviews the context and either allows the stop or blocks it with a reason. A Stop check that keeps blocking would loop forever, so the prompt includes an escape hatch: *"If this is a re-check after a previous stop attempt, allow stopping."* After one round of verification, Claude can always stop. Keep that sentence if you edit the prompt.
+The Stop hook is a `prompt` hook: a model reviews the context and either allows the stop or blocks it with a reason. A Stop check that keeps blocking would loop forever, so the prompt includes an escape hatch: *"If this is a re-check after a previous stop attempt, allow stopping."* After one round of verification, Claude can always stop. Keep that sentence if you edit the prompt.
 
 ## Candidate lessons
 
@@ -144,7 +145,7 @@ A verdict counts only with its report in the same entry, so skill and doc text t
 
 ## Agent-scoped hooks
 
-Don't put guardrails in agent frontmatter (`hooks:`, `permissionMode:`). Plugin mode ignores those fields without warning, so a guard defined there is off for plugin users. Put guards in the global hooks above, or restrict the agent's `tools`. Details are in [plugin-mode.md](https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/docs/reference/plugin-mode.md).
+Don't put guardrails in agent frontmatter (`hooks:`, `permissionMode:`). Plugin mode ignores those fields without warning, so a guard defined there is off for plugin users. Put guards in the global hooks above, or restrict the agent's `tools`. Details are in [plugin-mode.md](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/docs/reference/plugin-mode.md).
 
 ## Operational scripts
 

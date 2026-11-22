@@ -29,8 +29,35 @@ if [[ -d "$PROJECT_DIR/.ai/session" ]]; then
     fi
 fi
 
+# Stale session: the plugin cache on disk is newer than the version this session loaded
+if [[ -n "${CLAUDE_PLUGIN_ROOT:-}" ]] && command -v jq >/dev/null 2>&1; then
+    installed_file="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/plugins/installed_plugins.json"
+    manifest="$CLAUDE_PLUGIN_ROOT/.claude-plugin/plugin.json"
+    if [[ -f "$installed_file" && -f "$manifest" ]]; then
+        loaded_version=$(jq -r '.version // empty' "$manifest" 2>/dev/null || true)
+        # The installed record to compare is the one whose installPath sits beside CLAUDE_PLUGIN_ROOT
+        # (<cache>/<marketplace>/<plugin>/<version>). A --plugin-dir checkout matches none and stays silent,
+        # and so does a session that loaded a recorded install: another scope may pin a different version.
+        root_parent=$(dirname "$CLAUDE_PLUGIN_ROOT")
+        installed_version=$(jq -r --arg root "${CLAUDE_PLUGIN_ROOT%/}" --arg parent "$root_parent" '
+            [(.plugins // {}) | to_entries[]
+             | select(.key | startswith("sdd-kit@"))
+             | .value[]?
+             | select((.installPath // "") != "")
+             | . + { path: (.installPath | sub("/+$"; "")) }] as $records
+            | if any($records[]; .path == $root) then empty
+              else [$records[]
+                    | select((.path | split("/") | .[:-1] | join("/")) == $parent)
+                    | (.resolvedVersion // .version // empty)][0] // empty
+              end' "$installed_file" 2>/dev/null | head -1 || true)
+        if [[ -n "$loaded_version" && -n "$installed_version" && "$loaded_version" != "$installed_version" ]]; then
+            output+="SDD Kit $installed_version is installed; this session runs $loaded_version. Fix: restart Claude Code to load it."$'\n'
+        fi
+    fi
+fi
+
 if [[ -n "$output" ]]; then
-    echo "$output"
+    printf '%s\n' "$output"
 fi
 
 exit 0

@@ -33,6 +33,7 @@ Keep dependencies current and CVE-free without breaking the build. Upgrades in r
 
 # Scope to one side
 /upgrade-deps --patch --backend
+/upgrade-deps --minor --frontend
 ```
 
 ---

@@ -2,7 +2,7 @@
 
 From zero to building with SDD Kit: learn the Claude Code basics, install the kit, give Claude your project context, and take one ticket from spec to shipped code.
 
-This guide uses bare skill names (`/sdd`, `/write-spec`). In plugin mode they are namespaced: `/sdd-kit:sdd`, `/sdd-kit-ops:deploy`, and so on.
+This guide uses bare skill names (`/sdd`, `/write-spec`). Plugin mode uses the same bare names; `/sdd-kit:<name>` is needed only when another skill of the same name shadows the kit's.
 
 ## 0. New to Claude Code?
 
@@ -67,7 +67,9 @@ or copied into your project's `.claude/` without cloning (from your project root
 npx github:stasmarkov/sdd-kit install --project
 ```
 
-Both modes, add-ons, and a clone-based install are in [INSTALLATION.md](installation.md). A step-by-step path for a team, with examples for stacks other than the preset, is on the [Adopt page](https://stasmarkov.github.io/sdd-kit/adopt.html). The core is stack-agnostic: stack add-ons supply detection, gates and specialists, and a new stack is one manifest (`/new-stack`). Plugin mode: the preset above, or the core plus your stack's add-ons (see INSTALLATION). File-copy mode installs the default stack add-ons, and `--stack` changes the choice. Coming from 2.x: [Upgrading from 2.x](installation.md#upgrading-from-2x); see [Stacks and roadmap](https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/README.md#stacks-and-roadmap).
+npx needs npm 11 or 12 (Node 22 ships npm 10: run `npm i -g npm@11`). On npm 12 add `--allow-git=root` after `npx`.
+
+Both modes, add-ons, and a clone-based install are in [INSTALLATION.md](installation.md). A step-by-step path for a team, with examples for stacks other than the preset, is on the [Adopt page](https://stasmarkov.github.io/sdd-kit/adopt.html). The core is stack-agnostic: stack add-ons supply detection, gates and specialists, and a new stack is one manifest (`/new-stack`). Plugin mode: the preset above, or the core plus your stack's add-ons (see INSTALLATION). File-copy mode installs the default stack add-ons, and `--stack` changes the choice. Coming from 2.x: [Upgrading from 2.x](installation.md#upgrading-from-2x); see [Stacks and roadmap](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/README.md#stacks-and-roadmap).
 
 Start Claude Code in your project root and run the health check:
 
@@ -80,7 +82,7 @@ claude
 /framework-doctor
 ```
 
-In plugin mode, type `/sdd-kit:framework-doctor`.
+The same bare name works in plugin mode; `/sdd-kit:framework-doctor` is needed only when another skill of that name shadows it.
 
 It reports PASS / WARN / FAIL for the directory layout, skill discovery, agents, MCP config, and hooks. In file-copy mode it also fires a harmless payload at the hooks to check they run; in plugin mode run `/hooks` to see which are listed. Fix any FAIL before you go on. `--fix` only sets permissions and creates missing directories. Anything else is covered in the troubleshooting section of [INSTALLATION.md](installation.md).
 
@@ -89,7 +91,7 @@ It reports PASS / WARN / FAIL for the directory layout, skill discovery, agents,
 Claude only knows what the code shows and what you tell it. Three files carry that context. The file-copy installer creates them and never overwrites files that already exist. Plugin mode creates none of them, so plugin users fetch the templates once from the project root (skip any file you already have):
 
 ```bash
-base=https://raw.githubusercontent.com/stasmarkov/sdd-kit/v4.3.0/share
+base=https://raw.githubusercontent.com/stasmarkov/sdd-kit/v4.4.0/share
 curl -fsSL "$base/CLAUDE.template.md" -o CLAUDE.md
 curl -fsSL "$base/templates/AGENTS.template.md" -o AGENTS.md
 mkdir -p .claude/rules
@@ -105,6 +107,40 @@ Each stack add-on ships its own area rules in `plugins/<add-on>/rules/` of the s
 | `.claude/rules/*.md` | Area conventions (migrations, API controllers, services and DTOs, frontend pages, tests). Each file has a `paths:` glob and loads only when Claude touches matching files. | Delete the rules that don't apply to you and adjust the globs to match your layout |
 
 Put each fact in one file. Commands and red lines go in `AGENTS.md`. Anything that only matters in one area goes in a rule. `CLAUDE.md` holds what is left. Replace every `<placeholder>` and delete sections you have nothing real for. An empty template costs tokens and teaches nothing.
+
+### First success
+
+Before you write any context, prove the kit works on your code with three commands. Each shows what a good result looks like; your output will differ.
+
+1. `/framework-doctor` checks the install. Expected: PASS lines for layout, skills, agents, hooks and MCP, and no FAIL.
+
+   Example output:
+
+   ```
+   PASS  skills discovered
+   PASS  hooks wired
+   0 FAIL, 1 WARN
+   ```
+
+2. `/investigate "how does <module> check access?"` reads your code and answers with citations. Expected: a short explanation that cites `file:line` for each claim.
+
+   Example output:
+
+   ```
+   Access is checked in the controller before the service runs (src/OrderController:42),
+   using the policy in src/OrderPolicy:18.
+   ```
+
+3. `/lint --check` runs your stack's real gates without fixing anything. Expected: one line per gate, each PASS, FAIL or `not run (<reason>)`.
+
+   Example output:
+
+   ```
+   Lint   PASS
+   Types  not run (tool not installed)
+   ```
+
+If a step fails, [INSTALLATION.md](installation.md#troubleshooting) lists the fix by message.
 
 ### The Golden Triangle
 
@@ -134,7 +170,7 @@ With no code yet, start with `/product-brief`: it turns the idea into a brief (u
 
 ### First-session order
 
-1. `/framework-doctor`: the install works.
+1. `/framework-doctor`: the install works. Then the three commands under [First success](#first-success).
 2. Context from code: `/write-docs` for the Golden Triangle (or `/product-brief` for a new product).
 3. `/sdd <ticket or description>`: your first piece of work.
 
@@ -152,7 +188,7 @@ With no code yet, start with `/product-brief`: it turns the idea into a brief (u
 Route: feature. Adds a new behavior (refund guard on top-up orders); no existing behavior is broken.
 ```
 
-You confirm it or pick another route. The routes are trivial, bug, decision, feature, shipped code, new app, and security audit (a deep, coverage-led audit of existing code). The full route tree is in the [README](https://github.com/stasmarkov/sdd-kit/blob/v4.3.0/README.md). Nothing launches until you confirm.
+You confirm it or pick another route. The routes are trivial, bug, decision, feature, shipped code, new app, and security audit (a deep, coverage-led audit of existing code). The full route tree is in the [README](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/README.md). Nothing launches until you confirm.
 
 **2. Inputs up front.** Background workflows can't stop to ask questions, so `/sdd` asks two to four now: single repo or backend and frontend paths, the dev URL for browser checks, and anything specific to the route.
 
@@ -187,11 +223,13 @@ Claude Code asks you to allow each workflow run (*Yes, run it*, *Yes, and don't 
 /workflows
 ```
 
+> **While a workflow runs**: keep the Claude Code session open, because the run lives in it. `/workflows` shows its progress. If the run stops (a usage limit, a closed terminal, the agent cap), relaunch it with the call the report prints, or reopen the session with `claude --resume` first. Details: [When a run stops](usage-examples.md#when-a-run-stops).
+
 **7. Read the report.** The report ends with a recommendation:
 
 - **SHIP**: gates green, review approved, acceptance re-walked.
-- **FIX-FIRST**: confirmed findings to address, listed by file and line with a one-line fix each.
-- **BLOCKED**: a partial build, an unreachable gate, or an acceptance trace that did not resolve.
+- **FIX-FIRST**: confirmed findings to address, listed by file and line with a one-line fix each. A partial build, an unavailable check (a gate or phase that returned nothing) or an acceptance trace that did not resolve is listed here too.
+- **BLOCKED**: an untrusted stack manifest. Approve it with `/stack-trust`, then relaunch.
 
 It also writes a manual test plan to `manual-test.md` in the spec folder. Run it before you merge.
 

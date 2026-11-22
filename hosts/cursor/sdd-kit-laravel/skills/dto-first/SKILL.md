@@ -3,6 +3,10 @@ name: dto-first
 description: DTO patterns with Spatie Laravel Data. Use for request/response data handling and layer boundaries.
 user-invocable: false
 allowed-tools: Read, Grep, Glob, Edit, Write
+metadata:
+  last_verified: "2026-10-22"
+  next_review: "2027-01-22"
+  targets: "PHP 8.3; Laravel 12"
 ---
 
 # DTO-First Development Pattern

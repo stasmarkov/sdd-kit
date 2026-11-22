@@ -87,6 +87,44 @@
       "components/",
       "lib/"
     ],
+    "explore": [
+      {
+        "what": "Routes and pages",
+        "where": "app/**/page.tsx, app/**/layout.tsx"
+      },
+      {
+        "what": "Route handlers",
+        "where": "app/**/route.ts"
+      },
+      {
+        "what": "Server Actions",
+        "where": "grep 'use server'"
+      },
+      {
+        "what": "Client components",
+        "where": "components/**/*.tsx, grep 'use client'"
+      },
+      {
+        "what": "API client",
+        "where": "lib/api*.ts, services/**/*.ts"
+      },
+      {
+        "what": "Auth and middleware",
+        "where": "middleware.ts, auth.ts, lib/auth*"
+      },
+      {
+        "what": "Types shared with the API",
+        "where": "types/**/*.ts, lib/**/types.ts"
+      },
+      {
+        "what": "Vitest tests",
+        "where": "**/*.test.ts, **/*.test.tsx"
+      },
+      {
+        "what": "Playwright tests",
+        "where": "e2e/**/*.spec.ts, tests/e2e/**"
+      }
+    ],
     "docImpact": {
       "endpoint": [
         "(^|/)app/(.*/)?route\\.[jt]sx?$",

@@ -1,6 +1,6 @@
 ---
 name: changelog-writer
-description: Generate comprehensive changelogs from git history, categorize changes, and maintain CHANGELOG.md in Keep a Changelog format.
+description: Generate comprehensive changelogs from git history, categorize changes, and maintain CHANGELOG.md in Keep a Changelog format. Use when preparing a release or updating the changelog.
 tools: Read, Write, Edit, Bash, Grep
 model: haiku
 effort: low

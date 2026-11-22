@@ -6,6 +6,10 @@ allowed-tools: Read, Grep, Glob, Edit, Write, Bash
 paths:
   - "tests/**"
   - "**/*Test.php"
+metadata:
+  last_verified: "2026-10-22"
+  next_review: "2027-01-22"
+  targets: "pestphp/pest ^3"
 ---
 
 # Pest PHP 3 Testing Patterns

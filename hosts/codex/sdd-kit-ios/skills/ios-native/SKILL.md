@@ -8,6 +8,10 @@ paths:
   - "**/*.xcodeproj/**"
   - "**/*.xcworkspace/**"
   - "**/Package.swift"
+metadata:
+  last_verified: "2026-10-18"
+  next_review: "2027-01-18"
+  targets: "Swift 6; iOS 18; SwiftUI"
 ---
 
 # iOS Native Development Patterns

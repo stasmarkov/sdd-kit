@@ -1,7 +1,7 @@
 ---
 name: deploy
 description: Deploy the application to staging or production with pre-deploy gates (tests, lint, build), confirmation for production, and post-deploy health and smoke checks. Use when shipping a release to an environment, doing a dry run of a deployment, or deploying a specific branch.
-argument-hint: "[environment] | --staging | --production | --dry-run"
+argument-hint: "[environment] | --staging | --production | --dry-run | --branch=[name] | --force"
 allowed-tools: Bash, Read, Grep
 disable-model-invocation: true
 metadata:

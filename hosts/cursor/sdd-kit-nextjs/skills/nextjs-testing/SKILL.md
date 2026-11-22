@@ -19,6 +19,7 @@ metadata:
   framework-version: "15.x"
   last_verified: "2026-10-19"
   next_review: "2027-01-19"
+  targets: "Vitest 3; Playwright 1.5x; next 15.x"
 ---
 
 # Next.js Testing (Vitest, Testing Library, MSW, Playwright)

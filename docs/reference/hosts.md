@@ -10,7 +10,7 @@ Install commands are in [INSTALLATION.md](installation.md#codex); first-session 
 |---|---|---|---|
 | Status | Supported | Unverified preview | Unverified preview |
 | Install | Plugin mode or file-copy | Plugin marketplace or `install.sh --host codex` | `install.sh --host cursor`; team marketplace through the dashboard |
-| Skill invocation | `/sdd` (`/sdd-kit:sdd` in plugin mode) | `$sdd` | `/sdd` |
+| Skill invocation | `/sdd` (in plugin mode `/sdd-kit:sdd` only for a shadowed name) | `$sdd` | `/sdd` |
 | Instruction file | `CLAUDE.md` (imports `AGENTS.md`) | `AGENTS.md` | `AGENTS.md` and `.cursor/rules/*.mdc` |
 | Skills directory | `.claude/skills` | `.agents/skills` | `.cursor/skills` |
 | Agents | `.claude/agents/*.md` | `.codex/agents/*.toml` (file copy only) | `.cursor/agents/*.md` |
@@ -22,7 +22,7 @@ Install commands are in [INSTALLATION.md](installation.md#codex); first-session 
 - **No token budget.** The bridge reports a budget of 0, so workflow branches that depend on remaining budget never trigger.
 - **Subagent nesting.** Cursor does not let a subagent start further subagents, so every bridge job is started by the parent session. Codex subagents inherit the parent's sandbox and approvals.
 - **Read-only roles.** Cursor maps a read-only job to a read-only subagent; Codex cannot enforce it and treats it as an instruction.
-- **Prompt-type hooks.** The Stop and SubagentStop prompt hooks are Claude-only. Command hooks are registered under each host's own event names; a hook whose event a host lacks is listed in the registration plan instead of dropped silently.
+- **Prompt-type hooks.** The Stop prompt hook is Claude-only. Command hooks are registered under each host's own event names; a hook whose event a host lacks is listed in the registration plan instead of dropped silently.
 - **Cursor after-tool output.** Cursor has no PostToolUse event for shell, web or MCP output, so the injection scan does not run there.
 - **PreCompact.** Cursor has no pre-compaction event, so the checkpoint hook (`pre-compact-save.sh`) does not run there.
 - **SubagentStop and Notification.** Cursor has neither event, so hooks registered on them are listed in the registration plan and not installed.

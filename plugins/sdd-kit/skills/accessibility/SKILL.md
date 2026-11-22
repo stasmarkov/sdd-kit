@@ -1,13 +1,17 @@
 ---
 name: accessibility
-description: Web accessibility (a11y) for component-based frontends. Use when building UI components, forms, navigation, or auditing pages against WCAG 2.2 AA. Covers semantic HTML, ARIA, keyboard, focus, contrast, and automated testing.
+description: Web accessibility (a11y) for any rendered UI. Use when building templates, components, forms or navigation, or auditing pages against WCAG 2.2 AA. Covers semantic HTML, ARIA, keyboard, focus, contrast, and automated testing.
 license: Apache-2.0
 allowed-tools: Read, Grep, Glob, Edit, Write, Bash
 paths:
+  - "**/*.html"
+  - "**/*.twig"
   - "**/*.tsx"
   - "**/*.jsx"
-  - "app/**"
-  - "components/**"
+metadata:
+  last_verified: "2026-10-22"
+  next_review: "2027-01-22"
+  targets: "WCAG 2.2 AA"
 ---
 
 # Accessibility (WCAG 2.2 AA)

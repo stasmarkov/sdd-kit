@@ -13,10 +13,17 @@
 #
 # Opt-out: SDD_KIT_NO_STACK_HINT=1.
 # Never blocks the session: any failure exits 0 silently.
+#
+# --detect: prints "<key> <plugin>" for every stack whose markers match, where <plugin> is the
+# add-on plugin of the stack's manifest entry. It ignores the opt-out, the shown-file and the
+# enabled plugins, and writes nothing.
 
 set +e
 
-[[ "${SDD_KIT_NO_STACK_HINT:-0}" == "1" ]] && exit 0
+DETECT=false
+[[ "${1:-}" == "--detect" ]] && DETECT=true
+
+$DETECT || [[ "${SDD_KIT_NO_STACK_HINT:-0}" != "1" ]] || exit 0
 command -v jq >/dev/null 2>&1 || exit 0
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -40,10 +47,12 @@ sha256_of_stdin() {
     fi
 }
 
-PROJECT_HASH=$(printf '%s' "$(pwd -P)" | sha256_of_stdin)
-[[ -n "$PROJECT_HASH" ]] || exit 0
-if [[ -f "$SHOWN_FILE" ]] && grep -qxF "$PROJECT_HASH" "$SHOWN_FILE"; then
-    exit 0
+if ! $DETECT; then
+    PROJECT_HASH=$(printf '%s' "$(pwd -P)" | sha256_of_stdin)
+    [[ -n "$PROJECT_HASH" ]] || exit 0
+    if [[ -f "$SHOWN_FILE" ]] && grep -qxF "$PROJECT_HASH" "$SHOWN_FILE"; then
+        exit 0
+    fi
 fi
 
 # Names of plugins set true in enabledPlugins, without the @marketplace suffix.
@@ -68,6 +77,7 @@ preset_names_for() {
 
 addon_present() {
     local dir="$1" name
+    $DETECT && return 1
     [[ -f ".claude/stacks/$dir.json" || -f "$CONFIG_DIR/stacks/$dir.json" ]] && return 0
     grep -qxF "sdd-kit-$dir" <<<"$ENABLED" && return 0
     while IFS= read -r name; do
@@ -76,9 +86,24 @@ addon_present() {
     return 1
 }
 
+DETECTED=""
+
+# Prints the detected "<key> <plugin>" lines of --detect mode, one per stack, then exits.
+finish() {
+    $DETECT && [[ -n "$DETECTED" ]] && printf '%s' "$DETECTED"
+    exit 0
+}
+
 # Prints the hint for add-on <dir> and stack <key>, records the project and exits.
+# In --detect mode it only collects "<key> <plugin>" and returns.
 hint() {
-    local presets line
+    local presets line plugin
+    if $DETECT; then
+        plugin=$(jq -r --arg k "$2" --arg d "sdd-kit-$1" '.entries[$k].agent.plugin // $d' "$STACKS_JSON" 2>/dev/null)
+        [[ -n "$plugin" ]] || plugin="sdd-kit-$1"
+        case "$DETECTED" in *"$2 $plugin"$'\n'*) ;; *) DETECTED+="$2 $plugin"$'\n' ;; esac
+        return 0
+    fi
     presets=$(presets_for "$1")
     line="SDD Kit: this looks like a $2 project. Install its stack add-on: /plugin install sdd-kit-$1@sdd-kit"
     [[ -n "$presets" ]] && line+=" (or a preset that includes it: $presets)"
@@ -107,7 +132,7 @@ while IFS=$'\t' read -r dir key marker; do
     hint "$dir" "$key"
 done < <(jq -r '. as $s | ($s.firstPartyFiles // {}) | to_entries[] | .key as $dir | .value[] as $key
     | ($s.entries[$key].markers // [])[] | [$dir, $key, .] | @tsv' "$STACKS_JSON" 2>/dev/null)
-$ROOT_MATCH && exit 0
+$ROOT_MATCH && finish
 
 SUBDIRS=()
 for sub in */; do
@@ -115,7 +140,7 @@ for sub in */; do
     case "$sub" in vendor/ | node_modules/) continue ;; esac
     SUBDIRS+=("$sub")
 done
-[[ ${#SUBDIRS[@]} -gt 0 ]] || exit 0
+[[ ${#SUBDIRS[@]} -gt 0 ]] || finish
 
 # One "<dir>\t<key>\t<file>\t<value>\t<objects>" line per marker (file and objects "-") and per manifest package of
 # each first-party stack, tested in every subdirectory. <file> and the space-separated dependency
@@ -139,4 +164,4 @@ done < <(jq -r '. as $s | ($s.firstPartyFiles // {}) | to_entries[] | .key as $d
         | [$dir, $key, $f.file, ., ($f.keys | join(" "))])
     | @tsv' "$STACKS_JSON" 2>/dev/null)
 
-exit 0
+finish
