@@ -37,7 +37,7 @@ New to Claude Code? Install it first: [GETTING-STARTED, section 0](GETTING-START
 
 - **Plugin mode**: install from the marketplace; one pinned version per team, updated with `/plugin`.
 - **File-copy mode**: `./install.sh` merges the kit into `.claude/`; you can edit agents and skills in place.
-- Both ship the same agents, skills, workflows, and hooks. The full comparison (hooks, permissions, namespacing, limitations) is in [plugin-mode.md](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/docs/reference/plugin-mode.md).
+- Both ship the same agents, skills, workflows, and hooks. The full comparison (hooks, permissions, namespacing, limitations) is in [plugin-mode.md](https://github.com/stasmarkov/sdd-kit/blob/v4.4.1/docs/reference/plugin-mode.md).
 
 ## Plugin mode
 
@@ -156,7 +156,7 @@ in the session.
 ### Team rollout
 
 To pin a reviewed version for a whole team, publish your own marketplace that points at a
-release tag and commit. See [team-marketplace.md](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/docs/reference/team-marketplace.md).
+release tag and commit. See [team-marketplace.md](https://github.com/stasmarkov/sdd-kit/blob/v4.4.1/docs/reference/team-marketplace.md).
 
 ## File-copy mode
 
@@ -188,7 +188,7 @@ npx --allow-git=root github:stasmarkov/sdd-kit install --project
 
 Supported npm versions: 11 and 12. npm 10 is not supported.
 
-Add `#v4.4.0` to pin a release (`npx github:stasmarkov/sdd-kit#v4.4.0 install --project`);
+Add `#v4.4.1` to pin a release (`npx github:stasmarkov/sdd-kit#v4.4.1 install --project`);
 without a tag npx fetches the default branch. npx caches the download. The package is not
 published to npm.
 
@@ -203,7 +203,7 @@ published to npm.
 | `--stack=LIST` | Stack add-ons to install, comma-separated, or `none` for core only. Default on a fresh `--project` install: the stack the installer detects in the project root (or one level down when the root matches nothing), else `laravel,nextjs` (see below); `laravel,nextjs` with `--user`; the installed stacks on an upgrade. Other stacks: `drupal`, `ios`. An add-on that is not a stack (`devenv`, `ops`, `design`) is rejected with a hint to use `--with` |
 | `--with=LIST` | Add optional add-ons, comma-separated: `devenv`, `ops`, `design`, plus any stack add-on. `--with=none` skips the default `devenv` on a fresh install |
 | `--prune` | On an upgrade, remove installed add-ons that are not selected. Without it, flags and prompt answers only add, and unselected add-ons are kept. Modified files are never deleted, and everything removed is backed up |
-| `--third-party` | Also install the pinned third-party skills from `src/settings/third-party.json` and print the recommended plugin commands. Policy: [third-party.md](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/docs/reference/third-party.md) |
+| `--third-party` | Also install the pinned third-party skills from `src/settings/third-party.json` and print the recommended plugin commands. Policy: [third-party.md](https://github.com/stasmarkov/sdd-kit/blob/v4.4.1/docs/reference/third-party.md) |
 | `--dry-run` | Print added / updated / removed files and stop. Nothing is written |
 | `--yes`, `-y` | Skip the confirmation prompt |
 | `--help`, `-h` | Show help |
@@ -241,8 +241,8 @@ install; clone the repository (or use npx) and run `install.sh` as a command.
 
 | | `--minimal` | `--full` |
 |---|---|---|
-| Skills | The main path: `sdd`, `product-brief`, `write-spec`, `execute-task`, `simple-task`, `run-tests`, `deep-review`, `open-pr`, `framework-doctor`, `stack-trust` (overlay approvals), `security-audit`, the shared `verification-gates` and `source-verification` references, and the stack-neutral `api-design` and `api-security` | Every core skill ([skill index](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/docs/reference/skills.md)) |
-| Agents | Every agent the main path hands off to: `code-explorer`, `requirements-analyst` (product-brief, write-spec), `test-writer`, `code-quality` (execute-task), `adversarial-reviewer`, `security-auditor` (deep-review), `security-hunter` (security-audit workflow) | Every core agent ([agents index](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/docs/reference/agents.md)) |
+| Skills | The main path: `sdd`, `product-brief`, `write-spec`, `execute-task`, `simple-task`, `run-tests`, `deep-review`, `open-pr`, `framework-doctor`, `stack-trust` (overlay approvals), `security-audit`, the shared `verification-gates` and `source-verification` references, and the stack-neutral `api-design` and `api-security` | Every core skill ([skill index](https://github.com/stasmarkov/sdd-kit/blob/v4.4.1/docs/reference/skills.md)) |
+| Agents | Every agent the main path hands off to: `code-explorer`, `requirements-analyst` (product-brief, write-spec), `test-writer`, `code-quality` (execute-task), `adversarial-reviewer`, `security-auditor` (deep-review), `security-hunter` (security-audit workflow) | Every core agent ([agents index](https://github.com/stasmarkov/sdd-kit/blob/v4.4.1/docs/reference/agents.md)) |
 | Not included | Four of the after-`/sdd` commands (`/progress`, `/spec-board`, `/investigate`, `/learn`) and `/fix-ci`, the `/sdd` route for red CI. Use `--full` if you want them | Included |
 | Workflows | All of them: `ship-feature`, `create-spec`, `fix-bug`, `qa-and-docs`, `tech-research`, `greenfield-build`, `security-audit` | Same |
 | Templates | Context and spec templates | All templates |
@@ -353,7 +353,7 @@ the install commands, or run them yourself:
 /plugin install typescript-lsp@claude-plugins-official
 ```
 
-See [third-party.md](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/docs/reference/third-party.md)
+See [third-party.md](https://github.com/stasmarkov/sdd-kit/blob/v4.4.1/docs/reference/third-party.md)
 for the review policy behind the list.
 
 **Permissions and sandboxing.** Permission mode and sandboxing depend on your machine and
@@ -365,9 +365,30 @@ Filesystem sandboxing limits where Claude can write; do not rely on network sand
 security control. To opt in to a stricter `defaultMode` or sandbox, set them in your own
 `settings.json`.
 
+#### Unattended runs and auto mode
+
+A background workflow pauses on every permission prompt nobody answers. For runs you leave
+unattended, set this in your user (or managed) settings, so a prompt becomes a denial that the
+run reports instead of a stall:
+
+```json
+{ "permissions": { "denyInsteadOfPrompting": true } }
+```
+
+If you use auto mode, describe your environment in the `autoMode` block of your user
+settings: your source-control organizations, trusted domains and protected branches. Every
+`autoMode` array (`environment`, `allow`, `soft_deny`, `hard_deny`) must include the literal
+`"$defaults"`; an array without it replaces the built-in rules instead of adding to them.
+`autoMode` is read only from user or managed settings, never from project settings, so a
+repository cannot loosen it. `/auto-mode-setup` drafts the entries for you.
+
+```json
+{ "autoMode": { "environment": ["$defaults", "Source control: <your org>, trusted repos: <paths>", "Protected branches: main, master, develop"] } }
+```
+
 A conservative stack-neutral deny list to copy into your own `settings.json`, in either mode
 (a plugin's `settings.json` does not apply these keys; see
-[plugin-mode.md](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/docs/reference/plugin-mode.md#limitation-no-plugin-permissions-or-env)):
+[plugin-mode.md](https://github.com/stasmarkov/sdd-kit/blob/v4.4.1/docs/reference/plugin-mode.md#limitation-no-plugin-permissions-or-env)):
 
 ```json
 {
@@ -383,7 +404,7 @@ A conservative stack-neutral deny list to copy into your own `settings.json`, in
 ```
 
 A stack manifest (`stack.json`) is the only thing that makes a stack; its fields and the trust
-rules are in [stack-manifest.md](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/docs/reference/stack-manifest.md).
+rules are in [stack-manifest.md](https://github.com/stasmarkov/sdd-kit/blob/v4.4.1/docs/reference/stack-manifest.md).
 
 **Read rules for overlay stacks.** Workflows read four locations outside the project: the trust
 store, the user stacks directory, the installed plugin list and the plugin cache that holds each
@@ -415,7 +436,7 @@ and Repositories read). Grant no write scope: a rerun stays a step you take in t
 Without credentials, `/fix-ci` asks you to paste the failing step's log.
 
 Model tiers and effort per workflow phase are covered in
-[effort-guidelines.md](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/docs/reference/effort-guidelines.md).
+[effort-guidelines.md](https://github.com/stasmarkov/sdd-kit/blob/v4.4.1/docs/reference/effort-guidelines.md).
 
 ## Upgrading from 3.x to 4.0
 
@@ -446,7 +467,7 @@ Bare names keep working (`/laravel-12`, `/migrate-db`, agent `laravel-backend-de
 
 Re-run the installer (or update the plugin). In file-copy mode every upgrade removes the files 1.x installed that the current kit no longer ships and backs them up first; no flag is needed. It only removes a file whose content matches a copy the kit shipped; a file you edited or replaced is listed as "kept (modified or not from the kit)" and left for you to review. `install.sh --prune` does something else: it also removes installed add-ons that you did not select (see [Flags](#flags)).
 
-The renamed and removed commands, agents and skills are listed in the CHANGELOG 2.0.0 entry, under [Migrating from 1.x](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/CHANGELOG.md#migrating-from-1x). Current lists: [skills](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/docs/reference/skills.md), [agents](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/docs/reference/agents.md).
+The renamed and removed commands, agents and skills are listed in the CHANGELOG 2.0.0 entry, under [Migrating from 1.x](https://github.com/stasmarkov/sdd-kit/blob/v4.4.1/CHANGELOG.md#migrating-from-1x). Current lists: [skills](https://github.com/stasmarkov/sdd-kit/blob/v4.4.1/docs/reference/skills.md), [agents](https://github.com/stasmarkov/sdd-kit/blob/v4.4.1/docs/reference/agents.md).
 
 If you used a moved agent (iOS, ops or design), add the add-on: `--stack=laravel,nextjs,ios --with=ops,design` or the matching `sdd-kit-*` plugins.
 
@@ -545,7 +566,7 @@ Codex and Cursor are unverified previews. For a file-copy install of either, use
 
 ### Codex
 
-Codex support is an unverified preview: it is built and tested, but no real Codex session has been recorded yet ([hosts.md](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/docs/reference/hosts.md)). Codex plugins cannot ship agents, so the plugin install carries skills, hooks and the bridge; custom agents come with the file-copy install. You need Codex, git, jq and Node.js (see [Prerequisites](#prerequisites)). Windows is not supported.
+Codex support is an unverified preview: it is built and tested, but no real Codex session has been recorded yet ([hosts.md](https://github.com/stasmarkov/sdd-kit/blob/v4.4.1/docs/reference/hosts.md)). Codex plugins cannot ship agents, so the plugin install carries skills, hooks and the bridge; custom agents come with the file-copy install. You need Codex, git, jq and Node.js (see [Prerequisites](#prerequisites)). Windows is not supported.
 
 Plugin install, from your shell (the distribution root carries `.agents/plugins/marketplace.json` beside `.claude-plugin/marketplace.json`, with the Codex packages under `hosts/codex/`):
 

@@ -517,7 +517,7 @@ const HOSTS = {
     skillsDir: '.cursor/skills',
   },
 }
-const KIT_VERSION = '4.4.0'
+const KIT_VERSION = '4.4.1'
 const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key)
 
 // Keys inlined at build time. Overlay manifests can never replace them.

@@ -7,6 +7,20 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [4.4.1] - 2026-11-26
+
+Laravel brownfield test-first modes, the DDEV laravel-boost form, and docs for unattended runs and auto mode.
+
+### Changed behaviour
+
+- **Laravel test-first hook: brownfield default.** `SDD_KIT_TEST_FIRST` now applies to the Laravel add-on as it does to Drupal: `new` (default) denies creating a guarded file without a test and only warns on edits of existing untested files; `strict` keeps the old deny-everything behaviour; `warn` never denies. `CLAUDE_SKIP_TEST_FIRST=1` still bypasses the hook.
+
+### Added
+
+- The `laravel-boost` catalog entry shows the DDEV form (`ddev artisan boost:mcp`) for projects whose app runs in DDEV.
+
+- INSTALLATION explains unattended runs (`permissions.denyInsteadOfPrompting`) and the auto mode rule that every `autoMode` array keeps `"$defaults"`; the launch recipe points there.
+
 ## [4.4.0] - 2026-11-22
 
 Drupal pilot week-1 fixes, workflow cost and safety limits, and skill, agent and onboarding quality.

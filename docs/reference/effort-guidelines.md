@@ -139,7 +139,7 @@ Lead Orchestrator (1)
 4. **Use checkpointing** for tasks exceeding 100K tokens
 5. **Filter tool outputs** before returning to context
 
-The `token-budget` hook enforces one part of this: it blocks `find` from the filesystem root. See the [hooks reference](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/share/hooks/README.md).
+The `token-budget` hook enforces one part of this: it blocks `find` from the filesystem root. See the [hooks reference](https://github.com/stasmarkov/sdd-kit/blob/v4.4.1/share/hooks/README.md).
 
 ---
 
@@ -311,6 +311,6 @@ Durable lessons belong in Claude Code auto memory or agent memory (`memory: proj
 - Framework Design Rules - Core principles
 - [Agent index](agents.md) - Available agents
 - [Skill index](skills.md) - Available skills
-- [Hooks reference](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/share/hooks/README.md) - `token-budget`, `pre-compact-save`, and the rest
+- [Hooks reference](https://github.com/stasmarkov/sdd-kit/blob/v4.4.1/share/hooks/README.md) - `token-budget`, `pre-compact-save`, and the rest
 
 Source: Anthropic Engineering, "How we built our multi-agent research system".

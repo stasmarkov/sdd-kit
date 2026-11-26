@@ -158,7 +158,7 @@ When a run ends FIX-FIRST, NOT-RESOLVED or stopped (the cap, a usage limit, an u
 - When `relaunch` is `'same-run'`, offer `Workflow({ name: "sdd-kit:<name>", args: <the same args>, resumeFromRunId: "<runId>" })`, with `runId` taken from the launch result. When the cap stopped the run, raise `maxAgents` in those args first (the result's `agentCap` shows the limit that was hit).
 - When `relaunch` is `'spec'` or finding tasks were appended to `tasks.md`, offer `ship-feature { spec }` to build them.
 - When `allowDraftUsed` is true, say the run was built without an approved spec.
-- Troubleshooting for a run that will not resume: [INSTALLATION.md Troubleshooting](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/docs/reference/installation.md).
+- Troubleshooting for a run that will not resume: [INSTALLATION.md Troubleshooting](https://github.com/stasmarkov/sdd-kit/blob/v4.4.1/docs/reference/installation.md).
 
 After **SHIP**, offer the security audit (never launch it unprompted) when the report's `confirmedFindings` contain an entry with `dimension === 'security'`, or the spec's `spec-lite.md` has a line matching `NFR-[0-9]+\**:?\**\s*(authori[sz]ation|personal[- ]data|privacy)` (case-insensitive). Scope it to the branch with `gitRange` (the workflow reads the files of `git diff --name-only <default branch>...HEAD` itself, so long lists, names with spaces and deleted files need no handling here), pass the quick profile and the repo ship-feature changed (its path or role from the report), and confirm it as in Step 4:
 

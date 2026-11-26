@@ -3,7 +3,7 @@
 
 Operations add-on for Laravel applications: deploy, rollback, feature flags, health checks, incident response, and ops analysis agents.
 
-- Version: 4.4.0
+- Version: 4.4.1
 - Keywords: deployment, incident, operations
 
 ## Install
@@ -16,4 +16,4 @@ Operations add-on for Laravel applications: deploy, rollback, feature flags, hea
 ## Learn more
 
 - [Interactive guide](https://stasmarkov.github.io/sdd-kit/)
-- [Worked example: Hireboard](https://github.com/stasmarkov/sdd-kit/blob/v4.4.0/docs/examples/job-board/README.md)
+- [Worked example: Hireboard](https://github.com/stasmarkov/sdd-kit/blob/v4.4.1/docs/examples/job-board/README.md)

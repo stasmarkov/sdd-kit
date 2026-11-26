@@ -1,5 +1,5 @@
 {
   "name": "sdd-kit-ops",
-  "version": "4.4.0",
+  "version": "4.4.1",
   "description": "Operations add-on for Laravel applications: deploy, rollback, feature flags, health checks, incident response, and ops analysis agents."
 }

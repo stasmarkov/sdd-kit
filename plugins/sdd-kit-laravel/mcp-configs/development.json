@@ -6,7 +6,7 @@
         "artisan",
         "boost:mcp"
       ],
-      "description": "Optional. Laravel-aware tools (requires composer require laravel/boost --dev)."
+      "description": "Optional. Laravel-aware tools (requires composer require laravel/boost --dev). In a DDEV project run it inside the container: \"command\": \"ddev\", \"args\": [\"artisan\", \"boost:mcp\"]; php artisan on the host cannot reach the container's database."
     }
   }
 }
